@@ -7,14 +7,15 @@ updated: 2026-10-03
 # Roadmap
 
 > **Current Phase:** 5 — End-to-end verification and documentation
-> **Status:** executing
+> **Status:** complete
 
 ## Must-Haves
 
-- [ ] Configurable and reproducible data/model/recourse/validation pipeline.
-- [ ] Actionable recourse obeys actuator-only, bounds, rate, plausibility, and coupling checks.
-- [ ] CLI, optional service, dashboard, evaluation, and technical documentation.
-- [ ] Honest measured results and clear static C-MAPSS limitations.
+- [x] Configurable and reproducible data/model/recourse/validation pipeline.
+- [ ] Actionable physical recourse demonstrated on the default dataset; blocked by absent verified
+  actuator mapping, engineering limits, and coupling rules.
+- [x] CLI, optional service, dashboard, evaluation, and technical documentation.
+- [x] Honest measured results and clear static C-MAPSS limitations.
 
 ## Phases
 
@@ -46,7 +47,7 @@ updated: 2026-10-03
 **Objective:** Implement CLI, optional FastAPI, Streamlit dashboard, metrics, ablations, latency, and reports.
 
 ### Phase 5: End-to-end verification and documentation
-**Status:** 🔄 In Progress
+**Status:** ✅ Complete
 **Depends on:** Phase 4
 **Objective:** Complete integration/e2e/regression coverage, run honest experiments, and document outcomes and limitations.
 - [x] Plan 5.1: Technical docs and end-to-end verification
@@ -59,4 +60,4 @@ updated: 2026-10-03
 | 2 | ✅ | 2/2 | Complete |
 | 3 | ✅ | 2/2 | Complete |
 | 4 | ✅ | 2/2 | Complete |
-| 5 | 🔄 | 0/1 | Executing |
+| 5 | ✅ | 1/1 | Complete |

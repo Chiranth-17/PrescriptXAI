@@ -2,7 +2,7 @@
 
 ## Current status
 
-Phases 1–4 are complete. Phase 5 documentation and end-to-end verification are in progress. The
+Phases 1–5 are complete. The
 user-provided synopsis was copied unchanged to `docs/synopsis.pdf` (SHA-256 matches the source).
 
 ## Done
