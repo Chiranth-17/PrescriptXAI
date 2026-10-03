@@ -1,6 +1,14 @@
 seed: 1729
+artifacts:
+  model: artifacts/FD001-xgboost.joblib
+  mahalanobis: artifacts/FD001-mahalanobis.joblib
+  evaluation_report: artifacts/FD001-evaluation.json
+api:
+  host: 127.0.0.1
+  port: 8000
 data:
   root: data/raw
+  archive_name: CMAPSSData.zip
   processed_root: data/processed
   dataset: FD001
   dataset_url: https://phm-datasets.s3.amazonaws.com/NASA/6.+Turbofan+Engine+Degradation+Simulation+Data+Set.zip
@@ -40,3 +48,16 @@ validation:
   simulator_enabled: false
 evaluation:
   random_seed: 1729
+  max_queries: 100
+  recourse_validity_rate: 0.95
+  physical_plausibility_rate: 0.90
+  average_sparsity_max: 3
+  mean_risk_drop_min: 0.60
+  ingestion_max_ms: 10
+  inference_max_ms: 15
+  optimization_min_ms: 1200
+  optimization_max_ms: 1800
+  validation_max_ms: 100
+  dashboard_max_ms: 250
+  pipeline_min_ms: 1500
+  pipeline_max_ms: 2200

@@ -32,9 +32,16 @@ def test_invalid_threshold_order_is_rejected() -> None:
     """Safe threshold cannot be at or above the danger threshold."""
     values = {
         "seed": 1,
+        "artifacts": {
+            "model": "model.joblib",
+            "mahalanobis": "mahalanobis.joblib",
+            "evaluation_report": "report.json",
+        },
+        "api": {"host": "127.0.0.1", "port": 8000},
         "data": {
             "root": "raw",
             "processed_root": "processed",
+            "archive_name": "CMAPSSData.zip",
             "dataset": "FD001",
             "dataset_url": "https://example.invalid/data.zip",
             "download_timeout_seconds": 10,
@@ -61,7 +68,22 @@ def test_invalid_threshold_order_is_rejected() -> None:
             "covariance_regularization": 1e-6,
             "simulator_enabled": False,
         },
-        "evaluation": {"random_seed": 1},
+        "evaluation": {
+            "random_seed": 1,
+            "max_queries": 10,
+            "recourse_validity_rate": 0.95,
+            "physical_plausibility_rate": 0.9,
+            "average_sparsity_max": 3,
+            "mean_risk_drop_min": 0.6,
+            "ingestion_max_ms": 10,
+            "inference_max_ms": 15,
+            "optimization_min_ms": 1200,
+            "optimization_max_ms": 1800,
+            "validation_max_ms": 100,
+            "dashboard_max_ms": 250,
+            "pipeline_min_ms": 1500,
+            "pipeline_max_ms": 2200,
+        },
     }
 
     with pytest.raises(ValidationError, match="safe_threshold must be lower"):

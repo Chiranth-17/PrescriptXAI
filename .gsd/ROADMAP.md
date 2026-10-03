@@ -6,7 +6,7 @@ updated: 2026-10-03
 
 # Roadmap
 
-> **Current Phase:** 4 — Product surfaces and evaluation
+> **Current Phase:** 5 — End-to-end verification and documentation
 > **Status:** executing
 
 ## Must-Haves
@@ -25,7 +25,7 @@ updated: 2026-10-03
 - [x] Plan 1.1: Package scaffold, configuration, and typed feature taxonomy/schemas
 
 ### Phase 2: Data and predictive models
-**Status:** 🔄 In Progress
+**Status:** ✅ Complete
 **Depends on:** Phase 1
 **Objective:** Implement C-MAPSS ingestion, preprocessing, engine splits, model training, calibration, and registry.
 **Plans:**
@@ -41,14 +41,15 @@ updated: 2026-10-03
 - [x] Plan 3.2: Independent validation tiers
 
 ### Phase 4: Product surfaces and evaluation
-**Status:** 🔄 In Progress
+**Status:** ✅ Complete
 **Depends on:** Phase 3
 **Objective:** Implement CLI, optional FastAPI, Streamlit dashboard, metrics, ablations, latency, and reports.
 
 ### Phase 5: End-to-end verification and documentation
-**Status:** ⬜ Not Started
+**Status:** 🔄 In Progress
 **Depends on:** Phase 4
 **Objective:** Complete integration/e2e/regression coverage, run honest experiments, and document outcomes and limitations.
+- [x] Plan 5.1: Technical docs and end-to-end verification
 
 ## Progress Summary
 
@@ -57,5 +58,5 @@ updated: 2026-10-03
 | 1 | ✅ | 1/1 | Complete |
 | 2 | ✅ | 2/2 | Complete |
 | 3 | ✅ | 2/2 | Complete |
-| 4 | ⬜ | 0/2 | — |
-| 5 | ⬜ | 0/1 | — |
+| 4 | ✅ | 2/2 | Complete |
+| 5 | 🔄 | 0/1 | Executing |

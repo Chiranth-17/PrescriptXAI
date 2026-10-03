@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 
+import joblib
 import numpy as np
 import pandas as pd
 
@@ -17,6 +19,23 @@ from prescriptxai.validation.tier1_model import validate_model_risk
 from prescriptxai.validation.tier2_mahalanobis import MahalanobisValidator
 from prescriptxai.validation.tier3_engineering import validate_engineering
 from prescriptxai.validation.tier4_coupling import validate_sensor_coupling
+
+
+def save_mahalanobis_validator(validator: MahalanobisValidator, path: Path) -> Path:
+    """Persist fitted Tier 2 statistics and training-engine provenance."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(validator, path)
+    return path
+
+
+def load_mahalanobis_validator(path: Path) -> MahalanobisValidator:
+    """Load fitted Tier 2 statistics from a configured local artifact."""
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    loaded: object = joblib.load(path)
+    if not isinstance(loaded, MahalanobisValidator):
+        raise ValueError("artifact does not contain a MahalanobisValidator")
+    return loaded
 
 
 @dataclass(frozen=True)
@@ -84,6 +103,7 @@ def fit_mahalanobis_validator(
         config.validation.mahalanobis_max,
         config.validation.covariance_regularization,
     )
+
 
 def validate_candidate(
     initial_state: Mapping[str, float],

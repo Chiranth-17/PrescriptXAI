@@ -150,9 +150,7 @@ def test_mahalanobis_rejects_nan_and_wrong_shape() -> None:
     with pytest.raises(ValueError, match="must be finite"):
         validator.distance(np.array([np.nan, 0.0]))
     with pytest.raises(ValueError, match="at least two rows"):
-        MahalanobisValidator.fit(
-            np.array([[0.0, 0.0]]), ("a", "b"), np.array([1]), (1,), 5, 1e-6
-        )
+        MahalanobisValidator.fit(np.array([[0.0, 0.0]]), ("a", "b"), np.array([1]), (1,), 5, 1e-6)
 
 
 def test_optimizer_finds_sparse_safe_bounded_candidate_and_reports_both_delta_units() -> None:
@@ -172,9 +170,10 @@ def test_optimizer_finds_sparse_safe_bounded_candidate_and_reports_both_delta_un
     assert len(result.deltas) == 1
     assert result.deltas[0].feature == "actuator"
     assert result.state["actuator"] <= taxonomy.actuator_constraints["actuator"].maximum
-    assert result.state["actuator"] - initial["actuator"] <= taxonomy.actuator_constraints[
-        "actuator"
-    ].max_change_per_step
+    assert (
+        result.state["actuator"] - initial["actuator"]
+        <= taxonomy.actuator_constraints["actuator"].max_change_per_step
+    )
     assert result.deltas[0].raw_delta != result.deltas[0].scaled_delta
     assert abs(result.deltas[0].scaled_delta) <= config.recourse.max_scaled_distance
 
@@ -251,6 +250,7 @@ def test_sparsifier_and_baselines_report_failures_without_claims() -> None:
 
 def test_simulator_interface_is_opt_in_and_requires_an_adapter() -> None:
     """Disabled simulator calls are omitted; enabled calls require an implementation."""
+
     class FixtureSimulator:
         def validate_candidate(self, state: Mapping[str, float]) -> SimulatorResult:
             return SimulatorResult(valid=state["actuator"] <= 1.0, diagnostics=())

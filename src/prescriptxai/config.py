@@ -14,6 +14,7 @@ class DataConfig(BaseModel):
 
     root: Path
     processed_root: Path
+    archive_name: str = Field(min_length=5)
     dataset: str = Field(pattern=r"^FD00[1-4]$")
     dataset_url: str = Field(min_length=1)
     download_timeout_seconds: int = Field(gt=0)
@@ -30,6 +31,21 @@ class DataConfig(BaseModel):
         if abs(total - 1.0) > 1e-9:
             raise ValueError("train, validation, and test fractions must sum to 1")
         return self
+
+
+class ArtifactConfig(BaseModel):
+    """Configured paths for model, validator, and evaluation artifacts."""
+
+    model: Path
+    mahalanobis: Path
+    evaluation_report: Path
+
+
+class ApiConfig(BaseModel):
+    """Optional HTTP service bind settings."""
+
+    host: str = Field(min_length=1)
+    port: int = Field(ge=1, le=65535)
 
 
 class ModelConfig(BaseModel):
@@ -93,6 +109,28 @@ class EvaluationConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     random_seed: int = Field(ge=0)
+    max_queries: int = Field(ge=1)
+    recourse_validity_rate: float = Field(ge=0, le=1)
+    physical_plausibility_rate: float = Field(ge=0, le=1)
+    average_sparsity_max: int = Field(ge=0)
+    mean_risk_drop_min: float = Field(ge=0, le=1)
+    ingestion_max_ms: float = Field(gt=0)
+    inference_max_ms: float = Field(gt=0)
+    optimization_min_ms: float = Field(gt=0)
+    optimization_max_ms: float = Field(gt=0)
+    validation_max_ms: float = Field(gt=0)
+    dashboard_max_ms: float = Field(gt=0)
+    pipeline_min_ms: float = Field(gt=0)
+    pipeline_max_ms: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def latency_bounds_ordered(self) -> "EvaluationConfig":
+        """Require an ordered optimization latency target range."""
+        if self.optimization_min_ms > self.optimization_max_ms:
+            raise ValueError("optimization_min_ms must not exceed optimization_max_ms")
+        if self.pipeline_min_ms > self.pipeline_max_ms:
+            raise ValueError("pipeline_min_ms must not exceed pipeline_max_ms")
+        return self
 
 
 class AppConfig(BaseModel):
@@ -101,6 +139,8 @@ class AppConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     seed: int = Field(ge=0)
+    artifacts: ArtifactConfig
+    api: ApiConfig
     data: DataConfig
     model: ModelConfig
     recourse: RecourseConfig

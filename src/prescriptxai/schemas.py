@@ -69,3 +69,41 @@ class RecourseOutcome(BaseModel):
         if self.success != checks_pass:
             raise ValueError("success must equal the conjunction of model and physical checks")
         return self
+
+
+class RecourseRequest(BaseModel):
+    """Raw-unit state submitted through the API or operator dashboard."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    state: dict[str, float]
+
+    @model_validator(mode="after")
+    def state_values_are_finite(self) -> "RecourseRequest":
+        """Reject empty states and non-finite telemetry before model inference."""
+        if not self.state:
+            raise ValueError("state must not be empty")
+        if any(not name.strip() for name in self.state):
+            raise ValueError("state feature names must not be empty")
+        if any(not isfinite(value) for value in self.state.values()):
+            raise ValueError("state values must be finite")
+        return self
+
+
+class TierPayload(BaseModel):
+    """Serialized status for one validation tier."""
+
+    valid: bool
+    diagnostics: tuple[str, ...]
+    measurement: float | None = None
+    limit: float | None = None
+
+
+class RecommendationResponse(BaseModel):
+    """API response preserving optimizer and independent validation outcomes."""
+
+    outcome: RecourseOutcome
+    solver_success: bool
+    optimizer_message: str
+    objective_value: float | None
+    tiers: dict[str, TierPayload]

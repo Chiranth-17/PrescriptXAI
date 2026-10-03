@@ -16,9 +16,7 @@ def validate_engineering(
 ) -> TierResult:
     """Check all configured actuator and feature-freezing engineering rules."""
     groups = taxonomy.feature_groups.model_dump()
-    declared = {
-        name for group in groups.values() for name in group["features"]
-    }
+    declared = {name for group in groups.values() for name in group["features"]}
     missing = (declared - set(initial)) | (declared - set(candidate))
     if missing:
         return TierResult(False, (f"state is missing configured features: {sorted(missing)}",))

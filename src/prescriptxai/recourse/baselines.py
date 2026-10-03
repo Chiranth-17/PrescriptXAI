@@ -50,9 +50,7 @@ def single_actuator_baseline(
     for name in actuator_names:
         one_actuator_taxonomy = taxonomy.model_copy(deep=True)
         one_actuator_taxonomy.feature_groups.controllable_actuators.features = [name]
-        one_actuator_taxonomy.actuator_constraints = {
-            name: taxonomy.actuator_constraints[name]
-        }
+        one_actuator_taxonomy.actuator_constraints = {name: taxonomy.actuator_constraints[name]}
         candidates.append(
             optimize_recourse(initial_state, bundle, one_actuator_taxonomy, one_feature_config)
         )

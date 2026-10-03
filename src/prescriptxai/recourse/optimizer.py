@@ -58,14 +58,26 @@ def optimize_recourse(
     initial_risk = float(bundle.predict_risk(state_frame)[0])
     if initial_risk < config.model.danger_threshold:
         return OptimizationResult(
-            initial_state, (), initial_risk, initial_risk, False, False,
-            "initial state is below the configured danger threshold", None,
+            initial_state,
+            (),
+            initial_risk,
+            initial_risk,
+            False,
+            False,
+            "initial state is below the configured danger threshold",
+            None,
         )
     actuator_names = tuple(taxonomy.feature_groups.controllable_actuators.features)
     if not actuator_names:
         return OptimizationResult(
-            initial_state, (), initial_risk, initial_risk, False, False,
-            "no controllable actuators are configured", None,
+            initial_state,
+            (),
+            initial_risk,
+            initial_risk,
+            False,
+            False,
+            "no controllable actuators are configured",
+            None,
         )
     if any(name not in bundle.feature_names for name in actuator_names):
         raise ValueError("every configured actuator must be a model feature")
@@ -83,9 +95,7 @@ def optimize_recourse(
     for name, current, mean, scale in zip(
         actuator_names, raw_start, scaler_mean, scaler_scale, strict=True
     ):
-        lower_raw, upper_raw = allowed_interval(
-            float(current), taxonomy.actuator_constraints[name]
-        )
+        lower_raw, upper_raw = allowed_interval(float(current), taxonomy.actuator_constraints[name])
         lower_scaled.append((lower_raw - mean) / scale)
         upper_scaled.append((upper_raw - mean) / scale)
     bounds = list(zip(lower_scaled, upper_scaled, strict=True))
