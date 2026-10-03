@@ -11,6 +11,7 @@ from sklearn.calibration import CalibratedClassifierCV
 
 from prescriptxai.config import AppConfig
 from prescriptxai.constraints.taxonomy import FeatureTaxonomy
+from prescriptxai.data.cmapss import to_model_frame
 from prescriptxai.data.preprocess import (
     FittedFeatureScaler,
     add_training_labels,
@@ -77,8 +78,9 @@ def train_risk_model(
     The input is the run-to-failure training telemetry. The official C-MAPSS test RUL file is not
     used as recourse evidence or merged into training.
     """
+    model_telemetry = to_model_frame(training_telemetry)
     labeled = add_training_labels(
-        training_telemetry,
+        model_telemetry,
         config.data.rul_cap,
         config.data.failure_horizon,
     )
@@ -88,6 +90,7 @@ def train_risk_model(
         config.data.validation_fraction,
         config.data.test_fraction,
         config.seed,
+        lifetime_buckets=config.data.lifetime_buckets,
     )
     feature_names = _model_feature_names(taxonomy, labeled)
     scaler: FittedFeatureScaler = fit_feature_scaler(splits.train, feature_names)

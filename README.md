@@ -26,12 +26,17 @@ ignored by Git.
 
 ## Run
 
-The configured dataset archive downloads to `data/raw/CMAPSSData.zip`:
+The configured NASA archive is stored at `data/raw/CMAPSSData.zip`. Preparation reports sensor
+filtering, creates engine-disjoint partitions, and persists train-only regime/scaling statistics:
 
 ```powershell
-uv run prescriptxai download
+uv run prescriptxai data download --subset FD001
+uv run prescriptxai data prepare --subset FD001
 uv run prescriptxai train
 ```
+
+See [C-MAPSS ingestion and preprocessing](docs/data_pipeline.md) for the canonical schema, RUL
+label semantics, optional cap, data-quality report, and manual download recovery steps.
 
 To score a raw-unit machine-state JSON file, provide model features plus configured context
 (`engine_id`, `cycle`, and `op_setting_3` for default FD001):

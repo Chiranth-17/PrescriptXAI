@@ -16,6 +16,11 @@ def test_default_yaml_loads_and_has_expected_thresholds() -> None:
     assert config.model.danger_threshold == 0.80
     assert config.model.safe_threshold == 0.20
     assert config.data.failure_horizon == 30
+    assert config.data.rul_cap is None
+    assert config.data.variance_threshold == 1e-8
+    assert config.data.regime_k == 6
+    assert config.data.rolling_features is False
+    assert config.data.expected_row_counts["FD001"].train == 20631
     assert config.horizon_H == 30
     assert config.tau_danger == 0.8
     assert config.tau_safe == 0.2
@@ -59,12 +64,14 @@ def test_environment_overrides_are_typed_and_synchronized(monkeypatch: pytest.Mo
     monkeypatch.setenv("PRESCRIPTXAI_TAU_SAFE", "0.15")
     monkeypatch.setenv("PRESCRIPTXAI_RECOURSE__K_MAX", "2")
     monkeypatch.setenv("PRESCRIPTXAI_PATHS__RAW_DATA", "data/test-raw")
+    monkeypatch.setenv("PRESCRIPTXAI_DATA__REGIME_K", "4")
 
     config = load_config(Path("configs/default.yaml"))
 
     assert config.tau_safe == config.model.safe_threshold == 0.15
     assert config.recourse.k_max == 2
     assert config.data.root == Path("data/test-raw")
+    assert config.data.regime_k == 4
 
 
 def test_split_fraction_sum_is_enforced(tmp_path: Path) -> None:

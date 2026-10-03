@@ -1,5 +1,6 @@
 """Unit tests for C-MAPSS parsing, engine splits, labels, and scaling."""
 
+import hashlib
 import zipfile
 from io import BytesIO
 from pathlib import Path
@@ -9,7 +10,7 @@ import pandas as pd
 import pytest
 
 from prescriptxai.data.cmapss import load_cmapss_archive
-from prescriptxai.data.download import DatasetDownloadError, download_archive
+from prescriptxai.data.download import DatasetDownloadError, download_archive, verify_archive
 from prescriptxai.data.preprocess import add_training_labels, fit_feature_scaler
 from prescriptxai.data.splits import split_engines
 
@@ -27,8 +28,10 @@ def _engine_frame(engine_count: int = 12) -> pd.DataFrame:
 
 def _archive_bytes() -> bytes:
     """Create a minimal structurally valid FD001 archive fixture."""
-    row = " ".join(str(value) for value in range(1, 27))
-    rows = f"{row}\n{row.replace(' 2 ', ' 3 ', 1)}\n"
+    rows = (
+        "\n".join(" ".join(str(value) for value in [1, cycle, *range(3, 27)]) for cycle in (1, 2))
+        + "\n"
+    )
     stream = BytesIO()
     with zipfile.ZipFile(stream, "w") as archive:
         archive.writestr("CMAPSSData/train_FD001.txt", rows)
@@ -49,10 +52,43 @@ def test_download_rejects_invalid_archive(tmp_path: Path, monkeypatch: pytest.Mo
         "prescriptxai.data.download.urlopen", lambda *_args, **_kwargs: BytesIO(b"bad")
     )
 
-    with pytest.raises(DatasetDownloadError, match="not a valid ZIP"):
+    with pytest.raises(DatasetDownloadError, match="not a valid ZIP") as captured:
         download_archive("https://example.invalid/data.zip", tmp_path / "data.zip", 10)
 
+    assert "Manual download required" in str(captured.value)
+    assert "No substitute data was created" in str(captured.value)
     assert not (tmp_path / "data.zip.part").exists()
+
+
+def test_download_success_checks_zip_and_configured_sha256(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Successful download writes the archive only after ZIP and digest verification."""
+    payload = _archive_bytes()
+    digest = hashlib.sha256(payload).hexdigest()
+    monkeypatch.setattr(
+        "prescriptxai.data.download.urlopen", lambda *_args, **_kwargs: BytesIO(payload)
+    )
+
+    destination = download_archive(
+        "https://example.invalid/data.zip", tmp_path / "data.zip", 10, digest
+    )
+
+    assert destination.is_file()
+    assert verify_archive(destination, digest) == digest
+
+
+def test_archive_integrity_records_digest_and_rejects_wrong_expected_digest(tmp_path: Path) -> None:
+    """ZIP CRC and optional configured SHA-256 are checked before use."""
+    archive_path = tmp_path / "verified.zip"
+    with zipfile.ZipFile(archive_path, "w") as archive:
+        archive.writestr("member.txt", "integrity test")
+
+    digest = verify_archive(archive_path)
+
+    assert len(digest) == 64
+    with pytest.raises(DatasetDownloadError, match="SHA-256 mismatch"):
+        verify_archive(archive_path, expected_sha256="0" * 64)
 
 
 def test_cmapss_archive_parser_checks_table_schema(tmp_path: Path) -> None:
@@ -64,7 +100,15 @@ def test_cmapss_archive_parser_checks_table_schema(tmp_path: Path) -> None:
 
     assert dataset.train.shape == (2, 26)
     assert dataset.test.shape == (2, 26)
-    assert dataset.test_rul.to_dict("records") == [{"engine_id": 1, "rul": 3}]
+    assert dataset.test_rul.to_dict("records") == [{"unit_id": 1, "rul": 3}]
+    assert dataset.train.columns.tolist() == [
+        "unit_id",
+        "cycle",
+        "op_setting_1",
+        "op_setting_2",
+        "op_setting_3",
+        *[f"s{i}" for i in range(1, 22)],
+    ]
 
 
 def test_cmapss_parser_reads_nasa_nested_archive(tmp_path: Path) -> None:

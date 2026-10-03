@@ -32,9 +32,20 @@ data:
   processed_root: data/processed
   dataset: FD001
   dataset_url: https://phm-datasets.s3.amazonaws.com/NASA/6.+Turbofan+Engine+Degradation+Simulation+Data+Set.zip
+  dataset_sha256: null
+  expected_row_counts:
+    FD001: {train: 20631, test: 13096, test_rul: 100}
+    FD002: {train: 53759, test: 33991, test_rul: 259}
+    FD003: {train: 24720, test: 16596, test_rul: 100}
+    FD004: {train: 61249, test: 41214, test_rul: 248}
   download_timeout_seconds: 120
-  rul_cap: 125
+  rul_cap: null
   failure_horizon: 30
+  variance_threshold: 0.00000001
+  regime_k: 6
+  lifetime_buckets: 6
+  rolling_features: false
+  rolling_window: 5
   train_fraction: 0.70
   validation_fraction: 0.15
   test_fraction: 0.15

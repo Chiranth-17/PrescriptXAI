@@ -8,6 +8,16 @@ import yaml
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
 
 
+class ExpectedRowCountsConfig(BaseModel):
+    """Published C-MAPSS file row counts used for archive integrity checks."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    train: int = Field(gt=0)
+    test: int = Field(gt=0)
+    test_rul: int = Field(gt=0)
+
+
 class DataConfig(BaseModel):
     """Dataset and engine split settings."""
 
@@ -16,11 +26,20 @@ class DataConfig(BaseModel):
     root: Path
     processed_root: Path
     archive_name: str = Field(min_length=5)
-    dataset: str = Field(pattern=r"^FD00[1-4]$")
+    dataset: Literal["FD001", "FD002", "FD003", "FD004"]
     dataset_url: str = Field(min_length=1)
+    dataset_sha256: str | None = Field(default=None, pattern=r"^[0-9a-fA-F]{64}$")
+    expected_row_counts: dict[
+        Literal["FD001", "FD002", "FD003", "FD004"], ExpectedRowCountsConfig
+    ] = Field(default_factory=dict)
     download_timeout_seconds: int = Field(gt=0)
-    rul_cap: int = Field(gt=0)
+    rul_cap: int | None = Field(default=None, gt=0)
     failure_horizon: int = Field(gt=0)
+    variance_threshold: float = Field(ge=0)
+    regime_k: int = Field(ge=1)
+    lifetime_buckets: int = Field(ge=1)
+    rolling_features: bool
+    rolling_window: int = Field(ge=1)
     train_fraction: float = Field(gt=0, lt=1)
     validation_fraction: float = Field(gt=0, lt=1)
     test_fraction: float = Field(gt=0, lt=1)
@@ -120,9 +139,7 @@ class ValidationConfig(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    mahalanobis_max: float = Field(
-        gt=0, validation_alias=AliasChoices("D_max", "mahalanobis_max")
-    )
+    mahalanobis_max: float = Field(gt=0, validation_alias=AliasChoices("D_max", "mahalanobis_max"))
     covariance_regularization: float = Field(gt=0)
     simulator_enabled: bool
     d_max_method: Literal["mahalanobis"]
@@ -212,9 +229,7 @@ class AppConfig(BaseModel):
     horizon_H: int = Field(gt=0)
     tau_danger: float = Field(ge=0, le=1)
     tau_safe: float = Field(ge=0, le=1)
-    dataset_subsets: tuple[Literal["FD001", "FD002", "FD003", "FD004"], ...] = Field(
-        min_length=1
-    )
+    dataset_subsets: tuple[Literal["FD001", "FD002", "FD003", "FD004"], ...] = Field(min_length=1)
     model_choice: Literal["xgboost", "torch"]
     paths: PathsConfig
     latency_budget: LatencyBudgetConfig

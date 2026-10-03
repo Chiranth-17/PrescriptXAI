@@ -9,10 +9,17 @@ from typing import Any
 
 import typer
 
-from prescriptxai.config import load_config
+from prescriptxai.config import AppConfig, load_config
 from prescriptxai.constraints.taxonomy import load_taxonomy
-from prescriptxai.data.cmapss import load_cmapss_archive
-from prescriptxai.data.download import download_archive
+from prescriptxai.data.cmapss import (
+    SUBSETS,
+    CmapssSubset,
+    load_cmapss_archive,
+    to_model_frame,
+    verify_row_counts,
+)
+from prescriptxai.data.download import DatasetDownloadError, download_archive, verify_archive
+from prescriptxai.data.prepare import prepare_cmapss
 from prescriptxai.data.preprocess import add_training_labels
 from prescriptxai.data.splits import split_engines
 from prescriptxai.evaluation.report import write_evaluation_report
@@ -27,6 +34,8 @@ from prescriptxai.validation.pipeline import (
 )
 
 app = typer.Typer(no_args_is_help=True, help="PrescriptXAI maintenance recourse tools")
+data_app = typer.Typer(no_args_is_help=True, help="C-MAPSS data acquisition and preparation")
+app.add_typer(data_app, name="data")
 LOGGER = logging.getLogger(__name__)
 
 
@@ -53,13 +62,111 @@ def download_data(
 ) -> None:
     """Download and verify the configured C-MAPSS ZIP archive."""
     config = load_config(config_path)
+    _download_subset_archive(config, config.data.dataset)
+
+
+def _download_subset_archive(config: AppConfig, subset: CmapssSubset) -> Path:
+    """Use a validated local archive or retrieve the configured real dataset."""
+    if subset not in SUBSETS:
+        raise typer.BadParameter(f"subset must be one of {', '.join(SUBSETS)}")
     archive_path = config.data.root / config.data.archive_name
-    verified = download_archive(
-        config.data.dataset_url,
-        archive_path,
-        config.data.download_timeout_seconds,
+    if archive_path.is_file():
+        try:
+            digest = verify_archive(archive_path, config.data.dataset_sha256)
+            dataset = load_cmapss_archive(archive_path, subset)
+            expected = config.data.expected_row_counts.get(subset)
+            verify_row_counts(dataset, expected.model_dump() if expected is not None else None)
+            typer.echo(f"Verified existing C-MAPSS archive: {archive_path} (sha256={digest})")
+            return archive_path
+        except (DatasetDownloadError, ValueError):
+            LOGGER.warning("Existing archive failed validation; attempting configured download")
+    try:
+        verified = download_archive(
+            config.data.dataset_url,
+            archive_path,
+            config.data.download_timeout_seconds,
+            config.data.dataset_sha256,
+        )
+        dataset = load_cmapss_archive(verified, subset)
+        expected = config.data.expected_row_counts.get(subset)
+        verify_row_counts(dataset, expected.model_dump() if expected is not None else None)
+    except DatasetDownloadError as error:
+        typer.echo(f"DATASET_DOWNLOAD_UNAVAILABLE: {error}", err=True)
+        raise typer.Exit(code=2) from error
+    except (ValueError, FileNotFoundError) as error:
+        typer.echo(f"DATASET_ARCHIVE_INVALID: {error}", err=True)
+        raise typer.Exit(code=2) from error
+    typer.echo(f"Downloaded and verified C-MAPSS archive: {verified}")
+    return verified
+
+
+@data_app.command("download")
+def download_cmapss_data(
+    subset: CmapssSubset = typer.Option("FD001", "--subset"),
+    config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
+) -> None:
+    """Download NASA C-MAPSS or validate the existing local archive for a subset."""
+    _download_subset_archive(load_config(config_path), subset)
+
+
+@data_app.command("prepare")
+def prepare_cmapss_data(
+    subset: CmapssSubset = typer.Option("FD001", "--subset"),
+    config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
+) -> None:
+    """Label, split, scale, and report one real NASA C-MAPSS subset."""
+    if subset not in SUBSETS:
+        raise typer.BadParameter(f"subset must be one of {', '.join(SUBSETS)}")
+    config = load_config(config_path)
+    archive_path = config.data.root / config.data.archive_name
+    if not archive_path.is_file():
+        typer.echo(
+            "DATASET_NOT_FOUND: run `prescriptxai data download --subset "
+            f"{subset}` to retrieve the configured NASA archive into {archive_path}.",
+            err=True,
+        )
+        raise typer.Exit(code=2)
+    try:
+        prepared = prepare_cmapss(
+            archive_path=archive_path,
+            subset=subset,
+            processed_root=config.data.processed_root,
+            artifact_root=config.paths.model.parent,
+            seed=config.seed,
+            failure_horizon=config.data.failure_horizon,
+            rul_cap=config.data.rul_cap,
+            variance_threshold=config.data.variance_threshold,
+            regime_k=config.data.regime_k,
+            lifetime_buckets=config.data.lifetime_buckets,
+            train_fraction=config.data.train_fraction,
+            validation_fraction=config.data.validation_fraction,
+            test_fraction=config.data.test_fraction,
+            rolling_features=config.data.rolling_features,
+            rolling_window=config.data.rolling_window,
+            expected_sha256=config.data.dataset_sha256,
+            expected_row_counts=(
+                config.data.expected_row_counts[subset].model_dump()
+                if subset in config.data.expected_row_counts
+                else None
+            ),
+        )
+    except (DatasetDownloadError, ValueError, OSError) as error:
+        typer.echo(f"DATASET_PREPARE_FAILED: {error}", err=True)
+        raise typer.Exit(code=2) from error
+    typer.echo(
+        json.dumps(
+            {
+                "subset": subset,
+                "rows": prepared.report["row_counts"],
+                "engines": prepared.report["engine_counts"],
+                "retained_features": prepared.report["feature_set"]["retained_model_features"],
+                "dropped_sensors": prepared.report["feature_set"]["dropped_sensors"],
+                "quality_report": str(prepared.report_path),
+                "preprocessor": str(prepared.preprocessor_path),
+            },
+            indent=2,
+        )
     )
-    typer.echo(f"Verified dataset archive: {verified}")
 
 
 @app.command("train")
@@ -142,7 +249,7 @@ def evaluate_model(
     archive_path = config.data.root / config.data.archive_name
     dataset = load_cmapss_archive(archive_path, config.data.dataset)
     labeled = add_training_labels(
-        dataset.train,
+        to_model_frame(dataset.train),
         config.data.rul_cap,
         config.data.failure_horizon,
     )
@@ -152,6 +259,7 @@ def evaluate_model(
         config.data.validation_fraction,
         config.data.test_fraction,
         config.seed,
+        lifetime_buckets=config.data.lifetime_buckets,
     )
     # Archive parsing is dataset setup, not the synopsis' per-state telemetry ingestion stage.
     run = evaluate_states(engine, splits.test)
