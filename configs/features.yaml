@@ -1,0 +1,38 @@
+schema_version: 1
+dataset: CMAPSS
+feature_groups:
+  controllable_actuators:
+    # CMAPSS telemetry does not directly establish this sensor as a safe actuator.
+    # Configure only after verifying an actuator-to-feature mapping for the application.
+    features: []
+  immutable_operational:
+    features: [op_setting_1, op_setting_2]
+  immutable_environmental:
+    features: []
+  dependent_sensors:
+    features:
+      - sensor_1
+      - sensor_2
+      - sensor_3
+      - sensor_4
+      - sensor_5
+      - sensor_6
+      - sensor_7
+      - sensor_8
+      - sensor_9
+      - sensor_10
+      - sensor_11
+      - sensor_12
+      - sensor_13
+      - sensor_14
+      - sensor_15
+      - sensor_16
+      - sensor_17
+      - sensor_18
+      - sensor_19
+      - sensor_20
+      - sensor_21
+  context:
+    features: [engine_id, cycle, op_setting_3]
+actuator_constraints: {}
+coupling_rules: []
