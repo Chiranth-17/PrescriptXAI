@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from fastapi import FastAPI, HTTPException
 
+from prescriptxai.logging_utils import configure_logging
 from prescriptxai.pipeline import PrescriptXAIEngine
 from prescriptxai.schemas import RecommendationResponse, RecourseRequest, TierPayload
 
 
 def create_app(engine: PrescriptXAIEngine) -> FastAPI:
     """Create an application bound to an already configured local engine."""
+    configure_logging()
     app = FastAPI(
         title="PrescriptXAI",
         description=(

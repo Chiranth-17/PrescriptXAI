@@ -30,6 +30,12 @@ app = typer.Typer(no_args_is_help=True, help="PrescriptXAI maintenance recourse 
 LOGGER = logging.getLogger(__name__)
 
 
+@app.callback()
+def initialize_cli_logging() -> None:
+    """Assign a JSON-formatted per-invocation ID before dispatching commands."""
+    configure_logging()
+
+
 def _read_state(path: Path) -> dict[str, float]:
     """Read one JSON object containing a raw-unit state."""
     raw: Any = json.loads(path.read_text(encoding="utf-8"))

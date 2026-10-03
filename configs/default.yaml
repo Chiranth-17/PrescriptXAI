@@ -1,4 +1,24 @@
 seed: 1729
+horizon_H: 30
+tau_danger: 0.80
+tau_safe: 0.20
+dataset_subsets: [FD001, FD002, FD003, FD004]
+model_choice: xgboost
+paths:
+  raw_data: data/raw
+  processed_data: data/processed
+  model: artifacts/FD001-xgboost.joblib
+  mahalanobis: artifacts/FD001-mahalanobis.joblib
+  evaluation_report: artifacts/FD001-evaluation.json
+latency_budget:
+  ingestion_max_ms: 10
+  inference_max_ms: 15
+  optimization_min_ms: 1200
+  optimization_max_ms: 1800
+  validation_max_ms: 100
+  dashboard_max_ms: 250
+  pipeline_min_ms: 1500
+  pipeline_max_ms: 2200
 artifacts:
   model: artifacts/FD001-xgboost.joblib
   mahalanobis: artifacts/FD001-mahalanobis.joblib
@@ -36,14 +56,19 @@ model:
   torch_batch_size: 128
   torch_device: cpu
 recourse:
-  max_changed_features: 3
+  k_max: 3
   max_scaled_distance: 4.0
-  prediction_weight: 10.0
-  max_iterations: 500
+  alpha: 10.0
+  beta: 1.0
+  gamma: 1.0
+  max_iter: 500
   solver_ftol: 0.000000001
   safety_margin: 0.005
 validation:
-  mahalanobis_max: 5.0
+  D_max: 5.0
+  d_max_method: mahalanobis
+  d_max_quantile: 0.99
+  rate_limits: {}
   covariance_regularization: 0.000001
   simulator_enabled: false
 evaluation:
@@ -53,11 +78,3 @@ evaluation:
   physical_plausibility_rate: 0.90
   average_sparsity_max: 3
   mean_risk_drop_min: 0.60
-  ingestion_max_ms: 10
-  inference_max_ms: 15
-  optimization_min_ms: 1200
-  optimization_max_ms: 1800
-  validation_max_ms: 100
-  dashboard_max_ms: 250
-  pipeline_min_ms: 1500
-  pipeline_max_ms: 2200

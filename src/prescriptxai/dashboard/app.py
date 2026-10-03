@@ -11,6 +11,7 @@ from prescriptxai.config import load_config
 from prescriptxai.constraints.taxonomy import load_taxonomy
 from prescriptxai.dashboard.components import show_recommendation
 from prescriptxai.dashboard.state import parse_state_document
+from prescriptxai.logging_utils import configure_logging
 from prescriptxai.pipeline import PrescriptXAIEngine
 
 LOGGER = logging.getLogger(__name__)
@@ -18,6 +19,7 @@ LOGGER = logging.getLogger(__name__)
 
 def main() -> None:
     """Render the configured dashboard without synthetic defaults or case-study values."""
+    configure_logging()
     st.set_page_config(page_title="PrescriptXAI", layout="wide")
     st.title("PrescriptXAI · Prescriptive Maintenance")
     st.warning(

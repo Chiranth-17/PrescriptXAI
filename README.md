@@ -16,11 +16,13 @@ Python 3.11 or newer and [uv](https://docs.astral.sh/uv/) are required. Dependen
 `uv.lock`.
 
 ```powershell
-uv sync --all-extras
+uv sync --all-groups --locked
 ```
 
-The optional API is included in `--all-extras`. Use `uv sync --extra api --extra dev` when you do
-not need development tools. Dataset and fitted artifacts are ignored by Git.
+Dependencies are exact-pinned in the `core`, `dev`, `dashboard`, and `api` groups. Select only the
+groups needed for a deployment. For the library and HTTP service only, run
+`uv sync --no-default-groups --group core --group api --locked`. Dataset and fitted artifacts are
+ignored by Git.
 
 ## Run
 

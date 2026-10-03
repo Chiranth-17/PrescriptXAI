@@ -1,4 +1,6 @@
 .venv/
+.venv-*/
+.uv-pythons/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -9,6 +11,10 @@ htmlcov/
 build/
 dist/
 *.egg-info/
+data/*
+!data/.gitkeep
+!data/raw/
+!data/processed/
 data/raw/*
 !data/raw/.gitkeep
 data/processed/*

@@ -3,7 +3,16 @@
 import pytest
 from pydantic import ValidationError
 
-from prescriptxai.schemas import DeltaMapping, MachineState, RecourseOutcome
+from prescriptxai.schemas import (
+    DeltaMapping,
+    FeatureDelta,
+    MachineState,
+    RecourseOutcome,
+    RecourseResult,
+    StageTimings,
+    TierValidation,
+    ValidationReport,
+)
 
 
 def test_machine_state_rejects_non_finite_values() -> None:
@@ -38,3 +47,29 @@ def test_success_cannot_hide_failed_physical_validation() -> None:
             deltas=(),
             success=True,
         )
+
+
+def test_recourse_result_round_trips_raw_deltas_and_per_tier_report() -> None:
+    """Serialized operator results preserve physical changes and every tier status."""
+    tier = TierValidation(passed=True, diagnostics=("within configured limit",))
+    result = RecourseResult(
+        original_state={"flow": 10.0},
+        new_state={"flow": 9.0},
+        delta_per_feature={"flow": FeatureDelta(raw_delta=-1.0, percent_change=-10.0)},
+        risk_before=0.84,
+        risk_after=0.18,
+        validation_report=ValidationReport(
+            tier1_model_safety=tier,
+            tier2_distributional=tier,
+            tier3_engineering=tier,
+            tier4_sensor_coupling=tier,
+        ),
+        timings=StageTimings(optimization_ms=10.5, validation_ms=2.5),
+        warnings=(),
+    )
+
+    reloaded = RecourseResult.model_validate_json(result.model_dump_json())
+
+    assert reloaded == result
+    assert reloaded.delta_per_feature["flow"].raw_delta == -1.0
+    assert reloaded.delta_per_feature["flow"].percent_change == -10.0
