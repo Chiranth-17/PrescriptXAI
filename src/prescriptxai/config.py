@@ -72,8 +72,9 @@ class RecourseConfig(BaseModel):
     max_changed_features: int = Field(ge=1)
     max_scaled_distance: float = Field(gt=0)
     prediction_weight: float = Field(gt=0)
-    immutable_weight: float = Field(gt=0)
     max_iterations: int = Field(ge=1)
+    solver_ftol: float = Field(gt=0)
+    safety_margin: float = Field(default=0.005, ge=0, lt=1)
 
 
 class ValidationConfig(BaseModel):
@@ -105,6 +106,13 @@ class AppConfig(BaseModel):
     recourse: RecourseConfig
     validation: ValidationConfig
     evaluation: EvaluationConfig
+
+    @model_validator(mode="after")
+    def recourse_margin_below_safe_target(self) -> "AppConfig":
+        """Keep the optimizer's conservative numerical margin below the target risk."""
+        if self.recourse.safety_margin >= self.model.safe_threshold:
+            raise ValueError("recourse safety_margin must be below model safe_threshold")
+        return self
 
 
 def load_config(path: Path) -> AppConfig:

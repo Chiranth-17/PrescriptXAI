@@ -53,8 +53,8 @@ def test_invalid_threshold_order_is_rejected() -> None:
             "max_changed_features": 3,
             "max_scaled_distance": 4,
             "prediction_weight": 10,
-            "immutable_weight": 1_000_000,
             "max_iterations": 10,
+            "solver_ftol": 1e-9,
         },
         "validation": {
             "mahalanobis_max": 5,

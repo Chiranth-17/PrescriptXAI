@@ -6,7 +6,7 @@ updated: 2026-10-03
 
 # Roadmap
 
-> **Current Phase:** 3 — Constrained recourse and validation
+> **Current Phase:** 4 — Product surfaces and evaluation
 > **Status:** executing
 
 ## Must-Haves
@@ -33,12 +33,15 @@ updated: 2026-10-03
 - [x] Plan 2.2: Predictive model and calibration
 
 ### Phase 3: Constrained recourse and validation
-**Status:** 🔄 In Progress
+**Status:** ✅ Complete
 **Depends on:** Phase 2
 **Objective:** Implement optimizer, sparsification, baselines, and four independent validation tiers.
+**Plans:**
+- [x] Plan 3.1: Bounded sparse recourse
+- [x] Plan 3.2: Independent validation tiers
 
 ### Phase 4: Product surfaces and evaluation
-**Status:** ⬜ Not Started
+**Status:** 🔄 In Progress
 **Depends on:** Phase 3
 **Objective:** Implement CLI, optional FastAPI, Streamlit dashboard, metrics, ablations, latency, and reports.
 
@@ -53,6 +56,6 @@ updated: 2026-10-03
 |---|---|---:|---:|
 | 1 | ✅ | 1/1 | Complete |
 | 2 | ✅ | 2/2 | Complete |
-| 3 | 🔄 | 0/2 | — |
+| 3 | ✅ | 2/2 | Complete |
 | 4 | ⬜ | 0/2 | — |
 | 5 | ⬜ | 0/1 | — |

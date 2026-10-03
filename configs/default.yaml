@@ -31,8 +31,9 @@ recourse:
   max_changed_features: 3
   max_scaled_distance: 4.0
   prediction_weight: 10.0
-  immutable_weight: 1000000.0
   max_iterations: 500
+  solver_ftol: 0.000000001
+  safety_margin: 0.005
 validation:
   mahalanobis_max: 5.0
   covariance_regularization: 0.000001
