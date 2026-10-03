@@ -6,7 +6,7 @@ updated: 2026-10-03
 
 # Roadmap
 
-> **Current Phase:** 2 — Data and predictive models
+> **Current Phase:** 3 — Constrained recourse and validation
 > **Status:** executing
 
 ## Must-Haves
@@ -28,9 +28,12 @@ updated: 2026-10-03
 **Status:** 🔄 In Progress
 **Depends on:** Phase 1
 **Objective:** Implement C-MAPSS ingestion, preprocessing, engine splits, model training, calibration, and registry.
+**Plans:**
+- [x] Plan 2.1: C-MAPSS ingestion and leakage-safe preprocessing
+- [x] Plan 2.2: Predictive model and calibration
 
 ### Phase 3: Constrained recourse and validation
-**Status:** ⬜ Not Started
+**Status:** 🔄 In Progress
 **Depends on:** Phase 2
 **Objective:** Implement optimizer, sparsification, baselines, and four independent validation tiers.
 
@@ -48,8 +51,8 @@ updated: 2026-10-03
 
 | Phase | Status | Plans | Complete |
 |---|---|---:|---:|
-| 1 | 🔄 | 0/2 | — |
-| 2 | ⬜ | 0/2 | — |
-| 3 | ⬜ | 0/2 | — |
+| 1 | ✅ | 1/1 | Complete |
+| 2 | ✅ | 2/2 | Complete |
+| 3 | 🔄 | 0/2 | — |
 | 4 | ⬜ | 0/2 | — |
 | 5 | ⬜ | 0/1 | — |

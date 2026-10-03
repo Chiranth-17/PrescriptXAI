@@ -2,8 +2,8 @@
 
 ## Current status
 
-Phase 1 (repository foundation) is complete. The user-provided synopsis has been read and copied
-unchanged to `docs/synopsis.pdf`. Its SHA-256 digest matches the original file.
+Phase 2 (data and predictive models) is complete. The user-provided synopsis has been read and
+copied unchanged to `docs/synopsis.pdf`; its SHA-256 digest matches the original file.
 
 ## Done
 
@@ -17,6 +17,12 @@ unchanged to `docs/synopsis.pdf`. Its SHA-256 digest matches the original file.
   overlapping features, unknown coupling references, non-finite inputs, and result validity.
 - Locked 121 dependencies with uv in `uv.lock` and installed the phase verification toolchain in
   the local `.venv`.
+- Implemented safe C-MAPSS archive download and parsing, including NASA's nested ZIP layout,
+  exact RUL/failure labels, deterministic engine-level splits, and train-only feature scaling.
+- Implemented XGBoost and PyTorch classifiers, engine-grouped probability calibration, the training
+  workflow, artifact provenance, and save/reload checks.
+- Downloaded the public FD001 archive to ignored `data/raw/CMAPSSData.zip` and parsed it successfully.
+- Trained and saved `artifacts/FD001-xgboost.joblib` using the default config and seed.
 
 ## Decisions
 
@@ -29,13 +35,16 @@ unchanged to `docs/synopsis.pdf`. Its SHA-256 digest matches the original file.
 
 ## Open issues and blockers
 
-- The workspace started without a Git repository; initialize it before the Phase 1 commit.
-- No C-MAPSS dataset or trained model is present. Real benchmark metrics cannot be reported until
-  data is obtained and the training/evaluation pipeline is implemented.
+- Phase 2 model summaries do not evaluate recourse. Tiered physical validation and the evaluation
+  suite are still unimplemented, so no synopsis target has been tested.
 
 ## How to run
 
-The end-to-end package is not yet complete. Phase 1 verification used Python 3.13.9 and the local
-`.venv`: Ruff passed, mypy passed, and pytest reported 15 passed with 91% total coverage. Re-run
-with `uv run ruff check .`, `uv run mypy src`, and `uv run pytest --cov=prescriptxai` after syncing
-the full lockfile. `uv sync --all-extras` installs the full model, API, and dashboard stack.
+The end-to-end package is not yet complete. Phase 2 used Python 3.13.9; the suite reported 49
+passed with 85% total coverage, Ruff passed, and mypy reported no issues across 17 source files.
+The real FD001 training run used seed 1729 and default configuration: 69 training engines, 16
+validation engines, 15 internal holdout engines, and 3,229 validation rows. The validation label
+prevalence was 0.1536 and mean predicted risk was 0.1488; these are run observations, not recourse
+validity or physical-plausibility results. Run `uv sync --all-extras`, `uv run ruff check .`,
+`uv run mypy src`, and `uv run pytest --cov=prescriptxai` to reproduce. Data and fitted models are
+git-ignored.

@@ -1,7 +1,7 @@
 """Typed loading and validation of project YAML configuration."""
 
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -15,6 +15,8 @@ class DataConfig(BaseModel):
     root: Path
     processed_root: Path
     dataset: str = Field(pattern=r"^FD00[1-4]$")
+    dataset_url: str = Field(min_length=1)
+    download_timeout_seconds: int = Field(gt=0)
     rul_cap: int = Field(gt=0)
     failure_horizon: int = Field(gt=0)
     train_fraction: float = Field(gt=0, lt=1)
@@ -38,12 +40,27 @@ class ModelConfig(BaseModel):
     danger_threshold: float = Field(gt=0, le=1)
     safe_threshold: float = Field(gt=0, le=1)
     calibration_method: str = Field(pattern=r"^(sigmoid|isotonic)$")
+    calibration_folds: int = Field(default=5, ge=2)
+    risk_estimator: Literal["xgboost", "torch"] = "xgboost"
+    xgb_n_estimators: int = Field(default=250, ge=1)
+    xgb_max_depth: int = Field(default=4, ge=1)
+    xgb_learning_rate: float = Field(default=0.05, gt=0, le=1)
+    xgb_subsample: float = Field(default=0.8, gt=0, le=1)
+    xgb_colsample_bytree: float = Field(default=0.8, gt=0, le=1)
+    xgb_reg_lambda: float = Field(default=1.0, ge=0)
+    torch_hidden_dims: list[int] = Field(default_factory=lambda: [64, 32], min_length=1)
+    torch_learning_rate: float = Field(default=0.001, gt=0)
+    torch_epochs: int = Field(default=100, ge=1)
+    torch_batch_size: int = Field(default=128, ge=1)
+    torch_device: Literal["cpu", "cuda"] = "cpu"
 
     @model_validator(mode="after")
     def safe_below_danger(self) -> "ModelConfig":
         """Ensure the safe target is stricter than the high-risk gate."""
         if self.safe_threshold >= self.danger_threshold:
             raise ValueError("safe_threshold must be lower than danger_threshold")
+        if any(width <= 0 for width in self.torch_hidden_dims):
+            raise ValueError("torch_hidden_dims values must be positive")
         return self
 
 

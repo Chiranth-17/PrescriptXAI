@@ -36,6 +36,8 @@ def test_invalid_threshold_order_is_rejected() -> None:
             "root": "raw",
             "processed_root": "processed",
             "dataset": "FD001",
+            "dataset_url": "https://example.invalid/data.zip",
+            "download_timeout_seconds": 10,
             "rul_cap": 125,
             "failure_horizon": 30,
             "train_fraction": 0.7,

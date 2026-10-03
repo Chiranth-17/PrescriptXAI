@@ -3,6 +3,8 @@ data:
   root: data/raw
   processed_root: data/processed
   dataset: FD001
+  dataset_url: https://phm-datasets.s3.amazonaws.com/NASA/6.+Turbofan+Engine+Degradation+Simulation+Data+Set.zip
+  download_timeout_seconds: 120
   rul_cap: 125
   failure_horizon: 30
   train_fraction: 0.70
@@ -12,6 +14,19 @@ model:
   danger_threshold: 0.80
   safe_threshold: 0.20
   calibration_method: sigmoid
+  calibration_folds: 5
+  risk_estimator: xgboost
+  xgb_n_estimators: 250
+  xgb_max_depth: 4
+  xgb_learning_rate: 0.05
+  xgb_subsample: 0.8
+  xgb_colsample_bytree: 0.8
+  xgb_reg_lambda: 1.0
+  torch_hidden_dims: [64, 32]
+  torch_learning_rate: 0.001
+  torch_epochs: 100
+  torch_batch_size: 128
+  torch_device: cpu
 recourse:
   max_changed_features: 3
   max_scaled_distance: 4.0
