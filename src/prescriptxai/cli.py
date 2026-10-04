@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import typer
 
@@ -22,6 +22,7 @@ from prescriptxai.data.download import DatasetDownloadError, download_archive, v
 from prescriptxai.data.prepare import prepare_cmapss
 from prescriptxai.data.preprocess import add_training_labels
 from prescriptxai.data.splits import split_engines
+from prescriptxai.evaluation.calibration_plot import write_calibration_plots
 from prescriptxai.evaluation.report import write_evaluation_report
 from prescriptxai.evaluation.runner import evaluate_states
 from prescriptxai.logging_utils import configure_logging
@@ -171,33 +172,84 @@ def prepare_cmapss_data(
 
 @app.command("train")
 def train_model(
+    subset: CmapssSubset = typer.Option("FD001", "--subset"),
+    model_name: Literal["xgb", "mlp", "lstm"] = typer.Option("xgb", "--model"),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
     taxonomy_path: Path = typer.Option(Path("configs/features.yaml"), "--features"),
 ) -> None:
-    """Train calibrated risk model and training-only plausibility validator."""
+    """Train, calibrate, and evaluate a risk model on engine-disjoint partitions."""
     config = load_config(config_path)
+    if subset not in config.dataset_subsets:
+        raise typer.BadParameter(f"subset must be one of {', '.join(config.dataset_subsets)}")
+    if config.data.dataset != subset:
+        config = config.model_copy(
+            update={"data": config.data.model_copy(update={"dataset": subset})}
+        )
     archive_path = config.data.root / config.data.archive_name
-    dataset = load_cmapss_archive(archive_path, config.data.dataset)
-    result = train_risk_model(dataset.train, config, load_taxonomy(taxonomy_path))
+    if not archive_path.is_file():
+        typer.echo(
+            f"DATASET_NOT_FOUND: run `prescriptxai data download --subset {subset}` first.",
+            err=True,
+        )
+        raise typer.Exit(code=2)
+    dataset = load_cmapss_archive(archive_path, subset)
+    result = train_risk_model(dataset.train, config, load_taxonomy(taxonomy_path), model_name)
     validator = fit_mahalanobis_validator(
         result.splits.train,
         result.bundle,
         result.splits.train_engine_ids,
         config,
     )
-    save_model_bundle(result.bundle, config.artifacts.model)
-    save_mahalanobis_validator(validator, config.artifacts.mahalanobis)
+    model_label = {"xgb": "xgboost", "mlp": "mlp", "lstm": "lstm"}[model_name]
+    stem = f"{subset}-{model_label}"
+    model_path = config.artifacts.model.with_name(f"{stem}.joblib")
+    validator_path = config.artifacts.mahalanobis.with_name(f"{stem}-mahalanobis.joblib")
+    metrics_path = config.artifacts.evaluation_report.with_name(f"{stem}-metrics.json")
+    plot_path = config.artifacts.evaluation_report.with_name(f"{stem}-calibration")
+    calibration = result.metrics.get("calibration")
+    if not isinstance(calibration, dict):
+        raise ValueError("training result is missing calibration diagnostics")
+    png_path, html_path = write_calibration_plots(
+        plot_path,
+        calibration["test_before"],
+        calibration["test_after"],
+        f"{subset} {model_label}: held-out reliability",
+    )
+    metrics_document = {
+        **result.metrics,
+        "artifacts": {
+            "model": str(model_path),
+            "mahalanobis": str(validator_path),
+            "calibration_png": str(png_path),
+            "calibration_html": str(html_path),
+        },
+    }
+    metrics_path.parent.mkdir(parents=True, exist_ok=True)
+    metrics_path.write_text(
+        json.dumps(metrics_document, indent=2, allow_nan=False) + "\n", encoding="utf-8"
+    )
+    result.bundle.metrics = metrics_document
+    result.bundle.scaler_reference = f"{model_path}#scaler"
+    save_model_bundle(result.bundle, model_path)
+    save_mahalanobis_validator(validator, validator_path)
     typer.echo(
         json.dumps(
             {
-                "dataset": dataset.subset,
+                "dataset": subset,
+                "model": model_name,
                 "training_engines": len(result.splits.train_engine_ids),
                 "validation_engines": len(result.splits.validation_engine_ids),
                 "internal_holdout_engines": len(result.splits.test_engine_ids),
-                "model_artifact": str(config.artifacts.model),
-                "mahalanobis_artifact": str(config.artifacts.mahalanobis),
+                "features": list(result.bundle.feature_names),
+                "holdout_metrics": result.metrics["test_holdout"],
+                "model_artifact": str(model_path),
+                "mahalanobis_artifact": str(validator_path),
+                "metrics_json": str(metrics_path),
+                "calibration_png": str(png_path),
+                "calibration_html": str(html_path),
             },
             indent=2,
+            allow_nan=False,
         )
     )
 

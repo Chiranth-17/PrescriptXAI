@@ -22,6 +22,7 @@ core = [
   "pydantic==2.13.5",
   "PyYAML==6.0.3",
   "typer==0.27.2",
+  "pillow==12.3.0",
 ]
 dev = [
   "pytest==9.1.1",

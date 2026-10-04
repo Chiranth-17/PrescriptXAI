@@ -50,9 +50,9 @@ def optimize_recourse(
 ) -> OptimizationResult:
     """Optimize actuator changes under physical/rate bounds, then enforce sparsity.
 
-    SLSQP performs finite-difference optimization with hard risk and scaled-distance constraints
-    against the calibrated model. The optimizer changes only configured actuators. Its
-    ``model_valid`` field records only the predictor check; Tiers 2–4 are evaluated separately.
+    SLSQP uses PyTorch gradients from a differentiable predictor or XGBoost's distilled surrogate
+    when available, with finite differences as a fallback. The optimizer changes only configured
+    actuators. Its ``model_valid`` field records only the predictor check; Tiers 2–4 are separate.
     """
     state_frame = _raw_state_frame(initial_state)
     initial_risk = float(bundle.predict_risk(state_frame)[0])
@@ -125,11 +125,44 @@ def optimize_recourse(
         risk = float(bundle.predict_risk(pd.DataFrame([candidate_state(scaled_controls)]))[0])
         return config.model.safe_threshold - recourse_limits.safety_margin - risk
 
+    def risk_gradient(scaled_controls: NDArray[np.float64]) -> NDArray[np.float64]:
+        """Differentiate calibrated model risk with respect to scaled actuator coordinates."""
+        candidate = candidate_state(scaled_controls)
+        _, gradients = bundle.predict_risk_with_gradient(pd.DataFrame([candidate]))
+        return gradients[0, feature_indices]
+
+    def objective_gradient(scaled_controls: NDArray[np.float64]) -> NDArray[np.float64]:
+        """Return the scaled L1 subgradient plus model-risk hinge gradient."""
+        candidate = candidate_state(scaled_controls)
+        risk = float(bundle.predict_risk(pd.DataFrame([candidate]))[0])
+        hinge = max(0.0, risk - config.model.safe_threshold)
+        return np.sign(scaled_controls - scaled_start) + (
+            2.0 * recourse_limits.prediction_weight * hinge * risk_gradient(scaled_controls)
+        )
+
     def distance_constraint(scaled_controls: NDArray[np.float64]) -> float:
         """Nonnegative when total scaled actuator movement is within configured maximum."""
         return recourse_limits.max_scaled_distance - float(
             np.linalg.norm(scaled_controls - scaled_start)
         )
+
+    def distance_gradient(scaled_controls: NDArray[np.float64]) -> NDArray[np.float64]:
+        """Return the exact derivative of the scaled Euclidean-distance limit."""
+        difference = scaled_controls - scaled_start
+        norm = float(np.linalg.norm(difference))
+        if norm == 0:
+            return np.zeros_like(scaled_controls)
+        return -difference / norm
+
+    analytic_gradients = bundle.supports_gradients and not hasattr(bundle.estimator, "window")
+    constraints: list[dict[str, object]] = [
+        {
+            "type": "ineq",
+            "fun": risk_constraint,
+            **({"jac": lambda controls: -risk_gradient(controls)} if analytic_gradients else {}),
+        },
+        {"type": "ineq", "fun": distance_constraint, "jac": distance_gradient},
+    ]
 
     feasible_start = np.asarray(
         [
@@ -143,10 +176,8 @@ def optimize_recourse(
         feasible_start,
         method="SLSQP",
         bounds=bounds,
-        constraints=(
-            {"type": "ineq", "fun": risk_constraint},
-            {"type": "ineq", "fun": distance_constraint},
-        ),
+        jac=objective_gradient if analytic_gradients else None,
+        constraints=constraints,
         options={"maxiter": recourse_limits.max_iterations, "ftol": recourse_limits.solver_ftol},
     )
     candidate = candidate_state(np.asarray(solution.x, dtype=float))

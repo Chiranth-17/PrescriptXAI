@@ -75,20 +75,26 @@ class ModelConfig(BaseModel):
 
     danger_threshold: float = Field(ge=0, le=1)
     safe_threshold: float = Field(ge=0, le=1)
-    calibration_method: str = Field(pattern=r"^(sigmoid|isotonic)$")
+    calibration_method: str = Field(pattern=r"^(sigmoid|isotonic|temperature)$")
     calibration_folds: int = Field(default=5, ge=2)
-    risk_estimator: Literal["xgboost", "torch"] = "xgboost"
+    calibration_bins: int = Field(default=10, ge=2)
+    risk_estimator: Literal["xgboost", "torch", "lstm"] = "xgboost"
     xgb_n_estimators: int = Field(default=250, ge=1)
     xgb_max_depth: int = Field(default=4, ge=1)
     xgb_learning_rate: float = Field(default=0.05, gt=0, le=1)
     xgb_subsample: float = Field(default=0.8, gt=0, le=1)
     xgb_colsample_bytree: float = Field(default=0.8, gt=0, le=1)
     xgb_reg_lambda: float = Field(default=1.0, ge=0)
+    xgb_early_stopping_rounds: int = Field(default=20, ge=1)
     torch_hidden_dims: list[int] = Field(default_factory=lambda: [64, 32], min_length=1)
     torch_learning_rate: float = Field(default=0.001, gt=0)
     torch_epochs: int = Field(default=100, ge=1)
     torch_batch_size: int = Field(default=128, ge=1)
+    torch_early_stopping_patience: int = Field(default=12, ge=1)
+    torch_gradient_clip_norm: float = Field(default=1.0, gt=0)
+    torch_deterministic: bool = True
     torch_device: Literal["cpu", "cuda"] = "cpu"
+    lstm_window: int = Field(default=10, ge=1)
 
     @model_validator(mode="after")
     def safe_below_danger(self) -> "ModelConfig":
@@ -230,7 +236,7 @@ class AppConfig(BaseModel):
     tau_danger: float = Field(ge=0, le=1)
     tau_safe: float = Field(ge=0, le=1)
     dataset_subsets: tuple[Literal["FD001", "FD002", "FD003", "FD004"], ...] = Field(min_length=1)
-    model_choice: Literal["xgboost", "torch"]
+    model_choice: Literal["xgboost", "torch", "lstm"]
     paths: PathsConfig
     latency_budget: LatencyBudgetConfig
     artifacts: ArtifactConfig

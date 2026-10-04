@@ -2,9 +2,10 @@
 
 ## How is leakage prevented?
 
-Engine IDs, rather than rows, define train, validation, and internal holdout groups. Scaling,
-covariance fitting, and calibration are tied to training-engine provenance; validation folds are
-grouped by engine.
+Engine IDs, rather than rows, define train, validation, and internal holdout groups. Feature
+filtering and scaling fit on train engines only. Early stopping and calibration use validation
+engines only. The internal holdout is reserved for reported evaluation metrics and calibration
+diagnostics; it is not used for fitting.
 
 ## Why separate model validity and physical plausibility?
 

@@ -10,6 +10,9 @@
   optional interface and is disabled by default.
 - **Model validity is not physical plausibility.** Tier 1 checks the predictor's target risk. Tiers
   2–4 independently check operating-distribution distance, engineering constraints, and coupling.
+- **LSTM recourse history input.** The LSTM scores fixed within-engine histories and its gradient
+  interface treats only the latest timestep as mutable. The current snapshot recommendation request
+  does not carry that history, so LSTM bundles are for sequence scoring until that API is extended.
 - **Mahalanobis model assumptions.** A single empirical covariance is a coarse description of
   potentially multimodal operation. A passing distance is not a physics proof.
 - **Evaluation scope.** Metrics are for the configured model, seed, engine split, taxonomy, and

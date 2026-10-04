@@ -32,11 +32,15 @@ filtering, creates engine-disjoint partitions, and persists train-only regime/sc
 ```powershell
 uv run prescriptxai data download --subset FD001
 uv run prescriptxai data prepare --subset FD001
-uv run prescriptxai train
+uv run prescriptxai train --subset FD001 --model xgb
+uv run prescriptxai train --subset FD001 --model mlp
+uv run prescriptxai train --subset FD001 --model lstm
 ```
 
 See [C-MAPSS ingestion and preprocessing](docs/data_pipeline.md) for the canonical schema, RUL
 label semantics, optional cap, data-quality report, and manual download recovery steps.
+See [predictive models](docs/predictive_models.md) for engine-disjoint fitting, validation-only
+calibration, held-out metrics, sequence window semantics, and artifact outputs.
 
 To score a raw-unit machine-state JSON file, provide model features plus configured context
 (`engine_id`, `cycle`, and `op_setting_3` for default FD001):

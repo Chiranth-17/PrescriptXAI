@@ -14,8 +14,10 @@ The configured optimization is
 subject to the configured scaled-distance limit, actuator bounds, per-step rate limits, and the
 model-risk target. Here \(A\) is the actuator set, \(z=(x-\mu)/s\) is the training-fitted
 standardized vector, and non-actuators remain fixed. The implemented solver uses bounded SLSQP
-with finite-difference gradients; a deterministic subset search then checks the configured maximum
-number of changed actuators. An infeasible or unsafe result remains a failed recommendation.
+with automatic derivatives from a differentiable MLP or XGBoost's distilled MLP surrogate when
+available; other predictors fall back to finite differences. A deterministic subset search then
+checks the configured maximum number of changed actuators. An infeasible or unsafe result remains
+a failed recommendation.
 
 ## Unit mapping
 

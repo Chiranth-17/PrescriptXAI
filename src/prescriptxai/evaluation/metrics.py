@@ -6,9 +6,86 @@ from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass
 
 import numpy as np
+from scipy.stats import spearmanr
+from sklearn.metrics import (
+    average_precision_score,
+    confusion_matrix,
+    f1_score,
+    roc_auc_score,
+)
 
 from prescriptxai.config import EvaluationConfig
 from prescriptxai.evaluation.latency import LatencyMetric, summarize_latency
+
+
+def predictor_metrics(
+    labels: np.ndarray, probabilities: np.ndarray, tau_danger: float
+) -> dict[str, object]:
+    """Compute held-out binary-prediction and calibrated-probability metrics."""
+    target = np.asarray(labels, dtype=np.int64)
+    risk = np.asarray(probabilities, dtype=np.float64)
+    if target.ndim != 1 or risk.ndim != 1 or len(target) != len(risk) or len(target) == 0:
+        raise ValueError("labels and probabilities must be nonempty matching vectors")
+    if not np.isin(target, [0, 1]).all():
+        raise ValueError("labels must contain only binary values")
+    if not np.isfinite(risk).all() or ((risk < 0) | (risk > 1)).any():
+        raise ValueError("probabilities must be finite and within [0, 1]")
+    if not 0 <= tau_danger <= 1:
+        raise ValueError("tau_danger must be in [0, 1]")
+    predicted = (risk >= tau_danger).astype(np.int64)
+    matrix = confusion_matrix(target, predicted, labels=[0, 1])
+    positives = int(target.sum())
+    high_risk_recall = float(matrix[1, 1] / positives) if positives else None
+    both_classes = np.unique(target).size == 2
+    return {
+        "sample_count": len(target),
+        "positive_count": positives,
+        "negative_count": int(len(target) - positives),
+        "auroc": float(roc_auc_score(target, risk)) if both_classes else None,
+        "auprc": float(average_precision_score(target, risk)) if positives else None,
+        "f1_at_tau_danger": float(f1_score(target, predicted, zero_division=0)),
+        "brier_score": float(np.mean((risk - target) ** 2)),
+        "confusion_matrix_labels_0_1": matrix.astype(int).tolist(),
+        "high_risk_recall_at_tau_danger": high_risk_recall,
+        "tau_danger": float(tau_danger),
+    }
+
+
+def surrogate_fidelity(
+    teacher: np.ndarray,
+    surrogate: np.ndarray,
+    tau_safe: float = 0.2,
+    tau_danger: float = 0.8,
+) -> dict[str, object]:
+    """Measure probability agreement and threshold decisions on held-out rows."""
+    teacher_values = np.asarray(teacher, dtype=np.float64)
+    surrogate_values = np.asarray(surrogate, dtype=np.float64)
+    if (
+        teacher_values.ndim != 1
+        or surrogate_values.ndim != 1
+        or len(teacher_values) != len(surrogate_values)
+        or len(teacher_values) == 0
+    ):
+        raise ValueError("teacher and surrogate must be nonempty matching probability vectors")
+    for name, values in (("teacher", teacher_values), ("surrogate", surrogate_values)):
+        if not np.isfinite(values).all() or ((values < 0) | (values > 1)).any():
+            raise ValueError(f"{name} probabilities must be finite and within [0, 1]")
+    if not 0 <= tau_safe < tau_danger <= 1:
+        raise ValueError("thresholds must satisfy 0 <= tau_safe < tau_danger <= 1")
+    correlation = spearmanr(teacher_values, surrogate_values).statistic
+    return {
+        "sample_count": len(teacher_values),
+        "mae": float(np.mean(np.abs(teacher_values - surrogate_values))),
+        "rank_correlation": float(correlation) if np.isfinite(correlation) else None,
+        "agreement_at_tau_safe": float(
+            np.mean((teacher_values <= tau_safe) == (surrogate_values <= tau_safe))
+        ),
+        "agreement_at_tau_danger": float(
+            np.mean((teacher_values >= tau_danger) == (surrogate_values >= tau_danger))
+        ),
+        "tau_safe": float(tau_safe),
+        "tau_danger": float(tau_danger),
+    }
 
 
 @dataclass(frozen=True)
