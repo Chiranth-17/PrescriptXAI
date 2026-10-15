@@ -217,6 +217,9 @@ def train_risk_model(
     feature_names = _model_feature_names(
         taxonomy, labeled, splits.train, config.data.variance_threshold
     )
+    taxonomy.validate_model_feature_coverage(feature_names)
+    taxonomy = taxonomy.fit_training_bounds(splits.train, columns=feature_names)
+    taxonomy.validate_bounds_against_observed(splits.train, columns=feature_names)
     scaler = fit_feature_scaler(splits.train, feature_names)
     x_train, y_train = _partition_arrays(
         splits.train, feature_names, scaler, selected_model, config
@@ -303,6 +306,12 @@ def train_risk_model(
         "test_holdout": predictor_metrics(y_test, test_after, config.tau_danger),
         "surrogate_fidelity": fidelity,
     }
+    resolved_bounds: dict[str, tuple[float, float]] = {}
+    for name in feature_names:
+        bound_spec = taxonomy.feature_by_name()[name].bounds
+        if bound_spec.minimum is None or bound_spec.maximum is None:
+            raise ValueError(f"training bounds were not resolved for model feature {name!r}")
+        resolved_bounds[name] = (bound_spec.minimum, bound_spec.maximum)
     bundle = ModelBundle(
         estimator=estimator,
         scaler=scaler,
@@ -315,6 +324,7 @@ def train_risk_model(
         config_hash=_configuration_hash(config, selected_model),
         git_commit=_git_commit(),
         metrics=metrics,
+        resolved_bounds=resolved_bounds,
     )
     return TrainingResult(
         bundle=bundle,

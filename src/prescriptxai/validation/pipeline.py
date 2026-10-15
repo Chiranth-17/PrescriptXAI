@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 
 from prescriptxai.config import AppConfig
+from prescriptxai.constraints.coupling import SensorCouplingModel
 from prescriptxai.constraints.taxonomy import FeatureTaxonomy
 from prescriptxai.models.registry import ModelBundle
 from prescriptxai.schemas import DeltaMapping, RecourseOutcome
@@ -26,6 +27,18 @@ def save_mahalanobis_validator(validator: MahalanobisValidator, path: Path) -> P
     path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(validator, path)
     return path
+
+
+def load_coupling_model(path: Path) -> SensorCouplingModel:
+    """Load a persisted sensor coupling model when the artifact exists."""
+    return SensorCouplingModel.load(path)
+
+
+def try_load_coupling_model(path: Path) -> SensorCouplingModel | None:
+    """Return a coupling model when configured and present on disk."""
+    if not path.is_file():
+        return None
+    return load_coupling_model(path)
 
 
 def load_mahalanobis_validator(path: Path) -> MahalanobisValidator:
@@ -112,6 +125,7 @@ def validate_candidate(
     taxonomy: FeatureTaxonomy,
     mahalanobis: MahalanobisValidator,
     config: AppConfig,
+    coupling: SensorCouplingModel | None = None,
 ) -> ValidationReport:
     """Run Tiers 1–4 without combining model and physical validity."""
     candidate_frame = pd.DataFrame([dict(candidate_state)])
@@ -123,5 +137,5 @@ def validate_candidate(
         raise ValueError("Mahalanobis and model feature orders do not match")
     tier2 = mahalanobis.validate(np.asarray(scaled_candidate, dtype=float))
     tier3 = validate_engineering(initial_state, candidate_state, taxonomy)
-    tier4 = validate_sensor_coupling(candidate_state, taxonomy)
+    tier4 = validate_sensor_coupling(candidate_state, taxonomy, coupling)
     return ValidationReport(tier1, tier2, tier3, tier4)

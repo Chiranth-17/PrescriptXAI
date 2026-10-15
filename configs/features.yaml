@@ -1,38 +1,357 @@
-schema_version: 1
+schema_version: 2
 dataset: CMAPSS
-feature_groups:
-  controllable_actuators:
-    # CMAPSS telemetry does not directly establish this sensor as a safe actuator.
-    # Configure only after verifying an actuator-to-feature mapping for the application.
-    features: []
-  immutable_operational:
-    features: [op_setting_1, op_setting_2]
-  immutable_environmental:
-    features: []
-  dependent_sensors:
-    features:
-      - sensor_1
-      - sensor_2
-      - sensor_3
-      - sensor_4
-      - sensor_5
-      - sensor_6
-      - sensor_7
-      - sensor_8
-      - sensor_9
-      - sensor_10
-      - sensor_11
-      - sensor_12
-      - sensor_13
-      - sensor_14
-      - sensor_15
-      - sensor_16
-      - sensor_17
-      - sensor_18
-      - sensor_19
-      - sensor_20
-      - sensor_21
-  context:
-    features: [engine_id, cycle, op_setting_3]
-actuator_constraints: {}
-coupling_rules: []
+bound_estimation:
+  lower_percentile: 1.0
+  upper_percentile: 99.0
+  margin_fraction: 0.02
+  degenerate_half_width: 1.0e-06
+coupling:
+  backend: ridge
+  residual_sigma_k: 3.0
+  min_r2: 0.35
+  min_rul_cycles: 30
+  artifact_name: '{subset}-coupling.joblib'
+  ridge_alpha: 1.0
+  gradient_boosting_estimators: 100
+  gradient_boosting_max_depth: 3
+  gradient_boosting_learning_rate: 0.05
+  mlp_hidden_dims: [32, 16]
+  mlp_max_iter: 500
+  mlp_learning_rate: 0.001
+  cross_validation_folds: 5
+  torch_hidden_dims:
+  - 32
+  - 16
+  torch_epochs: 250
+  torch_learning_rate: 0.001
+features:
+- name: op_setting_1
+  label: Normalized altitude setting
+  unit: normalized
+  cmapss_column: op_setting_1
+  group: immutable_operational
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: op_setting_2
+  label: Normalized Mach number setting
+  unit: normalized
+  cmapss_column: op_setting_2
+  group: immutable_operational
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: op_setting_3
+  label: Throttle resolver angle (TRA)
+  unit: degrees
+  cmapss_column: op_setting_3
+  group: immutable_operational
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_1
+  label: Total temperature at fan inlet (T2)
+  unit: degR
+  cmapss_column: s1
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_2
+  label: Total temperature at LPC outlet (T24)
+  unit: degR
+  cmapss_column: s2
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_3
+  label: Total temperature at HPC outlet (T30)
+  unit: degR
+  cmapss_column: s3
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_4
+  label: Total temperature at LPT outlet (T50)
+  unit: degR
+  cmapss_column: s4
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_5
+  label: Total pressure at fan inlet (P2)
+  unit: psia
+  cmapss_column: s5
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_6
+  label: Total pressure at bypass duct (P15)
+  unit: psia
+  cmapss_column: s6
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_7
+  label: Total pressure at HPC outlet (P30)
+  unit: psia
+  cmapss_column: s7
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_8
+  label: Physical fan speed (Nf)
+  unit: rpm
+  cmapss_column: s8
+  group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change:
+    fraction_of_span: 0.03
+  direction: any
+  controllable_proxy: true
+  proxy_note: Measured fan-speed telemetry configured as a controllable proxy; it
+    is not a direct fan actuator command.
+- name: sensor_9
+  label: Physical core speed (Nc)
+  unit: rpm
+  cmapss_column: s9
+  group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change:
+    fraction_of_span: 0.03
+  direction: any
+  controllable_proxy: true
+  proxy_note: Measured core-speed telemetry configured as a controllable proxy; it
+    is not a direct speed or fuel command.
+- name: sensor_10
+  label: Engine pressure ratio (P50/P2)
+  unit: ratio
+  cmapss_column: s10
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_11
+  label: Static pressure at HPC outlet (Ps30)
+  unit: psia
+  cmapss_column: s11
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_12
+  label: Fuel flow to Ps30 ratio (phi)
+  unit: ratio
+  cmapss_column: s12
+  group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change:
+    fraction_of_span: 0.03
+  direction: any
+  controllable_proxy: true
+  proxy_note: Fuel-flow ratio derived from measured telemetry, configured as a proxy;
+    it is not a direct fuel actuator command.
+- name: sensor_13
+  label: Corrected fan speed (NRf)
+  unit: rpm
+  cmapss_column: s13
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_14
+  label: Corrected core speed (NRc)
+  unit: rpm
+  cmapss_column: s14
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_15
+  label: Bypass ratio (BPR)
+  unit: ratio
+  cmapss_column: s15
+  group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change:
+    fraction_of_span: 0.03
+  direction: any
+  controllable_proxy: true
+  proxy_note: Measured bypass ratio configured as a synopsis proxy; it is not a verified
+    variable-geometry actuator command.
+- name: sensor_16
+  label: Burner fuel-air ratio (farB)
+  unit: ratio
+  cmapss_column: s16
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_17
+  label: Bleed enthalpy (htBleed)
+  unit: C-MAPSS units
+  cmapss_column: s17
+  group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change:
+    fraction_of_span: 0.03
+  direction: any
+  controllable_proxy: true
+  proxy_note: Bleed-related enthalpy telemetry configured as a proxy; it is not a
+    direct bleed-valve command.
+- name: sensor_18
+  label: Demanded fan speed (Nf_dmd)
+  unit: rpm
+  cmapss_column: s18
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_19
+  label: Corrected fan speed demand (PCNfR_dmd)
+  unit: rpm
+  cmapss_column: s19
+  group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change: null
+  direction: any
+- name: sensor_20
+  label: HPT coolant bleed (W31)
+  unit: lbm/s
+  cmapss_column: s20
+  group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change:
+    fraction_of_span: 0.03
+  direction: any
+  controllable_proxy: true
+  proxy_note: Measured coolant-bleed channel configured as a proxy; it is not a verified
+    actuator command.
+- name: sensor_21
+  label: LPT coolant bleed (W32)
+  unit: lbm/s
+  cmapss_column: s21
+  group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  max_rate_of_change:
+    fraction_of_span: 0.03
+  direction: any
+  controllable_proxy: true
+  proxy_note: Measured coolant-bleed channel configured as a proxy; it is not a verified
+    actuator command.
+- name: engine_id
+  label: Engine unit identifier
+  unit: identifier
+  cmapss_column: unit_id
+  group: context
+  bounds:
+    minimum: 1.0
+    maximum: 1000.0
+    source: manual
+  max_rate_of_change: null
+  direction: any
+- name: cycle
+  label: Within-engine cycle index
+  unit: cycle
+  cmapss_column: cycle
+  group: context
+  bounds:
+    minimum: 1.0
+    maximum: 10000.0
+    source: manual
+  max_rate_of_change: null
+  direction: any
+coupling_rules:
+- name: p30_above_ps30
+  feature_a: sensor_7
+  feature_b: sensor_11
+  relation: greater_than
+  tolerance: 0.0
+- name: t24_below_t30
+  feature_a: sensor_2
+  feature_b: sensor_3
+  relation: less_than
+  tolerance: 0.0
+- name: t30_above_t50
+  feature_a: sensor_3
+  feature_b: sensor_4
+  relation: greater_than
+  tolerance: 0.0

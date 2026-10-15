@@ -41,3 +41,46 @@ available, and record measured retained feature sets.
 ---
 
 *Last updated: 2026-10-03*
+
+## Phase 3 — Feature taxonomy, physical bounds, and sensor coupling (2026-10-15)
+
+### Accomplished
+
+- Added configurable group mappings for all three immutable operating settings and all 21 C-MAPSS
+  sensor channels. Seven measured telemetry channels are explicitly designated proxy controls; the
+  config and limitations documentation say they are not verified actuator commands.
+- Added YAML taxonomy validation, train-percentile bounds with margin and manual overrides, raw and
+  scaled bound transforms, idempotent projection, and actuator rate checks.
+- Added train-engine-only, healthy-to-moderate sensor coupling fits, grouped out-of-fold metrics,
+  learned residual constraints, configurable engineering rules, differentiable torch propagation,
+  artifact persistence, and HTML/PNG diagnostics.
+- Connected fitted bounds and coupling to the predictor registry and recourse path. Sparse fallback
+  remains within the configured feature cap even when no safe candidate is found.
+- Corrected README and technical docs that still claimed the default feature map had no proxies.
+
+### Verification evidence
+
+- `uv run pytest tests/unit/test_constraints_phase3.py tests/unit/test_taxonomy.py tests/unit/test_recourse_validation.py -q`
+  → `40 passed`.
+- `uv run prescriptxai constraints fit-coupling --subset FD001 --train-csv data/processed/FD001_train.csv --output artifacts/FD001-coupling.joblib --report artifacts/FD001-coupling-diagnostics`
+  → persisted the model and HTML/PNG reports. Engine-grouped out-of-fold R² was 0.330574 for
+  `sensor_3` and 0.030526 for `sensor_6`, below the configured floor 0.35; both remain flagged.
+- Reloaded the persisted coupling artifact and confirmed the diagnostic files exist. Refit and
+  validated taxonomy bounds on real train rows for all subsets: model feature counts were FD001 18,
+  FD002 24, FD003 19, FD004 24, with seven active proxy channels in each.
+- Real high-risk holdout diagnostic (engine 2, cycle 261): risk 0.88002 → 0.48425, 3 proxy changes
+  (cap 3); model safety failed, Tier 2 passed, Tier 3 failed, Tier 4 passed. The recommendation was
+  correctly reported unsuccessful.
+- `mingw32-make all-checks` → Ruff passed; mypy passed for 49 source files; `129 passed`, 77% total
+  coverage; documentation target passed.
+
+### Remaining limitations
+
+- The configured channels and learned statistical relationships are research proxies and are not
+  evidence of causal physics. Two FD001 coupling relations fall below the configured quality floor.
+- The observed diagnostic recourse did not achieve the safe-risk threshold and failed Tier 3.
+  These rates and outcomes must be evaluated over a saved benchmark run before operational claims.
+
+---
+
+*Last updated: 2026-10-15*

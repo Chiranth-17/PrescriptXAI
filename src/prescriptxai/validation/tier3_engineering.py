@@ -6,7 +6,7 @@ from collections.abc import Mapping
 
 import numpy as np
 
-from prescriptxai.constraints.bounds import allowed_interval
+from prescriptxai.constraints.bounds import check_bound_violations, check_rate_violations
 from prescriptxai.constraints.taxonomy import FeatureTaxonomy
 from prescriptxai.validation.base import TierResult
 
@@ -14,7 +14,7 @@ from prescriptxai.validation.base import TierResult
 def validate_engineering(
     initial: Mapping[str, float], candidate: Mapping[str, float], taxonomy: FeatureTaxonomy
 ) -> TierResult:
-    """Check all configured actuator and feature-freezing engineering rules."""
+    """Check actuator bounds/rates and freeze immutable operating/context fields."""
     groups = taxonomy.feature_groups.model_dump()
     declared = {name for group in groups.values() for name in group["features"]}
     missing = (declared - set(initial)) | (declared - set(candidate))
@@ -23,23 +23,13 @@ def validate_engineering(
     non_finite = [name for name in declared if not np.isfinite(candidate[name])]
     if non_finite:
         return TierResult(False, (f"candidate has non-finite values: {sorted(non_finite)}",))
-    actuators = set(taxonomy.feature_groups.controllable_actuators.features)
+    immutable = taxonomy.immutable_feature_names()
     failures: list[str] = []
-    for name in sorted(declared - actuators):
+    for name in sorted(declared & immutable):
         if not np.isclose(initial[name], candidate[name], rtol=0, atol=0):
-            failures.append(f"immutable/dependent feature {name} changed")
-    for name, constraint in taxonomy.actuator_constraints.items():
-        value = candidate[name]
-        if not np.isfinite(value):
-            failures.append(f"actuator {name} is non-finite")
-            continue
-        if not constraint.minimum <= value <= constraint.maximum:
-            failures.append(f"actuator {name} violates absolute bounds")
-        try:
-            lower, upper = allowed_interval(initial[name], constraint)
-        except ValueError:
-            failures.append(f"actuator {name} has no feasible rate-limited interval")
-            continue
-        if not lower <= value <= upper:
-            failures.append(f"actuator {name} violates rate limit")
+            failures.append(f"immutable feature {name} changed")
+    bound_violations = check_bound_violations(candidate, taxonomy)
+    failures.extend(f"{item.feature}: {item.reason}" for item in bound_violations)
+    rate_violations = check_rate_violations(initial, candidate, taxonomy)
+    failures.extend(f"{item.feature}: {item.reason}" for item in rate_violations)
     return TierResult(not failures, tuple(failures))

@@ -36,13 +36,15 @@ def main() -> None:
             "Run `prescriptxai train` first."
         )
         st.stop()
-    if not taxonomy.feature_groups.controllable_actuators.features:
+    if taxonomy.feature_groups.controllable_actuators.features:
         st.info(
-            "No verified controllable actuators are configured; recourse will report failure "
-            "explicitly."
+            "Configured controllable channels are C-MAPSS telemetry proxies, not verified actuator "
+            "commands. See docs/limitations.md."
         )
-    if not taxonomy.coupling_rules:
-        st.info("No validated sensor-coupling rules are configured; Tier 4 will fail closed.")
+    else:
+        st.info("No controllable proxies are configured; recourse will report failure explicitly.")
+    if taxonomy.coupling is None and not taxonomy.coupling_rules:
+        st.info("No sensor-coupling configuration is present; Tier 4 will fail closed.")
     upload = st.file_uploader("Upload one raw-unit state as JSON or CSV", type=["json", "csv"])
     if upload is None:
         st.info("Upload a single state record to calculate risk and request a candidate.")

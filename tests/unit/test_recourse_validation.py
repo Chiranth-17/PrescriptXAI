@@ -12,6 +12,8 @@ from prescriptxai.config import load_config
 from prescriptxai.constraints.bounds import allowed_interval
 from prescriptxai.constraints.coupling import evaluate_rule, validate_couplings
 from prescriptxai.constraints.taxonomy import ActuatorConstraint, CouplingRule
+from prescriptxai.data.preprocess import fit_feature_scaler
+from prescriptxai.models.registry import ModelBundle
 from prescriptxai.recourse.baselines import no_action_baseline, single_actuator_baseline
 from prescriptxai.recourse.objective import prediction_flip_loss, scaled_l1_distance
 from prescriptxai.recourse.optimizer import optimize_recourse
@@ -63,7 +65,7 @@ def test_coupling_rules_and_empty_rule_configuration() -> None:
         slope=2.0,
         intercept=1.0,
     )
-    assert evaluate_rule({"a": 1.0, "b": 3.05}, rule) == (True, 0.0)
+    assert evaluate_rule({"a": 1.0, "b": 3.05}, rule).passed
     greater_rule = CouplingRule(
         name="greater",
         feature_a="a",
@@ -71,7 +73,7 @@ def test_coupling_rules_and_empty_rule_configuration() -> None:
         relation="greater_than",
         tolerance=0.0,
     )
-    assert evaluate_rule({"a": 3.0, "b": 1.0}, greater_rule) == (True, 0.0)
+    assert evaluate_rule({"a": 3.0, "b": 1.0}, greater_rule).passed
     _, taxonomy, _ = make_recourse_fixture()
     taxonomy.coupling_rules = []
     valid, diagnostics = validate_couplings({"actuator": 0.0, "sensor": 2.0}, taxonomy)
@@ -80,8 +82,8 @@ def test_coupling_rules_and_empty_rule_configuration() -> None:
     assert not validate_sensor_coupling({"actuator": 0.0, "sensor": 2.0}, taxonomy).valid
 
 
-def test_tier3_rejects_out_of_bounds_and_dependent_sensor_changes() -> None:
-    """Engineering validation checks rate/bounds and freezes non-actuator features."""
+def test_tier3_rejects_out_of_bounds_but_allows_dependent_sensor_changes() -> None:
+    """Engineering validation checks actuator bounds while allowing dependent updates."""
     _, taxonomy, _ = make_recourse_fixture()
 
     invalid = validate_engineering(
@@ -89,10 +91,15 @@ def test_tier3_rejects_out_of_bounds_and_dependent_sensor_changes() -> None:
         {"actuator": 2.5, "sensor": 2.1},
         taxonomy,
     )
+    dependent_only = validate_engineering(
+        {"actuator": -2.0, "sensor": 2.0},
+        {"actuator": -2.0, "sensor": 2.5},
+        taxonomy,
+    )
 
     assert not invalid.valid
-    assert any("absolute bounds" in entry for entry in invalid.diagnostics)
-    assert any("dependent feature sensor changed" in entry for entry in invalid.diagnostics)
+    assert any("physical maximum" in entry or "rate" in entry for entry in invalid.diagnostics)
+    assert dependent_only.valid
 
 
 def test_tier3_rejects_rate_violation_and_missing_features() -> None:
@@ -107,7 +114,9 @@ def test_tier3_rejects_rate_violation_and_missing_features() -> None:
     missing_result = validate_engineering({"actuator": 0.0}, {"actuator": 0.0}, taxonomy)
 
     assert not rate_result.valid
-    assert any("rate limit" in message for message in rate_result.diagnostics)
+    assert any(
+        "exceeds limit" in message or "rate limit" in message for message in rate_result.diagnostics
+    )
     assert not missing_result.valid
     assert "missing configured features" in missing_result.diagnostics[0]
 
@@ -246,6 +255,46 @@ def test_sparsifier_and_baselines_report_failures_without_claims() -> None:
     assert "no safe candidate" in sparse.message
     assert not no_action.model_valid
     assert not single.model_valid or len(single.deltas) == 1
+
+
+def test_sparsifier_never_returns_more_than_configured_changes_when_unsafe() -> None:
+    """An infeasible safe target still returns a sparse best-effort candidate."""
+    from fixtures.recourse_models import SigmoidEstimator
+
+    training = pd.DataFrame(
+        {
+            "engine_id": [1, 1, 2, 2, 3, 3],
+            "actuator": [-2.0, -1.0, 0.0, 1.0, 2.0, 1.0],
+            "second_actuator": [-2.0, 0.0, 2.0, -1.0, 1.0, 0.5],
+            "sensor": [2.0] * 6,
+        }
+    )
+    feature_names = ("actuator", "second_actuator", "sensor")
+    scaler = fit_feature_scaler(training, feature_names)
+    bundle = ModelBundle(
+        estimator=SigmoidEstimator(),
+        scaler=scaler,
+        feature_names=feature_names,
+        training_engine_ids=scaler.training_engine_ids,
+        model_type="test-only-sigmoid",
+        seed=17,
+    )
+    initial = {"actuator": -2.0, "second_actuator": -2.0, "sensor": 2.0}
+    candidate = {"actuator": -1.5, "second_actuator": 2.0, "sensor": 2.0}
+
+    result = sparsify_candidate(
+        bundle,
+        initial,
+        candidate,
+        ("actuator", "second_actuator"),
+        max_changed_features=1,
+        safe_threshold=0.2,
+    )
+
+    assert not result.success
+    assert len(result.changed_features) <= 1
+    assert result.changed_features == ("actuator",)
+    assert result.risk < bundle.predict_risk(pd.DataFrame([initial]))[0]
 
 
 def test_simulator_interface_is_opt_in_and_requires_an_adapter() -> None:

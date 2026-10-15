@@ -1,10 +1,13 @@
 # Limitations and intended use
 
-- **No validated actuator mapping for default FD001.** C-MAPSS features are telemetry and operating
-  settings; the default taxonomy deliberately has no controls. The current real-data run therefore
-  reports no recourse rather than converting a sensor into an actuator.
-- **No coupling rules are supplied.** Tier 4 fails closed until domain-reviewed relationships and
-  tolerances are configured.
+- **Controllable channels are telemetry proxies, not actuators.** C-MAPSS reports measured
+  sensor outputs and operating settings. The configurable mapping in `configs/features.yaml`
+  treats fuel-flow ratio (phi), bypass ratio (BPR), fan/core speed, and bleed-related channels as
+  *controllable proxies* for synopsis-style experiments. These are not verified actuator commands
+  and must not be interpreted as direct engine control inputs without domain review.
+- **Coupling models describe observed co-variation, not causal physics.** Learned propagation and
+  Tier 4 residual bounds capture statistical coupling on training engines in a healthy-to-moderate
+  degradation regime. Passing a coupling check is not proof of a physically realizable intervention.
 - **Static run-to-failure data.** C-MAPSS has no counterfactual intervention trajectories. Do not
   claim that PrescriptXAI extends RUL or establishes real engine safety. The simulator is only an
   optional interface and is disabled by default.

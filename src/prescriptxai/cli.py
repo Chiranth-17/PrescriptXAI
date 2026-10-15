@@ -7,9 +7,11 @@ import logging
 from pathlib import Path
 from typing import Any, Literal
 
+import pandas as pd
 import typer
 
 from prescriptxai.config import AppConfig, load_config
+from prescriptxai.constraints.coupling import fit_and_persist_coupling
 from prescriptxai.constraints.taxonomy import load_taxonomy
 from prescriptxai.data.cmapss import (
     SUBSETS,
@@ -36,7 +38,9 @@ from prescriptxai.validation.pipeline import (
 
 app = typer.Typer(no_args_is_help=True, help="PrescriptXAI maintenance recourse tools")
 data_app = typer.Typer(no_args_is_help=True, help="C-MAPSS data acquisition and preparation")
+constraints_app = typer.Typer(no_args_is_help=True, help="Feature taxonomy and coupling artifacts")
 app.add_typer(data_app, name="data")
+app.add_typer(constraints_app, name="constraints")
 LOGGER = logging.getLogger(__name__)
 
 
@@ -170,6 +174,72 @@ def prepare_cmapss_data(
     )
 
 
+@constraints_app.command("fit-coupling")
+def fit_coupling_model(
+    subset: CmapssSubset = typer.Option("FD001", "--subset"),
+    config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
+    taxonomy_path: Path = typer.Option(Path("configs/features.yaml"), "--features"),
+    processed_train: Path | None = typer.Option(None, "--train-csv"),
+    output_path: Path | None = typer.Option(None, "--output"),
+    report_stem: Path | None = typer.Option(None, "--report"),
+) -> None:
+    """Fit and persist the sensor coupling model on training-engine telemetry."""
+    config = load_config(config_path)
+    taxonomy = load_taxonomy(taxonomy_path)
+    if taxonomy.coupling is None:
+        raise typer.BadParameter("features.yaml does not define coupling settings")
+    train_csv = processed_train or (config.data.processed_root / f"{subset}_train.csv")
+    if not train_csv.is_file():
+        typer.echo(
+            f"TRAIN_CSV_NOT_FOUND: run `prescriptxai data prepare --subset {subset}` first.",
+            err=True,
+        )
+        raise typer.Exit(code=2)
+    frame = add_training_labels(
+        to_model_frame(pd.read_csv(train_csv)),
+        config.data.rul_cap,
+        config.data.failure_horizon,
+    )
+    splits = split_engines(
+        frame,
+        config.data.train_fraction,
+        config.data.validation_fraction,
+        config.data.test_fraction,
+        config.seed,
+        lifetime_buckets=config.data.lifetime_buckets,
+    )
+    artifact_name = taxonomy.coupling.artifact_name.format(subset=subset)
+    artifact_path = output_path or Path("artifacts") / artifact_name
+    diagnostic_stem = report_stem or artifact_path.with_name(f"{artifact_path.stem}-diagnostics")
+    model = fit_and_persist_coupling(
+        frame,
+        taxonomy_path,
+        artifact_path,
+        training_engine_ids=splits.train_engine_ids,
+        failure_horizon=config.data.failure_horizon,
+        report_stem=diagnostic_stem,
+        seed=config.seed,
+    )
+    typer.echo(
+        json.dumps(
+            {
+                "artifact": str(artifact_path),
+                "dependent_features": list(model.dependent_features),
+                "predictor_features": list(model.predictor_features),
+                "r2": model.metrics.r2,
+                "residual_std": model.metrics.residual_std,
+                "r2_floor": taxonomy.coupling.min_r2,
+                "below_r2_floor": list(model.metrics.below_r2_floor),
+                "torch_surrogate_mae": model.metrics.torch_surrogate_mae,
+                "diagnostics_html": str(diagnostic_stem.with_suffix(".html")),
+                "diagnostics_png": str(diagnostic_stem.with_suffix(".png")),
+            },
+            indent=2,
+            allow_nan=False,
+        )
+    )
+
+
 @app.command("train")
 def train_model(
     subset: CmapssSubset = typer.Option("FD001", "--subset"),
@@ -203,7 +273,12 @@ def train_model(
     model_label = {"xgb": "xgboost", "mlp": "mlp", "lstm": "lstm"}[model_name]
     stem = f"{subset}-{model_label}"
     model_path = config.artifacts.model.with_name(f"{stem}.joblib")
-    validator_path = config.artifacts.mahalanobis.with_name(f"{stem}-mahalanobis.joblib")
+    validator_name = (
+        f"{subset}-mahalanobis.joblib"
+        if model_label == "xgboost"
+        else f"{stem}-mahalanobis.joblib"
+    )
+    validator_path = config.artifacts.mahalanobis.with_name(validator_name)
     metrics_path = config.artifacts.evaluation_report.with_name(f"{stem}-metrics.json")
     plot_path = config.artifacts.evaluation_report.with_name(f"{stem}-calibration")
     calibration = result.metrics.get("calibration")

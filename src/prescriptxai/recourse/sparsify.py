@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from itertools import combinations
 
@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 
 from prescriptxai.models.registry import ModelBundle
+
+StateTransform = Callable[[Mapping[str, float]], Mapping[str, float]]
 
 
 @dataclass(frozen=True)
@@ -30,6 +32,7 @@ def sparsify_candidate(
     actuator_names: tuple[str, ...],
     max_changed_features: int,
     safe_threshold: float,
+    candidate_transform: StateTransform | None = None,
 ) -> SparseCandidate:
     """Find the smallest safe subset among optimized actuator changes.
 
@@ -55,19 +58,31 @@ def sparsify_candidate(
         reverse=True,
     )
     limit = min(max_changed_features, len(changed))
+    original_state_dict = dict(original_state)
+    original_risk = float(bundle.predict_risk(pd.DataFrame([original_state_dict]))[0])
+    best_state = original_state_dict
+    best_changed: tuple[str, ...] = ()
+    best_risk = original_risk
     for count in range(1, limit + 1):
         for selected in combinations(changed, count):
             trial = dict(original_state)
             for name in selected:
                 trial[name] = candidate_state[name]
-            risk = float(bundle.predict_risk(pd.DataFrame([trial]))[0])
+            scored_state = dict(candidate_transform(trial)) if candidate_transform else trial
+            risk = float(bundle.predict_risk(pd.DataFrame([scored_state]))[0])
             if risk <= safe_threshold:
-                return SparseCandidate(trial, tuple(selected), risk, True, "safe sparse candidate")
-    risk = float(bundle.predict_risk(pd.DataFrame([dict(candidate_state)]))[0])
+                return SparseCandidate(
+                    scored_state, tuple(selected), risk, True, "safe sparse candidate"
+                )
+            if risk < best_risk:
+                best_state = scored_state
+                best_changed = tuple(selected)
+                best_risk = risk
     return SparseCandidate(
-        dict(candidate_state),
-        tuple(changed),
-        risk,
+        best_state,
+        best_changed,
+        best_risk,
         False,
-        "no safe candidate exists within the configured changed-feature limit",
+        "no safe candidate exists within the configured changed-feature limit; "
+        "returning the lowest-risk sparse candidate",
     )

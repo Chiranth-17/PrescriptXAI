@@ -6,11 +6,13 @@ from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
+import torch
 from numpy.typing import NDArray
 from scipy.optimize import minimize
 
 from prescriptxai.config import AppConfig
 from prescriptxai.constraints.bounds import allowed_interval
+from prescriptxai.constraints.coupling import SensorCouplingModel, apply_coupling_for_bundle
 from prescriptxai.constraints.taxonomy import FeatureTaxonomy
 from prescriptxai.models.registry import ModelBundle
 from prescriptxai.recourse.objective import recourse_objective
@@ -47,6 +49,7 @@ def optimize_recourse(
     bundle: ModelBundle,
     taxonomy: FeatureTaxonomy,
     config: AppConfig,
+    coupling: SensorCouplingModel | None = None,
 ) -> OptimizationResult:
     """Optimize actuator changes under physical/rate bounds, then enforce sparsity.
 
@@ -67,7 +70,7 @@ def optimize_recourse(
             "initial state is below the configured danger threshold",
             None,
         )
-    actuator_names = tuple(taxonomy.feature_groups.controllable_actuators.features)
+    actuator_names = taxonomy.active_controllable_feature_names(bundle.feature_names)
     if not actuator_names:
         return OptimizationResult(
             initial_state,
@@ -89,6 +92,12 @@ def optimize_recourse(
     scaler_scale = bundle.scaler.scaler.scale_[feature_indices]
     raw_start = np.asarray([initial_state[name] for name in actuator_names], dtype=float)
     scaled_start = (raw_start - scaler_mean) / scaler_scale
+    scaled_initial_state = bundle.scaler.transform(
+        state_frame.loc[:, list(bundle.feature_names)]
+    )[0]
+    scaled_coupling = (
+        coupling.propagate_scaled_torch_module(bundle.scaler) if coupling is not None else None
+    )
     recourse_limits = config.recourse
     lower_scaled: list[float] = []
     upper_scaled: list[float] = []
@@ -107,7 +116,7 @@ def optimize_recourse(
         raw_controls = scaler_mean + scaled_controls * scaler_scale
         for name, value in zip(actuator_names, raw_controls, strict=True):
             candidate[name] = float(value)
-        return candidate
+        return apply_coupling_for_bundle(candidate, coupling, bundle.scaler)
 
     def objective(scaled_controls: NDArray[np.float64]) -> float:
         candidate = candidate_state(scaled_controls)
@@ -126,10 +135,15 @@ def optimize_recourse(
         return config.model.safe_threshold - recourse_limits.safety_margin - risk
 
     def risk_gradient(scaled_controls: NDArray[np.float64]) -> NDArray[np.float64]:
-        """Differentiate calibrated model risk with respect to scaled actuator coordinates."""
-        candidate = candidate_state(scaled_controls)
-        _, gradients = bundle.predict_risk_with_gradient(pd.DataFrame([candidate]))
-        return gradients[0, feature_indices]
+        """Differentiate model risk through scaled-to-raw sensor propagation."""
+        scaled_candidate = scaled_initial_state.copy()
+        scaled_candidate[feature_indices] = scaled_controls
+        tensor = torch.tensor(scaled_candidate, dtype=torch.float32).unsqueeze(0)
+        tensor.requires_grad_(True)
+        propagated = scaled_coupling(tensor) if scaled_coupling is not None else tensor
+        risk = bundle.torch_forward(propagated)
+        gradients = torch.autograd.grad(risk.sum(), tensor)[0]
+        return np.asarray(gradients.detach().cpu().numpy()[0, feature_indices], dtype=float)
 
     def objective_gradient(scaled_controls: NDArray[np.float64]) -> NDArray[np.float64]:
         """Return the scaled L1 subgradient plus model-risk hinge gradient."""
@@ -188,6 +202,11 @@ def optimize_recourse(
         actuator_names,
         recourse_limits.max_changed_features,
         config.model.safe_threshold,
+        candidate_transform=(
+            (lambda state: apply_coupling_for_bundle(state, coupling, bundle.scaler))
+            if coupling is not None
+            else None
+        ),
     )
     mappings = tuple(
         DeltaMapping(

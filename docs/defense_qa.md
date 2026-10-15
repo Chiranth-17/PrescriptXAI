@@ -21,15 +21,17 @@ which is supplied by the default project.
 
 ## What does the current FD001 run demonstrate?
 
-It demonstrates the model and evaluation plumbing on an engine-held-out split. The current default
-taxonomy has no verified actuators or coupling rules, so no actionable recourse is produced. The
-measured recourse-validity and full physical-plausibility rates are zero for the sampled high-risk
-queries; this is an explicit configuration limitation, not evidence that a physical intervention
-failed.
+It demonstrates predictor evaluation on an engine-held-out split, and measured statistical coupling
+fit on training engines with grouped cross-validation. The configured features include measured
+sensor proxies and learned coupling relations, but these are not verified control inputs or causal
+physics. FD001 coupling fit is below its configured R² floor for `sensor_3` and `sensor_6`; these
+relations are flagged in the report. A safe-looking recommendation is not evidence of a realizable
+or safe real-world intervention.
 
 ## What is required to demonstrate actionable physical recourse?
 
-A domain-validated mapping from controllable actuators to model features, raw-unit operating bounds,
-maximum rate changes, sensor coupling rules and tolerances, and preferably intervention-aware
-simulator or field validation. These settings must be reviewed before adding them to
-`configs/features.yaml`.
+A domain-validated mapping from actual control commands to model features, raw-unit operating
+bounds, maximum rate changes, validated sensor coupling rules and tolerances, and preferably
+intervention-aware simulator or field validation. The current C-MAPSS channels are configurable
+proxies only; their mapping does not satisfy this requirement. Review any mapping before operational
+use.

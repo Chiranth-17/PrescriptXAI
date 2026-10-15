@@ -11,9 +11,10 @@
    engines are reserved for one-time reporting. XGBoost gets a distilled MLP surrogate for its
    gradient path. The versioned registry stores weights, calibrator, scaler, feature order, config
    hash, Git revision, metrics, and engine provenance.
-5. The recourse optimizer changes only configured actuator features. It uses the MLP or distilled
-   MLP's autograd derivatives with SLSQP when available and returns raw/scaled deltas plus an
-   independent model-risk result.
+5. The recourse optimizer changes only configured controllable proxy features. It uses the MLP or
+   distilled MLP's autograd derivatives with SLSQP when available, propagates their changes through
+   the fitted dependent-sensor model, and returns raw/scaled proxy deltas plus an independent
+   model-risk result.
 6. The validator runs Tier 1 model safety, Tier 2 training-distribution Mahalanobis distance,
    Tier 3 actuator bounds/rates and immutable-feature checks, and Tier 4 configured coupling rules.
    Missing coupling rules fail closed. Simulator support is a Protocol boundary, not a simulator
@@ -34,8 +35,11 @@ engine's first observed row. In recourse, the final timestep is the candidate st
 timesteps remain fixed observed history. The current snapshot recommendation API does not accept
 sequence history, so use `predict_risk_sequence` and `torch_forward` for LSTM sequence inference.
 
-The default C-MAPSS taxonomy has no actuator mapping. This is intentional: changing a sensor or
-operating setting is not evidence that a physical actuator can safely control it.
+The default C-MAPSS taxonomy maps seven measured sensor channels to configurable controllable
+proxies and keeps all three operating settings immutable. Those channels are telemetry, not direct
+actuator commands. Coupling models estimate dependent sensor outputs from training-data
+co-variation; neither the proxy map nor the learned relations establish causal physics or operational
+safety. See [limitations](limitations.md).
 
 ## Interfaces
 

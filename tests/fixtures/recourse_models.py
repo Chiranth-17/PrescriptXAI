@@ -6,10 +6,13 @@ from numpy.typing import NDArray
 
 from prescriptxai.constraints.taxonomy import (
     ActuatorConstraint,
+    BoundsSpec,
     CouplingRule,
     FeatureGroup,
     FeatureGroups,
+    FeatureSpec,
     FeatureTaxonomy,
+    RateLimitSpec,
 )
 from prescriptxai.data.preprocess import fit_feature_scaler
 from prescriptxai.models.registry import ModelBundle
@@ -66,5 +69,24 @@ def make_recourse_fixture() -> tuple[ModelBundle, FeatureTaxonomy, pd.DataFrame]
                 tolerance=0.0,
             )
         ],
+        features=(
+            FeatureSpec(
+                name="actuator",
+                label="actuator",
+                unit="-",
+                group="controllable",
+                cmapss_column="s1",
+                bounds=BoundsSpec(minimum=-2.0, maximum=2.0),
+                max_rate_of_change=RateLimitSpec(absolute=4.0),
+            ),
+            FeatureSpec(
+                name="sensor",
+                label="sensor",
+                unit="-",
+                group="dependent",
+                cmapss_column="s2",
+                bounds=BoundsSpec(minimum=0.0, maximum=10.0),
+            ),
+        ),
     )
     return bundle, taxonomy, training

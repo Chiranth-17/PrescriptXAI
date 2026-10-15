@@ -7,7 +7,7 @@
 | 0 — Scaffold and package foundation | Complete | Packaging, configuration, schemas, logging, CI, and checks |
 | 1 — Data ingestion and preprocessing | Complete | Real FD001–FD004 loaded, split, filtered, scaled, and reported |
 | 2 — Predictive models | Complete | XGBoost, differentiable MLP/LSTM, validation-only calibration, and real FD001 metrics |
-| 3 — Constrained recourse and validation | Complete | Optimizer and validation tiers |
+| 3 — Constrained recourse and validation | Complete | Proxy taxonomy, fitted physical bounds, coupling propagation and Tier 4 checks |
 | 4 — Product surfaces and evaluation | Complete | CLI, optional API, dashboard, reports |
 | 5 — End-to-end verification and documentation | Complete | Current measured limits in docs and artifacts |
 
@@ -27,12 +27,19 @@
 - Fit predictors on train engines, use validation engines for early stopping and calibration, and
   reserve the internal holdout engines for metrics and reliability diagnostics.
 - Give XGBoost a distilled MLP gradient path and report measured fidelity for the surrogate.
+- Keep C-MAPSS operating settings immutable and expose measured sensor channels used as controllable
+  proxies only through `configs/features.yaml`, with a visible proxy warning.
+- Estimate physical bounds from the 1st–99th train-engine percentiles plus the configured margin;
+  persist fitted ranges with trained model and coupling artifacts.
+- Score coupling fit quality with engine-grouped cross-validation and report below-floor sensors
+  directly; do not use in-sample fit scores for the quality gate.
 
 ## Assumptions
 
 - Python 3.11 and 3.12 are the supported CI interpreter versions.
 - C-MAPSS is static run-to-failure data and does not support RUL-extension claims.
-- No C-MAPSS telemetry feature is treated as a controllable actuator without a verified mapping.
+- Configured C-MAPSS controllable channels are measured telemetry proxies, not verified actuator
+  commands. They are suitable for research recourse only until a domain-reviewed mapping exists.
 - Configured beta and gamma weights are scaffold settings; current hard masks and actuator bounds
   enforce the corresponding immutability and bound requirements directly.
 - `data.expected_row_counts` describes the published NASA files; it is an integrity check, not a
@@ -41,8 +48,11 @@
 
 ## Open issues
 
-- The default C-MAPSS taxonomy intentionally contains no verified actuator mapping or coupling rules.
-  A domain-reviewed taxonomy and operating envelope are required to demonstrate physical recourse.
+- The C-MAPSS proxy mapping and statistical coupling rules are configurable, but none proves a real
+  actuator mapping or causal thermodynamics. A domain-reviewed control mapping is required before
+  any operational use.
+- The measured FD001 coupling fit falls below the configured R² floor for `sensor_3` and `sensor_6`;
+  those relations remain flagged and need better predictors or additional validated measurements.
 - The optional simulator remains an interface only and is disabled by default.
 - The LSTM supports sequence scoring and gradients, but the current snapshot recourse request does
   not carry the history window. LSTM training/evaluation works; current interactive LSTM recourse
@@ -71,6 +81,7 @@ make data
 uv run prescriptxai train --subset FD001 --model xgb
 uv run prescriptxai train --subset FD001 --model mlp
 uv run prescriptxai train --subset FD001 --model lstm
+uv run prescriptxai constraints fit-coupling --subset FD001
 make evaluate
 make dashboard
 make api
@@ -174,3 +185,68 @@ surrogate fidelity when applicable.
 - `uv sync --all-groups --locked`: passed.
 - `mingw32-make all-checks` with Python 3.13.9: Ruff passed, mypy passed for 49 source files,
   105 tests passed with 77% total coverage, and the documentation target passed.
+
+## Phase 3 — Feature taxonomy, physical bounds, and sensor coupling
+
+`configs/features.yaml` now maps all three C-MAPSS operating settings and all 21 sensor channels
+to their standard columns and meanings. Operating settings are immutable. The configured proxies
+are measured fan speed (`s8`), core speed (`s9`), fuel-flow ratio (`s12`), bypass ratio (`s15`),
+bleed enthalpy (`s17`), and coolant bleed (`s20`, `s21`). Each proxy has a rate limit and an
+explicit note that it is not a direct actuator command. The statistical taxonomy includes all
+channels; the active model feature list is subset-specific after train-only constant filtering.
+
+Feature bounds default to the configured 1st and 99th percentiles on training engines, expanded by
+2% of that percentile span. Constant features use the configured `degenerate_half_width`. YAML can
+instead provide manual minima and maxima. The loader checks that manual or fitted bounds remain
+within the observed training envelope plus its configured margin. Trained model and coupling
+artifacts persist effective raw-unit bounds. `bound_vectors` converts them to and from scaled model
+space using the fitted train-only scaler.
+
+`SensorCouplingModel` fits one target model per active dependent sensor on training engines with
+RUL above the configured healthy-to-moderate cutoff. The default Ridge backend has an exact torch
+representation; configured gradient-boosting and sklearn MLP backends are distilled to a
+differentiable torch MLP. Tier 4 reports out-of-fold residual bounds and YAML engineering rules.
+The optimizer's torch gradient path propagates changes through dependent sensors before predictor
+inference. Coupling fit R² and residual standard deviation are measured with deterministic,
+engine-grouped cross-validation.
+
+The real FD001 coupling fit used seed `1729`, five grouped folds, 47 training engines, and 8,072
+healthy-to-moderate rows. Its configured floor is R² `0.35`; two relations are below that floor and
+remain flagged:
+
+| Dependent sensor | Engine-grouped out-of-fold R² | Residual standard deviation (raw units) | Floor status |
+|---|---:|---:|---|
+| `sensor_11` | 0.67856 | 0.11326 | pass |
+| `sensor_13` | 0.66789 | 0.03371 | pass |
+| `sensor_14` | 0.83837 | 4.49841 | pass |
+| `sensor_2` | 0.42010 | 0.31002 | pass |
+| `sensor_3` | 0.33057 | 4.12348 | below floor |
+| `sensor_4` | 0.59260 | 4.36157 | pass |
+| `sensor_6` | 0.03053 | 0.00154 | below floor |
+| `sensor_7` | 0.59312 | 0.43846 | pass |
+
+The fit artifact and its HTML/PNG diagnostics are written under ignored `artifacts/` as
+`FD001-coupling.joblib` and `FD001-coupling-diagnostics.{html,png}`. A real FD001 healthy row
+(engine 3, cycle 1, RUL 178) passes the configured pressure and temperature ordering rules; a
+deliberately inconsistent temperature state fails. These empirical relations describe observed
+co-variation and do not establish causal physics or real-machine safety. The proxy assumption is
+documented in `docs/limitations.md`.
+
+### Phase 3 verification
+
+- The real retained feature lists for FD001–FD004 each passed taxonomy coverage and train-derived
+  bounds validation: 18, 24, 19, and 24 model inputs respectively.
+- The real FD001 coupling model and HTML/PNG diagnostics were fitted and persisted. R² floor
+  failures for `sensor_3` and `sensor_6` are reported without tuning or suppression.
+- Tests cover duplicate/missing/invalid bounds, masks, percentile margin behavior, bounds projection
+  idempotence, raw/scaled conversion, rate-limit boundary checks, NaN rejection, real healthy-state
+  rules, inconsistent-state failure, dependent-only propagation, torch gradients for all coupling
+  backends, persistence, and diagnostics.
+- One real high-risk held-out query (engine 2, cycle 261) was exercised through the updated engine:
+  risk moved from 0.88002 to 0.48425 with three changed proxies (`sensor_17`, `sensor_20`,
+  `sensor_15`), respecting `k_max=3`. It did not meet `tau_safe`; Tier 2 and Tier 4 passed while
+  Tier 3 failed, so the outcome remained unsuccessful. This is a single diagnostic query, not an
+  evaluation rate.
+- Final `mingw32-make all-checks` on Python 3.13.9: Ruff passed; mypy passed for 49 source files;
+  129 tests passed with 77% total coverage; the documentation target passed. Unit tests emitted
+  convergence warnings only for deliberately short (8-iteration) nonlinear-backend fixtures.

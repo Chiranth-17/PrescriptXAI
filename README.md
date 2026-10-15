@@ -6,9 +6,11 @@ three empirical/engineering plausibility tiers. The authoritative project synops
 [docs/synopsis.pdf](docs/synopsis.pdf).
 
 > **Scope:** NASA C-MAPSS is static run-to-failure data. It cannot establish that a proposed
-> intervention extends RUL or is safe on a real engine. The default FD001 feature map contains no
-> verified controllable actuators or coupling rules, so its run correctly produces no actionable
-> recourse. Dynamic simulator support is an optional interface, disabled by default.
+> intervention extends RUL or is safe on a real engine. The default feature map exposes seven
+> measured channels as configurable controllable proxies, not direct actuator commands. Learned
+> sensor coupling captures observed co-variation, not causal physics. Recommendations remain
+> research outputs pending domain review. Dynamic simulator support is an optional interface,
+> disabled by default.
 
 ## Install
 
@@ -64,18 +66,16 @@ uv run prescriptxai serve
 
 Thresholds, feature groups, model parameters, bounds, rate limits, coupling rules, recourse limits,
 and evaluation targets live in [`configs/default.yaml`](configs/default.yaml) and
-[`configs/features.yaml`](configs/features.yaml). Only declare a feature as an actuator after a
-domain review establishes the telemetry-to-control mapping and safe operating envelope.
+[`configs/features.yaml`](configs/features.yaml). The C-MAPSS proxy choices are configurable and
+must not be interpreted as verified actuator commands. A domain review must establish the
+telemetry-to-control mapping and safe operating envelope before operational use.
 
 ## Evaluation status
 
-The latest default FD001 run trains on 69 engines, uses 16 for validation, and holds out 15 engines.
-The held-out set contains 354 states over the configured high-risk threshold; 100 are deterministically
-sampled. In that run, model-valid recommendations were 0/100 and fully physically plausible
-recommendations were 0/100 because no verified actuators or coupling rules are configured. Rates,
-latency, and target statuses are measured in `artifacts/FD001-evaluation.md`; they are not the
-illustrative synopsis case study. See [PROGRESS.md](PROGRESS.md) for exact current results and
-open blockers.
+The latest measured predictor and coupling metrics, including below-floor coupling relations, are
+recorded in [`PROGRESS.md`](PROGRESS.md) and the generated `artifacts/` reports. Those measurements
+do not establish that the proxy adjustments are physically realizable or safe on a real engine.
+Evaluation target statuses use measured run outputs; synopsis case-study values are illustrative.
 
 ## Verify changes
 

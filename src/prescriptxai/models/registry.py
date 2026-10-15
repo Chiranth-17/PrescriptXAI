@@ -37,6 +37,7 @@ class ModelBundle:
     config_hash: str = ""
     git_commit: str | None = None
     metrics: dict[str, object] | None = None
+    resolved_bounds: dict[str, tuple[float, float]] | None = None
     artifact_version: int = _ARTIFACT_VERSION
 
     @property

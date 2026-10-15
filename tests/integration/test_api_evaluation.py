@@ -35,7 +35,10 @@ def test_dashboard_empty_state_shows_dataset_and_configuration_limits() -> None:
         "does not establish real-machine safety or RUL extension" in item.value
         for item in app_test.warning
     )
-    assert any("No verified controllable actuators" in item.value for item in app_test.info)
+    assert any(
+        "Configured controllable channels are C-MAPSS telemetry proxies" in item.value
+        for item in app_test.info
+    )
 
 
 def _engine() -> PrescriptXAIEngine:
