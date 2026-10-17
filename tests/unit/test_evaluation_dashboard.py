@@ -2,14 +2,17 @@
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+from fixtures.recourse_models import make_recourse_fixture
 from prescriptxai.config import load_config
 from prescriptxai.dashboard.state import parse_state_document
 from prescriptxai.evaluation.ablations import ablation_acceptance_rates
 from prescriptxai.evaluation.latency import summarize_latency
 from prescriptxai.evaluation.metrics import EvaluationRecord, calculate_metrics
+from prescriptxai.evaluation.runner import _direction_consistency
 
 
 def _record(
@@ -57,6 +60,31 @@ def test_metrics_keep_model_and_physical_validity_separate() -> None:
     assert summary.mean_risk_reduction.value == pytest.approx(0.5)
     assert summary.latency["dashboard"].mean_ms is None
     assert summary.latency["dashboard"].passed is None
+
+
+def test_nearby_state_direction_diagnostic_reports_sign_disagreement() -> None:
+    """Signed actions are compared only for states within the configured scaled radius."""
+    bundle, taxonomy, _ = make_recourse_fixture()
+    engine = SimpleNamespace(model=bundle, taxonomy=taxonomy)
+    records = (
+        EvaluationRecord(
+            1, 20, 0.9, 0.2, True, True, True, True, 1, 1.0, 1.0, True, "first",
+            {"actuator": 1},
+        ),
+        EvaluationRecord(
+            2, 21, 0.9, 0.2, True, True, True, True, 1, 1.0, 1.0, True, "second",
+            {"actuator": -1},
+        ),
+    )
+    consistency = _direction_consistency(
+        engine,
+        [{"actuator": -0.2, "sensor": 2.0}, {"actuator": -0.19, "sensor": 2.0}],
+        records,
+        radius=0.1,
+    )
+    assert consistency.similar_pair_count == 1
+    assert consistency.pairwise_sign_agreement == 0.0
+    assert consistency.per_feature_sign_agreement["actuator"] == 0.0
 
 
 def test_empty_evaluation_stays_unmeasured_and_ablation_names_are_explicit() -> None:

@@ -81,6 +81,19 @@ recourse:
   max_iter: 500
   solver_ftol: 0.000000001
   safety_margin: 0.005
+  l1_mode: smooth
+  l1_weight: 1.0
+  l1_smoothing_epsilon: 0.000001
+  prediction_loss: squared_hinge
+  restarts: 2
+  alpha_growth: 2.0
+  alpha_steps: 8
+  l1_growth: 2.0
+  l1_escalation_steps: 3
+  support_search_top_m: 5
+  support_search_limit: 8
+  change_tolerance: 0.0000001
+  max_line_search_steps: 20
 validation:
   D_max: 5.0
   d_max_method: mahalanobis
@@ -91,6 +104,7 @@ validation:
 evaluation:
   random_seed: 1729
   max_queries: 100
+  direction_similarity_radius: 1.0
   recourse_validity_rate: 0.95
   physical_plausibility_rate: 0.90
   average_sparsity_max: 3

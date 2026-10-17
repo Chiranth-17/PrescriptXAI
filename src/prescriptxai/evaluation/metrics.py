@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 
 import numpy as np
 from scipy.stats import spearmanr
@@ -105,6 +105,10 @@ class EvaluationRecord:
     validation_ms: float
     solver_success: bool
     message: str
+    counterfactual_signs: Mapping[str, int] = field(default_factory=dict)
+    frozen_feature_violations: int = 0
+    actuator_bound_violations: int = 0
+    rate_limit_violations: int = 0
 
 
 @dataclass(frozen=True)

@@ -84,3 +84,57 @@ available, and record measured retained feature sets.
 ---
 
 *Last updated: 2026-10-15*
+
+## Session: 2026-10-17 — Phase 4 constrained recourse
+
+### Objective
+
+Implement sparse, physically bounded L-BFGS-B recourse with calibrated true-model validation,
+then measure the requested FD001 held-out benchmark without hiding target failures.
+
+### Decisions and changes
+
+- Implemented smooth L1 as the default and p/n variable splitting as an alternative; both are
+  compared by objective tests. Immutable variables are excluded from the decision vector.
+- Intersected train-derived actuator bounds, per-step rate limits, and scaled movement intervals.
+  Dependent sensors are propagated through the fitted Phase 3 torch coupling model.
+- Used the differentiable surrogate in optimization and rescored candidate states using the true
+  calibrated estimator. Added structured failure output, feasible nearest-point fallback, seeded
+  restarts, alpha/L1 schedules, support search, and stage timing.
+- Changed evaluation to count all high-risk inputs and identify non-actionable empty intervals
+  before sampling the recourse benchmark. Added effective search configuration to saved reports.
+
+### Empirical evidence
+
+- The first default-search sample exposed 54 actuator and 54 rate-limit violations, including
+  high-risk telemetry outside reachable physical/rate intervals. The candidate fallback and
+  actionable-state prefilter were corrected and tested; no such violations occurred afterward.
+- Real held-out FD001 benchmark: 378 eligible high-risk states; 70 infeasible one-step intervals;
+  308 actionable; deterministic sample of 200 completed. Measured model-validity 0/200, overall
+  physical-plausibility 0/200, Tier 2 95.5%, Tier 3 0%, Tier 4 100%, mean risk reduction 0.12047,
+  mean returned diagnostic action size 2.595. There were zero frozen, bounds, or rate violations.
+- Mean/P95 optimization latency 472.10/1,104.92 ms; mean pipeline latency 483.32 ms. The synopsis
+  target ranges were not met. Direction-consistency was unmeasured because no sampled pairs were
+  within the configured scaled-distance radius. Valid-candidate sparsity is unmeasured because no
+  candidate reached the true risk threshold.
+- The full configured search (500 iterations, 2 starts, 8 alpha steps, and 8 support candidates)
+  was interrupted after one case exceeded 20 minutes. The completed 200-state evaluation therefore
+  used an ignored temporary YAML config with 25 iterations, one restart, three alpha steps, one L1
+  step, two support candidates, and eight line-search steps. It retains the same objective and
+  true-model validity rule; this computational budget is reported as a limitation.
+
+### Verification
+
+- 2-query real-data smoke test with the benchmark search config: completed and showed zero frozen,
+  bounds, and rate violations.
+- `mingw32-make all-checks` → Ruff passed; mypy passed for 49 source files; 139 tests passed with
+  77% total coverage; docs target passed. The only warnings came from deliberately short nonlinear
+  coupling test fixtures.
+
+### Remaining limitations
+
+- The run did not achieve the required model validity or risk reduction. The feature proxies and
+  statistical coupling are not validated control actions; no maintenance outcome or RUL extension
+  can be claimed.
+- The reduced search budget, absence of any valid candidate, and three below-target latency/risk
+  outcomes require further optimizer/model investigation before operational use.

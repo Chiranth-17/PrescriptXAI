@@ -18,9 +18,21 @@
   does not carry that history, so LSTM bundles are for sequence scoring until that API is extended.
 - **Mahalanobis model assumptions.** A single empirical covariance is a coarse description of
   potentially multimodal operation. A passing distance is not a physics proof.
+- **Out-of-range starting telemetry.** A high-risk input can lie outside the train-derived actuator
+  proxy bounds by more than its configured one-step rate limit. No adjustment can satisfy both
+  constraints in that case; the engine returns an explicit infeasible-interval failure and the
+  evaluation reports such inputs separately from actionable recourse cases.
 - **Evaluation scope.** Metrics are for the configured model, seed, engine split, taxonomy, and
   sampled held-out rows. Synopsis case-study values are illustrative and never substituted for
   measured results.
+- **Phase 4 FD001 outcome.** On a seeded sample of 200 of 308 feasible-interval high-risk states
+  in the internal held-out split, no candidate met the true calibrated `tau_safe` target. Mean risk
+  reduction was 0.12047 and the configured 0.60 target failed. Mean returned diagnostic changes
+  were 2.595 features; valid-candidate sparsity is unmeasured because there were no valid results.
+  The benchmark used explicitly recorded reduced search limits (25 iterations, one restart, three
+  alpha steps, one L1 step, two support candidates); these settings are in the generated evaluation
+  report. The result does not demonstrate successful recourse and is not a maintenance-effect
+  claim.
 - **Latency scope.** The evaluation measures inference, optimization, and validation in the Python
   process. Raw telemetry ingestion and interactive dashboard render latency remain unmeasured until
   an instrumented live-input deployment is available.

@@ -337,13 +337,25 @@ def recommend_state(
 ) -> None:
     """Recommend and validate an intervention for a JSON machine state."""
     engine = PrescriptXAIEngine.from_files(config_path, taxonomy_path)
-    result = engine.recommend(_read_state(state_path))
+    state = _read_state(state_path)
+    result = engine.recommend(state)
     payload = {
+        "original_state": state,
+        "new_state": result.optimization.state,
         "outcome": result.outcome.model_dump(mode="json"),
         "optimizer": {
             "solver_success": result.optimization.solver_success,
             "message": result.optimization.message,
             "objective_value": result.optimization.objective_value,
+            "failure_reason": result.optimization.failure_reason,
+            "risk_reached": result.optimization.risk_reached,
+            "stage_timings_ms": result.optimization.stage_timings_ms,
+            "objective_terms": result.optimization.objective_terms,
+            "counterfactual_signs": result.optimization.counterfactual_signs,
+            "solver_calls": result.optimization.solver_calls,
+            "actuator_constraints_feasible": (
+                result.optimization.actuator_constraints_feasible
+            ),
             "optimization_ms": result.optimization_ms,
             "validation_ms": result.validation_ms,
         },
@@ -369,10 +381,14 @@ def recommend_state(
 def evaluate_model(
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
     taxonomy_path: Path = typer.Option(Path("configs/features.yaml"), "--features"),
+    queries: int | None = typer.Option(None, "--queries", min=1),
 ) -> None:
     """Evaluate high-risk states from the engine-held-out split and write reports."""
     config = load_config(config_path)
     engine = PrescriptXAIEngine.from_files(config_path, taxonomy_path)
+    if queries is not None:
+        config.evaluation.max_queries = queries
+        engine.config.evaluation.max_queries = queries
     archive_path = config.data.root / config.data.archive_name
     dataset = load_cmapss_archive(archive_path, config.data.dataset)
     labeled = add_training_labels(
@@ -391,14 +407,43 @@ def evaluate_model(
     # Archive parsing is dataset setup, not the synopsis' per-state telemetry ingestion stage.
     run = evaluate_states(engine, splits.test)
     markdown_path = config.artifacts.evaluation_report.with_suffix(".md")
-    write_evaluation_report(run, config.artifacts.evaluation_report, markdown_path)
+    write_evaluation_report(
+        run,
+        config.artifacts.evaluation_report,
+        markdown_path,
+        run_configuration=config.recourse.model_dump(mode="json"),
+    )
     typer.echo(
         json.dumps(
             {
                 "eligible_high_risk_states": run.summary.eligible_high_risk_states,
+                "infeasible_high_risk_states": run.infeasible_high_risk_states,
+                "actionable_high_risk_states": (
+                    run.summary.eligible_high_risk_states - run.infeasible_high_risk_states
+                ),
                 "evaluated_states": run.summary.evaluated_states,
+                "recourse_search_configuration": config.recourse.model_dump(mode="json"),
+                "mean_risk_drop": run.summary.mean_risk_reduction.value,
+                "mean_optimization_ms": run.summary.latency["optimization"].mean_ms,
+                "mean_time_ms": run.summary.latency["pipeline"].mean_ms,
+                "mean_sparsity": run.summary.average_sparsity.value,
+                "mean_returned_action_sparsity": (
+                    sum(record.changed_features for record in run.records) / len(run.records)
+                    if run.records
+                    else None
+                ),
+                "direction_consistency": run.direction_consistency.__dict__,
                 "model_validity_rate": run.summary.recourse_validity_rate.value,
                 "physical_plausibility_rate": run.summary.physical_plausibility_rate.value,
+                "frozen_feature_violations": sum(
+                    record.frozen_feature_violations for record in run.records
+                ),
+                "actuator_bound_violations": sum(
+                    record.actuator_bound_violations for record in run.records
+                ),
+                "rate_limit_violations": sum(
+                    record.rate_limit_violations for record in run.records
+                ),
                 "json_report": str(config.artifacts.evaluation_report),
                 "markdown_report": str(markdown_path),
             },

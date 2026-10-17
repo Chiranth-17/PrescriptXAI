@@ -45,10 +45,19 @@ def create_app(engine: PrescriptXAIEngine) -> FastAPI:
             "tier4_coupling": report.tier4_coupling,
         }
         return RecommendationResponse(
+            original_state=request.state,
+            new_state=result.optimization.state,
             outcome=result.outcome,
             solver_success=result.optimization.solver_success,
             optimizer_message=result.optimization.message,
             objective_value=result.optimization.objective_value,
+            failure_reason=result.optimization.failure_reason,
+            risk_reached=result.optimization.risk_reached,
+            stage_timings_ms=result.optimization.stage_timings_ms,
+            objective_terms=result.optimization.objective_terms,
+            counterfactual_signs=result.optimization.counterfactual_signs,
+            solver_calls=result.optimization.solver_calls,
+            actuator_constraints_feasible=result.optimization.actuator_constraints_feasible,
             tiers={
                 name: TierPayload(
                     valid=tier.valid,

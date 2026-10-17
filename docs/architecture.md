@@ -11,10 +11,11 @@
    engines are reserved for one-time reporting. XGBoost gets a distilled MLP surrogate for its
    gradient path. The versioned registry stores weights, calibrator, scaler, feature order, config
    hash, Git revision, metrics, and engine provenance.
-5. The recourse optimizer changes only configured controllable proxy features. It uses the MLP or
-   distilled MLP's autograd derivatives with SLSQP when available, propagates their changes through
-   the fitted dependent-sensor model, and returns raw/scaled proxy deltas plus an independent
-   model-risk result.
+5. The recourse optimizer changes only configured controllable proxy features. It uses bounded
+   L-BFGS-B with torch-autograd gradients from the MLP or distilled MLP, propagates changes through
+   the fitted dependent-sensor model, enforces top-k sparsity by support re-optimization, and
+   re-scores every final candidate with the true calibrated predictor. It returns raw/scaled proxy
+   deltas, solver diagnostics, and an independent model-risk result.
 6. The validator runs Tier 1 model safety, Tier 2 training-distribution Mahalanobis distance,
    Tier 3 actuator bounds/rates and immutable-feature checks, and Tier 4 configured coupling rules.
    Missing coupling rules fail closed. Simulator support is a Protocol boundary, not a simulator
@@ -48,4 +49,5 @@ safety. See [limitations](limitations.md).
 - Streamlit: raw state upload, measured risk/delta visualization, per-tier results, and limitation
   notices.
 - Evaluation: JSON and Markdown report with denominators, configured target statuses, and
-  unmeasured stages left unmeasured.
+  unmeasured stages left unmeasured, including direction agreement among nearby states and explicit
+  frozen-feature, actuator-bound, and rate-limit violation counts.

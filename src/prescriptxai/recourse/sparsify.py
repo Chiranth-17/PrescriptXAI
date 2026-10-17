@@ -25,6 +25,47 @@ class SparseCandidate:
     message: str
 
 
+def candidate_supports(
+    scaled_delta_by_feature: Mapping[str, float],
+    feature_names: tuple[str, ...],
+    *,
+    max_changed_features: int,
+    top_m: int,
+    max_supports: int,
+) -> tuple[tuple[str, ...], ...]:
+    """Enumerate deterministic top-k and nearby supports ranked by absolute scaled change."""
+    if max_changed_features < 1 or top_m < 1 or max_supports < 1:
+        raise ValueError("support limits must be positive")
+    ranked = [
+        name
+        for name in feature_names
+        if name in scaled_delta_by_feature and scaled_delta_by_feature[name] != 0.0
+    ]
+    ranked.sort(key=lambda name: abs(scaled_delta_by_feature[name]), reverse=True)
+    ranked = ranked[: min(top_m, len(ranked))]
+    supports: list[tuple[str, ...]] = []
+    for size in range(min(max_changed_features, len(ranked)), 0, -1):
+        supports.extend(combinations(ranked, size))
+    return tuple(supports[:max_supports])
+
+
+def prune_to_support(
+    original_state: Mapping[str, float],
+    candidate_state: Mapping[str, float],
+    support: tuple[str, ...],
+    candidate_transform: StateTransform | None = None,
+) -> dict[str, float]:
+    """Keep selected control changes and restore all omitted controls before propagation."""
+    result = dict(original_state)
+    for name in support:
+        if name not in original_state or name not in candidate_state:
+            raise ValueError(f"support feature {name!r} is missing from a state")
+        result[name] = float(candidate_state[name])
+    if candidate_transform is not None:
+        result = dict(candidate_transform(result))
+    return result
+
+
 def sparsify_candidate(
     bundle: ModelBundle,
     original_state: Mapping[str, float],

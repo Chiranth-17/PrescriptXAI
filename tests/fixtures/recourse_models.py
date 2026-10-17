@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+import torch
 from numpy.typing import NDArray
 
 from prescriptxai.constraints.taxonomy import (
@@ -22,11 +23,16 @@ class SigmoidEstimator:
     """Deterministic toy predictor used only in recourse tests."""
 
     classes_ = np.array([0, 1])
+    supports_gradients = True
 
     def predict_proba(self, features: NDArray[np.float64]) -> NDArray[np.float64]:
         """Risk falls as the scaled actuator increases."""
         positive = 1.0 / (1.0 + np.exp(5.0 * features[:, 0]))
         return np.column_stack((1.0 - positive, positive))
+
+    def torch_forward(self, features: torch.Tensor) -> torch.Tensor:
+        """Differentiable counterpart of the fixture classifier's failure probability."""
+        return torch.sigmoid(-5.0 * features[:, 0])
 
 
 def make_recourse_fixture() -> tuple[ModelBundle, FeatureTaxonomy, pd.DataFrame]:

@@ -107,7 +107,7 @@ class ModelConfig(BaseModel):
 
 
 class RecourseConfig(BaseModel):
-    """Optimization weights and recourse complexity limits."""
+    """Optimization weights, numerical choices, and recourse complexity limits."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -123,6 +123,19 @@ class RecourseConfig(BaseModel):
     max_iterations: int = Field(ge=1, validation_alias=AliasChoices("max_iter", "max_iterations"))
     solver_ftol: float = Field(gt=0)
     safety_margin: float = Field(default=0.005, ge=0, lt=1)
+    l1_mode: Literal["smooth", "split"] = "smooth"
+    l1_weight: float = Field(default=1.0, gt=0)
+    l1_smoothing_epsilon: float = Field(default=1e-6, gt=0)
+    prediction_loss: Literal["hinge", "squared_hinge"] = "squared_hinge"
+    restarts: int = Field(default=2, ge=1)
+    alpha_growth: float = Field(default=2.0, gt=1)
+    alpha_steps: int = Field(default=4, ge=1)
+    l1_growth: float = Field(default=2.0, gt=1)
+    l1_escalation_steps: int = Field(default=3, ge=1)
+    support_search_top_m: int = Field(default=5, ge=1)
+    support_search_limit: int = Field(default=8, ge=1)
+    change_tolerance: float = Field(default=1e-7, ge=0)
+    max_line_search_steps: int = Field(default=20, ge=1)
 
     @property
     def k_max(self) -> int:
@@ -167,6 +180,7 @@ class EvaluationConfig(BaseModel):
 
     random_seed: int = Field(ge=0)
     max_queries: int = Field(ge=1)
+    direction_similarity_radius: float = Field(default=1.0, ge=0)
     recourse_validity_rate: float = Field(ge=0, le=1)
     physical_plausibility_rate: float = Field(ge=0, le=1)
     average_sparsity_max: int = Field(ge=0)

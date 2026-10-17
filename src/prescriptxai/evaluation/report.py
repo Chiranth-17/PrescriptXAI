@@ -3,23 +3,48 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
 from prescriptxai.evaluation.metrics import EvaluationSummary
-from prescriptxai.evaluation.runner import EvaluationRun
+from prescriptxai.evaluation.runner import DirectionConsistency, EvaluationRun
 
 
-def write_evaluation_report(run: EvaluationRun, json_path: Path, markdown_path: Path) -> None:
+def write_evaluation_report(
+    run: EvaluationRun,
+    json_path: Path,
+    markdown_path: Path,
+    run_configuration: Mapping[str, Any] | None = None,
+) -> None:
     """Write records and computed metrics to JSON and Markdown files."""
     json_path.parent.mkdir(parents=True, exist_ok=True)
     markdown_path.parent.mkdir(parents=True, exist_ok=True)
     json_document = {
         "summary": run.summary.to_dict(),
+        "counterfactual_direction_consistency": run.direction_consistency.__dict__,
+        "infeasible_high_risk_states": run.infeasible_high_risk_states,
+        "actionable_high_risk_states": (
+            run.summary.eligible_high_risk_states - run.infeasible_high_risk_states
+        ),
+        "recourse_search_configuration": dict(run_configuration or {}),
         "records": [record.__dict__ for record in run.records],
     }
     json_path.write_text(json.dumps(json_document, indent=2, allow_nan=False), encoding="utf-8")
-    markdown_path.write_text(render_markdown(run.summary), encoding="utf-8")
+    markdown_path.write_text(
+        render_markdown(
+            run.summary,
+            run.direction_consistency,
+            (
+                sum(record.changed_features for record in run.records) / len(run.records)
+                if run.records
+                else None
+            ),
+            run.infeasible_high_risk_states,
+            run_configuration,
+        ),
+        encoding="utf-8",
+    )
 
 
 def _format_metric(value: float | None) -> str:
@@ -27,7 +52,13 @@ def _format_metric(value: float | None) -> str:
     return "Unmeasured" if value is None else f"{value:.4f}"
 
 
-def render_markdown(summary: EvaluationSummary) -> str:
+def render_markdown(
+    summary: EvaluationSummary,
+    direction: DirectionConsistency | None = None,
+    mean_returned_action_sparsity: float | None = None,
+    infeasible_high_risk_states: int | None = None,
+    run_configuration: Mapping[str, Any] | None = None,
+) -> str:
     """Render dynamically computed measurements and target statuses."""
     lines = [
         "# PrescriptXAI Evaluation",
@@ -52,6 +83,40 @@ def render_markdown(summary: EvaluationSummary) -> str:
     for name, metric in metrics.items():
         status = "unmeasured" if metric.passed is None else ("pass" if metric.passed else "fail")
         lines.append(f"| {name} | {_format_metric(metric.value)} | {metric.target} | {status} |")
+    if direction is not None:
+        lines.extend(
+            (
+                "",
+                "## Counterfactual direction consistency",
+                "",
+                f"Similar state pairs (scaled distance ≤ {direction.similarity_radius:g}): "
+                f"{direction.similar_pair_count}",
+                "Pairwise sign agreement: "
+                f"{_format_metric(direction.pairwise_sign_agreement)}",
+            )
+        )
+    if mean_returned_action_sparsity is not None:
+        lines.extend(
+            (
+                "Mean changed features across all returned candidates: "
+                f"{mean_returned_action_sparsity:.4f}",
+                "The target average sparsity metric above is computed over model-valid candidates.",
+            )
+        )
+    if infeasible_high_risk_states is not None:
+        lines.append(
+            "High-risk inputs with no feasible physical/rate-limited one-step interval: "
+            f"{infeasible_high_risk_states}"
+        )
+        lines.append(
+            "Actionable high-risk states: "
+            f"{summary.eligible_high_risk_states - infeasible_high_risk_states}"
+        )
+    if run_configuration:
+        lines.extend(("", "## Recourse search configuration", ""))
+        lines.extend(
+            f"- `{name}`: `{value}`" for name, value in sorted(run_configuration.items())
+        )
     lines.extend(
         ("", "## Latency", "", "| Stage | Mean ms | P95 ms | Status |", "|---|---:|---:|---|")
     )

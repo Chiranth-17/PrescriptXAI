@@ -6,17 +6,24 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+import torch
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from fixtures.recourse_models import make_recourse_fixture
 from prescriptxai.config import load_config
-from prescriptxai.constraints.bounds import allowed_interval
+from prescriptxai.constraints.bounds import allowed_interval, check_bound_violations
 from prescriptxai.constraints.coupling import evaluate_rule, validate_couplings
 from prescriptxai.constraints.taxonomy import ActuatorConstraint, CouplingRule
 from prescriptxai.data.preprocess import fit_feature_scaler
 from prescriptxai.models.registry import ModelBundle
 from prescriptxai.recourse.baselines import no_action_baseline, single_actuator_baseline
-from prescriptxai.recourse.objective import prediction_flip_loss, scaled_l1_distance
-from prescriptxai.recourse.optimizer import optimize_recourse
+from prescriptxai.recourse.objective import (
+    RecourseObjective,
+    prediction_flip_loss,
+    scaled_l1_distance,
+)
+from prescriptxai.recourse.optimizer import RecourseOptimizer, optimize_recourse
 from prescriptxai.recourse.sparsify import sparsify_candidate
 from prescriptxai.schemas import DeltaMapping
 from prescriptxai.validation.pipeline import (
@@ -175,6 +182,7 @@ def test_optimizer_finds_sparse_safe_bounded_candidate_and_reports_both_delta_un
 
     assert result.initial_risk >= config.model.danger_threshold
     assert result.model_valid
+    assert result.actuator_constraints_feasible
     assert result.final_risk <= config.model.safe_threshold
     assert len(result.deltas) == 1
     assert result.deltas[0].feature == "actuator"
@@ -183,7 +191,14 @@ def test_optimizer_finds_sparse_safe_bounded_candidate_and_reports_both_delta_un
         result.state["actuator"] - initial["actuator"]
         <= taxonomy.actuator_constraints["actuator"].max_change_per_step
     )
+    assert not check_bound_violations(
+        result.state, taxonomy, features=("actuator",)
+    )
     assert result.deltas[0].raw_delta != result.deltas[0].scaled_delta
+    assert result.deltas[0].percent_of_current is not None
+    assert result.deltas[0].percent_of_range == pytest.approx(
+        result.deltas[0].raw_delta / 4.0 * 100
+    )
     assert abs(result.deltas[0].scaled_delta) <= config.recourse.max_scaled_distance
 
 
@@ -200,8 +215,217 @@ def test_optimizer_refuses_no_actuator_and_low_risk_inputs() -> None:
 
     assert not no_actuator_result.model_valid
     assert "no controllable actuators" in no_actuator_result.message
-    assert not low_risk_result.model_valid
-    assert "below the configured danger" in low_risk_result.message
+    assert low_risk_result.model_valid
+    assert "no action needed" in low_risk_result.message
+
+
+def test_differentiable_objective_gradient_matches_finite_differences() -> None:
+    """Torch autograd agrees with centered differences away from the hinge kink."""
+
+    def risk(delta: torch.Tensor) -> torch.Tensor:
+        return torch.sigmoid(2.0 * delta[0] - delta[1] + 0.7)
+
+    objective = RecourseObjective(
+        risk,
+        np.array([-1.0, -1.0]),
+        np.array([1.0, 1.0]),
+        safe_threshold=0.2,
+        safety_margin=0.01,
+        alpha=8.0,
+        beta=1.0,
+        gamma=1.0,
+        l1_weight=0.7,
+        l1_mode="smooth",
+        smoothing_epsilon=1e-5,
+        prediction_loss="squared_hinge",
+    )
+    point = np.array([0.2, -0.15])
+    _, gradient = objective.value_and_grad(point)
+    finite_difference = np.zeros_like(point)
+    step = 1e-6
+    for index in range(len(point)):
+        plus, minus = point.copy(), point.copy()
+        plus[index] += step
+        minus[index] -= step
+        finite_difference[index] = (
+            objective.value_and_grad(plus)[0] - objective.value_and_grad(minus)[0]
+        ) / (2 * step)
+    np.testing.assert_allclose(gradient, finite_difference, rtol=2e-5, atol=2e-5)
+
+
+def test_objective_terms_are_separately_reported_and_weighted() -> None:
+    """L1, prediction, immutable, and bound terms remain individually inspectable."""
+
+    def risk(delta: torch.Tensor) -> torch.Tensor:
+        return delta[0] * 0.0 + 0.8
+
+    objective = RecourseObjective(
+        risk,
+        np.array([-0.2]),
+        np.array([0.2]),
+        safe_threshold=0.2,
+        safety_margin=0.01,
+        alpha=2.0,
+        beta=50.0,
+        gamma=1.0,
+        l1_weight=1.0,
+        l1_mode="smooth",
+        smoothing_epsilon=1e-6,
+        prediction_loss="squared_hinge",
+    )
+    terms = objective.components(np.array([0.5]))
+
+    assert terms.l1 == pytest.approx(0.5, abs=1e-6)
+    assert terms.prediction == pytest.approx(2.0 * (0.8 - 0.2 + 0.01) ** 2)
+    assert terms.immutable == 0.0
+    assert terms.bounds == pytest.approx((0.5 - 0.2) ** 2)
+    assert terms.total == pytest.approx(
+        terms.l1 + terms.prediction + terms.immutable + terms.bounds
+    )
+
+
+def test_smooth_and_positive_negative_l1_modes_agree() -> None:
+    """The split formulation approaches the smooth formulation as epsilon shrinks."""
+
+    def risk(delta: torch.Tensor) -> torch.Tensor:
+        return torch.sigmoid(delta.sum() + 0.5)
+
+    common = {
+        "risk_function": risk,
+        "lower_change": np.array([-1.0, -1.0]),
+        "upper_change": np.array([1.0, 1.0]),
+        "safe_threshold": 0.2,
+        "safety_margin": 0.0,
+        "alpha": 3.0,
+        "beta": 1.0,
+        "gamma": 1.0,
+        "l1_weight": 1.0,
+        "smoothing_epsilon": 1e-8,
+        "prediction_loss": "squared_hinge",
+    }
+    smooth = RecourseObjective(**common, l1_mode="smooth")
+    split = RecourseObjective(**common, l1_mode="split")
+    change = np.array([0.25, -0.4])
+    assert smooth.components(smooth.encode(change)).total == pytest.approx(
+        split.components(split.encode(change)).total, abs=1e-7
+    )
+
+
+@settings(max_examples=5, deadline=None)
+@given(sensor_value=st.floats(min_value=-10, max_value=10, allow_nan=False))
+def test_frozen_feature_is_unchanged_for_random_states(sensor_value: float) -> None:
+    """Only the configured controllable proxy enters the solver decision vector."""
+    bundle, taxonomy, _ = make_recourse_fixture()
+    taxonomy.feature_groups.dependent_sensors.features = []
+    taxonomy.feature_groups.immutable_environmental.features = ["sensor"]
+    config = load_config(Path("configs/default.yaml"))
+    config.recourse.max_changed_features = 1
+    config.recourse.alpha_steps = 4
+    config.recourse.l1_escalation_steps = 1
+    config.recourse.restarts = 1
+    config.recourse.max_iterations = 60
+    result = RecourseOptimizer(bundle, taxonomy).solve(
+        {"actuator": -2.0, "sensor": sensor_value}, config
+    )
+    assert result.state["sensor"] == sensor_value
+
+
+def test_optimizer_no_action_timing_extreme_bound_and_seeded_multistart() -> None:
+    """Safe states are no-ops; bounded edge states remain feasible and seeded results repeat."""
+    bundle, taxonomy, _ = make_recourse_fixture()
+    config = load_config(Path("configs/default.yaml"))
+    config.recourse.max_changed_features = 1
+    config.recourse.restarts = 2
+    config.recourse.max_iterations = 100
+    optimizer = RecourseOptimizer(bundle, taxonomy)
+
+    safe = optimizer.solve({"actuator": 2.0, "sensor": 2.0}, config)
+    assert safe.model_valid and not safe.deltas
+    assert safe.message.startswith("no action needed")
+    assert safe.stage_timings_ms["total"] >= 0
+
+    edge = optimizer.solve({"actuator": -2.0, "sensor": 10.0}, config)
+    assert taxonomy.actuator_constraints["actuator"].minimum <= edge.state["actuator"]
+    assert edge.state["actuator"] <= taxonomy.actuator_constraints["actuator"].maximum
+    assert abs(edge.state["actuator"] + 2.0) <= 4.0
+
+    config.recourse.restarts = 1
+    single_start = optimizer.solve({"actuator": -2.0, "sensor": 2.0}, config)
+    config.recourse.restarts = 2
+    repeated = optimizer.solve({"actuator": -2.0, "sensor": 2.0}, config)
+    again = optimizer.solve({"actuator": -2.0, "sensor": 2.0}, config)
+    assert repeated.state == again.state
+    assert repeated.final_risk == again.final_risk
+    assert repeated.stage_timings_ms["optimization"] >= 0
+    if single_start.objective_value is not None and repeated.objective_value is not None:
+        assert repeated.objective_value <= single_start.objective_value + 1e-9
+
+
+def test_optimizer_reports_structured_failure_for_missing_gradients() -> None:
+    """A nondifferentiable primary without an XGBoost surrogate fails explicitly."""
+    bundle, taxonomy, _ = make_recourse_fixture()
+    bundle.estimator.supports_gradients = False
+    config = load_config(Path("configs/default.yaml"))
+    result = RecourseOptimizer(bundle, taxonomy).solve(
+        {"actuator": -2.0, "sensor": 2.0}, config
+    )
+    assert not result.model_valid
+    assert result.failure_reason == "differentiable_predictor_unavailable"
+    assert result.risk_reached == result.initial_risk
+
+
+def test_unsafe_direction_limited_recourse_returns_closest_candidate_and_reason() -> None:
+    """A rate/direction-fixed actuator returns a structured failure, not false success."""
+    bundle, taxonomy, _ = make_recourse_fixture()
+    taxonomy.actuator_constraints["actuator"].direction = "decrease_only"
+    config = load_config(Path("configs/default.yaml"))
+    config.recourse.alpha_steps = 1
+    config.recourse.l1_escalation_steps = 1
+    config.recourse.restarts = 1
+    config.recourse.max_iterations = 20
+    initial = {"actuator": -2.0, "sensor": 2.0}
+
+    result = RecourseOptimizer(bundle, taxonomy).solve(initial, config)
+
+    assert not result.model_valid
+    assert result.failure_reason == "safe_risk_not_reached"
+    assert result.state["actuator"] == initial["actuator"]
+    assert result.risk_reached == result.initial_risk
+    assert result.solver_calls >= 1
+    assert result.actuator_constraints_feasible
+
+
+def test_unreachable_out_of_bounds_state_returns_no_feasible_candidate() -> None:
+    """An out-of-range state beyond its one-step rate limit is explicitly infeasible."""
+    bundle, taxonomy, _ = make_recourse_fixture()
+    config = load_config(Path("configs/default.yaml"))
+    result = RecourseOptimizer(bundle, taxonomy).solve(
+        {"actuator": -20.0, "sensor": 2.0}, config
+    )
+
+    assert not result.model_valid
+    assert result.failure_reason == "infeasible_actuator_interval"
+    assert not result.actuator_constraints_feasible
+    assert result.risk_reached == result.initial_risk
+
+
+def test_failure_candidate_projects_reachable_out_of_bounds_input() -> None:
+    """When the rate box can reach physical bounds, even failure output is bound-feasible."""
+    bundle, taxonomy, _ = make_recourse_fixture()
+    config = load_config(Path("configs/default.yaml"))
+    config.recourse.alpha_steps = 1
+    config.recourse.l1_escalation_steps = 1
+    config.recourse.restarts = 1
+    config.recourse.max_iterations = 1
+
+    result = RecourseOptimizer(bundle, taxonomy).solve(
+        {"actuator": -2.5, "sensor": 2.0}, config
+    )
+
+    assert result.actuator_constraints_feasible
+    assert result.state["actuator"] >= taxonomy.actuator_constraints["actuator"].minimum
+    assert result.state["actuator"] <= taxonomy.actuator_constraints["actuator"].maximum
+    assert abs(result.state["actuator"] + 2.5) <= 4.0
 
 
 def test_validation_pipeline_reports_model_and_physical_checks_separately() -> None:

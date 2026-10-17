@@ -7,9 +7,10 @@
 | 0 — Scaffold and package foundation | Complete | Packaging, configuration, schemas, logging, CI, and checks |
 | 1 — Data ingestion and preprocessing | Complete | Real FD001–FD004 loaded, split, filtered, scaled, and reported |
 | 2 — Predictive models | Complete | XGBoost, differentiable MLP/LSTM, validation-only calibration, and real FD001 metrics |
-| 3 — Constrained recourse and validation | Complete | Proxy taxonomy, fitted physical bounds, coupling propagation and Tier 4 checks |
-| 4 — Product surfaces and evaluation | Complete | CLI, optional API, dashboard, reports |
-| 5 — End-to-end verification and documentation | Complete | Current measured limits in docs and artifacts |
+| 3 — Feature taxonomy and sensor coupling | Complete | Proxy taxonomy, fitted physical bounds, coupling propagation and Tier 4 checks |
+| 4 — Constrained recourse engine | Complete with target failures | L-BFGS-B, hard constraints, sparse support search, true-model scoring |
+| 5 — Product surfaces and evaluation | Complete | CLI, optional API, dashboard, reports |
+| 6 — End-to-end verification and documentation | Complete | Current measured limits in docs and artifacts |
 
 ## Decisions
 
@@ -33,6 +34,12 @@
   persist fitted ranges with trained model and coupling artifacts.
 - Score coupling fit quality with engine-grouped cross-validation and report below-floor sensors
   directly; do not use in-sample fit scores for the quality gate.
+- Use L-BFGS-B with a smooth L1 objective by default and exact p/n variable splitting as an
+  alternative. Immutable variables are excluded/fixed, dependent sensors are propagated, and
+  only true calibrated predictor scores determine success.
+- A recommendation is actionable only if physical, rate, and scaled trust intervals intersect.
+  Evaluation reports these infeasible high-risk inputs separately instead of treating them as
+  optimizer violations or returning them as actions.
 
 ## Assumptions
 
@@ -57,6 +64,8 @@
 - The LSTM supports sequence scoring and gradients, but the current snapshot recourse request does
   not carry the history window. LSTM training/evaluation works; current interactive LSTM recourse
   remains unsupported until that request interface accepts history.
+- The Phase 4 200-state sample produced no candidates meeting the true calibrated risk target.
+  Optimization target metrics therefore fail and must not be presented as demonstrated recourse.
 
 Phase 0 scaffold verification is complete. GNU Make's Windows executable is named mingw32-make in
 this environment; its all-checks target passed using Python 3.11.17. The same target also passed in
@@ -82,6 +91,7 @@ uv run prescriptxai train --subset FD001 --model xgb
 uv run prescriptxai train --subset FD001 --model mlp
 uv run prescriptxai train --subset FD001 --model lstm
 uv run prescriptxai constraints fit-coupling --subset FD001
+uv run prescriptxai evaluate
 make evaluate
 make dashboard
 make api
@@ -250,3 +260,58 @@ documented in `docs/limitations.md`.
 - Final `mingw32-make all-checks` on Python 3.13.9: Ruff passed; mypy passed for 49 source files;
   129 tests passed with 77% total coverage; the documentation target passed. Unit tests emitted
   convergence warnings only for deliberately short (8-iteration) nonlinear-backend fixtures.
+
+## Phase 4 — Constrained recourse engine
+
+Implemented the constrained L-BFGS-B path. It hard-freezes immutable features, intersects physical
+and per-step rate limits with a scaled trust interval, propagates dependent sensors using the
+Phase 3 coupling model, and uses the differentiable MLP surrogate for XGBoost gradients. Every
+candidate is rescored with the true calibrated estimator. Failed searches return a structured
+failure and closest feasible candidate; already-safe inputs return zero-change `no action needed`.
+The default smooth L1 option and the p/n split alternative are both implemented and compared in
+tests. L1 escalation is followed by top-k support re-optimization and deterministic support search.
+Results include raw/scaled deltas, percent changes, per-stage timings, objective terms, and local
+sign diagnostics.
+
+The real FD001 engine-held-out split contained 3,281 rows. Of 378 alerts at the configured danger
+threshold, 70 (18.52%) had no feasible physical/rate/trust interval from the observed telemetry;
+these were excluded from the actionable benchmark denominator and reported separately. A seeded
+sample of 200 of the remaining 308 actionable alerts completed. This evaluation used a temporary,
+ignored YAML config with `max_iterations=25`, `restarts=1`, `alpha_steps=3`,
+`l1_escalation_steps=1`, `support_search_top_m=3`, `support_search_limit=2`, and
+`max_line_search_steps=8`; the exact configuration is saved in
+`artifacts/FD001-evaluation.json` and `.md`. These search budgets are lower than the repository
+defaults and must be considered when interpreting the result.
+
+| Measured outcome | FD001 holdout result | Synopsis target/status |
+|---|---:|---|
+| Evaluated actionable high-risk states | 200 / 308 | At least 200: pass |
+| Model-valid rate (`f(x') <= tau_safe`) | 0 / 200 = 0% | ≥95%: fail |
+| Physical plausibility rate (Tiers 2–4) | 0 / 200 = 0% | ≥90%: fail |
+| Tier 2 plausibility rate | 95.5% | No separate target |
+| Tier 3 engineering rate | 0% | No separate target |
+| Tier 4 coupling rate | 100% | No separate target |
+| Mean risk reduction | 0.12047 | ≥0.60: fail |
+| Mean changed features among returned candidates | 2.595 | Cap 3: met |
+| Mean / P95 optimization time | 472.10 / 1,104.92 ms | 1,200–1,800 ms: fail |
+| Mean pipeline time | 483.32 ms | 1,500–2,200 ms: fail |
+| Frozen-feature / bound / rate violations | 0 / 0 / 0 | Zero observed |
+
+There were no model-valid results, so average sparsity over valid candidates is unmeasured. The
+2.595 changed-feature mean is for all returned failed-candidate diagnostics and is not substituted
+for valid-result sparsity. Counterfactual direction consistency had no similar state pairs within
+the configured radius and is unmeasured. The measured validity and risk-drop failures show that
+this implementation does not yet meet the synopsis recourse targets on FD001; no causal or
+maintenance-effect claim follows from the run.
+
+### Phase 4 verification
+
+- Real FD001 evaluation: `uv run prescriptxai evaluate --queries 200 --config
+  data/processed/phase4-benchmark.yaml`; 200 completed with zero frozen-feature, actuator-bound,
+  or rate-limit violations. The temporary config is under ignored generated data.
+- Unit/integration coverage includes finite-difference objective gradients, smooth/split L1
+  comparison, randomized frozen features, hard bounds, safe/no-action, structured failures,
+  multi-start ordering, determinism, solver timing, evaluation direction metrics, and API results.
+- Final `mingw32-make all-checks` on Python 3.13.9: Ruff passed, mypy passed for 49 source files,
+  139 tests passed with 77% total coverage, and the documentation target passed. The only warnings
+  were convergence notices from deliberately short nonlinear coupling test fixtures.

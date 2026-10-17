@@ -27,18 +27,23 @@ class MachineState(BaseModel):
 
 
 class DeltaMapping(BaseModel):
-    """A named feature's raw physical and scaled optimization deltas."""
+    """A named feature's raw and scaled changes plus interpretable percentages."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     feature: str = Field(min_length=1)
     raw_delta: float
     scaled_delta: float
+    percent_of_current: float | None = None
+    percent_of_range: float | None = None
 
     @model_validator(mode="after")
     def deltas_are_finite(self) -> "DeltaMapping":
         """Ensure reporting and optimization deltas can be serialized safely."""
-        if not isfinite(self.raw_delta) or not isfinite(self.scaled_delta):
+        percentages = (self.percent_of_current, self.percent_of_range)
+        if not isfinite(self.raw_delta) or not isfinite(self.scaled_delta) or any(
+            value is not None and not isfinite(value) for value in percentages
+        ):
             raise ValueError("deltas must be finite")
         return self
 
@@ -97,12 +102,15 @@ class FeatureDelta(BaseModel):
 
     raw_delta: float
     percent_change: float | None
+    percent_of_range: float | None = None
 
     @model_validator(mode="after")
     def values_are_finite(self) -> "FeatureDelta":
         """Reject non-finite amounts while permitting undefined percent at a zero origin."""
         if not isfinite(self.raw_delta) or (
             self.percent_change is not None and not isfinite(self.percent_change)
+        ) or (
+            self.percent_of_range is not None and not isfinite(self.percent_of_range)
         ):
             raise ValueError("delta values must be finite when defined")
         return self
@@ -196,8 +204,17 @@ class TierPayload(BaseModel):
 class RecommendationResponse(BaseModel):
     """API response preserving optimizer and independent validation outcomes."""
 
+    original_state: dict[str, float]
+    new_state: dict[str, float]
     outcome: RecourseOutcome
     solver_success: bool
     optimizer_message: str
     objective_value: float | None
+    failure_reason: str | None = None
+    risk_reached: float | None = Field(default=None, ge=0, le=1)
+    stage_timings_ms: dict[str, float] = Field(default_factory=dict)
+    objective_terms: dict[str, float] = Field(default_factory=dict)
+    counterfactual_signs: dict[str, int] = Field(default_factory=dict)
+    solver_calls: int = Field(default=0, ge=0)
+    actuator_constraints_feasible: bool = False
     tiers: dict[str, TierPayload]

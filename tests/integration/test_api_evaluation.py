@@ -63,6 +63,9 @@ def test_api_health_recommend_and_invalid_state() -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["outcome"]["model_valid"] is True
+    assert body["actuator_constraints_feasible"] is True
+    assert body["original_state"]["actuator"] == -2.0
+    assert body["new_state"]["actuator"] > -2.0
     assert "tier1_model" in body["tiers"]
     assert "tier4_coupling" in body["tiers"]
     assert invalid.status_code == 422
@@ -76,7 +79,12 @@ def test_evaluation_samples_deterministically_and_writes_measured_reports(tmp_pa
         [
             {"engine_id": engine_id, "cycle": cycle, "actuator": actuator, "sensor": 2.0}
             for engine_id in range(10, 14)
-            for cycle, actuator in ((1, -2.0), (2, -1.5), (3, 2.0))
+            for cycle, actuator in (
+                (1, -2.0),
+                (2, -1.5),
+                (3, 2.0),
+                (4, -20.0),
+            )
         ]
     )
 
@@ -89,6 +97,10 @@ def test_evaluation_samples_deterministically_and_writes_measured_reports(tmp_pa
 
     assert run.summary.eligible_high_risk_states > run.summary.evaluated_states
     assert run.summary.evaluated_states == 2
+    assert run.infeasible_high_risk_states == 4
+    assert all(record.actuator_bound_violations == 0 for record in run.records)
+    assert all(record.rate_limit_violations == 0 for record in run.records)
+    assert all(record.frozen_feature_violations == 0 for record in run.records)
     assert [record.engine_id for record in run.records] == [
         record.engine_id for record in repeated.records
     ]
