@@ -61,15 +61,34 @@ choices address the nonsmooth and constrained parts of the synopsis formulation:
    candidate reaches the safe target or the schedule is exhausted. L1 weight is escalated through
    its configured schedule; candidates are then pruned to top-k scaled-change supports and those
    supports are re-optimized. A deterministic bounded search over the top-m candidates handles
-   cases where simple pruning loses validity. If no sparse candidate passes the true-model target,
-   the result reports failure and the lowest-risk bounded candidate found. When the starting state
+   cases where simple pruning loses validity. The true-model grid fallback below expands the
+   search if no physically valid sparse candidate is found. When the bounded searches cannot find
+   a model-valid sparse action, the result reports failure and the lowest-risk bounded candidate
+   found. When the starting state
    is outside an actuator range but the one-step rate box can reach it, the failure candidate first
    projects to the nearest point in the physical/rate intersection. If those intervals are empty,
    the result sets actuator_constraints_feasible=false and echoes the input only as a diagnostic;
    it is not an actionable counterfactual.
 
-These train-derived rates describe observed telemetry movement and are a proxy envelope because
-C-MAPSS has no actuator commands. They must not be presented as real actuator slew limits.
+7. **True-model grid fallback.** When the gradient/support path finds no candidate that passes the
+   configured physical checks, a deterministic grid enumerates one-, two-, and up-to-
+   \(k_{max}\)-feature supports. Each changed control is sampled at the configured number of
+   equally spaced points inside the same physical, per-step-rate, and scaled-trust intersection.
+   The batched candidates are scored by the true calibrated predictor, and the least-cost
+   candidate passing Tier 2–4 is preferred when one is found. Immutable coordinates never enter
+   the grid; dependent sensors are recomputed with the fitted coupling estimators. The grid does
+   not change the objective or the model-validity threshold, and it is not a proof of continuous
+   or global optimality: a finite grid can miss a safe interval between sample points. Enablement
+   and resolution are set by `recourse.true_model_grid_enabled` and
+   `recourse.true_model_grid_points` in YAML.
+
+Train-derived rates describe observed telemetry movement and are proxy envelopes because C-MAPSS
+has no actuator commands. They must not be presented as real actuator slew limits. The grid uses
+the same bounds as the objective and does not relax those limits.
+
+Tier 2–4 results are used to prefer a physically valid candidate when available, but remain
+reported separately from Tier 1. A physically valid candidate is not accepted as model-valid
+without the independent true-predictor score.
 
 The candidate is accepted as model-valid only when the final calibrated predictor returns
 \(f(x')\le\tau_{safe}\). Tiers 2–4 are a separate physical-plausibility pipeline and can still
@@ -100,8 +119,7 @@ consistency measurements, not evidence of causal effect.
 The high-risk evaluation reports all held-out alerts, counts alerts whose configured physical/rate
 intervals are infeasible, and samples the requested recourse benchmark size from the remaining
 actionable states. The excluded count is explicit in the JSON, Markdown, and CLI outputs; it is not
-folded into the model-validity rate. The Phase 4 FD001 200-state report was run with the search
-limits recorded in its JSON/Markdown artifact because the full default search was computationally
-impractical in this environment. Its measured true-model validity rate was zero; the lower search
-budget does not change the definition of validity, and no target is treated as satisfied by a
-surrogate prediction or a risk reduction alone.
+folded into the model-validity rate. The real FD001 Phase 4 benchmark and its exact search
+configuration are saved in the generated JSON/Markdown artifacts. True model validity, physical
+plausibility, recourse feasibility, risk reduction, and latency are reported separately; a
+surrogate prediction or risk reduction alone never counts as a safe result.

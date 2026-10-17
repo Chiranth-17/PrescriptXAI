@@ -134,6 +134,8 @@ class RecourseConfig(BaseModel):
     l1_escalation_steps: int = Field(default=3, ge=1)
     support_search_top_m: int = Field(default=5, ge=1)
     support_search_limit: int = Field(default=8, ge=1)
+    true_model_grid_enabled: bool = True
+    true_model_grid_points: int = Field(default=5, ge=2)
     change_tolerance: float = Field(default=1e-7, ge=0)
     max_line_search_steps: int = Field(default=20, ge=1)
 

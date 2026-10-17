@@ -110,7 +110,12 @@ class PrescriptXAIEngine:
             raise ValueError(f"state is missing model features: {sorted(missing)}")
         optimization_started = perf_counter_ns()
         optimization = optimize_recourse(
-            raw_state, self.model, self.taxonomy, self.config, self.coupling
+            raw_state,
+            self.model,
+            self.taxonomy,
+            self.config,
+            self.coupling,
+            self.mahalanobis,
         )
         optimization_ms = (perf_counter_ns() - optimization_started) / 1_000_000
         validation_started = perf_counter_ns()

@@ -29,15 +29,17 @@
 - **Evaluation scope.** Metrics are for the configured model, seed, engine split, taxonomy, and
   sampled held-out rows. Synopsis case-study values are illustrative and never substituted for
   measured results.
-- **Phase 4 FD001 outcome.** The corrected seeded sample included 200 of 378 feasible-interval
-  high-risk states in the internal held-out split. True model validity was 12.5%, physical
-  plausibility was 68%, and 22/200 (11%) were joint successful sparse recourses. Mean risk
-  reduction was 0.52495; the configured 0.60 target failed. Mean sparsity among the 22 joint
-  successes was 2.27, within the three-action limit. Validity, plausibility, sparse feasibility, and
-  joint success remain separately reported. The benchmark used explicitly recorded reduced search
-  limits (25 iterations, one restart, three alpha steps, one L1 step, two support candidates); these
-  settings are in the generated evaluation report. The synopsis validity, plausibility, and risk
-  targets were not met, and the run does not establish a maintenance effect.
+- **Phase 4 FD001 outcome.** The final seeded sample included 200 of 378 actionable high-risk
+  states in the engine-held-out split. True model validity was 65.5%, Tiers 2–4 plausibility was
+  76%, and 127/200 (63.5%) were joint successful sparse recourses. Mean risk reduction was
+  0.66151, and mean sparsity among the 127 joint successes was 2.59055. Mean/P95 optimization
+  latency was 705.04/1,171.68 ms; mean/P95 pipeline latency was 712.74/1,179.41 ms. There were
+  zero frozen-feature, actuator-bound, or rate-limit violations. Validity, plausibility, sparse
+  feasibility, and joint success remain separately reported. The run used explicitly recorded
+  reduced search limits (25 iterations, one restart, three alpha steps, one L1 step, two local
+  supports) plus a five-point bounded true-model grid fallback; all per-state measurements and
+  settings are saved in the ignored generated report. The synopsis validity, plausibility, and
+  latency targets remain unmet, and the run does not establish a maintenance effect.
 - **Latency scope.** The evaluation measures inference, optimization, and validation in the Python
   process. Raw telemetry ingestion and interactive dashboard render latency remain unmeasured until
   an instrumented live-input deployment is available.

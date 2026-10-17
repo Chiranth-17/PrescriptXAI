@@ -42,6 +42,16 @@ def write_evaluation_report(
             ),
             run.infeasible_high_risk_states,
             run_configuration,
+            (
+                sum(record.true_model_grid_ms for record in run.records) / len(run.records)
+                if run.records
+                else None
+            ),
+            (
+                sum(record.true_model_evaluations for record in run.records) / len(run.records)
+                if run.records
+                else None
+            ),
         ),
         encoding="utf-8",
     )
@@ -58,6 +68,8 @@ def render_markdown(
     mean_returned_action_sparsity: float | None = None,
     infeasible_high_risk_states: int | None = None,
     run_configuration: Mapping[str, Any] | None = None,
+    mean_true_model_grid_ms: float | None = None,
+    mean_true_model_evaluations: float | None = None,
 ) -> str:
     """Render dynamically computed measurements and target statuses."""
     lines = [
@@ -119,6 +131,16 @@ def render_markdown(
         lines.extend(("", "## Recourse search configuration", ""))
         lines.extend(
             f"- `{name}`: `{value}`" for name, value in sorted(run_configuration.items())
+        )
+    if mean_true_model_grid_ms is not None and mean_true_model_evaluations is not None:
+        lines.extend(
+            (
+                "",
+                "Mean true-model grid-search time: "
+                f"{mean_true_model_grid_ms:.4f} ms per evaluated state.",
+                "Mean true-model grid candidates scored: "
+                f"{mean_true_model_evaluations:.2f} per evaluated state.",
+            )
         )
     lines.extend(
         ("", "## Latency", "", "| Stage | Mean ms | P95 ms | Status |", "|---|---:|---:|---|")

@@ -23,8 +23,14 @@ from prescriptxai.recourse.objective import (
     RecourseObjective,
     prediction_flip_loss,
 )
-from prescriptxai.recourse.sparsify import candidate_supports
+from prescriptxai.recourse.sparsify import (
+    bounded_sparse_delta_grid,
+    candidate_supports,
+)
 from prescriptxai.schemas import DeltaMapping
+from prescriptxai.validation.tier2_mahalanobis import MahalanobisValidator
+from prescriptxai.validation.tier3_engineering import validate_engineering
+from prescriptxai.validation.tier4_coupling import validate_sensor_coupling
 
 LOGGER = logging.getLogger(__name__)
 
@@ -49,6 +55,7 @@ class OptimizationResult:
     alpha_used: float | None = None
     l1_weight_used: float | None = None
     solver_calls: int = 0
+    true_model_evaluations: int = 0
     actuator_constraints_feasible: bool = False
 
 
@@ -75,11 +82,13 @@ class RecourseOptimizer:
         bundle: ModelBundle,
         taxonomy: FeatureTaxonomy,
         coupling: SensorCouplingModel | None = None,
+        mahalanobis: MahalanobisValidator | None = None,
     ) -> None:
-        """Bind the calibrated predictor, feature limits, and optional coupling fit."""
+        """Bind the calibrated predictor, physical limits, and fitted validation artifacts."""
         self.bundle = bundle
         self.taxonomy = taxonomy
         self.coupling = coupling
+        self.mahalanobis = mahalanobis
 
     def solve(self, x: dict[str, float], config: AppConfig) -> OptimizationResult:
         """Solve recourse and return the closest sparse candidate even when unsafe.
@@ -216,6 +225,7 @@ class RecourseOptimizer:
         )
         rng = np.random.default_rng(config.seed)
         solver_calls = 0
+        true_model_evaluations = 0
         initial_penalty = prediction_flip_loss(
             initial_risk,
             config.model.safe_threshold,
@@ -450,6 +460,139 @@ class RecourseOptimizer:
             sparsification_ns += perf_counter_ns() - started
             return candidates
 
+        def true_model_grid_search() -> list[_Candidate]:
+            """Search bounded sparse supports against the true predictor in one batch."""
+            nonlocal closest, rescore_ns, true_model_evaluations
+            delta_grid = bounded_sparse_delta_grid(
+                lower_array,
+                upper_array,
+                max_changed_features=config.recourse.max_changed_features,
+                grid_points=config.recourse.true_model_grid_points,
+                change_tolerance=config.recourse.change_tolerance,
+            )
+            true_model_evaluations += len(delta_grid)
+            if not len(delta_grid):
+                return []
+
+            raw_initial = np.asarray(
+                [state[name] for name in self.bundle.feature_names], dtype=np.float64
+            )
+            raw_rows = np.repeat(raw_initial[None, :], len(delta_grid), axis=0)
+            raw_rows[:, control_positions] = current_raw + delta_grid * control_scales
+            if self.coupling is not None:
+                name_positions = {
+                    name: position for position, name in enumerate(self.bundle.feature_names)
+                }
+                predictor_positions = np.asarray(
+                    [name_positions[name] for name in self.coupling.predictor_features],
+                    dtype=np.int64,
+                )
+                for dependent_name in self.coupling.dependent_features:
+                    dependent_position = name_positions[dependent_name]
+                    prediction = np.asarray(
+                        self.coupling.models[dependent_name].predict(
+                            raw_rows[:, predictor_positions]
+                        ),
+                        dtype=np.float64,
+                    ).reshape(-1)
+                    raw_rows[:, dependent_position] = prediction
+            scaled_rows = self.bundle.scaler.transform(
+                pd.DataFrame(raw_rows, columns=self.bundle.feature_names)
+            )
+
+            score_started = perf_counter_ns()
+            probabilities = self.bundle.predict_risk(
+                pd.DataFrame(raw_rows, columns=self.bundle.feature_names)
+            )
+
+            def candidate_at(index: int) -> _Candidate:
+                """Materialize one batched grid row as an auditable optimizer candidate."""
+                delta = delta_grid[index]
+                risk = float(probabilities[index])
+                l1_value = _grid_l1_value(delta, config)
+                hinge = max(
+                    0.0,
+                    risk - config.model.safe_threshold + config.recourse.safety_margin,
+                )
+                prediction_term = config.recourse.prediction_weight * (
+                    hinge**2
+                    if config.recourse.prediction_loss == "squared_hinge"
+                    else hinge
+                )
+                terms = ObjectiveTerms(
+                    l1=l1_value,
+                    prediction=prediction_term,
+                    immutable=0.0,
+                    bounds=0.0,
+                    total=l1_value + prediction_term,
+                    risk=risk,
+                )
+                candidate_state = {
+                    **state,
+                    **{
+                        name: float(raw_rows[index, position])
+                        for position, name in enumerate(self.bundle.feature_names)
+                    },
+                }
+                return score_candidate(
+                    candidate_state,
+                    delta,
+                    risk,
+                    solver_success=True,
+                    message="bounded sparse grid candidate rescored by the true model",
+                    terms=terms,
+                    alpha=config.recourse.prediction_weight,
+                    l1_weight=config.recourse.l1_weight,
+                )
+
+            rescore_ns += perf_counter_ns() - score_started
+            safe_indices = np.flatnonzero(probabilities <= config.model.safe_threshold)
+            if not len(safe_indices):
+                best_grid_candidate = candidate_at(int(np.argmin(probabilities)))
+                if (
+                    best_grid_candidate.risk < closest.risk
+                    and validate_engineering(state, best_grid_candidate.state, self.taxonomy).valid
+                ):
+                    closest = best_grid_candidate
+                return []
+
+            if self.mahalanobis is not None:
+                differences = scaled_rows[safe_indices] - self.mahalanobis.mean
+                distances = np.sqrt(
+                    np.maximum(
+                        0.0,
+                        np.einsum(
+                            "ni,ij,nj->n",
+                            differences,
+                            self.mahalanobis.precision,
+                            differences,
+                        ),
+                    )
+                )
+                plausible_indices = safe_indices[distances <= self.mahalanobis.max_distance]
+            else:
+                plausible_indices = safe_indices
+
+            # Build candidates in objective order. If Tier 2–4 artifacts are available, prefer a
+            # fully plausible candidate; retain every model-safe grid point as a fallback only
+            # when no grid point passes all physical checks.
+            ordered = sorted(
+                (int(index) for index in safe_indices),
+                key=lambda index: _grid_objective_score(
+                    delta_grid[index], float(probabilities[index]), config
+                ),
+            )
+            best_safe = candidate_at(ordered[0])
+            physically_valid: list[_Candidate] = []
+            plausible_set = set(int(index) for index in plausible_indices)
+            plausible_ordered = [index for index in ordered if index in plausible_set]
+            for index in plausible_ordered:
+                candidate = candidate_at(index)
+                if self._is_physically_valid(state, candidate.state):
+                    physically_valid.append(candidate)
+                    break
+            return physically_valid or [best_safe]
+
         # Find one dense true-model-safe point by increasing alpha. Only then escalate L1 and
         # solve sparse supports; a larger L1 weight cannot help an already-unsafe dense point.
         dense_candidates: list[_Candidate] = []
@@ -491,7 +634,10 @@ class RecourseOptimizer:
                     current_dense, alpha_used, l1_weight
                 )
                 for attempt in sparse_attempts:
-                    if attempt.risk < closest.risk:
+                    if (
+                        attempt.risk < closest.risk
+                        and validate_engineering(state, attempt.state, self.taxonomy).valid
+                    ):
                         closest = attempt
                 valid_candidates.extend(
                     attempt
@@ -509,7 +655,10 @@ class RecourseOptimizer:
                 best_dense, best_dense.alpha, best_dense.l1_weight
             )
             for attempt in fallback_supports:
-                if attempt.risk < closest.risk:
+                if (
+                    attempt.risk < closest.risk
+                    and validate_engineering(state, attempt.state, self.taxonomy).valid
+                ):
                     closest = attempt
             valid_candidates.extend(
                 attempt
@@ -518,11 +667,57 @@ class RecourseOptimizer:
                 and len(attempt.delta_scaled) <= config.recourse.max_changed_features
             )
 
+        engineering_valid_candidates = [
+            candidate
+            for candidate in valid_candidates
+            if validate_engineering(state, candidate.state, self.taxonomy).valid
+        ]
+        physically_valid_candidates = (
+            [
+                candidate
+                for candidate in engineering_valid_candidates
+                if self._is_physically_valid(state, candidate.state)
+            ]
+            if self.mahalanobis is not None
+            else list(engineering_valid_candidates)
+        )
+        grid_search_started = perf_counter_ns()
+        if config.recourse.true_model_grid_enabled and not physically_valid_candidates:
+            grid_candidates = true_model_grid_search()
+            valid_candidates.extend(grid_candidates)
+            engineering_valid_candidates = [
+                candidate
+                for candidate in grid_candidates
+                if validate_engineering(state, candidate.state, self.taxonomy).valid
+            ]
+            if self.mahalanobis is not None:
+                physically_valid_candidates = [
+                    candidate
+                    for candidate in engineering_valid_candidates
+                    if self._is_physically_valid(state, candidate.state)
+                ]
+            else:
+                physically_valid_candidates = list(engineering_valid_candidates)
+        if true_model_evaluations:
+            timing["true_model_grid_search"] = _elapsed_ms(grid_search_started)
+
         # Failure returns the closest sparse, bounded point, never an unpruned dense solution.
-        if valid_candidates:
-            selected = min(valid_candidates, key=lambda candidate: candidate.score)
+        if physically_valid_candidates:
+            selected = min(physically_valid_candidates, key=lambda candidate: candidate.score)
             failure_reason = None
-            message = "true calibrated risk meets tau_safe with a sparse bounded candidate"
+            message = (
+                "true calibrated risk and Tier 2–4 checks pass with a sparse bounded candidate"
+                if self.mahalanobis is not None
+                else "true calibrated risk meets tau_safe with a sparse bounded candidate"
+            )
+            valid = True
+        elif engineering_valid_candidates:
+            selected = min(engineering_valid_candidates, key=lambda candidate: candidate.score)
+            failure_reason = None
+            message = (
+                "true calibrated risk meets tau_safe with a sparse bounded candidate; "
+                "no searched candidate passed all configured physical checks"
+            )
             valid = True
         else:
             selected = closest
@@ -569,6 +764,7 @@ class RecourseOptimizer:
             alpha_used=selected.alpha,
             l1_weight_used=selected.l1_weight,
             solver_calls=solver_calls,
+            true_model_evaluations=true_model_evaluations,
             actuator_constraints_feasible=True,
         )
         LOGGER.info(
@@ -581,9 +777,25 @@ class RecourseOptimizer:
                 "failure_reason": result.failure_reason,
                 "timings_ms": result.stage_timings_ms,
                 "counterfactual_signs": result.counterfactual_signs,
+                "true_model_evaluations": result.true_model_evaluations,
             },
         )
         return result
+
+    def _is_physically_valid(
+        self, initial_state: dict[str, float], candidate_state: dict[str, float]
+    ) -> bool:
+        """Apply independent empirical and engineering tiers when their fit is available."""
+        if self.mahalanobis is None:
+            return True
+        scaled = self.bundle.scaler.transform(
+            pd.DataFrame([candidate_state], columns=self.bundle.feature_names)
+        )[0]
+        if not self.mahalanobis.validate(np.asarray(scaled, dtype=np.float64)).valid:
+            return False
+        if not validate_engineering(initial_state, candidate_state, self.taxonomy).valid:
+            return False
+        return validate_sensor_coupling(candidate_state, self.taxonomy, self.coupling).valid
 
     @staticmethod
     def _failure(
@@ -619,9 +831,10 @@ def optimize_recourse(
     taxonomy: FeatureTaxonomy,
     config: AppConfig,
     coupling: SensorCouplingModel | None = None,
+    mahalanobis: MahalanobisValidator | None = None,
 ) -> OptimizationResult:
     """Compatibility function delegating to :class:`RecourseOptimizer`."""
-    return RecourseOptimizer(bundle, taxonomy, coupling).solve(initial_state, config)
+    return RecourseOptimizer(bundle, taxonomy, coupling, mahalanobis).solve(initial_state, config)
 
 
 def _validate_state(state: dict[str, float], model_features: tuple[str, ...]) -> None:
@@ -651,6 +864,27 @@ def _model_device(bundle: ModelBundle, config: AppConfig) -> torch.device:
 def _elapsed_ms(start_ns: int) -> float:
     """Return elapsed wall-clock milliseconds from a monotonic timestamp."""
     return (perf_counter_ns() - start_ns) / 1_000_000
+
+
+def _grid_l1_value(delta: NDArray[np.float64], config: AppConfig) -> float:
+    """Return the configured scaled L1 penalty for one true-model grid point."""
+    if config.recourse.l1_mode == "split":
+        distance = float(np.abs(delta).sum())
+    else:
+        epsilon = config.recourse.l1_smoothing_epsilon
+        distance = float((np.sqrt(delta**2 + epsilon**2) - epsilon).sum())
+    return config.recourse.l1_weight * distance
+
+
+def _grid_objective_score(
+    delta: NDArray[np.float64], risk: float, config: AppConfig
+) -> float:
+    """Evaluate the objective used to order true-model grid candidates."""
+    hinge = max(0.0, risk - config.model.safe_threshold + config.recourse.safety_margin)
+    prediction = (
+        hinge**2 if config.recourse.prediction_loss == "squared_hinge" else hinge
+    )
+    return _grid_l1_value(delta, config) + config.recourse.prediction_weight * prediction
 
 
 def _delta_mappings(

@@ -92,6 +92,8 @@ recourse:
   l1_escalation_steps: 3
   support_search_top_m: 5
   support_search_limit: 8
+  true_model_grid_enabled: true
+  true_model_grid_points: 5
   change_tolerance: 0.0000001
   max_line_search_steps: 20
 validation:

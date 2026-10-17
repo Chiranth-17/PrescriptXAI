@@ -110,6 +110,8 @@ class EvaluationRecord:
     actuator_bound_violations: int = 0
     rate_limit_violations: int = 0
     recourse_feasible: bool = False
+    true_model_grid_ms: float = 0.0
+    true_model_evaluations: int = 0
 
 
 @dataclass(frozen=True)

@@ -140,6 +140,10 @@ def evaluate_states(
                 actuator_bound_violations=len(bound_violations),
                 rate_limit_violations=len(rate_violations),
                 recourse_feasible=result.outcome.recourse_feasible,
+                true_model_grid_ms=result.optimization.stage_timings_ms.get(
+                    "true_model_grid_search", 0.0
+                ),
+                true_model_evaluations=result.optimization.true_model_evaluations,
             )
         )
     inference_per_row = float(np.mean(inference_samples_ms)) if inference_samples_ms else None

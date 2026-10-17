@@ -24,7 +24,7 @@ from prescriptxai.recourse.objective import (
     scaled_l1_distance,
 )
 from prescriptxai.recourse.optimizer import RecourseOptimizer, optimize_recourse
-from prescriptxai.recourse.sparsify import sparsify_candidate
+from prescriptxai.recourse.sparsify import bounded_sparse_delta_grid, sparsify_candidate
 from prescriptxai.schemas import DeltaMapping
 from prescriptxai.validation.pipeline import (
     ValidationReport,
@@ -378,6 +378,41 @@ def test_optimizer_no_action_timing_extreme_bound_and_seeded_multistart() -> Non
     assert repeated.stage_timings_ms["optimization"] >= 0
     if single_start.objective_value is not None and repeated.objective_value is not None:
         assert repeated.objective_value <= single_start.objective_value + 1e-9
+
+
+def test_bounded_sparse_grid_respects_change_bounds_and_support_limit() -> None:
+    """True-model fallback points obey the same box and configured k-sparsity limits."""
+    candidates = bounded_sparse_delta_grid(
+        np.array([-1.0, 0.0, -2.0]),
+        np.array([1.0, 0.0, 2.0]),
+        max_changed_features=2,
+        grid_points=5,
+        change_tolerance=1e-8,
+    )
+    assert candidates.ndim == 2 and candidates.shape[1] == 3
+    assert len(candidates) == 24
+    assert np.all(candidates >= np.array([-1.0, 0.0, -2.0]))
+    assert np.all(candidates <= np.array([1.0, 0.0, 2.0]))
+    assert np.all(np.count_nonzero(candidates, axis=1) <= 2)
+    assert np.all(np.count_nonzero(candidates, axis=1) >= 1)
+    mandatory = bounded_sparse_delta_grid(
+        np.array([0.5, -1.0]),
+        np.array([1.0, 1.0]),
+        max_changed_features=1,
+        grid_points=3,
+        change_tolerance=1e-8,
+    )
+    assert mandatory.shape == (3, 2)
+    assert np.all(mandatory[:, 0] > 0.0)
+    assert np.all(mandatory[:, 1] == 0.0)
+    with pytest.raises(ValueError, match="grid_points"):
+        bounded_sparse_delta_grid(
+            np.array([-1.0]),
+            np.array([1.0]),
+            max_changed_features=1,
+            grid_points=1,
+            change_tolerance=0.0,
+        )
 
 
 def test_optimizer_reports_structured_failure_for_missing_gradients() -> None:

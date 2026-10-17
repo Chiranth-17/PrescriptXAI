@@ -175,3 +175,31 @@ then measure the requested FD001 held-out benchmark without hiding target failur
 - `mingw32-make all-checks` on Python 3.13.9: Ruff passed, mypy passed for 49 source files, 143
   tests passed with 77% total coverage, and the documentation target passed. The 24 warnings came
   from deliberately short nonlinear coupling fixtures.
+
+
+---
+
+## Session: 2026-10-17 — True-model sparse-grid fallback and final benchmark
+
+- Added configurable true-model grid fallback on sparse supports and candidate preference using the
+  existing independent Tier 2–4 validators. The five-point grid obeys physical bounds, per-cycle rate
+  limits, scaled trust intervals, immutable freezes, coupling propagation, and the configured action
+  cap. Out-of-range current controls are treated as mandatory projected moves within the sparsity cap.
+- Final real-data command: `uv run prescriptxai evaluate --queries 200 --config
+  data/processed/phase4-grid-final.yaml`. It evaluated 200/378 actionable FD001 high-risk states.
+  Observed model validity 131/200 (65.5%), physical plausibility 152/200 (76%), sparse feasibility
+  129/200 (64.5%), joint success 127/200 (63.5%), mean risk drop 0.66151, and mean joint-success
+  sparsity 2.59055. Optimization mean/P95 was 705.04/1,171.68 ms; pipeline mean/P95 was
+  712.74/1,179.41 ms. Frozen/bound/rate violations were 0/0/0.
+- Fallback execution: 178/200 states, average 3,103 true-model candidates and 39.77 ms per evaluated
+  state. The 9-point diagnostic did not improve validity or joint-success count versus 5 points and
+  increased mean optimization latency.
+- A real-state audit uncovered candidates that omitted a mandatory move for a currently out-of-range
+  actuator proxy; the grid now includes those features in every support and the corrected full run
+  observed zero bound/rate violations.
+- Synopsis validity (95%), plausibility (90%), and minimum latency targets remain unmet. Risk-drop
+  (0.60) and sparsity (3) targets pass. These are reported as actual results, not tuned thresholds.
+
+- Final `mingw32-make all-checks` after the follow-up: Ruff passed; mypy passed for 49 source files;
+  146 tests passed with 77% total coverage; documentation target passed. The 24 convergence warnings
+  came from deliberately short nonlinear coupling fixtures.

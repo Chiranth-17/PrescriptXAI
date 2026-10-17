@@ -4,14 +4,84 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from itertools import combinations
+from itertools import combinations, product
+from typing import cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 from prescriptxai.models.registry import ModelBundle
 
 StateTransform = Callable[[Mapping[str, float]], Mapping[str, float]]
+
+
+def bounded_sparse_delta_grid(
+    lower_change: NDArray[np.float64],
+    upper_change: NDArray[np.float64],
+    *,
+    max_changed_features: int,
+    grid_points: int,
+    change_tolerance: float,
+) -> NDArray[np.float64]:
+    """Enumerate nonzero grid changes on every support up to the configured sparsity.
+
+    The returned rows are scaled-space deltas. Every coordinate stays inside its supplied
+    interval, and each row changes between one and ``max_changed_features`` coordinates.
+    """
+    lower = np.asarray(lower_change, dtype=np.float64)
+    upper = np.asarray(upper_change, dtype=np.float64)
+    if (
+        lower.ndim != 1
+        or upper.shape != lower.shape
+        or lower.size == 0
+        or not np.isfinite(lower).all()
+        or not np.isfinite(upper).all()
+    ):
+        raise ValueError("change bounds must be matching nonempty finite vectors")
+    if np.any(lower > upper):
+        raise ValueError("lower change bounds must not exceed upper change bounds")
+    if max_changed_features < 1:
+        raise ValueError("max_changed_features must be positive")
+    if grid_points < 2:
+        raise ValueError("grid_points must be at least two")
+    if not np.isfinite(change_tolerance) or change_tolerance < 0:
+        raise ValueError("change_tolerance must be finite and non-negative")
+
+    value_grids: list[np.ndarray] = []
+    required_indices: list[int] = []
+    optional_indices: list[int] = []
+    for minimum, maximum in zip(lower, upper, strict=True):
+        values = np.linspace(minimum, maximum, grid_points, dtype=np.float64)
+        if minimum <= 0.0 <= maximum:
+            optional_indices.append(len(value_grids))
+            values = values[np.abs(values) > change_tolerance]
+        else:
+            required_indices.append(len(value_grids))
+        value_grids.append(values)
+
+    candidates: list[NDArray[np.float64]] = []
+    optional_support_limit = min(
+        len(optional_indices), max_changed_features - len(required_indices)
+    )
+    if optional_support_limit < 0:
+        return np.empty((0, len(lower)), dtype=np.float64)
+    required_support = tuple(required_indices)
+    for support_size in range(optional_support_limit + 1):
+        for optional_support in combinations(optional_indices, support_size):
+            support = required_support + optional_support
+            if not support:
+                continue
+            grids = [value_grids[index] for index in support]
+            if any(len(values) == 0 for values in grids):
+                continue
+            for support_values in product(*grids):
+                delta: NDArray[np.float64] = np.zeros(len(lower), dtype=np.float64)
+                delta[list(support)] = support_values
+                candidates.append(delta)
+    if not candidates:
+        return np.empty((0, len(lower)), dtype=np.float64)
+    return cast(NDArray[np.float64], np.vstack(candidates))
 
 
 @dataclass(frozen=True)
