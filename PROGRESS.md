@@ -317,6 +317,16 @@ and a finer-grid check did not remove that gap. The feature channels are sensor 
 actuators; this evaluation cannot establish physical control efficacy, RUL extension, or maintenance
 benefit.
 
+Diagnostic-only sparsity ablation on the first same 40 benchmark states retained all physical, rate,
+trust-region, coupling, predictor, and Mahalanobis rules while allowing up to all seven configured
+controllable proxies to change. A deterministic three-point grid found a safe, Tier 2-plausible
+candidate on 36/40 states, compared with 29/40 model-valid and joint-success cases from the accepted
+`k_max=3` results. Refining the four remaining cases to a five-point grid produced no safe candidate;
+their lowest sampled true risks were 0.9044, 0.8865, 0.4812, and 0.9622. The all-seven-feature search
+is diagnostic only and is not an accepted policy or a resolution of the `k_max=3` gate. It indicates
+that the cap contributes to failures, while the remaining cases also appear unreachable under the
+current single-step proxy intervals. Grid minima are sampled values, not proofs of global infeasibility.
+
 ### Phase 4 verification
 
 - Real benchmark command: `uv run prescriptxai evaluate --queries 200 --config data/processed/phase4-grid-final.yaml`.

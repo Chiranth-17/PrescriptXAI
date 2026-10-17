@@ -203,3 +203,18 @@ then measure the requested FD001 held-out benchmark without hiding target failur
 - Final `mingw32-make all-checks` after the follow-up: Ruff passed; mypy passed for 49 source files;
   146 tests passed with 77% total coverage; documentation target passed. The 24 convergence warnings
   came from deliberately short nonlinear coupling fixtures.
+
+## Session: 2026-10-17 — Phase 4 sparsity and reachability diagnostic
+
+- Reconstructed the same seeded 200-state held-out evaluation sample and examined its first 40 cases.
+- Holding physical bounds, fitted per-step rates, scaled trust intervals, coupling propagation, the
+  calibrated predictor, and Mahalanobis threshold fixed, an all-seven-proxy three-point grid found
+  safe and Tier 2-plausible candidates for 36/40 states. The accepted `k_max=3` run had 29/40
+  model-valid and joint-success cases in that same slice.
+- A five-point all-seven-proxy refinement of the remaining four states found no safe candidate.
+  Lowest sampled true risks were 0.9044, 0.8865, 0.4812, and 0.9622. These finite grids do not prove
+  global infeasibility; they show that relaxing sparsity alone still does not meet the 95% target.
+- This is diagnostic evidence only. No production policy, metric, target, or constraint was changed.
+  Phase 4 remains in progress because the accepted `k_max=3` benchmark is below the synopsis
+  validity/plausibility targets and the required physical limits are proxy-derived rather than
+  verified actuator constraints.

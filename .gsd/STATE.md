@@ -27,6 +27,11 @@ status: in_progress
 - Grid ran on 178/200 states, averaging 3,103 candidate scores and 39.77 ms per evaluated state.
 - The 9-point grid diagnostic found no additional validity or joint-success cases versus five points,
   while increasing mean optimization latency from about 660 ms to about 888 ms on its 40-state sample.
+- A separate diagnostic-only all-seven-proxy grid on the first 40 states found safe and Tier 2-plausible
+  candidates for 36/40 versus 29/40 for the accepted `k_max=3` results. Refinement of the four misses
+  found no safe candidate at five points (lowest sampled risks 0.9044, 0.8865, 0.4812, 0.9622). This
+  shows sparsity contributes to the gap but does not establish that the other cases are globally
+  unreachable; the diagnostic does not change the accepted k limit.
 
 ## Acceptance status
 
