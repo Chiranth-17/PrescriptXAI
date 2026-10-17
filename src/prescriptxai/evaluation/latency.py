@@ -18,6 +18,8 @@ class LatencyMetric:
     target_min_ms: float | None
     target_max_ms: float | None
     passed: bool | None
+    upper_budget_passed: bool | None = None
+    below_target_range: bool | None = None
 
 
 def summarize_latency(
@@ -48,4 +50,6 @@ def summarize_latency(
         target_min_ms,
         target_max_ms,
         passed,
+        None if target_max_ms is None else mean <= target_max_ms,
+        None if target_min_ms is None else mean < target_min_ms,
     )

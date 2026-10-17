@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from time import perf_counter_ns
 
 import numpy as np
@@ -83,12 +83,15 @@ class RecourseOptimizer:
         taxonomy: FeatureTaxonomy,
         coupling: SensorCouplingModel | None = None,
         mahalanobis: MahalanobisValidator | None = None,
+        *,
+        validate_plausibility: bool = True,
     ) -> None:
         """Bind the calibrated predictor, physical limits, and fitted validation artifacts."""
         self.bundle = bundle
         self.taxonomy = taxonomy
         self.coupling = coupling
         self.mahalanobis = mahalanobis
+        self.validate_plausibility = validate_plausibility
 
     def solve(self, x: dict[str, float], config: AppConfig) -> OptimizationResult:
         """Solve recourse and return the closest sparse candidate even when unsafe.
@@ -101,6 +104,11 @@ class RecourseOptimizer:
         timing: dict[str, float] = {}
         state = {name: float(value) for name, value in x.items()}
         _validate_state(state, self.bundle.feature_names)
+        if hasattr(self.bundle.estimator, "window"):
+            raise ValueError(
+                "LSTM recourse requires a telemetry history window; "
+                "the snapshot recourse interface cannot score this request"
+            )
         initial_frame = pd.DataFrame([state])
         initial_risk = float(self.bundle.predict_risk(initial_frame)[0])
         if initial_risk <= config.model.safe_threshold:
@@ -129,14 +137,6 @@ class RecourseOptimizer:
                 initial_risk,
                 "input_not_high_risk",
                 "no recourse attempted: input is below the configured danger threshold",
-                started_ns,
-            )
-        if hasattr(self.bundle.estimator, "window"):
-            return self._failure(
-                state,
-                initial_risk,
-                "sequence_history_unavailable",
-                "LSTM recourse requires a history window; this request contains a snapshot",
                 started_ns,
             )
         if not self.bundle.supports_gradients:
@@ -210,6 +210,12 @@ class RecourseOptimizer:
             )
         timing["bounds"] = _elapsed_ms(bounds_started)
 
+        required_controls = tuple(
+            name
+            for index, name in enumerate(controls)
+            if lower_array[index] > 0.0 or upper_array[index] < 0.0
+        )
+
         model_input = self.bundle.scaler.transform(
             initial_frame.loc[:, list(self.bundle.feature_names)]
         )[0]
@@ -262,7 +268,7 @@ class RecourseOptimizer:
                 full = original_scaled.index_copy(0, model_index, control_start + local_delta)
                 row = full.unsqueeze(0).to(dtype=torch.float32)
                 if coupling_module is not None:
-                    row = coupling_module(row)
+                    row = coupling_module(row, original_scaled.unsqueeze(0).to(row.dtype))
                 return self.bundle.torch_forward(row).reshape(-1)[0]
 
             return risk_function
@@ -285,7 +291,9 @@ class RecourseOptimizer:
                 candidate[name] = float(np.clip(raw_value, raw_lower, raw_upper))
                 changed[index] = (candidate[name] - current_raw[index]) / control_scales[index]
             if self.coupling is not None:
-                candidate = apply_coupling_for_bundle(candidate, self.coupling, self.bundle.scaler)
+                candidate = apply_coupling_for_bundle(
+                    candidate, self.coupling, self.bundle.scaler, reference_state=state
+                )
             check_started = perf_counter_ns()
             # This is the true estimator and its fitted calibrator, not the gradient surrogate.
             risk = float(self.bundle.predict_risk(pd.DataFrame([candidate]))[0])
@@ -305,7 +313,9 @@ class RecourseOptimizer:
             l1_weight: float,
         ) -> _Candidate:
             """Record a candidate and its common base-objective score for selection."""
-            score = terms.total
+            # Search schedules use different alpha/L1 values and surrogate risks. Compare all
+            # returned candidates using one common objective and the measured true-model risk.
+            score = _grid_objective_score(delta, risk, config)
             delta_map = {
                 name: float(delta[index])
                 for index, name in enumerate(controls)
@@ -352,6 +362,29 @@ class RecourseOptimizer:
             alpha=config.recourse.prediction_weight,
             l1_weight=config.recourse.l1_weight,
         )
+        if len(required_controls) > config.recourse.max_changed_features:
+            timing["total"] = _elapsed_ms(started_ns)
+            return OptimizationResult(
+                state=nearest_state,
+                deltas=_delta_mappings(
+                    closest.delta_scaled, controls, state, specs, control_scales,
+                    config.recourse.change_tolerance,
+                ),
+                initial_risk=initial_risk,
+                final_risk=nearest_risk,
+                solver_success=False,
+                model_valid=nearest_risk <= config.model.safe_threshold,
+                message=(
+                    f"physical bounds require changing {len(required_controls)} controls, "
+                    f"exceeding k_max={config.recourse.max_changed_features}; "
+                    "projected state is a diagnostic only"
+                ),
+                objective_value=closest.score,
+                failure_reason="mandatory_changes_exceed_sparsity",
+                risk_reached=nearest_risk,
+                stage_timings_ms=timing,
+                actuator_constraints_feasible=True,
+            )
 
         def optimize_support(
             support: tuple[str, ...],
@@ -363,6 +396,8 @@ class RecourseOptimizer:
         ) -> list[_Candidate]:
             """Optimize a selected support with L-BFGS-B and seeded starts."""
             nonlocal solver_calls
+            if not set(required_controls).issubset(support):
+                raise ValueError("optimization support must include mandatory bound corrections")
             support_positions = np.asarray([controls.index(name) for name in support], dtype=int)
             support_lower = lower_array[support_positions]
             support_upper = upper_array[support_positions]
@@ -440,6 +475,7 @@ class RecourseOptimizer:
                 max_changed_features=config.recourse.max_changed_features,
                 top_m=config.recourse.support_search_top_m,
                 max_supports=config.recourse.support_search_limit,
+                required_features=required_controls,
             )
             candidates: list[_Candidate] = []
             full_dense_delta = np.asarray(
@@ -480,22 +516,9 @@ class RecourseOptimizer:
             raw_rows = np.repeat(raw_initial[None, :], len(delta_grid), axis=0)
             raw_rows[:, control_positions] = current_raw + delta_grid * control_scales
             if self.coupling is not None:
-                name_positions = {
-                    name: position for position, name in enumerate(self.bundle.feature_names)
-                }
-                predictor_positions = np.asarray(
-                    [name_positions[name] for name in self.coupling.predictor_features],
-                    dtype=np.int64,
+                raw_rows = self.coupling.propagate_batch(
+                    raw_rows, self.bundle.feature_names, reference_state=raw_initial
                 )
-                for dependent_name in self.coupling.dependent_features:
-                    dependent_position = name_positions[dependent_name]
-                    prediction = np.asarray(
-                        self.coupling.models[dependent_name].predict(
-                            raw_rows[:, predictor_positions]
-                        ),
-                        dtype=np.float64,
-                    ).reshape(-1)
-                    raw_rows[:, dependent_position] = prediction
             scaled_rows = self.bundle.scaler.transform(
                 pd.DataFrame(raw_rows, columns=self.bundle.feature_names)
             )
@@ -556,7 +579,7 @@ class RecourseOptimizer:
                     closest = best_grid_candidate
                 return []
 
-            if self.mahalanobis is not None:
+            if self.mahalanobis is not None and self.validate_plausibility:
                 differences = scaled_rows[safe_indices] - self.mahalanobis.mean
                 distances = np.sqrt(
                     np.maximum(
@@ -602,6 +625,11 @@ class RecourseOptimizer:
             alpha = config.recourse.prediction_weight * config.recourse.alpha_growth**alpha_step
             attempts = optimize_support(tuple(controls), alpha, config.recourse.l1_weight)
             dense_candidates.extend(attempts)
+            valid_candidates.extend(
+                attempt for attempt in attempts
+                if attempt.risk <= config.model.safe_threshold
+                and len(attempt.delta_scaled) <= config.recourse.max_changed_features
+            )
             safe_attempts = [
                 attempt
                 for attempt in attempts
@@ -636,6 +664,7 @@ class RecourseOptimizer:
                 for attempt in sparse_attempts:
                     if (
                         attempt.risk < closest.risk
+                        and len(attempt.delta_scaled) <= config.recourse.max_changed_features
                         and validate_engineering(state, attempt.state, self.taxonomy).valid
                     ):
                         closest = attempt
@@ -657,6 +686,7 @@ class RecourseOptimizer:
             for attempt in fallback_supports:
                 if (
                     attempt.risk < closest.risk
+                    and len(attempt.delta_scaled) <= config.recourse.max_changed_features
                     and validate_engineering(state, attempt.state, self.taxonomy).valid
                 ):
                     closest = attempt
@@ -687,7 +717,7 @@ class RecourseOptimizer:
             valid_candidates.extend(grid_candidates)
             engineering_valid_candidates = [
                 candidate
-                for candidate in grid_candidates
+                for candidate in valid_candidates
                 if validate_engineering(state, candidate.state, self.taxonomy).valid
             ]
             if self.mahalanobis is not None:
@@ -707,7 +737,7 @@ class RecourseOptimizer:
             failure_reason = None
             message = (
                 "true calibrated risk and Tier 2–4 checks pass with a sparse bounded candidate"
-                if self.mahalanobis is not None
+                if self.mahalanobis is not None and self.validate_plausibility
                 else "true calibrated risk meets tau_safe with a sparse bounded candidate"
             )
             valid = True
@@ -755,8 +785,23 @@ class RecourseOptimizer:
             risk_reached=selected.risk,
             stage_timings_ms=timing,
             objective_terms={
-                **asdict(selected.terms),
+                "l1": _grid_l1_value(
+                    np.asarray(list(delta_values.values()), dtype=np.float64), config
+                ),
+                "prediction": config.recourse.prediction_weight * prediction_flip_loss(
+                    selected.risk, config.model.safe_threshold,
+                    safety_margin=config.recourse.safety_margin,
+                    squared=config.recourse.prediction_loss == "squared_hinge",
+                ),
+                "immutable": 0.0,
+                "bounds": 0.0,
+                "total": selected.score,
+                "risk": selected.risk,
                 "true_risk": selected.risk,
+                "search_l1": selected.terms.l1,
+                "search_prediction": selected.terms.prediction,
+                "search_total": selected.terms.total,
+                "search_risk": selected.terms.risk,
             },
             counterfactual_signs={
                 delta.feature: int(np.sign(delta.raw_delta)) for delta in deltas
@@ -786,7 +831,7 @@ class RecourseOptimizer:
         self, initial_state: dict[str, float], candidate_state: dict[str, float]
     ) -> bool:
         """Apply independent empirical and engineering tiers when their fit is available."""
-        if self.mahalanobis is None:
+        if self.mahalanobis is None or not self.validate_plausibility:
             return True
         scaled = self.bundle.scaler.transform(
             pd.DataFrame([candidate_state], columns=self.bundle.feature_names)
@@ -832,9 +877,13 @@ def optimize_recourse(
     config: AppConfig,
     coupling: SensorCouplingModel | None = None,
     mahalanobis: MahalanobisValidator | None = None,
+    *,
+    validate_plausibility: bool = True,
 ) -> OptimizationResult:
     """Compatibility function delegating to :class:`RecourseOptimizer`."""
-    return RecourseOptimizer(bundle, taxonomy, coupling, mahalanobis).solve(initial_state, config)
+    return RecourseOptimizer(
+        bundle, taxonomy, coupling, mahalanobis, validate_plausibility=validate_plausibility
+    ).solve(initial_state, config)
 
 
 def _validate_state(state: dict[str, float], model_features: tuple[str, ...]) -> None:

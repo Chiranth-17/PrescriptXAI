@@ -164,6 +164,7 @@ class ValidationConfig(BaseModel):
     covariance_regularization: float = Field(gt=0)
     simulator_enabled: bool
     d_max_method: Literal["mahalanobis"]
+    d_max_threshold_method: Literal["fixed", "empirical_quantile"] = "fixed"
     d_max_quantile: float = Field(gt=0, le=1)
     rate_limits: dict[str, float]
 

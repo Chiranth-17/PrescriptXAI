@@ -102,20 +102,33 @@ def candidate_supports(
     max_changed_features: int,
     top_m: int,
     max_supports: int,
+    required_features: tuple[str, ...] = (),
 ) -> tuple[tuple[str, ...], ...]:
-    """Enumerate deterministic top-k and nearby supports ranked by absolute scaled change."""
+    """Rank supports by scaled action size, always including mandatory bound corrections."""
     if max_changed_features < 1 or top_m < 1 or max_supports < 1:
         raise ValueError("support limits must be positive")
+    if len(set(required_features)) != len(required_features) or not set(
+        required_features
+    ).issubset(feature_names):
+        raise ValueError("required_features must be unique configured feature names")
+    if len(required_features) > max_changed_features:
+        return ()
+    required = tuple(name for name in feature_names if name in required_features)
     ranked = [
         name
         for name in feature_names
         if name in scaled_delta_by_feature and scaled_delta_by_feature[name] != 0.0
+        and name not in required
     ]
     ranked.sort(key=lambda name: abs(scaled_delta_by_feature[name]), reverse=True)
     ranked = ranked[: min(top_m, len(ranked))]
     supports: list[tuple[str, ...]] = []
-    for size in range(min(max_changed_features, len(ranked)), 0, -1):
-        supports.extend(combinations(ranked, size))
+    optional_limit = min(max_changed_features - len(required), len(ranked))
+    for size in range(optional_limit, -1, -1):
+        for optional in combinations(ranked, size):
+            support = required + optional
+            if support:
+                supports.append(support)
     return tuple(supports[:max_supports])
 
 
@@ -194,6 +207,6 @@ def sparsify_candidate(
         best_changed,
         best_risk,
         False,
-        "no safe candidate exists within the configured changed-feature limit; "
+        "no safe candidate was found among the evaluated sparse supports; "
         "returning the lowest-risk sparse candidate",
     )

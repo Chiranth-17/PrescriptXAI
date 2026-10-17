@@ -25,11 +25,13 @@ from prescriptxai.validation.tier2_mahalanobis import MahalanobisValidator
 LOGGER = logging.getLogger(__name__)
 
 
-def _default_coupling_path(taxonomy: FeatureTaxonomy, subset: str) -> Path | None:
+def _default_coupling_path(
+    taxonomy: FeatureTaxonomy, subset: str, artifact_root: Path
+) -> Path | None:
     """Return the configured coupling artifact path when taxonomy metadata defines one."""
     if taxonomy.coupling is None:
         return None
-    return Path("artifacts") / taxonomy.coupling.artifact_name.format(subset=subset)
+    return artifact_root / taxonomy.coupling.artifact_name.format(subset=subset)
 
 
 @dataclass(frozen=True)
@@ -77,7 +79,7 @@ class PrescriptXAIEngine:
         if not taxonomy.active_controllable_feature_names(model.feature_names):
             raise ValueError("at least one configured controllable proxy must be a model feature")
         resolved_coupling_path = coupling_path or _default_coupling_path(
-            taxonomy, config.data.dataset
+            taxonomy, config.data.dataset, (model_path or config.artifacts.model).parent
         )
         coupling = (
             try_load_coupling_model(resolved_coupling_path)

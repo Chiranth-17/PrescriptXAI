@@ -25,7 +25,7 @@ from prescriptxai.data.prepare import prepare_cmapss
 from prescriptxai.data.preprocess import add_training_labels
 from prescriptxai.data.splits import split_engines
 from prescriptxai.evaluation.calibration_plot import write_calibration_plots
-from prescriptxai.evaluation.report import write_evaluation_report
+from prescriptxai.evaluation.report import build_evaluation_provenance, write_evaluation_report
 from prescriptxai.evaluation.runner import evaluate_states
 from prescriptxai.logging_utils import configure_logging
 from prescriptxai.models.registry import save_model_bundle
@@ -200,16 +200,25 @@ def fit_coupling_model(
         config.data.rul_cap,
         config.data.failure_horizon,
     )
+    # The prepared CSV is already the training partition. Reconstruct its provenance
+    # from the complete source trajectories instead of splitting the CSV a second time.
+    source = load_cmapss_archive(config.data.root / config.data.archive_name, subset)
     splits = split_engines(
-        frame,
+        to_model_frame(source.train),
         config.data.train_fraction,
         config.data.validation_fraction,
         config.data.test_fraction,
         config.seed,
         lifetime_buckets=config.data.lifetime_buckets,
     )
+    observed_ids = tuple(sorted(int(value) for value in frame["engine_id"].unique()))
+    if observed_ids != splits.train_engine_ids:
+        raise typer.BadParameter(
+            "coupling CSV must contain exactly the configured training engine IDs; "
+            f"expected {splits.train_engine_ids}, observed {observed_ids}"
+        )
     artifact_name = taxonomy.coupling.artifact_name.format(subset=subset)
-    artifact_path = output_path or Path("artifacts") / artifact_name
+    artifact_path = output_path or config.paths.model.parent / artifact_name
     diagnostic_stem = report_stem or artifact_path.with_name(f"{artifact_path.stem}-diagnostics")
     model = fit_and_persist_coupling(
         frame,
@@ -226,6 +235,8 @@ def fit_coupling_model(
                 "artifact": str(artifact_path),
                 "dependent_features": list(model.dependent_features),
                 "predictor_features": list(model.predictor_features),
+                "training_engine_ids": list(model.training_engine_ids),
+                "training_engine_count": model.metrics.training_engine_count,
                 "r2": model.metrics.r2,
                 "residual_std": model.metrics.residual_std,
                 "r2_floor": taxonomy.coupling.min_r2,
@@ -406,12 +417,25 @@ def evaluate_model(
     )
     # Archive parsing is dataset setup, not the synopsis' per-state telemetry ingestion stage.
     run = evaluate_states(engine, splits.test)
+    source_paths = {
+        "configuration": config_path,
+        "feature_taxonomy": taxonomy_path,
+        "model": config.artifacts.model,
+        "mahalanobis": config.artifacts.mahalanobis,
+        "dataset_archive": archive_path,
+    }
+    if engine.coupling is not None and engine.taxonomy.coupling is not None:
+        source_paths["coupling"] = config.artifacts.model.parent / (
+            engine.taxonomy.coupling.artifact_name.format(subset=config.data.dataset)
+        )
+    provenance = build_evaluation_provenance(engine, splits.test, source_paths)
     markdown_path = config.artifacts.evaluation_report.with_suffix(".md")
     write_evaluation_report(
         run,
         config.artifacts.evaluation_report,
         markdown_path,
         run_configuration=config.recourse.model_dump(mode="json"),
+        provenance=provenance,
     )
     typer.echo(
         json.dumps(

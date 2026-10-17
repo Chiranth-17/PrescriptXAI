@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -20,6 +21,8 @@ class MahalanobisValidator:
     precision: NDArray[np.float64]
     max_distance: float
     regularization: float
+    threshold_method: Literal["fixed", "empirical_quantile"] = "fixed"
+    threshold_quantile: float | None = None
 
     @classmethod
     def fit(
@@ -30,6 +33,9 @@ class MahalanobisValidator:
         expected_training_engine_ids: tuple[int, ...],
         max_distance: float,
         regularization: float,
+        *,
+        threshold_method: Literal["fixed", "empirical_quantile"] = "fixed",
+        threshold_quantile: float | None = None,
     ) -> MahalanobisValidator:
         """Fit mean and regularized covariance after checking engine provenance."""
         if training_features.ndim != 2 or training_features.shape[0] < 2:
@@ -43,14 +49,31 @@ class MahalanobisValidator:
         observed_ids = tuple(sorted(int(value) for value in np.unique(row_engine_ids)))
         if observed_ids != tuple(sorted(expected_training_engine_ids)):
             raise ValueError("covariance rows must contain exactly the declared training engines")
-        if max_distance <= 0 or regularization <= 0:
-            raise ValueError("max_distance and regularization must be positive")
+        if (
+            not np.isfinite(max_distance)
+            or not np.isfinite(regularization)
+            or max_distance <= 0
+            or regularization <= 0
+        ):
+            raise ValueError("max_distance and regularization must be finite and positive")
+        if threshold_method not in {"fixed", "empirical_quantile"}:
+            raise ValueError("unknown Mahalanobis threshold method")
+        if threshold_method == "empirical_quantile" and (
+            threshold_quantile is None or not 0 < threshold_quantile <= 1
+        ):
+            raise ValueError("empirical threshold quantile must be in (0, 1]")
         if len(feature_names) != len(set(feature_names)):
             raise ValueError("feature_names must be unique")
         mean = training_features.mean(axis=0)
         covariance = np.atleast_2d(np.cov(training_features, rowvar=False, ddof=1))
         covariance += np.eye(training_features.shape[1]) * regularization
         precision = np.linalg.pinv(covariance, hermitian=True)
+        if threshold_method == "empirical_quantile":
+            centered = training_features - mean
+            distances = np.sqrt(
+                np.maximum(0, np.einsum("ij,jk,ik->i", centered, precision, centered))
+            )
+            max_distance = float(np.quantile(distances, threshold_quantile))
         return cls(
             feature_names,
             observed_ids,
@@ -58,6 +81,8 @@ class MahalanobisValidator:
             precision.astype(float),
             max_distance,
             regularization,
+            threshold_method,
+            threshold_quantile if threshold_method == "empirical_quantile" else None,
         )
 
     def distance(self, candidate: NDArray[np.float64]) -> float:

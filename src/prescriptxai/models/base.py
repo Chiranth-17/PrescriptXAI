@@ -74,9 +74,7 @@ def validate_feature_matrix(
         raise ValueError("features must be finite")
 
 
-def validate_binary_labels(
-    labels: NDArray[np.int64] | NDArray[np.float64], row_count: int
-) -> None:
+def validate_binary_labels(labels: NDArray[np.int64] | NDArray[np.float64], row_count: int) -> None:
     """Require one binary label per feature row and both classes for fitting."""
     if labels.ndim != 1 or labels.shape[0] != row_count:
         raise ValueError("labels must be one-dimensional and match the feature row count")

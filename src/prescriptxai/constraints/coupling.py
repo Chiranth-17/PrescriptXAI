@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from html import escape
@@ -23,6 +24,8 @@ from torch import Tensor, nn
 
 from prescriptxai.constraints.taxonomy import CouplingRule, FeatureTaxonomy, load_taxonomy
 from prescriptxai.data.preprocess import FittedFeatureScaler
+
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -63,6 +66,8 @@ class SensorCouplingModel:
     torch_models: dict[str, nn.Module]
     resolved_bounds: dict[str, tuple[float, float]]
     resolved_rate_limits: dict[str, float] | None = None
+    training_engine_ids: tuple[int, ...] = ()
+    fit_engine_ids: tuple[int, ...] = ()
 
     def save(self, path: Path) -> Path:
         """Persist the fitted coupling model."""
@@ -78,6 +83,15 @@ class SensorCouplingModel:
         loaded: object = joblib.load(path)
         if not isinstance(loaded, SensorCouplingModel):
             raise ValueError("artifact does not contain a SensorCouplingModel")
+        if not getattr(loaded, "training_engine_ids", ()):
+            loaded.training_engine_ids = ()
+            LOGGER.warning(
+                "Coupling artifact %s has no training-engine provenance; refit before "
+                "evaluating engine-disjoint recourse",
+                path,
+            )
+        if not getattr(loaded, "fit_engine_ids", ()):
+            loaded.fit_engine_ids = ()
         return loaded
 
     @classmethod
@@ -97,9 +111,19 @@ class SensorCouplingModel:
         engine_column = "engine_id" if "engine_id" in frame.columns else "unit_id"
         if engine_column not in frame.columns:
             raise ValueError("training frame must contain engine provenance")
+        declared_ids = tuple(sorted(int(value) for value in training_engine_ids))
+        if not declared_ids or len(declared_ids) != len(set(declared_ids)):
+            raise ValueError("training_engine_ids must be nonempty and unique")
+        if any(value != integer for value, integer in zip(
+            sorted(training_engine_ids), declared_ids, strict=True
+        )):
+            raise ValueError("training_engine_ids must contain integer IDs")
         train_rows = frame[frame[engine_column].isin(training_engine_ids)].copy()
         if train_rows.empty:
             raise ValueError("no training-engine rows supplied for coupling fit")
+        observed_ids = tuple(sorted(int(value) for value in train_rows[engine_column].unique()))
+        if observed_ids != declared_ids:
+            raise ValueError("coupling frame is missing declared training engines")
         active_features = tuple(
             spec.name
             for spec in taxonomy.features
@@ -227,10 +251,23 @@ class SensorCouplingModel:
             torch_models=torch_models,
             resolved_bounds=resolved_bounds,
             resolved_rate_limits=resolved_rate_limits,
+            training_engine_ids=declared_ids,
+            fit_engine_ids=tuple(int(value) for value in unique_engines),
         )
 
-    def propagate(self, values: Mapping[str, float]) -> dict[str, float]:
-        """Re-estimate dependent sensors while leaving other fields unchanged."""
+    def propagate(
+        self,
+        values: Mapping[str, float],
+        *,
+        reference_state: Mapping[str, float] | None = None,
+    ) -> dict[str, float]:
+        """Predict dependent sensors, optionally preserving observed reference residuals.
+
+        Recourse uses ``d' = d + g(c') - g(c)`` with a fixed observed reference ``(c, d)``.
+        This guarantees that zero control change produces zero dependent change. Without a
+        reference this remains an absolute conditional-mean prediction ``d' = g(c')``.
+        Neither operation identifies a causal intervention effect from observational telemetry.
+        """
         state = dict(values)
         missing = set(self.predictor_features) - set(state)
         if missing:
@@ -240,11 +277,73 @@ class SensorCouplingModel:
         ).reshape(1, -1)
         if not np.isfinite(predictor_vector).all():
             raise ValueError("coupling predictor values must be finite")
+        reference_predictors: NDArray[np.float64] | None = None
+        if reference_state is not None:
+            required = set(self.predictor_features) | set(self.dependent_features)
+            missing_reference = required - set(reference_state)
+            if missing_reference:
+                raise ValueError(
+                    f"reference state is missing coupling fields: {sorted(missing_reference)}"
+                )
+            if any(not np.isfinite(reference_state[name]) for name in required):
+                raise ValueError("coupling reference values must be finite")
+            reference_predictors = np.asarray(
+                [[reference_state[name] for name in self.predictor_features]], dtype=float
+            )
         for target in self.dependent_features:
             model = self.models[target]
             predicted = float(np.asarray(model.predict(predictor_vector), dtype=float)[0])
+            if reference_state is not None and reference_predictors is not None:
+                baseline = float(np.asarray(model.predict(reference_predictors), dtype=float)[0])
+                predicted = float(reference_state[target]) + (predicted - baseline)
             state[target] = predicted
         return state
+
+    def propagate_batch(
+        self,
+        raw_features: NDArray[np.float64],
+        feature_names: tuple[str, ...],
+        *,
+        reference_state: NDArray[np.float64] | None = None,
+    ) -> NDArray[np.float64]:
+        """Propagate a finite batch with one fixed reference vector or row-aligned references."""
+        matrix = np.asarray(raw_features, dtype=np.float64)
+        if matrix.ndim != 2 or matrix.shape[1] != len(feature_names) or len(matrix) == 0:
+            raise ValueError("coupling features must be a nonempty matrix in feature order")
+        if not np.isfinite(matrix).all():
+            raise ValueError("coupling features must be finite")
+        if len(feature_names) != len(set(feature_names)):
+            raise ValueError("coupling feature names must be unique")
+        missing = (set(self.predictor_features) | set(self.dependent_features)) - set(feature_names)
+        if missing:
+            raise ValueError(f"feature order missing coupling fields: {sorted(missing)}")
+        positions = {name: index for index, name in enumerate(feature_names)}
+        predictor_indices = [positions[name] for name in self.predictor_features]
+        reference: NDArray[np.float64] | None = None
+        if reference_state is not None:
+            reference = np.asarray(reference_state, dtype=np.float64)
+            if reference.ndim == 1:
+                reference = reference.reshape(1, -1)
+            if (
+                reference.ndim != 2
+                or reference.shape[1] != matrix.shape[1]
+                or reference.shape[0] not in (1, matrix.shape[0])
+            ):
+                raise ValueError("reference must be one feature vector or match the feature batch")
+            if not np.isfinite(reference).all():
+                raise ValueError("coupling reference values must be finite")
+        output = matrix.copy()
+        for target in self.dependent_features:
+            index = positions[target]
+            model = self.models[target]
+            predicted = np.asarray(model.predict(matrix[:, predictor_indices]), dtype=np.float64)
+            if reference is not None:
+                baseline = np.asarray(
+                    model.predict(reference[:, predictor_indices]), dtype=np.float64
+                )
+                predicted = reference[:, index] + (predicted - baseline)
+            output[:, index] = predicted
+        return output
 
     def propagate_torch_module(self, feature_names: tuple[str, ...]) -> TorchCouplingPropagation:
         """Build a differentiable propagation module aligned to the model feature order."""
@@ -448,13 +547,23 @@ class TorchCouplingPropagation(nn.Module):
         regressors = [coupling.torch_models[name] for name in coupling.dependent_features]
         return cls(feature_names, dependent_indices, predictor_indices, regressors)
 
-    def forward(self, features: Tensor) -> Tensor:
-        """Return features with dependent columns replaced by coupled predictions."""
-        if features.ndim != 2:
-            raise ValueError("features must be a batch matrix")
+    def forward(self, features: Tensor, reference_features: Tensor | None = None) -> Tensor:
+        """Propagate raw features, preserving residuals when a fixed reference is supplied."""
+        if features.ndim != 2 or features.shape[1] != len(self.feature_names) or not len(features):
+            raise ValueError("features must be a nonempty batch matrix in feature order")
+        if not torch.isfinite(features).all():
+            raise ValueError("coupling features must be finite")
         output = features.clone()
         predictors = features.index_select(1, self._predictor_indices.to(features.device))
         predictions = torch.cat([model(predictors) for model in self._models], dim=1)
+        if reference_features is not None:
+            reference = _reference_tensor(reference_features, features)
+            reference_predictors = reference.index_select(
+                1, self._predictor_indices.to(features.device)
+            )
+            baseline = torch.cat([model(reference_predictors) for model in self._models], dim=1)
+            observed = reference.index_select(1, self._dependent_indices.to(features.device))
+            predictions = observed + (predictions - baseline)
         for column, target_index in enumerate(self._dependent_indices):
             output[:, int(target_index)] = predictions[:, column]
         return output
@@ -474,7 +583,9 @@ class ScaledTorchCouplingPropagation(nn.Module):
         self.register_buffer("_mean", torch.as_tensor(scaler.scaler.mean_, dtype=torch.float64))
         self.register_buffer("_scale", torch.as_tensor(scaler.scaler.scale_, dtype=torch.float64))
 
-    def forward(self, scaled_features: Tensor) -> Tensor:
+    def forward(
+        self, scaled_features: Tensor, reference_scaled_features: Tensor | None = None
+    ) -> Tensor:
         """Propagate dependent values with explicit scaled-to-raw and raw-to-scaled maps."""
         if scaled_features.ndim != 2 or scaled_features.shape[1] != len(self._mean):
             raise ValueError("scaled features must be a batch matrix in the fitted feature order")
@@ -482,9 +593,36 @@ class ScaledTorchCouplingPropagation(nn.Module):
         mean = self._mean.to(scaled_features.device)
         scale = self._scale.to(scaled_features.device)
         raw = scaled_features.to(torch.float64) * scale + mean
+        if reference_scaled_features is not None:
+            reference = _reference_tensor(reference_scaled_features, scaled_features)
+            reference_raw = reference.to(torch.float64) * scale + mean
+            propagated = self.propagation(raw, reference_raw)
+            output = scaled_features.clone()
+            for target_index in self.propagation._dependent_indices:
+                index = int(target_index)
+                output[:, index] = reference[:, index] + (
+                    (propagated[:, index] - reference_raw[:, index]) / scale[index]
+                ).to(original_dtype)
+            return output
         propagated = self.propagation(raw)
         scaled = (propagated - mean) / scale
         return cast(Tensor, scaled).to(dtype=original_dtype)
+
+
+def _reference_tensor(reference_features: Tensor, features: Tensor) -> Tensor:
+    """Validate and detach an observed reference so it cannot become an optimization variable."""
+    reference = reference_features.detach().to(device=features.device, dtype=features.dtype)
+    if reference.ndim == 1:
+        reference = reference.unsqueeze(0)
+    if (
+        reference.ndim != 2
+        or reference.shape[1] != features.shape[1]
+        or reference.shape[0] not in (1, features.shape[0])
+    ):
+        raise ValueError("reference must be one feature vector or match the feature batch")
+    if not torch.isfinite(reference).all():
+        raise ValueError("coupling reference values must be finite")
+    return reference
 
 
 def _build_backend(config: Any, seed: int) -> Any:  # noqa: ANN401
@@ -687,8 +825,10 @@ def apply_coupling_for_bundle(
     state: Mapping[str, float],
     coupling: SensorCouplingModel | None,
     scaler: FittedFeatureScaler | None = None,
+    *,
+    reference_state: Mapping[str, float] | None = None,
 ) -> dict[str, float]:
     """Propagate dependent sensors when a coupling model is available."""
     if coupling is None:
         return dict(state)
-    return coupling.propagate(state)
+    return coupling.propagate(state, reference_state=reference_state)

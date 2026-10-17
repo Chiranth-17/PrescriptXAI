@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 
 import numpy as np
@@ -112,6 +112,8 @@ class EvaluationRecord:
     recourse_feasible: bool = False
     true_model_grid_ms: float = 0.0
     true_model_evaluations: int = 0
+    inference_ms: float | None = None
+    backend_pipeline_ms: float | None = None
 
 
 @dataclass(frozen=True)
@@ -161,6 +163,8 @@ def calculate_metrics(
     inference_ms_per_row: float | None,
     ingestion_ms: float | None,
     config: EvaluationConfig,
+    *,
+    inference_samples_ms: Sequence[float] | None = None,
 ) -> EvaluationSummary:
     """Calculate actual-run metrics; no attempts produce unmeasured values, not fabricated zeros."""
     count = len(records)
@@ -243,7 +247,11 @@ def calculate_metrics(
             [] if ingestion_ms is None else [ingestion_ms], None, config.ingestion_max_ms
         ),
         "inference_per_row": summarize_latency(
-            [] if inference_ms_per_row is None else [inference_ms_per_row],
+            (
+                inference_samples_ms
+                if inference_samples_ms is not None
+                else ([] if inference_ms_per_row is None else [inference_ms_per_row])
+            ),
             None,
             config.inference_max_ms,
         ),
@@ -256,7 +264,12 @@ def calculate_metrics(
             [record.validation_ms for record in records], None, config.validation_max_ms
         ),
         "pipeline": summarize_latency(
-            [record.optimization_ms + record.validation_ms for record in records],
+            [
+                record.backend_pipeline_ms
+                if record.backend_pipeline_ms is not None
+                else record.optimization_ms + record.validation_ms
+                for record in records
+            ],
             config.pipeline_min_ms,
             config.pipeline_max_ms,
         ),
@@ -280,10 +293,10 @@ def calculate_metrics(
         successful_recourse_rate=MetricResult(
             successful_recourse_rate, "reported separately", None
         ),
-        physical_plausibility_rate=_rate(physical_rate, config.physical_plausibility_rate, ">="),
-        tier2_plausibility_rate=MetricResult(
-            tier2_rate, "no separate Tier 2 target specified", None
+        physical_plausibility_rate=MetricResult(
+            physical_rate, "joint Tiers 2–4; no separate synopsis target", None
         ),
+        tier2_plausibility_rate=_rate(tier2_rate, config.physical_plausibility_rate, ">="),
         tier3_engineering_rate=MetricResult(tier3_rate, "no target specified", None),
         tier4_coupling_rate=MetricResult(tier4_rate, "no target specified", None),
         average_sparsity=_rate(average_sparsity, float(config.average_sparsity_max), "<="),

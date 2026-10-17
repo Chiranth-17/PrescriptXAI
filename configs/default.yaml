@@ -99,6 +99,7 @@ recourse:
 validation:
   D_max: 5.0
   d_max_method: mahalanobis
+  d_max_threshold_method: fixed
   d_max_quantile: 0.99
   rate_limits: {}
   covariance_regularization: 0.000001

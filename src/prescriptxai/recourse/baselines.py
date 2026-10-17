@@ -13,6 +13,7 @@ from numpy.typing import NDArray
 from scipy.optimize import minimize
 
 from prescriptxai.config import AppConfig
+from prescriptxai.constraints.coupling import SensorCouplingModel
 from prescriptxai.constraints.taxonomy import FeatureTaxonomy
 from prescriptxai.models.registry import ModelBundle
 from prescriptxai.recourse.objective import prediction_flip_loss
@@ -54,27 +55,14 @@ def single_actuator_baseline(
     bundle: ModelBundle,
     taxonomy: FeatureTaxonomy,
     config: AppConfig,
+    coupling: SensorCouplingModel | None = None,
 ) -> OptimizationResult:
-    """Optimize each actuator alone and return the least scaled-change safe candidate."""
-    actuator_names = taxonomy.feature_groups.controllable_actuators.features
-    if not actuator_names:
-        return optimize_recourse(initial_state, bundle, taxonomy, config)
+    """Search single-control supports while retaining every actuator's physical limits."""
     one_feature_config = config.model_copy(deep=True)
     one_feature_config.recourse.max_changed_features = 1
-    candidates: list[OptimizationResult] = []
-    for name in actuator_names:
-        one_actuator_taxonomy = taxonomy.model_copy(deep=True)
-        one_actuator_taxonomy.feature_groups.controllable_actuators.features = [name]
-        one_actuator_taxonomy.actuator_constraints = {name: taxonomy.actuator_constraints[name]}
-        candidates.append(
-            optimize_recourse(initial_state, bundle, one_actuator_taxonomy, one_feature_config)
-        )
-    valid_candidates = [candidate for candidate in candidates if candidate.model_valid]
-    if not valid_candidates:
-        return min(candidates, key=lambda result: result.final_risk)
-    return min(
-        valid_candidates,
-        key=lambda result: sum(abs(delta.scaled_delta) for delta in result.deltas),
+    return optimize_recourse(
+        initial_state, bundle, taxonomy, one_feature_config, coupling,
+        validate_plausibility=False,
     )
 
 
@@ -173,9 +161,12 @@ def bounded_l1_baseline(
     bundle: ModelBundle,
     taxonomy: FeatureTaxonomy,
     config: AppConfig,
+    coupling: SensorCouplingModel | None = None,
 ) -> OptimizationResult:
-    """Run masked bounded L1 recourse without asserting Tiers 2–4 plausibility."""
-    result = optimize_recourse(initial_state, bundle, taxonomy, config)
+    """Run masked bounded L1 recourse without Tier 2 or Tier 4 candidate filtering."""
+    result = optimize_recourse(
+        initial_state, bundle, taxonomy, config, coupling, validate_plausibility=False
+    )
     return OptimizationResult(
         **{
             **result.__dict__,

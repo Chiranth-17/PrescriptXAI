@@ -58,6 +58,7 @@ def evaluate_states(
             ),
             0,
         )
+    validate_evaluation_provenance(engine, held_out_rows)
     missing = set(engine.model.feature_names) - set(held_out_rows.columns)
     if missing:
         raise ValueError(f"held-out data is missing model features: {sorted(missing)}")
@@ -102,7 +103,9 @@ def evaluate_states(
         inference_started = perf_counter_ns()
         engine.model.predict_risk(pd.DataFrame([state], columns=engine.model.feature_names))
         inference_samples_ms.append((perf_counter_ns() - inference_started) / 1_000_000)
+        pipeline_started = perf_counter_ns()
         result = engine.recommend(state)
+        backend_pipeline_ms = (perf_counter_ns() - pipeline_started) / 1_000_000
         if not result.optimization.actuator_constraints_feasible:
             raise RuntimeError(
                 "evaluation pre-screen selected a state without feasible actuator intervals"
@@ -144,6 +147,8 @@ def evaluate_states(
                     "true_model_grid_search", 0.0
                 ),
                 true_model_evaluations=result.optimization.true_model_evaluations,
+                inference_ms=inference_samples_ms[-1],
+                backend_pipeline_ms=backend_pipeline_ms,
             )
         )
     inference_per_row = float(np.mean(inference_samples_ms)) if inference_samples_ms else None
@@ -154,6 +159,7 @@ def evaluate_states(
         inference_per_row,
         ingestion_ms,
         engine.config.evaluation,
+        inference_samples_ms=inference_samples_ms,
     )
     LOGGER.info(
         "Evaluated %d feasible recourse states from %d high-risk held-out states; "
@@ -177,6 +183,76 @@ def evaluate_states(
         direction.pairwise_sign_agreement,
     )
     return EvaluationRun(record_tuple, summary, direction, infeasible_count)
+
+
+def fitted_engine_provenance(
+    engine: PrescriptXAIEngine,
+) -> dict[str, tuple[int, ...] | None]:
+    """Return fitted engine IDs, preserving unavailable legacy provenance as unknown."""
+    provenance: dict[str, tuple[int, ...] | None] = {
+        "model_training": tuple(engine.model.training_engine_ids),
+        "scaler_training": tuple(engine.model.scaler.training_engine_ids),
+        "mahalanobis_training": tuple(engine.mahalanobis.training_engine_ids),
+    }
+    metrics = engine.model.metrics or {}
+    partitions = metrics.get("split_engines")
+    if isinstance(partitions, dict):
+        provenance["model_validation"] = _engine_ids(partitions.get("validation"))
+    if engine.model.calibrator is not None:
+        calibration = metrics.get("calibration")
+        provenance["calibration_fit"] = (
+            _engine_ids(calibration.get("fit_engine_ids"))
+            if isinstance(calibration, dict)
+            else None
+        )
+    if engine.coupling is not None:
+        provenance["coupling_training"] = _engine_ids(
+            getattr(engine.coupling, "training_engine_ids", None)
+        )
+    return provenance
+
+
+def _engine_ids(value: object) -> tuple[int, ...] | None:
+    """Decode persisted IDs without treating missing or empty provenance as verified."""
+    if not isinstance(value, (list, tuple)) or not value:
+        return None
+    try:
+        return tuple(sorted({int(item) for item in value}))
+    except (TypeError, ValueError) as exc:
+        raise ValueError("artifact engine provenance contains invalid engine IDs") from exc
+
+
+def validate_evaluation_provenance(
+    engine: PrescriptXAIEngine, held_out_rows: pd.DataFrame
+) -> None:
+    """Reject fitting/evaluation leakage even when runtime split settings have changed."""
+    required = {"engine_id", "cycle"}
+    if not required.issubset(held_out_rows.columns):
+        raise ValueError("held-out rows must contain engine_id and cycle provenance")
+    for name in sorted(required):
+        values = held_out_rows[name].to_numpy(dtype=float)
+        if not np.isfinite(values).all() or (values < 1).any() or (values % 1 != 0).any():
+            raise ValueError(f"held-out {name} values must be finite positive integers")
+    ids = set(int(value) for value in held_out_rows["engine_id"].unique())
+    for component, fitted_ids in fitted_engine_provenance(engine).items():
+        if fitted_ids is None:
+            LOGGER.warning(
+                "Evaluation cannot verify %s: fitted engine IDs are unavailable", component
+            )
+            continue
+        overlap = ids.intersection(fitted_ids)
+        if overlap:
+            raise ValueError(
+                f"held-out engine IDs overlap {component} engines: {sorted(overlap)}; "
+                "use the persisted engine split rather than changing the evaluation seed"
+            )
+    metrics = engine.model.metrics or {}
+    fitted_dataset = metrics.get("dataset")
+    if fitted_dataset is not None and fitted_dataset != engine.config.data.dataset:
+        raise ValueError("evaluation dataset does not match the fitted model dataset")
+    fitted_horizon = metrics.get("horizon_H")
+    if fitted_horizon is not None and fitted_horizon != engine.config.data.failure_horizon:
+        raise ValueError("evaluation failure horizon does not match the fitted model horizon")
 
 
 def _has_feasible_actuator_intervals(

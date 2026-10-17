@@ -22,3 +22,9 @@ data/processed/*
 artifacts/*
 !artifacts/.gitkeep
 .streamlit/secrets.toml
+diagnostic_bundle/
+diagnostic_bundle.zip
+.gemini/
+.agent/
+.agents/
+bundle_prompt.txt

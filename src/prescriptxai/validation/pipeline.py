@@ -96,7 +96,7 @@ class ValidationReport:
             tier3_engineering_valid=self.tier3_engineering.valid,
             tier4_coupling_valid=self.tier4_coupling.valid,
             deltas=deltas,
-            success=self.success,
+            success=self.success and recourse_feasible,
         )
 
 
@@ -121,6 +121,8 @@ def fit_mahalanobis_validator(
         expected_training_engine_ids,
         config.validation.mahalanobis_max,
         config.validation.covariance_regularization,
+        threshold_method=config.validation.d_max_threshold_method,
+        threshold_quantile=config.validation.d_max_quantile,
     )
 
 
