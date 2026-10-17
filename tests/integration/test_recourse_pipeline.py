@@ -20,7 +20,15 @@ def test_candidate_flows_through_recourse_and_four_tier_validation() -> None:
     recourse = optimize_recourse(initial, bundle, taxonomy, config)
     validator = fit_mahalanobis_validator(training, bundle, bundle.training_engine_ids, config)
     validation = validate_candidate(initial, recourse.state, bundle, taxonomy, validator, config)
-    outcome = validation.as_outcome(recourse.initial_risk, recourse.final_risk, recourse.deltas)
+    outcome = validation.as_outcome(
+        recourse.initial_risk,
+        recourse.final_risk,
+        recourse.deltas,
+        recourse_feasible=(
+            recourse.model_valid
+            and len(recourse.deltas) <= config.recourse.max_changed_features
+        ),
+    )
 
     assert recourse.model_valid
     assert validation.tier1_model.valid

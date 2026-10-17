@@ -18,7 +18,7 @@ from prescriptxai.models.base import FailureModel
 from prescriptxai.models.calibration import ProbabilityCalibrator
 
 LOGGER = logging.getLogger(__name__)
-_ARTIFACT_VERSION = 2
+_ARTIFACT_VERSION = 3
 
 
 @dataclass
@@ -38,6 +38,7 @@ class ModelBundle:
     git_commit: str | None = None
     metrics: dict[str, object] | None = None
     resolved_bounds: dict[str, tuple[float, float]] | None = None
+    resolved_rate_limits: dict[str, float] | None = None
     artifact_version: int = _ARTIFACT_VERSION
 
     @property
@@ -135,6 +136,11 @@ def save_model_bundle(bundle: ModelBundle, path: Path) -> Path:
         raise ValueError("model feature order does not match the embedded fitted scaler")
     if not bundle.feature_names or len(bundle.feature_names) != len(set(bundle.feature_names)):
         raise ValueError("model artifact feature list must be nonempty and unique")
+    if bundle.resolved_rate_limits is not None and any(
+        not name or not np.isfinite(limit) or limit < 0
+        for name, limit in bundle.resolved_rate_limits.items()
+    ):
+        raise ValueError("resolved actuator rate limits must be named, finite, and nonnegative")
     path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(bundle, path)
     LOGGER.info("Saved %s risk artifact to %s", bundle.model_type, path)
@@ -152,6 +158,11 @@ def load_model_bundle(path: Path, expected_features: tuple[str, ...] | None = No
         raise ValueError(f"unsupported artifact version: {loaded.artifact_version}")
     if loaded.feature_names != loaded.scaler.feature_names:
         raise ValueError("artifact model and scaler feature lists do not match")
+    rate_limits = getattr(loaded, "resolved_rate_limits", None)
+    if rate_limits is not None and any(
+        not name or not np.isfinite(limit) or limit < 0 for name, limit in rate_limits.items()
+    ):
+        raise ValueError("artifact contains invalid resolved actuator rate limits")
     if expected_features is not None and expected_features != loaded.feature_names:
         raise ValueError("artifact feature order does not match the expected feature order")
     return loaded

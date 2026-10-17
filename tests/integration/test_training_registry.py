@@ -58,6 +58,8 @@ def test_training_calibrates_on_train_engines_and_round_trips_bundle(tmp_path: P
     )
     assert "auroc" in result.metrics["test_holdout"]
     assert result.metrics["surrogate_fidelity"]["mae"] is not None
+    assert result.bundle.resolved_rate_limits
+    assert result.metrics["resolved_rate_limits"] == result.bundle.resolved_rate_limits
     assert result.bundle.supports_gradients
     gradient_risk, gradients = result.bundle.predict_risk_with_gradient(
         result.splits.validation.iloc[:1]
@@ -72,6 +74,7 @@ def test_training_calibrates_on_train_engines_and_round_trips_bundle(tmp_path: P
         result.bundle.predict_risk(result.splits.validation),
         reloaded.predict_risk(result.splits.validation),
     )
+    assert reloaded.resolved_rate_limits == result.bundle.resolved_rate_limits
     with pytest.raises(ValueError, match="feature order"):
         load_model_bundle(artifact_path, expected_features=("wrong_feature",))
     assert reloaded.config_hash == result.bundle.config_hash

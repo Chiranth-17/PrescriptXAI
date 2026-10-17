@@ -40,6 +40,12 @@
 - A recommendation is actionable only if physical, rate, and scaled trust intervals intersect.
   Evaluation reports these infeasible high-risk inputs separately instead of treating them as
   optimizer violations or returning them as actions.
+- Default proxy rate limits use the configurable p99 of adjacent-cycle absolute changes, fitted
+  within train engines only and persisted with the model. They are telemetry envelopes, not
+  actuator slew rates.
+- Model validity records the true calibrated-risk threshold independently. Joint success also
+  requires a sparse optimizer-feasible action and passing Tiers 2–4; a safe-risk diagnostic that
+  fails the sparse search cannot count as a successful action.
 
 ## Assumptions
 
@@ -64,8 +70,10 @@
 - The LSTM supports sequence scoring and gradients, but the current snapshot recourse request does
   not carry the history window. LSTM training/evaluation works; current interactive LSTM recourse
   remains unsupported until that request interface accepts history.
-- The Phase 4 200-state sample produced no candidates meeting the true calibrated risk target.
-  Optimization target metrics therefore fail and must not be presented as demonstrated recourse.
+- The corrected Phase 4 200-state FD001 sample met the sparsity target but missed true model
+  validity (12.5%), sparse recourse feasibility (11.5%), joint success (11%), physical plausibility
+  (68%), risk reduction (0.52495), and mean latency targets. These measured outcomes must not be
+  presented as demonstrated operational recourse.
 
 Phase 0 scaffold verification is complete. GNU Make's Windows executable is named mingw32-make in
 this environment; its all-checks target passed using Python 3.11.17. The same target also passed in
@@ -273,45 +281,68 @@ tests. L1 escalation is followed by top-k support re-optimization and determinis
 Results include raw/scaled deltas, percent changes, per-stage timings, objective terms, and local
 sign diagnostics.
 
-The real FD001 engine-held-out split contained 3,281 rows. Of 378 alerts at the configured danger
-threshold, 70 (18.52%) had no feasible physical/rate/trust interval from the observed telemetry;
-these were excluded from the actionable benchmark denominator and reported separately. A seeded
-sample of 200 of the remaining 308 actionable alerts completed. This evaluation used a temporary,
-ignored YAML config with `max_iterations=25`, `restarts=1`, `alpha_steps=3`,
+The first Phase 4 benchmark uncovered two implementation defects, now corrected. Tier 3 had been
+applying empirical percentile bounds to all telemetry (including immutable/dependent sensors and
+dropped features with unresolved bounds), incorrectly rejecting every candidate. Tier 3 now checks
+hard bounds only on configured actuator proxies, with immutable equality and per-step rate checks
+kept separate. The configured `0.03 * range` proxy rate was also far tighter than observed
+within-engine transitions; the default now fits the configured 99th percentile of absolute,
+adjacent-cycle changes on training engines only. Fitted raw-unit rate envelopes are persisted in
+the versioned model artifact, and cycle gaps or missing engine/cycle provenance are rejected.
+These telemetry rates are not verified actuator slew limits.
+
+The corrected real FD001 engine-held-out split contained 3,281 rows. The trained model used 69
+training engines; 378 rows met the configured danger threshold, and all had nonempty one-step
+physical/rate/trust intervals under the train-derived rates. A seeded sample of 200 completed. This
+run used a temporary ignored YAML config with `max_iterations=25`, `restarts=1`, `alpha_steps=3`,
 `l1_escalation_steps=1`, `support_search_top_m=3`, `support_search_limit=2`, and
-`max_line_search_steps=8`; the exact configuration is saved in
-`artifacts/FD001-evaluation.json` and `.md`. These search budgets are lower than the repository
-defaults and must be considered when interpreting the result.
+`max_line_search_steps=8`; the exact configuration and measured records are saved in
+`artifacts/FD001-evaluation.json` and `.md`. These search budgets are lower than repository defaults.
 
 | Measured outcome | FD001 holdout result | Synopsis target/status |
 |---|---:|---|
-| Evaluated actionable high-risk states | 200 / 308 | At least 200: pass |
-| Model-valid rate (`f(x') <= tau_safe`) | 0 / 200 = 0% | ≥95%: fail |
-| Physical plausibility rate (Tiers 2–4) | 0 / 200 = 0% | ≥90%: fail |
-| Tier 2 plausibility rate | 95.5% | No separate target |
-| Tier 3 engineering rate | 0% | No separate target |
+| Evaluated actionable high-risk states | 200 / 378 | At least 200: pass |
+| Model-valid rate (`f(x') <= tau_safe`) | 25 / 200 = 12.5% | ≥95%: fail |
+| Sparse recourse feasibility | 23 / 200 = 11.5% | Reported separately |
+| Joint successful recourse | 22 / 200 = 11.0% | All safety and physical checks |
+| Physical plausibility rate (Tiers 2–4) | 136 / 200 = 68% | ≥90%: fail |
+| Tier 2 plausibility rate | 68% | No separate target |
+| Tier 3 engineering rate | 100% | No separate target |
 | Tier 4 coupling rate | 100% | No separate target |
-| Mean risk reduction | 0.12047 | ≥0.60: fail |
-| Mean changed features among returned candidates | 2.595 | Cap 3: met |
-| Mean / P95 optimization time | 472.10 / 1,104.92 ms | 1,200–1,800 ms: fail |
-| Mean pipeline time | 483.32 ms | 1,500–2,200 ms: fail |
+| Mean risk reduction | 0.52495 | ≥0.60: fail |
+| Mean sparsity among joint successes | 2.27273 | ≤3: pass |
+| Mean returned diagnostic actions (including failures) | 2.655 | Diagnostic only |
+| Mean / P95 optimization time | 701.71 / 1,148.80 ms | Mean target 1,200–1,800 ms: fail |
+| Mean / P95 pipeline time | 709.54 / 1,158.01 ms | Mean target 1,500–2,200 ms: fail |
 | Frozen-feature / bound / rate violations | 0 / 0 / 0 | Zero observed |
 
-There were no model-valid results, so average sparsity over valid candidates is unmeasured. The
-2.595 changed-feature mean is for all returned failed-candidate diagnostics and is not substituted
-for valid-result sparsity. Counterfactual direction consistency had no similar state pairs within
-the configured radius and is unmeasured. The measured validity and risk-drop failures show that
-this implementation does not yet meet the synopsis recourse targets on FD001; no causal or
-maintenance-effect claim follows from the run.
+Two risk-safe diagnostic states were rejected by the optimizer's sparse-support search and changed
+four controls; the corrected status model preserves their true model-safety result but does not
+count them as sparse recourses or successes. The 22 joint successes changed at most three controls.
+The model-validity, physical-plausibility, and joint-success metrics remain separate. Counterfactual
+direction consistency had no nearby state pairs within the configured radius and is unmeasured.
+The corrected implementation still misses the synopsis validity, plausibility, risk-reduction, and
+latency targets on FD001; the run does not establish causal intervention effects or maintenance
+benefits.
+
+A separate 40-state diagnostic used a larger search budget (100 iterations, eight alpha steps, up
+to eight supports). It achieved 20/40 true model-valid candidates and 16/40 joint model-valid,
+plausible, sparse actions, with mean optimization latency 4,655.82 ms and P95 8,859.32 ms. Two
+model-safe outputs exceeded the three-control cap; the new `recourse_feasible` status explicitly
+excludes such outputs from successful recourse and sparsity metrics. The higher-budget search is
+therefore not adopted as the default: its measured latency is far outside target and its 40-state
+sample does not meet the validity/plausibility targets.
 
 ### Phase 4 verification
 
 - Real FD001 evaluation: `uv run prescriptxai evaluate --queries 200 --config
   data/processed/phase4-benchmark.yaml`; 200 completed with zero frozen-feature, actuator-bound,
-  or rate-limit violations. The temporary config is under ignored generated data.
+  or rate-limit violations. Tier 3 no longer treats distribution percentiles as actuator limits.
+  The temporary config is under ignored generated data.
 - Unit/integration coverage includes finite-difference objective gradients, smooth/split L1
   comparison, randomized frozen features, hard bounds, safe/no-action, structured failures,
-  multi-start ordering, determinism, solver timing, evaluation direction metrics, and API results.
-- Final `mingw32-make all-checks` on Python 3.13.9: Ruff passed, mypy passed for 49 source files,
-  139 tests passed with 77% total coverage, and the documentation target passed. The only warnings
-  were convergence notices from deliberately short nonlinear coupling test fixtures.
+  multi-start ordering, determinism, solver timing, evaluation direction metrics, API results,
+  failed-sparse-search status handling, and persisted train-derived actuator proxy rates.
+- `mingw32-make all-checks` on Python 3.13.9: Ruff passed; mypy passed for 49 source files;
+  143 tests passed with 77% total coverage; the documentation target passed. The 24 warnings are
+  convergence notices from deliberately short nonlinear coupling fixtures.

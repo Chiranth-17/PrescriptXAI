@@ -9,6 +9,7 @@ from pydantic import ValidationError
 
 from prescriptxai.constraints.taxonomy import (
     FeatureTaxonomy,
+    RateLimitSpec,
     bound_vectors,
     classification_masks,
     load_taxonomy,
@@ -135,6 +136,7 @@ def test_bound_vectors_round_trip_raw_scaled() -> None:
     training = pd.DataFrame(
         {
             "engine_id": [1] * 8,
+            "cycle": np.arange(1, 9),
             "op_setting_1": np.linspace(-0.004, 0.004, 8),
             "sensor_12": np.linspace(520, 522, 8),
             "sensor_3": np.linspace(1580, 1600, 8),
@@ -159,6 +161,8 @@ def test_training_percentile_bounds_use_configured_margin() -> None:
     taxonomy = load_taxonomy(Path("configs/features.yaml"))
     training = pd.DataFrame(
         {
+            "engine_id": [1] * 100,
+            "cycle": np.arange(1, 101),
             "op_setting_1": np.arange(100, dtype=float),
             "sensor_12": np.arange(100, dtype=float),
         }
@@ -177,9 +181,63 @@ def test_manual_bounds_outside_observed_range_plus_margin_are_rejected() -> None
     """Explicit bounds cannot silently extend far beyond the training operating range."""
     taxonomy = load_taxonomy(Path("configs/features.yaml"))
     training = pd.DataFrame({"sensor_12": np.linspace(10.0, 20.0, 50)})
-    manual = taxonomy.with_resolved_bounds({"sensor_12": (-100.0, 100.0)})
+    manual = taxonomy.with_resolved_bounds(
+        {"sensor_12": (-100.0, 100.0)}, {"sensor_12": 1.0}
+    )
     with pytest.raises(ValueError, match="observed training range plus margin"):
         manual.validate_bounds_against_observed(training, columns=("sensor_12",))
+
+
+def test_training_delta_rate_quantile_is_fitted_within_engine_only() -> None:
+    """Train-derived per-step rates exclude artificial differences across engine boundaries."""
+    taxonomy = load_taxonomy(Path("configs/features.yaml"))
+    updated_specs = tuple(
+        spec.model_copy(
+            update={"max_rate_of_change": RateLimitSpec(training_delta_quantile=0.75)}
+        )
+        if spec.name == "sensor_12"
+        else spec
+        for spec in taxonomy.features
+    )
+    taxonomy = taxonomy.model_copy(update={"features": updated_specs})
+    training = pd.DataFrame(
+        {
+            "engine_id": [1, 1, 1, 2, 2, 2],
+            "cycle": [1, 2, 3, 1, 2, 3],
+            "sensor_12": [10.0, 12.0, 16.0, 100.0, 101.0, 102.0],
+        }
+    )
+
+    fitted = taxonomy.fit_training_bounds(training, columns=("sensor_12",))
+
+    assert fitted.actuator_constraints["sensor_12"].max_change_per_step == pytest.approx(2.5)
+    assert fitted.feature_by_name()["sensor_12"].max_rate_of_change == RateLimitSpec(
+        absolute=2.5
+    )
+
+
+def test_training_delta_rate_quantile_rejects_gapped_cycles() -> None:
+    """A cycle-step envelope cannot be fitted from non-adjacent telemetry rows."""
+    taxonomy = load_taxonomy(Path("configs/features.yaml"))
+    updated_specs = tuple(
+        spec.model_copy(
+            update={"max_rate_of_change": RateLimitSpec(training_delta_quantile=0.75)}
+        )
+        if spec.name == "sensor_12"
+        else spec
+        for spec in taxonomy.features
+    )
+    taxonomy = taxonomy.model_copy(update={"features": updated_specs})
+    training = pd.DataFrame(
+        {
+            "engine_id": [1, 1, 1],
+            "cycle": [1, 2, 4],
+            "sensor_12": [10.0, 12.0, 16.0],
+        }
+    )
+
+    with pytest.raises(ValueError, match="contiguous cycles"):
+        taxonomy.fit_training_bounds(training, columns=("sensor_12",))
 
 
 def load_taxonomy_from_dict(payload: dict[str, object]) -> FeatureTaxonomy:

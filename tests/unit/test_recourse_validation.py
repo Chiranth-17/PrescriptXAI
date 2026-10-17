@@ -14,7 +14,7 @@ from fixtures.recourse_models import make_recourse_fixture
 from prescriptxai.config import load_config
 from prescriptxai.constraints.bounds import allowed_interval, check_bound_violations
 from prescriptxai.constraints.coupling import evaluate_rule, validate_couplings
-from prescriptxai.constraints.taxonomy import ActuatorConstraint, CouplingRule
+from prescriptxai.constraints.taxonomy import ActuatorConstraint, BoundsSpec, CouplingRule
 from prescriptxai.data.preprocess import fit_feature_scaler
 from prescriptxai.models.registry import ModelBundle
 from prescriptxai.recourse.baselines import no_action_baseline, single_actuator_baseline
@@ -89,8 +89,8 @@ def test_coupling_rules_and_empty_rule_configuration() -> None:
     assert not validate_sensor_coupling({"actuator": 0.0, "sensor": 2.0}, taxonomy).valid
 
 
-def test_tier3_rejects_out_of_bounds_but_allows_dependent_sensor_changes() -> None:
-    """Engineering validation checks actuator bounds while allowing dependent updates."""
+def test_tier3_checks_only_actuator_bounds_and_allows_dependent_sensor_changes() -> None:
+    """Empirical sensor ranges are not actuator limits; Tier 3 checks controls and freezes."""
     _, taxonomy, _ = make_recourse_fixture()
 
     invalid = validate_engineering(
@@ -100,13 +100,32 @@ def test_tier3_rejects_out_of_bounds_but_allows_dependent_sensor_changes() -> No
     )
     dependent_only = validate_engineering(
         {"actuator": -2.0, "sensor": 2.0},
-        {"actuator": -2.0, "sensor": 2.5},
+        {"actuator": -2.0, "sensor": 12.0},
         taxonomy,
     )
 
     assert not invalid.valid
     assert any("physical maximum" in entry or "rate" in entry for entry in invalid.diagnostics)
     assert dependent_only.valid
+
+
+def test_tier3_does_not_treat_unresolved_dropped_sensor_bounds_as_actuator_failures() -> None:
+    """A dropped/unresolved sensor is outside Tier 3's actuator-bound scope."""
+    _, taxonomy, _ = make_recourse_fixture()
+    sensor_spec = taxonomy.feature_by_name()["sensor"].model_copy(
+        update={"bounds": BoundsSpec(minimum=None, maximum=None)}
+    )
+    taxonomy.features = tuple(
+        sensor_spec if spec.name == "sensor" else spec for spec in taxonomy.features
+    )
+
+    result = validate_engineering(
+        {"actuator": -1.0, "sensor": 2.0},
+        {"actuator": -1.0, "sensor": 2.5},
+        taxonomy,
+    )
+
+    assert result.valid
 
 
 def test_tier3_rejects_rate_violation_and_missing_features() -> None:
@@ -449,6 +468,7 @@ def test_validation_pipeline_reports_model_and_physical_checks_separately() -> N
                 scaled_delta=2.9 / bundle.scaler.scaler.scale_[0],
             ),
         ),
+        recourse_feasible=True,
     )
     assert report.model_valid
     assert report.physical_valid

@@ -42,10 +42,15 @@ choices address the nonsmooth and constrained parts of the synopsis formulation:
    vector, which is equivalent to lower and upper bounds both being zero change. beta is retained
    in logged objective terms but multiplies zero because no immutable variable exists.
 3. **Physical and rate bounds.** Each control's raw physical interval is intersected with its
-   per-step rate interval around the current state. The intersection is converted to scaled-change
-   bounds and passed to L-BFGS-B. The configured scaled movement radius is an additional
-   per-feature trust bound. The bounds penalty term is zero on feasible solver iterates; it remains
-   explicit in the term report for correspondence with the synopsis.
+   per-step rate interval around the current state. The default rate mode is a configurable
+   training-delta quantile: for each control, compute absolute adjacent-cycle changes within each
+   training engine, then take the configured quantile (0.99 by default). It never differences the
+   end of one engine against the start of another. The fitted raw-unit rate values are persisted in
+   the model artifact. A configured absolute rate or fraction of the fitted range remains available
+   as an alternative. The intersection is converted to scaled-change bounds and passed to
+   L-BFGS-B. The configured scaled movement radius is an additional per-feature trust bound. The
+   bounds penalty term is zero on feasible solver iterates; it remains explicit in the term report
+   for correspondence with the synopsis.
 4. **Dependent sensors.** They are not free variables. The Phase 3 differentiable coupling model
    propagates them from the proposed controls and fixed operating context before computing risk.
 5. **Nondifferentiable XGBoost.** A trained differentiable surrogate is used to obtain gradients.
@@ -63,9 +68,18 @@ choices address the nonsmooth and constrained parts of the synopsis formulation:
    the result sets actuator_constraints_feasible=false and echoes the input only as a diagnostic;
    it is not an actionable counterfactual.
 
+These train-derived rates describe observed telemetry movement and are a proxy envelope because
+C-MAPSS has no actuator commands. They must not be presented as real actuator slew limits.
+
 The candidate is accepted as model-valid only when the final calibrated predictor returns
 \(f(x')\le\tau_{safe}\). Tiers 2–4 are a separate physical-plausibility pipeline and can still
 reject a model-valid candidate.
+
+The reported true-risk check is kept separate from optimizer feasibility. A diagnostic closest
+candidate can happen to score below \(\tau_{safe}\) even when the sparse-support search failed or
+the diagnostic action exceeds \(k_{max}\). In that case `model_valid` remains true for the
+measured risk, `recourse_feasible` is false, and joint `success` is false. The sparsity target is
+computed only over joint successes; failure diagnostics are counted separately.
 
 ## Unit mapping
 

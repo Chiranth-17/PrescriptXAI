@@ -62,6 +62,7 @@ class SensorCouplingModel:
     feature_names: tuple[str, ...]
     torch_models: dict[str, nn.Module]
     resolved_bounds: dict[str, tuple[float, float]]
+    resolved_rate_limits: dict[str, float] | None = None
 
     def save(self, path: Path) -> Path:
         """Persist the fitted coupling model."""
@@ -115,6 +116,10 @@ class SensorCouplingModel:
             if name in active_features
             and spec.bounds.minimum is not None
             and spec.bounds.maximum is not None
+        }
+        resolved_rate_limits = {
+            name: constraint.max_change_per_step
+            for name, constraint in resolved_taxonomy.actuator_constraints.items()
         }
         if "rul" in train_rows.columns:
             regime = train_rows["rul"] > max(coupling.min_rul_cycles, failure_horizon)
@@ -221,6 +226,7 @@ class SensorCouplingModel:
             feature_names=model_feature_names,
             torch_models=torch_models,
             resolved_bounds=resolved_bounds,
+            resolved_rate_limits=resolved_rate_limits,
         )
 
     def propagate(self, values: Mapping[str, float]) -> dict[str, float]:

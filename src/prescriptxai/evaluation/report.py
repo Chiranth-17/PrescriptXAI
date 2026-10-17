@@ -67,12 +67,15 @@ def render_markdown(
         f"Evaluated states: {summary.evaluated_states}",
         f"Model-valid candidates: {summary.model_valid_count}",
         f"Physically plausible candidates: {summary.physically_plausible_count}",
+        f"Successful sparse recourses: {summary.successful_recourse_count}",
         "",
         "| Metric | Measured | Target | Status |",
         "|---|---:|---:|---|",
     ]
     metrics: dict[str, Any] = {
         "Model validity rate": summary.recourse_validity_rate,
+        "Optimizer sparse-action feasibility rate": summary.recourse_feasibility_rate,
+        "Joint successful recourse rate": summary.successful_recourse_rate,
         "Physical plausibility rate": summary.physical_plausibility_rate,
         "Tier 2 plausibility rate": summary.tier2_plausibility_rate,
         "Tier 3 engineering rate": summary.tier3_engineering_rate,
@@ -100,7 +103,7 @@ def render_markdown(
             (
                 "Mean changed features across all returned candidates: "
                 f"{mean_returned_action_sparsity:.4f}",
-                "The target average sparsity metric above is computed over model-valid candidates.",
+                "The target average sparsity metric above is computed over successful recourses.",
             )
         )
     if infeasible_high_risk_states is not None:
@@ -129,7 +132,8 @@ def render_markdown(
     lines.extend(
         (
             "",
-            "Model validity and physical plausibility are reported independently.",
+            "Model validity and physical plausibility are reported separately; "
+            "sparse-action feasibility is shown independently.",
             "C-MAPSS is static run-to-failure data and does not establish RUL extension.",
             "",
         )

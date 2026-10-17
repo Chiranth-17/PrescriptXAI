@@ -138,3 +138,40 @@ then measure the requested FD001 held-out benchmark without hiding target failur
   can be claimed.
 - The reduced search budget, absence of any valid candidate, and three below-target latency/risk
   outcomes require further optimizer/model investigation before operational use.
+
+---
+
+## Session: 2026-10-17 — Phase 4 validation and success-status correction
+
+### Corrective findings
+
+- Tier 3 applied percentile ranges for every feature, including dependent sensors and dropped
+  sensors with unresolved bounds. It now checks configured actuator proxy bounds only; immutable
+  features remain frozen, rates remain checked, and the distribution/coupling tiers remain separate.
+- The previous 3%-of-range rate limit contradicted observed adjacent-cycle telemetry. Defaults now
+  fit the configured p99 absolute within-engine changes on training engines only, persist raw-unit
+  values in model artifacts, and reject non-contiguous training cycles.
+- A larger search sample exposed risk-safe diagnostic candidates with four controls. Added explicit
+  optimizer recourse feasibility; the calibrated risk check can remain true while a non-sparse
+  failure is excluded from joint success and successful-action sparsity.
+
+### Corrected FD001 benchmark
+
+- Seeded sample: 200 of 378 actionable high-risk internal held-out states, with zero frozen-feature,
+  actuator-bound, or rate-limit violations.
+- Model validity: 25/200 (12.5%); sparse recourse feasibility: 23/200 (11.5%); joint success:
+  22/200 (11%); physical plausibility: 136/200 (68%); Tier 2 68%, Tier 3 100%, Tier 4 100%.
+- Mean risk reduction: 0.52495; mean successful-action sparsity: 2.27273; mean/P95 optimization:
+  701.71/1,148.80 ms; mean/P95 pipeline: 709.54/1,158.01 ms. Synopsis validity, plausibility,
+  risk-reduction, and latency targets remain unmet.
+- A separate 40-state larger-budget diagnostic reached 20/40 model-valid and 16/40 joint-success
+  cases but averaged 4,655.82 ms optimization latency. This does not justify the longer search as
+  the default.
+
+### Verification
+
+- Focused tests: 48 passed for schemas, evaluation metrics, recourse validation, training artifact
+  persistence, and taxonomy rate fitting.
+- `mingw32-make all-checks` on Python 3.13.9: Ruff passed, mypy passed for 49 source files, 143
+  tests passed with 77% total coverage, and the documentation target passed. The 24 warnings came
+  from deliberately short nonlinear coupling fixtures.

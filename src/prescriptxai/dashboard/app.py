@@ -24,7 +24,8 @@ def main() -> None:
     st.title("PrescriptXAI · Prescriptive Maintenance")
     st.warning(
         "C-MAPSS is static run-to-failure data. This tool does not establish real-machine safety "
-        "or RUL extension. Model validity and physical plausibility are separate checks."
+        "or RUL extension. Model validity, sparse-action feasibility, and physical plausibility "
+        "are separate checks."
     )
     config_path = Path("configs/default.yaml")
     taxonomy_path = Path("configs/features.yaml")

@@ -8,6 +8,10 @@
 - **Coupling models describe observed co-variation, not causal physics.** Learned propagation and
   Tier 4 residual bounds capture statistical coupling on training engines in a healthy-to-moderate
   degradation regime. Passing a coupling check is not proof of a physically realizable intervention.
+- **Rate limits are telemetry proxies.** The default per-step limits are the configured 99th
+  percentile of absolute adjacent-cycle changes within training engines, fit on training engines
+  only and saved with the model artifact. They describe observed sensor movement, not verified
+  actuator slew rates; C-MAPSS does not record actuator commands.
 - **Static run-to-failure data.** C-MAPSS has no counterfactual intervention trajectories. Do not
   claim that PrescriptXAI extends RUL or establishes real engine safety. The simulator is only an
   optional interface and is disabled by default.
@@ -25,14 +29,15 @@
 - **Evaluation scope.** Metrics are for the configured model, seed, engine split, taxonomy, and
   sampled held-out rows. Synopsis case-study values are illustrative and never substituted for
   measured results.
-- **Phase 4 FD001 outcome.** On a seeded sample of 200 of 308 feasible-interval high-risk states
-  in the internal held-out split, no candidate met the true calibrated `tau_safe` target. Mean risk
-  reduction was 0.12047 and the configured 0.60 target failed. Mean returned diagnostic changes
-  were 2.595 features; valid-candidate sparsity is unmeasured because there were no valid results.
-  The benchmark used explicitly recorded reduced search limits (25 iterations, one restart, three
-  alpha steps, one L1 step, two support candidates); these settings are in the generated evaluation
-  report. The result does not demonstrate successful recourse and is not a maintenance-effect
-  claim.
+- **Phase 4 FD001 outcome.** The corrected seeded sample included 200 of 378 feasible-interval
+  high-risk states in the internal held-out split. True model validity was 12.5%, physical
+  plausibility was 68%, and 22/200 (11%) were joint successful sparse recourses. Mean risk
+  reduction was 0.52495; the configured 0.60 target failed. Mean sparsity among the 22 joint
+  successes was 2.27, within the three-action limit. Validity, plausibility, sparse feasibility, and
+  joint success remain separately reported. The benchmark used explicitly recorded reduced search
+  limits (25 iterations, one restart, three alpha steps, one L1 step, two support candidates); these
+  settings are in the generated evaluation report. The synopsis validity, plausibility, and risk
+  targets were not met, and the run does not establish a maintenance effect.
 - **Latency scope.** The evaluation measures inference, optimization, and validation in the Python
   process. Raw telemetry ingestion and interactive dashboard render latency remain unmeasured until
   an instrumented live-input deployment is available.

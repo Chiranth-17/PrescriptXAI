@@ -41,12 +41,32 @@ def test_success_cannot_hide_failed_physical_validation() -> None:
             initial_risk=0.9,
             final_risk=0.1,
             model_valid=True,
+            recourse_feasible=True,
             tier2_plausible=False,
             tier3_engineering_valid=True,
             tier4_coupling_valid=True,
             deltas=(),
             success=True,
         )
+
+
+def test_safe_risk_does_not_make_a_failed_sparse_search_successful() -> None:
+    """True model safety stays separate from optimizer feasibility and success."""
+    outcome = RecourseOutcome(
+        initial_risk=0.9,
+        final_risk=0.15,
+        model_valid=True,
+        recourse_feasible=False,
+        tier2_plausible=True,
+        tier3_engineering_valid=True,
+        tier4_coupling_valid=True,
+        deltas=(),
+        success=False,
+    )
+
+    assert outcome.model_valid
+    assert not outcome.recourse_feasible
+    assert not outcome.success
 
 
 def test_recourse_result_round_trips_raw_deltas_and_per_tier_report() -> None:

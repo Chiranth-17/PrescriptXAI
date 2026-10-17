@@ -49,13 +49,14 @@ class DeltaMapping(BaseModel):
 
 
 class RecourseOutcome(BaseModel):
-    """Machine-readable result with separate model and physical validity."""
+    """Result with separate risk, physical, and feasible-action statuses."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     initial_risk: float = Field(ge=0, le=1)
     final_risk: float = Field(ge=0, le=1)
     model_valid: bool
+    recourse_feasible: bool
     tier2_plausible: bool
     tier3_engineering_valid: bool
     tier4_coupling_valid: bool
@@ -67,6 +68,7 @@ class RecourseOutcome(BaseModel):
         """Prevent a successful outcome from hiding a failed required check."""
         checks_pass = (
             self.model_valid
+            and self.recourse_feasible
             and self.tier2_plausible
             and self.tier3_engineering_valid
             and self.tier4_coupling_valid

@@ -68,7 +68,9 @@ class PrescriptXAIEngine:
         model = load_model_bundle(model_path or config.artifacts.model)
         resolved_bounds = getattr(model, "resolved_bounds", None)
         if resolved_bounds:
-            taxonomy = taxonomy.with_resolved_bounds(resolved_bounds)
+            taxonomy = taxonomy.with_resolved_bounds(
+                resolved_bounds, getattr(model, "resolved_rate_limits", None)
+            )
         mahalanobis = load_mahalanobis_validator(mahalanobis_path or config.artifacts.mahalanobis)
         if model.feature_names != mahalanobis.feature_names:
             raise ValueError("model and Mahalanobis artifacts have different feature orders")
@@ -83,7 +85,9 @@ class PrescriptXAIEngine:
             else None
         )
         if not getattr(model, "resolved_bounds", None) and coupling is not None:
-            taxonomy = taxonomy.with_resolved_bounds(coupling.resolved_bounds)
+            taxonomy = taxonomy.with_resolved_bounds(
+                coupling.resolved_bounds, getattr(coupling, "resolved_rate_limits", None)
+            )
         taxonomy.validate_model_feature_coverage(model.feature_names)
         missing_bounds = [
             name
@@ -124,6 +128,11 @@ class PrescriptXAIEngine:
             optimization.initial_risk,
             optimization.final_risk,
             optimization.deltas,
+            recourse_feasible=(
+                optimization.model_valid
+                and optimization.actuator_constraints_feasible
+                and len(optimization.deltas) <= self.config.recourse.max_changed_features
+            ),
         )
         LOGGER.info(
             "Recourse request completed: model_valid=%s physical_valid=%s success=%s",

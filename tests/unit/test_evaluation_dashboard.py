@@ -38,6 +38,7 @@ def _record(
         validation_ms=40,
         solver_success=model_valid,
         message="fixture",
+        recourse_feasible=model_valid and delta_count <= 3,
     )
 
 
@@ -56,7 +57,9 @@ def test_metrics_keep_model_and_physical_validity_separate() -> None:
     assert summary.eligible_high_risk_states == 7
     assert summary.recourse_validity_rate.value == pytest.approx(2 / 3)
     assert summary.physical_plausibility_rate.value == pytest.approx(1 / 3)
-    assert summary.average_sparsity.value == pytest.approx(3)
+    assert summary.average_sparsity.value == pytest.approx(2)
+    assert summary.successful_recourse_count == 1
+    assert summary.successful_recourse_rate.value == pytest.approx(1 / 3)
     assert summary.mean_risk_reduction.value == pytest.approx(0.5)
     assert summary.latency["dashboard"].mean_ms is None
     assert summary.latency["dashboard"].passed is None
@@ -96,6 +99,8 @@ def test_empty_evaluation_stays_unmeasured_and_ablation_names_are_explicit() -> 
     assert summary.recourse_validity_rate.value is None
     assert summary.recourse_validity_rate.passed is None
     assert summary.physical_plausibility_rate.value is None
+    assert summary.recourse_feasibility_rate.value is None
+    assert summary.successful_recourse_rate.value is None
     assert set(ablation_acceptance_rates(())) == {
         "omit_tier2",
         "omit_tier3",

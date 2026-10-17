@@ -28,7 +28,13 @@ def validate_engineering(
     for name in sorted(declared & immutable):
         if not np.isclose(initial[name], candidate[name], rtol=0, atol=0):
             failures.append(f"immutable feature {name} changed")
-    bound_violations = check_bound_violations(candidate, taxonomy)
+    # Percentile bounds on measured sensors describe the empirical operating distribution, not
+    # actuator limits. Immutable and dependent telemetry is handled by its own freeze/propagation,
+    # Tier 2, and Tier 4 checks. Tier 3 therefore applies hard physical bounds only to controls.
+    actuator_names = tuple(taxonomy.actuator_constraints)
+    bound_violations = check_bound_violations(
+        candidate, taxonomy, features=actuator_names
+    )
     failures.extend(f"{item.feature}: {item.reason}" for item in bound_violations)
     rate_violations = check_rate_violations(initial, candidate, taxonomy)
     failures.extend(f"{item.feature}: {item.reason}" for item in rate_violations)

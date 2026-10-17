@@ -434,6 +434,9 @@ def evaluate_model(
                 ),
                 "direction_consistency": run.direction_consistency.__dict__,
                 "model_validity_rate": run.summary.recourse_validity_rate.value,
+                "recourse_feasibility_rate": run.summary.recourse_feasibility_rate.value,
+                "successful_recourse_count": run.summary.successful_recourse_count,
+                "successful_recourse_rate": run.summary.successful_recourse_rate.value,
                 "physical_plausibility_rate": run.summary.physical_plausibility_rate.value,
                 "frozen_feature_violations": sum(
                     record.frozen_feature_violations for record in run.records

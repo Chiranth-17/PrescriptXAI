@@ -50,33 +50,41 @@ status: complete
 
 # Phase 4 State Snapshot — Constrained Recourse
 
-## Failed validation evidence
+## Initial diagnostic (superseded)
 
-The first deterministic 200-row FD001 high-risk held-out sample selected randomly from 378
-high-risk rows. It reported model-validity rate 0.0, mean risk reduction 0.08650, mean optimization
-time 2573.73 ms, and zero frozen-feature changes. It also found 54 actuator-bound and 54 rate-limit
-violations. Inspection showed 42 sampled states had no nonempty one-step intersection of empirical
-actuator bounds, rate limits, and the configured scaled movement limit; two other failed outputs
-echoed an out-of-range input rather than projecting to a reachable bound.
+The first benchmark found 54 actuator-bound and 54 rate-limit violations, plus 42 sampled states
+with no nonempty one-step interval. The candidate fallback and actionable-state selection were
+subsequently corrected. A later diagnosis also found that Tier 3 was applying empirical sensor
+percentiles as actuator constraints, which invalidated every result. Those first-pass results are
+historical and are superseded by the corrected run below.
 
-## Corrective work and final verification
+## Corrective work and latest real-data results
 
 - Failed optimization searches now retain the nearest point in the feasible actuator/rate
   intersection when one exists; an empty intersection sets
   `actuator_constraints_feasible=false` and returns a structured failure.
-- Evaluation counts every high-risk held-out row, reports infeasible-interval cases separately,
-  and samples the requested recourse benchmark from the remaining actionable states.
-- The final real-data FD001 run sampled 200 of 308 actionable states out of 378 total high-risk
-  held-out rows. It recorded 0 frozen-feature, 0 actuator-bound, and 0 rate-limit violations.
-- No recourse candidate met the true calibrated risk target: model validity 0/200, Tier 2 95.5%,
-  Tier 3 0%, Tier 4 100%, and overall physical plausibility 0%. Mean risk drop was 0.12047. Mean
-  returned diagnostic action size was 2.595; valid-result sparsity remains unmeasured.
-- The measured mean/P95 optimization latency was 472.10/1,104.92 ms, below the synopsis target
-  interval 1,200–1,800 ms; mean pipeline latency was 483.32 ms, below its 1,500–2,200 ms interval.
+- Tier 3 now checks actuator bounds only; immutable equality and per-step rates remain explicit,
+  while empirical sensor distribution is checked by Tier 2 and statistical coupling by Tier 4.
+- Replaced the default 3%-of-range proxy rate with the configured training-engine-only p99
+  adjacent-cycle telemetry change. It is fitted without crossing engine boundaries and persisted
+  with the model artifact. These are sensor movement envelopes, not actual actuator slew rates.
+- Added `recourse_feasible` to prevent a risk-safe but over-`k_max` diagnostic from being reported
+  as a successful sparse action. Model validity remains the measured calibrated risk check;
+  physical plausibility remains Tiers 2–4; joint success also requires sparse optimizer feasibility.
+- The corrected real FD001 benchmark sampled 200 of 378 actionable high-risk held-out states. It
+  measured model validity 25/200 (12.5%), sparse feasibility 23/200 (11.5%), joint success 22/200
+  (11.0%), physical plausibility 136/200 (68%), Tier 2 68%, Tier 3 100%, and Tier 4 100%.
+  Mean risk reduction was 0.52495, mean successful-action sparsity 2.27273, and there were zero
+  frozen-feature, actuator-bound, or rate-limit violations.
+- Mean/P95 optimization latency was 701.71/1,148.80 ms and mean/P95 pipeline latency was
+  709.54/1,158.01 ms. The mean latency target minima (1,200 ms and 1,500 ms respectively) were
+  not met. Validity, plausibility, risk-reduction, and latency targets remain unmet.
 - The benchmark used a temporary ignored config with 25 max iterations, one restart, three alpha
   steps, one L1 escalation step, and a two-support search cap; this is recorded in the saved report.
-  This reduced search budget is a limitation of the benchmark and does not change its validity
-  criterion. The full default search was stopped after it spent over 20 minutes in one case.
-- `mingw32-make all-checks`: Ruff passed; mypy passed for 49 source files; 139 tests passed with
-  77% total coverage; docs target passed. The only warnings came from deliberately short nonlinear
-  coupling test fixtures.
+  A separate 40-state probe with 100 iterations, eight alpha steps, and eight supports increased
+  true model validity to 20/40 and joint success to 16/40, but mean optimization latency rose to
+  4,655.82 ms; it is not the default strategy. Two risk-safe outputs in that probe exceeded the
+  three-feature cap and are now excluded from sparse feasibility and success.
+- `mingw32-make all-checks` on Python 3.13.9: Ruff passed, mypy passed for 49 source files, 143
+  tests passed with 77% total coverage, and the documentation target passed. The 24 warnings were
+  convergence notices from deliberately short nonlinear coupling test fixtures.

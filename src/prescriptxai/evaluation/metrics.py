@@ -109,6 +109,7 @@ class EvaluationRecord:
     frozen_feature_violations: int = 0
     actuator_bound_violations: int = 0
     rate_limit_violations: int = 0
+    recourse_feasible: bool = False
 
 
 @dataclass(frozen=True)
@@ -129,6 +130,9 @@ class EvaluationSummary:
     model_valid_count: int
     physically_plausible_count: int
     recourse_validity_rate: MetricResult
+    recourse_feasibility_rate: MetricResult
+    successful_recourse_count: int
+    successful_recourse_rate: MetricResult
     physical_plausibility_rate: MetricResult
     tier2_plausibility_rate: MetricResult
     tier3_engineering_rate: MetricResult
@@ -176,10 +180,28 @@ def calculate_metrics(
     tier2_rate = rate(lambda record: record.tier2_plausible)
     tier3_rate = rate(lambda record: record.tier3_engineering_valid)
     tier4_rate = rate(lambda record: record.tier4_coupling_valid)
-    valid_records = [record for record in records if record.model_valid]
+    recourse_feasibility_rate = rate(lambda record: record.recourse_feasible)
+    successful_records = [
+        record
+        for record in records
+        if record.model_valid
+        and record.recourse_feasible
+        and record.tier2_plausible
+        and record.tier3_engineering_valid
+        and record.tier4_coupling_valid
+    ]
+    successful_recourse_rate = rate(
+        lambda record: (
+            record.model_valid
+            and record.recourse_feasible
+            and record.tier2_plausible
+            and record.tier3_engineering_valid
+            and record.tier4_coupling_valid
+        )
+    )
     average_sparsity = (
-        float(np.mean([record.changed_features for record in valid_records]))
-        if valid_records
+        float(np.mean([record.changed_features for record in successful_records]))
+        if successful_records
         else None
     )
     risk_reduction = (
@@ -191,18 +213,25 @@ def calculate_metrics(
         "omit_tier2": rate(
             lambda record: (
                 record.model_valid
+                and record.recourse_feasible
                 and record.tier3_engineering_valid
                 and record.tier4_coupling_valid
             )
         ),
         "omit_tier3": rate(
             lambda record: (
-                record.model_valid and record.tier2_plausible and record.tier4_coupling_valid
+                record.model_valid
+                and record.recourse_feasible
+                and record.tier2_plausible
+                and record.tier4_coupling_valid
             )
         ),
         "omit_tier4": rate(
             lambda record: (
-                record.model_valid and record.tier2_plausible and record.tier3_engineering_valid
+                record.model_valid
+                and record.recourse_feasible
+                and record.tier2_plausible
+                and record.tier3_engineering_valid
             )
         ),
         "model_only": valid_rate,
@@ -242,6 +271,13 @@ def calculate_metrics(
             for record in records
         ),
         recourse_validity_rate=_rate(valid_rate, config.recourse_validity_rate, ">="),
+        recourse_feasibility_rate=MetricResult(
+            recourse_feasibility_rate, "reported separately", None
+        ),
+        successful_recourse_count=len(successful_records),
+        successful_recourse_rate=MetricResult(
+            successful_recourse_rate, "reported separately", None
+        ),
         physical_plausibility_rate=_rate(physical_rate, config.physical_plausibility_rate, ">="),
         tier2_plausibility_rate=MetricResult(
             tier2_rate, "no separate Tier 2 target specified", None

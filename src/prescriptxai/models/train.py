@@ -312,6 +312,11 @@ def train_risk_model(
         if bound_spec.minimum is None or bound_spec.maximum is None:
             raise ValueError(f"training bounds were not resolved for model feature {name!r}")
         resolved_bounds[name] = (bound_spec.minimum, bound_spec.maximum)
+    resolved_rate_limits = {
+        name: constraint.max_change_per_step
+        for name, constraint in taxonomy.actuator_constraints.items()
+    }
+    metrics["resolved_rate_limits"] = resolved_rate_limits
     bundle = ModelBundle(
         estimator=estimator,
         scaler=scaler,
@@ -325,6 +330,7 @@ def train_risk_model(
         git_commit=_git_commit(),
         metrics=metrics,
         resolved_bounds=resolved_bounds,
+        resolved_rate_limits=resolved_rate_limits,
     )
     return TrainingResult(
         bundle=bundle,

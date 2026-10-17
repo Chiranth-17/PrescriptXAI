@@ -11,9 +11,9 @@ from prescriptxai.pipeline import RecommendationResult
 def show_recommendation(
     result: RecommendationResult, danger_threshold: float, safe_threshold: float
 ) -> None:
-    """Render measured risk, model validity, physical validation, and raw action deltas."""
+    """Render risk safety, sparse-action feasibility, physical checks, and raw deltas."""
     if result.outcome.success:
-        st.success("Model target and all configured physical checks passed.")
+        st.success("Model target, sparse-action, and all configured physical checks passed.")
     else:
         st.warning("No fully validated recommendation is available for this state.")
     physical_valid = (
@@ -21,9 +21,12 @@ def show_recommendation(
         and result.outcome.tier3_engineering_valid
         and result.outcome.tier4_coupling_valid
     )
-    first, second = st.columns(2)
+    first, second, third = st.columns(3)
     first.metric("Model validity", "Pass" if result.outcome.model_valid else "Fail")
-    second.metric("Physical plausibility", "Pass" if physical_valid else "Fail")
+    second.metric(
+        "Sparse-action feasibility", "Pass" if result.outcome.recourse_feasible else "Fail"
+    )
+    third.metric("Physical plausibility", "Pass" if physical_valid else "Fail")
     st.plotly_chart(
         risk_comparison_chart(result, danger_threshold, safe_threshold), use_container_width=True
     )

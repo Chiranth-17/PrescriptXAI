@@ -5,6 +5,9 @@ bound_estimation:
   upper_percentile: 99.0
   margin_fraction: 0.02
   degenerate_half_width: 1.0e-06
+# Controllable proxy rate limits use the train-engine-only 99th percentile of absolute
+# within-engine cycle-to-cycle telemetry changes. They are empirical proxy limits, not measured
+# actuator slew rates; the fitted raw-unit values are saved with model and coupling artifacts.
 coupling:
   backend: ridge
   residual_sigma_k: 3.0
@@ -145,7 +148,7 @@ features:
     maximum: null
     source: training_percentiles
   max_rate_of_change:
-    fraction_of_span: 0.03
+    training_delta_quantile: 0.99
   direction: any
   controllable_proxy: true
   proxy_note: Measured fan-speed telemetry configured as a controllable proxy; it
@@ -160,7 +163,7 @@ features:
     maximum: null
     source: training_percentiles
   max_rate_of_change:
-    fraction_of_span: 0.03
+    training_delta_quantile: 0.99
   direction: any
   controllable_proxy: true
   proxy_note: Measured core-speed telemetry configured as a controllable proxy; it
@@ -197,7 +200,7 @@ features:
     maximum: null
     source: training_percentiles
   max_rate_of_change:
-    fraction_of_span: 0.03
+    training_delta_quantile: 0.99
   direction: any
   controllable_proxy: true
   proxy_note: Fuel-flow ratio derived from measured telemetry, configured as a proxy;
@@ -234,7 +237,7 @@ features:
     maximum: null
     source: training_percentiles
   max_rate_of_change:
-    fraction_of_span: 0.03
+    training_delta_quantile: 0.99
   direction: any
   controllable_proxy: true
   proxy_note: Measured bypass ratio configured as a synopsis proxy; it is not a verified
@@ -260,7 +263,7 @@ features:
     maximum: null
     source: training_percentiles
   max_rate_of_change:
-    fraction_of_span: 0.03
+    training_delta_quantile: 0.99
   direction: any
   controllable_proxy: true
   proxy_note: Bleed-related enthalpy telemetry configured as a proxy; it is not a
@@ -297,7 +300,7 @@ features:
     maximum: null
     source: training_percentiles
   max_rate_of_change:
-    fraction_of_span: 0.03
+    training_delta_quantile: 0.99
   direction: any
   controllable_proxy: true
   proxy_note: Measured coolant-bleed channel configured as a proxy; it is not a verified
@@ -312,7 +315,7 @@ features:
     maximum: null
     source: training_percentiles
   max_rate_of_change:
-    fraction_of_span: 0.03
+    training_delta_quantile: 0.99
   direction: any
   controllable_proxy: true
   proxy_note: Measured coolant-bleed channel configured as a proxy; it is not a verified

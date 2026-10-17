@@ -79,13 +79,19 @@ class ValidationReport:
         return self.model_valid and self.physical_valid
 
     def as_outcome(
-        self, initial_risk: float, final_risk: float, deltas: tuple[DeltaMapping, ...]
+        self,
+        initial_risk: float,
+        final_risk: float,
+        deltas: tuple[DeltaMapping, ...],
+        *,
+        recourse_feasible: bool,
     ) -> RecourseOutcome:
-        """Convert the separate tier results to a public machine-readable outcome."""
+        """Add optimizer feasibility to the independently measured model/tier statuses."""
         return RecourseOutcome(
             initial_risk=initial_risk,
             final_risk=final_risk,
             model_valid=self.model_valid,
+            recourse_feasible=recourse_feasible,
             tier2_plausible=self.tier2_plausibility.valid,
             tier3_engineering_valid=self.tier3_engineering.valid,
             tier4_coupling_valid=self.tier4_coupling.valid,

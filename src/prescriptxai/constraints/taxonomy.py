@@ -86,18 +86,23 @@ class BoundsSpec(BaseModel):
 
 
 class RateLimitSpec(BaseModel):
-    """Per-cycle change limit as an absolute value or fraction of the bound span."""
+    """Per-step change limit as absolute, range-relative, or train-derived telemetry delta."""
 
     model_config = ConfigDict(extra="forbid")
 
-    absolute: float | None = Field(default=None, gt=0)
+    absolute: float | None = Field(default=None, ge=0)
     fraction_of_span: float | None = Field(default=None, gt=0)
+    training_delta_quantile: float | None = Field(default=None, gt=0, lt=1)
 
     @model_validator(mode="after")
     def exactly_one_mode(self) -> RateLimitSpec:
-        """Require either absolute or fractional rate limits, not both or neither."""
-        if (self.absolute is None) == (self.fraction_of_span is None):
-            raise ValueError("rate limit requires exactly one of absolute or fraction_of_span")
+        """Require exactly one configured or train-derived rate-limit mode."""
+        modes = (self.absolute, self.fraction_of_span, self.training_delta_quantile)
+        if sum(value is not None for value in modes) != 1:
+            raise ValueError(
+                "rate limit requires exactly one of absolute, fraction_of_span, "
+                "or training_delta_quantile"
+            )
         return self
 
 
@@ -187,7 +192,7 @@ class ActuatorConstraint(BaseModel):
 
     minimum: float
     maximum: float
-    max_change_per_step: float = Field(gt=0)
+    max_change_per_step: float = Field(ge=0)
     direction: Literal["any", "increase_only", "decrease_only"] = "any"
 
     @model_validator(mode="after")
@@ -331,28 +336,34 @@ class FeatureTaxonomy(BaseModel):
             raise ValueError(f"training frame is missing bound features: {sorted(missing)}")
         estimation = self.bound_estimation
         updated_specs: list[FeatureSpec] = []
+        engine_column: str | None = None
+        if "engine_id" in training_frame.columns:
+            engine_column = "engine_id"
+        elif "unit_id" in training_frame.columns:
+            engine_column = "unit_id"
+        rate_training = training_frame
+        if engine_column is not None and "cycle" in training_frame.columns:
+            rate_training = training_frame.sort_values([engine_column, "cycle"])
         for spec in self.features:
             current = spec.bounds
-            if spec.name not in requested or current.minimum is not None:
-                updated_specs.append(spec)
-                continue
-            values = training_frame[spec.name].to_numpy(dtype=float)
-            if values.size == 0 or not np.isfinite(values).all():
-                raise ValueError(f"training data for {spec.name!r} must be nonempty and finite")
-            lower, upper = np.percentile(
-                values,
-                [estimation.lower_percentile, estimation.upper_percentile],
-            )
-            span = float(upper - lower)
-            if span <= 0:
-                lower = float(lower) - estimation.degenerate_half_width
-                upper = float(upper) + estimation.degenerate_half_width
-            else:
-                margin = span * estimation.margin_fraction
-                lower = float(lower) - margin
-                upper = float(upper) + margin
-            updated_specs.append(
-                spec.model_copy(
+            updated = spec
+            if spec.name in requested and current.minimum is None:
+                values = training_frame[spec.name].to_numpy(dtype=float)
+                if values.size == 0 or not np.isfinite(values).all():
+                    raise ValueError(f"training data for {spec.name!r} must be nonempty and finite")
+                lower, upper = np.percentile(
+                    values,
+                    [estimation.lower_percentile, estimation.upper_percentile],
+                )
+                span = float(upper - lower)
+                if span <= 0:
+                    lower = float(lower) - estimation.degenerate_half_width
+                    upper = float(upper) + estimation.degenerate_half_width
+                else:
+                    margin = span * estimation.margin_fraction
+                    lower = float(lower) - margin
+                    upper = float(upper) + margin
+                updated = updated.model_copy(
                     update={
                         "bounds": BoundsSpec.model_validate(
                             {
@@ -363,21 +374,54 @@ class FeatureTaxonomy(BaseModel):
                         )
                     }
                 )
-            )
+            rate_spec = updated.max_rate_of_change
+            if (
+                spec.name in requested
+                and rate_spec is not None
+                and rate_spec.training_delta_quantile is not None
+            ):
+                if engine_column is None or "cycle" not in rate_training.columns:
+                    raise ValueError(
+                        "training-delta rate fitting requires engine_id/unit_id and cycle columns"
+                    )
+                cycles = pd.to_numeric(rate_training["cycle"], errors="coerce")
+                cycle_steps = cycles.groupby(rate_training[engine_column], sort=False).diff()
+                observed_steps = cycle_steps.dropna().to_numpy(dtype=float)
+                if observed_steps.size == 0 or not np.allclose(observed_steps, 1.0):
+                    raise ValueError(
+                        "training-delta rate fitting requires contiguous cycles within each engine"
+                    )
+                feature_values = rate_training[spec.name].to_numpy(dtype=float)
+                if feature_values.size == 0 or not np.isfinite(feature_values).all():
+                    raise ValueError(
+                        f"training cycle values for {spec.name!r} must be nonempty and finite"
+                    )
+                differences = rate_training.groupby(engine_column, sort=False)[spec.name].diff()
+                absolute_changes = differences.abs().dropna()
+                if absolute_changes.empty or not np.isfinite(absolute_changes).all():
+                    raise ValueError(
+                        f"training cycle changes for {spec.name!r} must be nonempty and finite"
+                    )
+                fitted_limit = float(absolute_changes.quantile(rate_spec.training_delta_quantile))
+                updated = updated.model_copy(
+                    update={"max_rate_of_change": RateLimitSpec(absolute=fitted_limit)}
+                )
+            updated_specs.append(updated)
         return _taxonomy_with_features(self, tuple(updated_specs))
 
     def with_resolved_bounds(
-        self, bounds: Mapping[str, tuple[float, float]]
+        self,
+        bounds: Mapping[str, tuple[float, float]],
+        rate_limits: Mapping[str, float] | None = None,
     ) -> FeatureTaxonomy:
-        """Apply persisted train-derived bounds to this YAML taxonomy."""
+        """Apply persisted train-derived bounds and optional rates to this YAML taxonomy."""
+        resolved_rates = rate_limits or {}
         updated_specs: list[FeatureSpec] = []
         for spec in self.features:
-            if spec.name not in bounds:
-                updated_specs.append(spec)
-                continue
-            minimum, maximum = bounds[spec.name]
-            updated_specs.append(
-                spec.model_copy(
+            updated = spec
+            if spec.name in bounds:
+                minimum, maximum = bounds[spec.name]
+                updated = updated.model_copy(
                     update={
                         "bounds": BoundsSpec.model_validate(
                             {
@@ -388,7 +432,22 @@ class FeatureTaxonomy(BaseModel):
                         )
                     }
                 )
-            )
+            rate_spec = updated.max_rate_of_change
+            if rate_spec is not None and rate_spec.training_delta_quantile is not None:
+                if spec.name in resolved_rates:
+                    updated = updated.model_copy(
+                        update={
+                            "max_rate_of_change": RateLimitSpec(
+                                absolute=float(resolved_rates[spec.name])
+                            )
+                        }
+                    )
+                elif updated.bounds.minimum is not None:
+                    raise ValueError(
+                        f"training-derived rate for {spec.name!r} is missing from the model "
+                        "artifact; retrain the model with the configured taxonomy"
+                    )
+            updated_specs.append(updated)
         return _taxonomy_with_features(self, tuple(updated_specs))
 
     def validate_bounds_against_observed(
@@ -466,6 +525,10 @@ def _rate_limit(spec: FeatureSpec) -> float:
     span = spec.bounds.maximum - spec.bounds.minimum
     if spec.max_rate_of_change.absolute is not None:
         return float(spec.max_rate_of_change.absolute)
+    if spec.max_rate_of_change.training_delta_quantile is not None:
+        raise ValueError(
+            f"training-derived rate for {spec.name!r} must be fitted on engine cycles first"
+        )
     fraction = spec.max_rate_of_change.fraction_of_span
     assert fraction is not None
     return float(fraction * span)

@@ -139,6 +139,7 @@ def evaluate_states(
                 frozen_feature_violations=frozen_violations,
                 actuator_bound_violations=len(bound_violations),
                 rate_limit_violations=len(rate_violations),
+                recourse_feasible=result.outcome.recourse_feasible,
             )
         )
     inference_per_row = float(np.mean(inference_samples_ms)) if inference_samples_ms else None

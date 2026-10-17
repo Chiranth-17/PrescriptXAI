@@ -169,6 +169,7 @@ def _synthetic_coupling_frame() -> pd.DataFrame:
     return pd.DataFrame(
         {
             "engine_id": np.repeat([1, 2], rows // 2),
+            "cycle": np.tile(np.arange(1, rows // 2 + 1), 2),
             "rul": np.linspace(120, 40, rows),
             "op_setting_1": 0.0,
             "op_setting_2": 0.0,
