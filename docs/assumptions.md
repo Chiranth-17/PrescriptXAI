@@ -51,16 +51,34 @@ renderer correction only fixes labels and historical audit context; it does not 
 measurements. The report records compatible checkpoint reuse and stage source commits explicitly;
 checkpoint reuse does not change the listed effective configuration or dataset/model artifact hashes.
 
-The headline engine-cluster bootstrap sample has 15 engines and 200 queries. Model-valid rate is
-0.560 under both protocols. V2 raises all-query Tier 2 plausibility from 0.530 to 0.990, but joint
-Tiers 2–4 plausibility is 0.525 and p95 optimization time is 2,022.5 ms. Targets are reported as
-missed where applicable. The holdout has 378/378 actionable high-risk rows; rows are still clustered
-by their 15 engines for uncertainty. Results are conditional on C-MAPSS sensor proxies and are E1
-evidence only.
+The historical Phase 4 measurements remain in that versioned report. Its old evidence labels
+and the phrase “joint Tiers 2–4” are superseded by the definitions below; the Phase 5 paired
+report derives independent Tier 2, physical Tiers 2–4 and joint Tiers 1–4 from saved query records.
 
-## Evidence level
+## Evidence levels (current rules 18 and 29)
 
-FD001 is observational run-to-failure data. Sensor propagation and learned residual constraints
-measure observed statistical relationships; they do not provide intervention ground truth. The
-available evidence can establish implementation and dataset-level behavior (E1), but not validated
-simulation behavior (E2) or operational safety (E3). No RUL extension is claimed.
+- E1: true calibrated predictor validity only.
+- E2: E1 plus statistical distributional plausibility (Tier 2).
+- E3: E1–E2 plus proxy engineering and sensor relationship constraints (Tiers 3–4).
+- E4: a learned emulator validated on held-out units and operating regions.
+- E5: a validated physics simulator.
+
+These levels describe checks actually reached, not operational safety. FD001 has observational
+run-to-failure telemetry and no intervention ground truth. A learned coupling regressor is not
+an emulator of counterfactual dynamics or a physics simulator. E4/E5 are unavailable. Skipped
+checks never pass. No RUL extension is claimed.
+
+## Phase 5 statistical validation assumptions
+
+The committed `docs/evaluation_protocol.md` specifies train-only Ledoit–Wolf covariance,
+Cholesky scoring, all-cycle reference, unchanged fixed D_max versions and validation-only
+coupling residual calibration. Healthy-to-moderate covariance reference and quantile thresholds
+are supported but are not evaluated alternatives until the Phase 7 ablation. Regime assignments
+are determined from frozen original operating settings. Changing a sensor cannot select a
+friendlier regime. Fitting and calibration engines are disjoint from test engines.
+
+Coupling propagation preserves the original observed residual:
+`d_prime = d + g(c_prime, settings) - g(c, settings)`. It does not reset a machine to the healthy
+regression mean. Consequently an initial residual outside its validation-calibrated threshold
+can make all propagated candidates fail Tier 4. The bounded feedback loop may return such a
+diagnostic candidate with an explicit failure, never a validated recommendation.

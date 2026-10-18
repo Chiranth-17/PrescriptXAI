@@ -12,7 +12,7 @@ paths:
   raw_data: data/raw
   processed_data: data/processed
   model: artifacts/FD001-xgboost.joblib
-  mahalanobis: artifacts/phase5/FD001-mahalanobis.joblib
+  mahalanobis: artifacts/phase5/FD001-mahalanobis-v2.joblib
   evaluation_report: artifacts/phase5/funnel.json
 latency_budget:
   ingestion_max_ms: 10
@@ -25,7 +25,7 @@ latency_budget:
   pipeline_max_ms: 2200
 artifacts:
   model: artifacts/FD001-xgboost.joblib
-  mahalanobis: artifacts/phase5/FD001-mahalanobis.joblib
+  mahalanobis: artifacts/phase5/FD001-mahalanobis-v2.joblib
   evaluation_report: artifacts/phase5/funnel.json
   coupling: artifacts/phase5/FD001-coupling.joblib
 api:

@@ -8,7 +8,7 @@ paths:
   raw_data: data/raw
   processed_data: data/processed
   model: artifacts/FD001-xgboost.joblib
-  mahalanobis: artifacts/FD001-mahalanobis.joblib
+  mahalanobis: artifacts/phase5/FD001-mahalanobis.joblib
   evaluation_report: artifacts/FD001-evaluation.json
 latency_budget:
   ingestion_max_ms: 10
@@ -21,7 +21,8 @@ latency_budget:
   pipeline_max_ms: 2200
 artifacts:
   model: artifacts/FD001-xgboost.joblib
-  mahalanobis: artifacts/FD001-mahalanobis.joblib
+  mahalanobis: artifacts/phase5/FD001-mahalanobis.joblib
+  coupling: artifacts/phase5/FD001-coupling.joblib
   evaluation_report: artifacts/FD001-evaluation.json
 api:
   host: 127.0.0.1
@@ -107,7 +108,18 @@ validation:
   rate_limits: {}
   covariance_regularization: 0.000001
   simulator_enabled: false
+  reference_distribution: all_cycles
+  healthy_min_rul: 30
+  regime_k: 6
+  mode: collect_all
+  surrogate_disagreement_threshold: 0.1
+  feedback_max_refinements: 2
+  feedback_penalty_weight: 10.0
+  feedback_penalty_growth: 10.0
+  coupling_calibration_reference: healthy_to_moderate
 evaluation:
+  bootstrap_replicates: 2000
+  development_max_queries: 60
   random_seed: 1729
   max_queries: 100
   direction_similarity_radius: 1.0

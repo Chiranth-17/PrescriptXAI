@@ -51,6 +51,7 @@ from prescriptxai.models.train import (
 )
 from prescriptxai.pipeline import PrescriptXAIEngine
 from prescriptxai.recourse.sparsify import bounded_sparse_delta_grid
+from prescriptxai.validation.feasibility import frozen_settings
 from prescriptxai.validation.pipeline import (
     fit_mahalanobis_validator,
     save_mahalanobis_validator,
@@ -378,11 +379,7 @@ def _first_alert_rows(alert_rows: pd.DataFrame) -> pd.DataFrame:
 def _distance_rows(engine: PrescriptXAIEngine, frame: pd.DataFrame) -> np.ndarray:
     """Vectorized Mahalanobis distance using the fitted training-only validator."""
     scaled = engine.model.scaler.transform(frame[list(engine.model.feature_names)])
-    difference = scaled - engine.mahalanobis.mean
-    squared = np.einsum(
-        "ni,ij,nj->n", difference, engine.mahalanobis.precision, difference
-    )
-    return np.sqrt(np.maximum(0.0, squared))
+    return engine.mahalanobis.distance_batch(scaled)
 
 
 def _bootstrap(
@@ -1184,9 +1181,8 @@ def _oracle_for_failed_state(
     unique_rows = np.unique(np.round(candidate_matrix, decimals=12), axis=0)
     risks = engine.model.predict_risk(pd.DataFrame(unique_rows, columns=feature_names))
     scaled = engine.model.scaler.transform(pd.DataFrame(unique_rows, columns=feature_names))
-    diff = scaled - engine.mahalanobis.mean
-    dm = np.sqrt(
-        np.maximum(0.0, np.einsum("ni,ij,nj->n", diff, engine.mahalanobis.precision, diff))
+    dm = engine.mahalanobis.distance_batch(
+        scaled, frozen_operating_settings=frozen_settings(engine.mahalanobis, original)
     )
     safe_idx = np.flatnonzero(risks <= engine.config.model.safe_threshold)
     plausible_idx = safe_idx[dm[safe_idx] <= engine.mahalanobis.max_distance]

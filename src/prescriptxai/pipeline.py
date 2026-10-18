@@ -78,8 +78,12 @@ class PrescriptXAIEngine:
             raise ValueError("model and Mahalanobis artifacts have different feature orders")
         if not taxonomy.active_controllable_feature_names(model.feature_names):
             raise ValueError("at least one configured controllable proxy must be a model feature")
-        resolved_coupling_path = coupling_path or _default_coupling_path(
-            taxonomy, config.data.dataset, (model_path or config.artifacts.model).parent
+        resolved_coupling_path = (
+            coupling_path
+            or config.artifacts.coupling
+            or _default_coupling_path(
+                taxonomy, config.data.dataset, (model_path or config.artifacts.model).parent
+            )
         )
         coupling = (
             try_load_coupling_model(resolved_coupling_path)
@@ -137,6 +141,7 @@ class PrescriptXAIEngine:
             optimization.deltas,
             recourse_feasible=(
                 optimization.model_valid
+                and optimization.failure_reason is None
                 and optimization.actuator_constraints_feasible
                 and len(optimization.deltas) <= self.config.recourse.max_changed_features
             ),

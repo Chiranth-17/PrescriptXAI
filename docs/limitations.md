@@ -6,7 +6,7 @@
   *controllable proxies* for synopsis-style experiments. These are not verified actuator commands
   and must not be interpreted as direct engine control inputs without domain review.
 - **Coupling models describe observed co-variation, not causal physics.** Learned propagation and
-  Tier 4 residual bounds capture statistical coupling on training engines in a healthy-to-moderate
+  Tier 4 propagation captures statistical coupling on training engines in a healthy-to-moderate
   degradation regime. Passing a coupling check is not proof of a physically realizable intervention.
 - **Rate limits are telemetry proxies.** The default per-step limits are the configured 99th
   percentile of absolute adjacent-cycle changes within training engines, fit on training engines
@@ -46,3 +46,25 @@
 - **Operator review.** The current package is research/decision-support software, not an autonomous
   control system. Recommendations require qualified engineering review and independent safety
   controls before any deployment.
+
+
+## Phase 5 validation revision and evidence interpretation
+
+Phase 4 tables are historical. Their old E1-only label uses a different vocabulary; the current
+rules define E1 true-model validity, E2 statistical plausibility, E3 proxy engineering/coupling,
+E4 held-out validated emulator and E5 validated physics simulator. The highest available static
+check level is E3, conditional on sensor-proxy assumptions; it is not evidence of real actuator
+control efficacy. Dynamic validation always reports `skipped: no simulator` in this project.
+
+Phase 5 uses Ledoit–Wolf shrinkage and Cholesky solves rather than the old sample-covariance
+precision artifact. This changes distances even at the same fixed D_max. Its residual thresholds
+are calibrated on disjoint validation engines, while propagation regressors remain train-fitted.
+Neither the fixed risk gates nor bounds, rate limits or D_max were changed. The before/after
+comparison is paired replay of previously evaluated states, not fresh independent evidence.
+Independent Tier 2 and Tiers 3/4 rates accompany every model-validity report; all-four joint
+success is stricter and is never compared with the Tier 2 90% target.
+
+Legacy precision-only artifacts are rejected with a refit instruction. Refit on the original
+training engines; do not convert an old inverse into purported new shrinkage statistics. Regime
+statistics and threshold provenance are persisted. The default validator/coupling paths now point
+to Phase 5 artifacts; run the Phase 5 preparation/evaluation command before using the dashboard.

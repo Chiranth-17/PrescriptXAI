@@ -142,3 +142,29 @@ folded into the model-validity rate. The real FD001 Phase 4 benchmark and its ex
 configuration are saved in the generated JSON/Markdown artifacts. True model validity, physical
 plausibility, recourse feasibility, risk reduction, and latency are reported separately; a
 surrogate prediction or risk reduction alone never counts as a safe result.
+
+
+## Phase 5 shared validation and search feedback
+
+Tier 2 fits a Ledoit–Wolf covariance on declared fitting engines only, adds the fixed configured
+diagonal floor, and stores its Cholesky factor L. Distance is `||solve_triangular(L, x-mu)||_2`;
+no precision matrix or explicit inverse is formed, including inside the shrinkage estimator.
+A separate factor is fitted for each training-derived operating regime. Original frozen settings
+select the factor during scoring and optimization. Fixed, empirical-training-quantile and
+`sqrt(chi2.ppf(q,d))` cutoffs have explicit recorded methods; only the fixed pre-registered v1/v2
+cutoffs are used for Phase 5 reports. The reference-cycle filter is a separate config choice.
+
+The search adds normalized squared positive excess for Tier 2 distance and Tier 4 learned
+residual/YAML relation limits to the differentiable objective. Dependents still follow the
+residual-preserving propagation equation; they never become free variables. The exact same
+validator computes final acceptance. A nonlinear differentiable coupling approximation can
+supply a search gradient, but the original regressors and true calibrated predictor decide the
+final tiers. Bound/rate intersections and immutable coordinates remain hard constraints.
+
+When no fully plausible candidate is found, at most the configured number of feedback
+refinements increase the feasibility penalty on the existing sparse support. D_max and all
+physical/rate bounds stay fixed. Exhaustion returns a structured diagnostic failure, even if
+Tier 1 passes. Runtime metadata records the actual refinement count, effective settings and
+per-stage timing. Collect-all mode exposes each tier independently; fail-fast mode marks every
+unrun tier skipped, with no fabricated pass. Model validity, Tier 2 plausibility, Tiers 3–4
+constraints and all-four joint are separate boolean verdicts.

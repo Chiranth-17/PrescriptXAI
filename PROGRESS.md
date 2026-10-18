@@ -354,3 +354,35 @@ thresholds, populations, and timings are preserved in the JSON evidence.
   The 24 convergence warnings are from deliberately short nonlinear-backend fixtures.
 - Report target misses remain visible and are not corrected by redefining metrics or changing the
   frozen headline protocol.
+
+## Phases 5–11 orchestration preflight — 2026-10-18
+
+**Not started: required source instructions are missing.** The requested
+`docs/prompts/remaining_phases_5_to_11.md` and `docs/prompts/phase_changes.md` both returned `False`
+from `Test-Path`; no `docs/prompts/` directory or Part B change table is present. The known pasted
+attachment contains Phase 4 closure tasks only. Numbered rules 12–21 were subsequently supplied by
+the user and added verbatim to `AGENTS.md`, preserving the original instructions and rules 22–29.
+
+The requested Phase 5–11 tasks and gates cannot be inferred from the older roadmap. Existing
+Phase 5/6 completion rows above describe that earlier delivery and do not certify execution of the
+new prompts. All seven requested phases remain unstarted; zero phase gates have run and no new
+`phase<N>-closed` tags have been created for this request. Evidence and missing-input requirements
+are recorded in `docs/traceability.md`.
+
+The remaining inputs are the Phase 5–11 prompt file and Part B table. Copy the actual Part B table
+into the changes file before executing Phase 5; then run the per-phase gates, record measurements,
+commit, tag, and proceed in order.
+
+
+## Phase 5 validation revision — active
+
+The user subsequently supplied the complete Phase 5 prompt directly; it supersedes the Phase 5
+missing-prompt preflight above. Phase 6–11 prompts and the Part B table remain unavailable.
+Rules 12–29 are preserved in AGENTS.md. No later phase is inferred from an older roadmap.
+
+The Phase 5 protocol/configs were committed at `d64826c` before real-data measurements. The
+implementation consolidates train-only shrinkage/Cholesky distances, regime-aware scoring,
+validation-only residual calibration, independent tier verdicts, explicit skipped dynamics and
+bounded in-loop feedback. Read-only independent audits identified provenance and adapter gaps;
+these are being addressed before the measurement run. Gate results and measured funnels will
+be added after execution; this section does not claim closure.

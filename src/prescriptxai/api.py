@@ -38,13 +38,14 @@ def create_app(engine: PrescriptXAIEngine) -> FastAPI:
         except (ValueError, FileNotFoundError) as error:
             raise HTTPException(status_code=422, detail=str(error)) from error
         report = result.validation
-        tiers = {
-            "tier1_model": report.tier1_model,
-            "tier2_plausibility": report.tier2_plausibility,
-            "tier3_engineering": report.tier3_engineering,
-            "tier4_coupling": report.tier4_coupling,
-        }
+        tiers = report.tiers()
         return RecommendationResponse(
+            evidence_level=report.evidence_level,
+            plausible=report.plausible,
+            constraints_ok=report.constraints_ok,
+            joint=report.joint,
+            failing_tiers=report.failing_tiers,
+            assumptions=report.assumptions,
             original_state=request.state,
             new_state=result.optimization.state,
             outcome=result.outcome,
@@ -59,13 +60,7 @@ def create_app(engine: PrescriptXAIEngine) -> FastAPI:
             solver_calls=result.optimization.solver_calls,
             actuator_constraints_feasible=result.optimization.actuator_constraints_feasible,
             tiers={
-                name: TierPayload(
-                    valid=tier.valid,
-                    diagnostics=tier.diagnostics,
-                    measurement=tier.measurement,
-                    limit=tier.limit,
-                )
-                for name, tier in tiers.items()
+                name: TierPayload.model_validate(tier.as_dict()) for name, tier in tiers.items()
             },
         )
 

@@ -68,6 +68,8 @@ class SensorCouplingModel:
     resolved_rate_limits: dict[str, float] | None = None
     training_engine_ids: tuple[int, ...] = ()
     fit_engine_ids: tuple[int, ...] = ()
+    calibration_engine_ids: tuple[int, ...] = ()
+    calibration_report: dict[str, Any] | None = None
 
     def save(self, path: Path) -> Path:
         """Persist the fitted coupling model."""
@@ -114,9 +116,10 @@ class SensorCouplingModel:
         declared_ids = tuple(sorted(int(value) for value in training_engine_ids))
         if not declared_ids or len(declared_ids) != len(set(declared_ids)):
             raise ValueError("training_engine_ids must be nonempty and unique")
-        if any(value != integer for value, integer in zip(
-            sorted(training_engine_ids), declared_ids, strict=True
-        )):
+        if any(
+            value != integer
+            for value, integer in zip(sorted(training_engine_ids), declared_ids, strict=True)
+        ):
             raise ValueError("training_engine_ids must contain integer IDs")
         train_rows = frame[frame[engine_column].isin(training_engine_ids)].copy()
         if train_rows.empty:
@@ -158,7 +161,8 @@ class SensorCouplingModel:
                 | (
                     frozenset(taxonomy.feature_groups.immutable_operational.features)
                     | frozenset(taxonomy.feature_groups.immutable_environmental.features)
-                ) & available
+                )
+                & available
             )
         )
         if not dependent:
@@ -220,12 +224,13 @@ class SensorCouplingModel:
                     seed=seed,
                 )
                 torch_models[target] = torch_model
-                surrogate_values = torch_model(
-                    torch.tensor(predictor_matrix, dtype=torch.float64)
-                ).detach().numpy().reshape(-1)
-                torch_fidelity[target] = float(
-                    np.mean(np.abs(teacher_values - surrogate_values))
+                surrogate_values = (
+                    torch_model(torch.tensor(predictor_matrix, dtype=torch.float64))
+                    .detach()
+                    .numpy()
+                    .reshape(-1)
                 )
+                torch_fidelity[target] = float(np.mean(np.abs(teacher_values - surrogate_values)))
         below_floor = tuple(
             sorted(name for name, score in r2_scores.items() if score < coupling.min_r2)
         )
@@ -317,12 +322,9 @@ class SensorCouplingModel:
         missing_predictors = set(self.predictor_features) - set(feature_names)
         if missing_predictors:
             raise ValueError(
-                "feature order missing coupling predictors: "
-                f"{sorted(missing_predictors)}"
+                f"feature order missing coupling predictors: {sorted(missing_predictors)}"
             )
-        active_dependents = tuple(
-            name for name in self.dependent_features if name in feature_names
-        )
+        active_dependents = tuple(name for name in self.dependent_features if name in feature_names)
         positions = {name: index for index, name in enumerate(feature_names)}
         predictor_indices = [positions[name] for name in self.predictor_features]
         reference: NDArray[np.float64] | None = None
@@ -539,8 +541,7 @@ class TorchCouplingPropagation(nn.Module):
         missing_predictors = set(coupling.predictor_features) - set(name_to_index)
         if missing_predictors:
             raise ValueError(
-                "feature order missing coupling predictors: "
-                f"{sorted(missing_predictors)}"
+                f"feature order missing coupling predictors: {sorted(missing_predictors)}"
             )
         # A model/scaler may intentionally omit constant dependent sensors. They cannot affect
         # its prediction or optimization, so propagate only dependent fields represented in the
@@ -591,9 +592,7 @@ class ScaledTorchCouplingPropagation(nn.Module):
     _mean: Tensor
     _scale: Tensor
 
-    def __init__(
-        self, propagation: TorchCouplingPropagation, scaler: FittedFeatureScaler
-    ) -> None:
+    def __init__(self, propagation: TorchCouplingPropagation, scaler: FittedFeatureScaler) -> None:
         super().__init__()
         self.propagation = propagation
         self.register_buffer("_mean", torch.as_tensor(scaler.scaler.mean_, dtype=torch.float64))
@@ -683,9 +682,7 @@ def _fit_torch_surrogate(
     output_scale = float(teacher_values.std())
     if output_scale <= np.finfo(float).eps:
         output_scale = 1.0
-    normalized_x = torch.as_tensor(
-        (predictors - input_mean) / input_scale, dtype=torch.float64
-    )
+    normalized_x = torch.as_tensor((predictors - input_mean) / input_scale, dtype=torch.float64)
     normalized_y = torch.as_tensor(
         ((teacher_values - output_mean) / output_scale).reshape(-1, 1), dtype=torch.float64
     )

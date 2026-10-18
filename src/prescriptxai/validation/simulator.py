@@ -1,4 +1,4 @@
-"""Optional dynamic simulator integration contract, disabled by default."""
+"""Optional validated-emulator/physics-simulator adapter; no dynamic evidence is fabricated."""
 
 from __future__ import annotations
 
@@ -6,29 +6,40 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Protocol
 
+from prescriptxai.validation.base import TierResult
+
 
 @dataclass(frozen=True)
-class SimulatorResult:
-    """Result returned by an application-provided dynamic simulator adapter."""
-
-    valid: bool
-    diagnostics: tuple[str, ...]
+class SimulatorResult(TierResult):
+    """An adapter result declaring E4 emulator or E5 validated physics evidence."""
 
 
 class DynamicSimulator(Protocol):
-    """Application contract for optional candidate trajectory validation."""
+    """Abstract application hook; adapters must document held-out validation and provenance."""
 
     def validate_candidate(self, state: Mapping[str, float]) -> SimulatorResult:
-        """Simulate a proposed state and return simulator-specific evidence."""
+        """Validate a trajectory without asserting RUL extension from static telemetry."""
         ...
 
 
+class NullSimulator:
+    """Unavailable simulator that always reports skipped, never pass."""
+
+    def validate_candidate(self, state: Mapping[str, float]) -> SimulatorResult:
+        """Grant no dynamic evidence for an arbitrary candidate state."""
+        del state
+        return SimulatorResult(False, ("skipped: no simulator",), status="skipped")
+
+
 def run_simulator_validation(
-    state: Mapping[str, float], enabled: bool, simulator: DynamicSimulator | None
-) -> SimulatorResult | None:
-    """Run an injected simulator only when configuration explicitly enables it."""
-    if not enabled:
-        return None
-    if simulator is None:
-        raise RuntimeError("simulator validation is enabled but no simulator adapter was supplied")
-    return simulator.validate_candidate(state)
+    state: Mapping[str, float],
+    enabled: bool,
+    simulator: DynamicSimulator | None,
+) -> SimulatorResult:
+    """Invoke only an explicitly enabled adapter; otherwise return an explicit skipped tier."""
+    if not enabled or simulator is None:
+        return NullSimulator().validate_candidate(state)
+    result = simulator.validate_candidate(state)
+    if result.valid and result.evidence_level not in {"E4", "E5"}:
+        raise ValueError("a passing dynamic adapter must declare validated E4 or E5 evidence")
+    return result

@@ -25,6 +25,7 @@ class ObjectiveTerms:
     bounds: float
     total: float
     risk: float
+    feasibility: float = 0.0
 
 
 class RecourseObjective:
@@ -52,13 +53,17 @@ class RecourseObjective:
         smoothing_epsilon: float,
         prediction_loss: PredictionLoss,
         device: torch.device | str = "cpu",
+        feasibility_function: Callable[[torch.Tensor], torch.Tensor] | None = None,
+        feasibility_weight: float = 0.0,
     ) -> None:
         """Validate objective settings and bind risk, bound, and loss functions."""
         if lower_change.ndim != 1 or upper_change.shape != lower_change.shape:
             raise ValueError("change bounds must be aligned one-dimensional vectors")
-        if lower_change.size == 0 or not np.isfinite(lower_change).all() or not np.isfinite(
-            upper_change
-        ).all():
+        if (
+            lower_change.size == 0
+            or not np.isfinite(lower_change).all()
+            or not np.isfinite(upper_change).all()
+        ):
             raise ValueError("change bounds must be nonempty and finite")
         if np.any(lower_change > upper_change):
             raise ValueError("lower change bounds must not exceed upper change bounds")
@@ -83,6 +88,10 @@ class RecourseObjective:
         self.smoothing_epsilon = smoothing_epsilon
         self.prediction_loss = prediction_loss
         self.device = torch.device(device)
+        if not np.isfinite(feasibility_weight) or feasibility_weight < 0:
+            raise ValueError("feasibility_weight must be finite and nonnegative")
+        self.feasibility_function = feasibility_function
+        self.feasibility_weight = feasibility_weight
 
     @property
     def control_count(self) -> int:
@@ -160,13 +169,16 @@ class RecourseObjective:
             "prediction": self.alpha * prediction_value,
             "immutable": self.beta * immutable_value,
             "bounds": self.gamma * bounds_value,
+            "feasibility": (
+                self.feasibility_weight * self.feasibility_function(delta)
+                if self.feasibility_function is not None
+                else torch.zeros_like(risk)
+            ),
         }
         total = torch.stack(tuple(terms.values())).sum()
         return total, {**terms, "risk": risk}
 
-    def value_and_grad(
-        self, decision: NDArray[np.float64]
-    ) -> tuple[float, NDArray[np.float64]]:
+    def value_and_grad(self, decision: NDArray[np.float64]) -> tuple[float, NDArray[np.float64]]:
         """Calculate objective and gradient using torch autograd for SciPy."""
         values = np.asarray(decision, dtype=np.float64)
         if values.shape != (len(self.decision_bounds),) or not np.isfinite(values).all():
@@ -198,6 +210,7 @@ class RecourseObjective:
             bounds=float(terms["bounds"]),
             total=float(total),
             risk=float(terms["risk"]),
+            feasibility=float(terms["feasibility"]),
         )
 
 

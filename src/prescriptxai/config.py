@@ -59,6 +59,7 @@ class ArtifactConfig(BaseModel):
     model: Path
     mahalanobis: Path
     evaluation_report: Path
+    coupling: Path | None = None
 
 
 class ApiConfig(BaseModel):
@@ -167,15 +168,28 @@ class ValidationConfig(BaseModel):
     covariance_regularization: float = Field(gt=0)
     simulator_enabled: bool
     d_max_method: Literal["mahalanobis"]
-    d_max_threshold_method: Literal["fixed", "empirical_quantile"] = "fixed"
+    d_max_threshold_method: Literal["fixed", "empirical_quantile", "chi_square_quantile"] = "fixed"
     d_max_quantile: float = Field(gt=0, le=1)
     rate_limits: dict[str, float]
+    reference_distribution: Literal["all_cycles", "healthy_to_moderate"] = "all_cycles"
+    healthy_min_rul: int = Field(default=30, ge=0)
+    regime_k: int = Field(default=6, ge=1)
+    mode: Literal["collect_all", "fail_fast"] = "collect_all"
+    surrogate_disagreement_threshold: float = Field(default=0.1, ge=0, le=1)
+    feedback_max_refinements: int = Field(default=2, ge=0)
+    feedback_penalty_weight: float = Field(default=10.0, gt=0)
+    feedback_penalty_growth: float = Field(default=10.0, gt=1)
+    coupling_calibration_reference: Literal["all_cycles", "healthy_to_moderate"] = (
+        "healthy_to_moderate"
+    )
 
     @model_validator(mode="after")
     def valid_rate_limits(self) -> "ValidationConfig":
         """Ensure configured per-feature rate limits are positive and finite."""
         if any(not name.strip() or value <= 0 for name, value in self.rate_limits.items()):
             raise ValueError("rate_limits must map non-empty feature names to positive values")
+        if self.d_max_threshold_method == "chi_square_quantile" and self.d_max_quantile == 1:
+            raise ValueError("chi-square quantile must be less than one")
         return self
 
 
@@ -183,6 +197,8 @@ class EvaluationConfig(BaseModel):
     """Reproducible evaluation settings."""
 
     model_config = ConfigDict(extra="forbid")
+    bootstrap_replicates: int = Field(default=2000, ge=1)
+    development_max_queries: int = Field(default=60, ge=1)
 
     random_seed: int = Field(ge=0)
     max_queries: int = Field(ge=1)

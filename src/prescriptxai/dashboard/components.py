@@ -16,17 +16,15 @@ def show_recommendation(
         st.success("Model target, sparse-action, and all configured physical checks passed.")
     else:
         st.warning("No fully validated recommendation is available for this state.")
-    physical_valid = (
-        result.outcome.tier2_plausible
-        and result.outcome.tier3_engineering_valid
-        and result.outcome.tier4_coupling_valid
-    )
+    st.caption(f"Highest evidence reached: {result.validation.evidence_level}")
+    for assumption in result.validation.assumptions:
+        st.caption(f"Assumption: {assumption}")
     first, second, third = st.columns(3)
     first.metric("Model validity", "Pass" if result.outcome.model_valid else "Fail")
     second.metric(
         "Sparse-action feasibility", "Pass" if result.outcome.recourse_feasible else "Fail"
     )
-    third.metric("Physical plausibility", "Pass" if physical_valid else "Fail")
+    third.metric("Tier 2 plausibility", "Pass" if result.validation.plausible else "Fail")
     st.plotly_chart(
         risk_comparison_chart(result, danger_threshold, safe_threshold), use_container_width=True
     )
@@ -40,15 +38,23 @@ def show_recommendation(
         "Tier 2 · Mahalanobis plausibility": result.validation.tier2_plausibility,
         "Tier 3 · engineering limits": result.validation.tier3_engineering,
         "Tier 4 · sensor coupling": result.validation.tier4_coupling,
+        "Dynamic simulator": result.validation.simulator,
     }
     for label, tier in tiers.items():
-        with st.expander(f"{label}: {'Pass' if tier.valid else 'Fail'}"):
+        with st.expander(f"{label}: {str(tier.status).capitalize()}"):
+            st.caption(f"Evidence: {tier.evidence_level}")
             for diagnostic in tier.diagnostics:
                 st.write(diagnostic)
             if tier.measurement is not None:
                 st.write(f"Measured: {tier.measurement:.6g}")
             if tier.limit is not None:
                 st.write(f"Configured limit: {tier.limit:.6g}")
+            if tier.margin is not None:
+                st.write(f"Compliance margin: {tier.margin:.6g}")
+            for check in tier.checks:
+                st.write(f"{check.name}: {check.explanation}; margin={check.margin}")
+            for warning in tier.warnings:
+                st.warning(warning)
     if result.optimization.message:
         st.caption(result.optimization.message)
     st.caption(

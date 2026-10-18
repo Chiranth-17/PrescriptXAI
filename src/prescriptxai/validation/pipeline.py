@@ -2,24 +2,31 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from dataclasses import dataclass
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING, Literal
 
 import joblib
 import numpy as np
 import pandas as pd
+import torch
+from numpy.typing import NDArray
 
 from prescriptxai.config import AppConfig
 from prescriptxai.constraints.coupling import SensorCouplingModel
 from prescriptxai.constraints.taxonomy import FeatureTaxonomy
 from prescriptxai.models.registry import ModelBundle
 from prescriptxai.schemas import DeltaMapping, RecourseOutcome
-from prescriptxai.validation.base import TierResult
+from prescriptxai.validation.base import EvidenceLevel, TierResult
+from prescriptxai.validation.simulator import DynamicSimulator, run_simulator_validation
 from prescriptxai.validation.tier1_model import validate_model_risk
 from prescriptxai.validation.tier2_mahalanobis import MahalanobisValidator
 from prescriptxai.validation.tier3_engineering import validate_engineering
 from prescriptxai.validation.tier4_coupling import validate_sensor_coupling
+
+if TYPE_CHECKING:
+    from prescriptxai.schemas import ValidationReport as PublicValidationReport
 
 
 def save_mahalanobis_validator(validator: MahalanobisValidator, path: Path) -> Path:
@@ -48,6 +55,8 @@ def load_mahalanobis_validator(path: Path) -> MahalanobisValidator:
     loaded: object = joblib.load(path)
     if not isinstance(loaded, MahalanobisValidator):
         raise ValueError("artifact does not contain a MahalanobisValidator")
+    if not hasattr(loaded, "covariance_cholesky"):
+        raise ValueError("legacy precision-only validator: refit on training engines for Phase 5")
     return loaded
 
 
@@ -59,6 +68,12 @@ class ValidationReport:
     tier2_plausibility: TierResult
     tier3_engineering: TierResult
     tier4_coupling: TierResult
+    simulator: TierResult = field(default_factory=lambda: TierResult.skipped("no simulator"))
+    schema_version: str = "1.1.0"
+    assumptions: tuple[str, ...] = (
+        "C-MAPSS controllables and their bounds/rate limits are documented telemetry proxies.",
+        "The intervention horizon K is an assumption, not validated actuator dynamics.",
+    )
 
     @property
     def model_valid(self) -> bool:
@@ -71,6 +86,88 @@ class ValidationReport:
         return all(
             tier.valid
             for tier in (self.tier2_plausibility, self.tier3_engineering, self.tier4_coupling)
+        )
+
+    @property
+    def plausible(self) -> bool:
+        """Whether Tier 2 alone passed (the distributional plausibility definition)."""
+        return self.tier2_plausibility.valid
+
+    @property
+    def constraints_ok(self) -> bool:
+        """Whether both proxy engineering and sensor-relationship checks passed."""
+        return self.tier3_engineering.valid and self.tier4_coupling.valid
+
+    @property
+    def joint(self) -> bool:
+        """Whether all four static tiers passed, independently of optimizer feasibility."""
+        return self.model_valid and self.plausible and self.constraints_ok
+
+    @property
+    def failing_tiers(self) -> tuple[str, ...]:
+        """Name failed checks without misclassifying unrun/skipped checks as passed."""
+        return tuple(name for name, tier in self.tiers().items() if tier.status == "fail")
+
+    @property
+    def evidence_level(self) -> EvidenceLevel:
+        """Report the highest contiguous evidence level actually reached."""
+        if not self.model_valid:
+            return "none"
+        if not self.plausible:
+            return "E1"
+        if not self.constraints_ok:
+            return "E2"
+        if self.simulator.valid and self.simulator.evidence_level in {"E4", "E5"}:
+            return self.simulator.evidence_level
+        return "E3"
+
+    def tiers(self) -> dict[str, TierResult]:
+        """Return ordered tier names and complete diagnostics for adapters/reporting."""
+        return {
+            "tier1_model": self.tier1_model,
+            "tier2_plausibility": self.tier2_plausibility,
+            "tier3_engineering": self.tier3_engineering,
+            "tier4_coupling": self.tier4_coupling,
+            "simulator": self.simulator,
+        }
+
+    def as_dict(self) -> dict[str, object]:
+        """Serialize independent verdicts, skipped checks, margins, and evidence."""
+        return {
+            "schema_version": self.schema_version,
+            "tiers": {name: tier.as_dict() for name, tier in self.tiers().items()},
+            "model_valid": self.model_valid,
+            "plausible": self.plausible,
+            "constraints_ok": self.constraints_ok,
+            "joint": self.joint,
+            "failing_tiers": list(self.failing_tiers),
+            "evidence_level": self.evidence_level,
+            "assumptions": list(self.assumptions),
+        }
+
+    def to_schema(self) -> PublicValidationReport:
+        """Adapt the runtime report to the versioned public schema without dropping evidence."""
+        from prescriptxai.schemas import ValidationReport as PublicValidationReport
+
+        fields = (
+            "tier1_model_safety",
+            "tier2_distributional",
+            "tier3_engineering",
+            "tier4_sensor_coupling",
+            "simulator",
+        )
+        return PublicValidationReport.model_validate(
+            {
+                "schema_version": self.schema_version,
+                "assumptions": self.assumptions,
+                **{
+                    field: {
+                        "passed": tier.valid,
+                        **{key: value for key, value in tier.as_dict().items() if key != "valid"},
+                    }
+                    for field, tier in zip(fields, self.tiers().values(), strict=True)
+                },
+            }
         )
 
     @property
@@ -114,6 +211,13 @@ def fit_mahalanobis_validator(
         raise ValueError("Tier 2 rows must contain exactly the model's training engines")
     raw_features = training_frame[list(bundle.feature_names)]
     scaled = bundle.scaler.transform(raw_features)
+    reference_mask: NDArray[np.bool_] = np.ones(len(training_frame), dtype=bool)
+    if config.validation.reference_distribution == "healthy_to_moderate":
+        if "rul" not in training_frame:
+            raise ValueError("healthy-to-moderate covariance reference requires RUL")
+        reference_mask = training_frame.rul.to_numpy() > config.validation.healthy_min_rul
+    setting_names = ("op_setting_1", "op_setting_2", "op_setting_3")
+    multi_regime = config.data.dataset in {"FD002", "FD004"}
     return MahalanobisValidator.fit(
         scaled,
         bundle.feature_names,
@@ -123,6 +227,13 @@ def fit_mahalanobis_validator(
         config.validation.covariance_regularization,
         threshold_method=config.validation.d_max_threshold_method,
         threshold_quantile=config.validation.d_max_quantile,
+        reference_distribution=config.validation.reference_distribution,
+        reference_mask=reference_mask,
+        operating_settings=(
+            training_frame.loc[:, setting_names].to_numpy(dtype=float) if multi_regime else None
+        ),
+        regime_k=config.validation.regime_k if multi_regime else 1,
+        seed=config.seed,
     )
 
 
@@ -134,21 +245,71 @@ def validate_candidate(
     mahalanobis: MahalanobisValidator,
     config: AppConfig,
     coupling: SensorCouplingModel | None = None,
+    *,
+    mode: Literal["collect_all", "fail_fast"] | None = None,
+    simulator: DynamicSimulator | None = None,
 ) -> ValidationReport:
-    """Run Tiers 1–4 without combining model and physical validity."""
+    """Run ordered static tiers, with explicit skipped results in fail-fast mode."""
     candidate_frame = pd.DataFrame([dict(candidate_state)])
     final_risk = float(bundle.predict_risk(candidate_frame)[0])
-    tier1 = validate_model_risk(final_risk, config.model.safe_threshold)
     raw_features = candidate_frame[list(bundle.feature_names)]
     scaled_candidate = bundle.scaler.transform(raw_features)[0]
     if mahalanobis.feature_names != bundle.feature_names:
         raise ValueError("Mahalanobis and model feature orders do not match")
-    tier2 = mahalanobis.validate(np.asarray(scaled_candidate, dtype=float))
-    tier3 = validate_engineering(
-        initial_state,
-        candidate_state,
-        taxonomy,
-        horizon_steps=config.recourse.rate_horizon_steps,
+    surrogate_risk: float | None = None
+    if bundle.supports_gradients:
+        estimator = (
+            bundle.estimator
+            if getattr(bundle.estimator, "supports_gradients", False)
+            else bundle.surrogate
+        )
+        device = torch.device(getattr(estimator, "device", "cpu"))
+        with torch.no_grad():
+            surrogate_risk = float(
+                bundle.torch_forward(
+                    torch.as_tensor(scaled_candidate[None, :], dtype=torch.float32, device=device)
+                ).reshape(-1)[0]
+            )
+    frozen_settings = (
+        np.asarray([[initial_state[f"op_setting_{index}"] for index in range(1, 4)]])
+        if mahalanobis.clusterer is not None
+        else None
     )
-    tier4 = validate_sensor_coupling(candidate_state, taxonomy, coupling)
-    return ValidationReport(tier1, tier2, tier3, tier4)
+    checks: tuple[Callable[[], TierResult], ...] = (
+        lambda: validate_model_risk(
+            final_risk,
+            config.model.safe_threshold,
+            surrogate_risk=surrogate_risk,
+            disagreement_threshold=config.validation.surrogate_disagreement_threshold,
+        ),
+        lambda: mahalanobis.validate(
+            np.asarray(scaled_candidate, dtype=float),
+            frozen_operating_settings=frozen_settings,
+        ),
+        lambda: validate_engineering(
+            initial_state,
+            candidate_state,
+            taxonomy,
+            horizon_steps=config.recourse.rate_horizon_steps,
+        ),
+        lambda: validate_sensor_coupling(candidate_state, taxonomy, coupling),
+    )
+    selected_mode = mode or config.validation.mode
+    if selected_mode not in {"collect_all", "fail_fast"}:
+        raise ValueError("unknown validation mode")
+    results: list[TierResult] = []
+    stopped = False
+    for check in checks:
+        result = (
+            TierResult.skipped("previous tier failed in fail-fast mode") if stopped else check()
+        )
+        results.append(result)
+        stopped = stopped or (selected_mode == "fail_fast" and not result.valid)
+    dynamic = (
+        TierResult.skipped("previous tier failed in fail-fast mode")
+        if stopped
+        else run_simulator_validation(
+            candidate_state, config.validation.simulator_enabled, simulator
+        )
+    )
+    return ValidationReport(results[0], results[1], results[2], results[3], dynamic)

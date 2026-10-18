@@ -586,15 +586,16 @@ def test_sparsifier_never_returns_more_than_configured_changes_when_unsafe() -> 
 
 
 def test_simulator_interface_is_opt_in_and_requires_an_adapter() -> None:
-    """Disabled simulator calls are omitted; enabled calls require an implementation."""
+    """Unavailable dynamic evidence is explicitly skipped; adapters declare their level."""
 
     class FixtureSimulator:
         def validate_candidate(self, state: Mapping[str, float]) -> SimulatorResult:
-            return SimulatorResult(valid=state["actuator"] <= 1.0, diagnostics=())
+            return SimulatorResult(
+                valid=state["actuator"] <= 1.0, diagnostics=(), evidence_level="E4"
+            )
 
     state = {"actuator": 0.5}
-    assert run_simulator_validation(state, enabled=False, simulator=None) is None
-    with pytest.raises(RuntimeError, match="no simulator adapter"):
-        run_simulator_validation(state, enabled=True, simulator=None)
+    assert run_simulator_validation(state, enabled=False, simulator=None).status == "skipped"
+    assert run_simulator_validation(state, enabled=True, simulator=None).status == "skipped"
     result = run_simulator_validation(state, enabled=True, simulator=FixtureSimulator())
     assert result is not None and result.valid

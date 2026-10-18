@@ -8,7 +8,7 @@ import numpy as np
 
 from prescriptxai.constraints.bounds import check_bound_violations, check_rate_violations
 from prescriptxai.constraints.taxonomy import FeatureTaxonomy
-from prescriptxai.validation.base import TierResult
+from prescriptxai.validation.base import CheckResult, TierResult
 
 
 def validate_engineering(
@@ -33,19 +33,48 @@ def validate_engineering(
         return TierResult(False, (f"candidate has non-finite values: {sorted(non_finite)}",))
     immutable = taxonomy.immutable_feature_names()
     failures: list[str] = []
+    checks: list[CheckResult] = []
     for name in sorted(declared & immutable):
         if not np.isclose(initial[name], candidate[name], rtol=0, atol=0):
             failures.append(f"immutable feature {name} changed")
+            checks.append(
+                CheckResult(
+                    f"immutable_{name}",
+                    False,
+                    -abs(candidate[name] - initial[name]),
+                    failures[-1],
+                    name,
+                )
+            )
     # Percentile bounds on measured sensors describe the empirical operating distribution, not
     # actuator limits. Immutable and dependent telemetry is handled by its own freeze/propagation,
     # Tier 2, and Tier 4 checks. Tier 3 therefore applies hard physical bounds only to controls.
     actuator_names = tuple(taxonomy.actuator_constraints)
+    context_names = tuple(taxonomy.feature_groups.context.features)
     bound_violations = check_bound_violations(
-        candidate, taxonomy, features=actuator_names
+        candidate, taxonomy, features=actuator_names + context_names
     )
     failures.extend(f"{item.feature}: {item.reason}" for item in bound_violations)
     rate_violations = check_rate_violations(
         initial, candidate, taxonomy, horizon_steps=horizon_steps
     )
     failures.extend(f"{item.feature}: {item.reason}" for item in rate_violations)
-    return TierResult(not failures, tuple(failures))
+    for kind, violations in (("bounds", bound_violations), ("rate", rate_violations)):
+        checks.extend(
+            CheckResult(
+                f"{kind}_{item.feature}",
+                False,
+                -abs(item.margin) if np.isfinite(item.margin) else None,
+                f"{item.feature}: {item.reason}",
+                item.feature,
+            )
+            for item in violations
+        )
+    finite_margins = [check.margin for check in checks if check.margin is not None]
+    return TierResult(
+        not failures,
+        tuple(failures),
+        margin=min(finite_margins, default=None),
+        evidence_level="E3",
+        checks=tuple(checks),
+    )

@@ -11,7 +11,7 @@ from numpy.typing import NDArray
 
 from fixtures.recourse_models import make_recourse_fixture
 from prescriptxai.config import AppConfig, load_config
-from prescriptxai.constraints.taxonomy import ActuatorConstraint, RateLimitSpec
+from prescriptxai.constraints.taxonomy import ActuatorConstraint, CouplingRule, RateLimitSpec
 from prescriptxai.models.torch_models import LSTMFailureModel
 from prescriptxai.recourse.optimizer import RecourseOptimizer
 from prescriptxai.recourse.sparsify import candidate_supports
@@ -46,7 +46,7 @@ def _config() -> AppConfig:
 
 
 def test_grid_miss_preserves_safe_gradient_candidate() -> None:
-    """A coarse fallback must not erase a safe result that fails the separate Tier 2 check."""
+    """Skip needless grids at feasible means; preserve safe diagnostics on impossible coupling."""
     bundle, taxonomy, training = make_recourse_fixture()
     bundle.estimator = NarrowSafeBowl()
     config = _config()
@@ -63,13 +63,36 @@ def test_grid_miss_preserves_safe_gradient_candidate() -> None:
     grid_result = optimizer.solve(initial, config)
 
     assert gradient_result.model_valid
-    assert grid_result.true_model_evaluations > 0
+    assert grid_result.true_model_evaluations == 0
     assert grid_result.model_valid
     assert grid_result.failure_reason is None
     assert grid_result.final_risk <= config.model.safe_threshold
     assert grid_result.state == gradient_result.state
     scaled_candidate = bundle.scaler.transform(pd.DataFrame([grid_result.state]))[0]
-    assert not validator.validate(scaled_candidate).valid
+    assert validator.validate(scaled_candidate).valid
+
+    # No actuator change can satisfy sensor=5 while this dependent fixture sensor remains 2.
+    # A coarse grid must not erase the existing safe gradient point or disguise this failure.
+    taxonomy.coupling_rules = [
+        CouplingRule(
+            name="impossible_constant_relation",
+            feature_a="actuator",
+            feature_b="sensor",
+            relation="linear_band",
+            slope=0.0,
+            intercept=5.0,
+            tolerance=0.0,
+        )
+    ]
+    config.recourse.true_model_grid_enabled = False
+    failed_gradient = optimizer.solve(initial, config)
+    config.recourse.true_model_grid_enabled = True
+    failed_grid = optimizer.solve(initial, config)
+    assert failed_gradient.model_valid and failed_grid.model_valid
+    assert failed_grid.true_model_evaluations > 0
+    assert failed_grid.state == failed_gradient.state
+    assert failed_grid.failure_reason == "validation_feedback_exhausted"
+    assert not failed_grid.solver_success
 
     baseline = RecourseOptimizer(
         bundle, taxonomy, mahalanobis=validator, validate_plausibility=False
@@ -88,9 +111,14 @@ def test_mandatory_bound_corrections_consume_sparse_support_budget() -> None:
         minimum=0.0, maximum=10.0, max_change_per_step=4.0
     )
     taxonomy.features = tuple(
-        feature.model_copy(update={
-            "group": "controllable", "max_rate_of_change": RateLimitSpec(absolute=4.0),
-        }) if feature.name == "sensor" else feature
+        feature.model_copy(
+            update={
+                "group": "controllable",
+                "max_rate_of_change": RateLimitSpec(absolute=4.0),
+            }
+        )
+        if feature.name == "sensor"
+        else feature
         for feature in taxonomy.features
     )
     config = _config()
@@ -125,18 +153,33 @@ def test_mandatory_bound_corrections_consume_sparse_support_budget() -> None:
 def test_candidate_supports_include_required_features_before_optional_ranking() -> None:
     """Mandatory small corrections count toward k even when optional changes rank higher."""
     supports = candidate_supports(
-        {"a": 2.0, "b": 1.0, "c": 0.01}, ("a", "b", "c"),
-        max_changed_features=2, top_m=3, max_supports=8, required_features=("c",),
+        {"a": 2.0, "b": 1.0, "c": 0.01},
+        ("a", "b", "c"),
+        max_changed_features=2,
+        top_m=3,
+        max_supports=8,
+        required_features=("c",),
     )
     assert supports == (("c", "a"), ("c", "b"), ("c",))
-    assert candidate_supports(
-        {"a": 2.0, "b": 1.0}, ("a", "b"), max_changed_features=1,
-        top_m=2, max_supports=8, required_features=("a", "b"),
-    ) == ()
+    assert (
+        candidate_supports(
+            {"a": 2.0, "b": 1.0},
+            ("a", "b"),
+            max_changed_features=1,
+            top_m=2,
+            max_supports=8,
+            required_features=("a", "b"),
+        )
+        == ()
+    )
     with pytest.raises(ValueError, match="required_features"):
         candidate_supports(
-            {"a": 2.0}, ("a",), max_changed_features=1, top_m=1,
-            max_supports=1, required_features=("unknown",),
+            {"a": 2.0},
+            ("a",),
+            max_changed_features=1,
+            top_m=1,
+            max_supports=1,
+            required_features=("unknown",),
         )
 
 
@@ -172,9 +215,7 @@ def test_snapshot_recourse_rejects_lstm_before_attempting_to_score() -> None:
     scaled = bundle.scaler.transform(training.loc[:, list(bundle.feature_names)])
     sequences = np.repeat(scaled[:, None, :], 2, axis=1)
     labels = (training["actuator"].to_numpy() < 0.0).astype(np.float64)
-    bundle.estimator = LSTMFailureModel(window=2, hidden_dims=(4,), epochs=1).fit(
-        sequences, labels
-    )
+    bundle.estimator = LSTMFailureModel(window=2, hidden_dims=(4,), epochs=1).fit(sequences, labels)
 
     with pytest.raises(ValueError, match="LSTM recourse requires a telemetry history window"):
         RecourseOptimizer(bundle, taxonomy).solve({"actuator": -2.0, "sensor": 2.0}, _config())

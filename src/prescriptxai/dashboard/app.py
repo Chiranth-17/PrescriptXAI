@@ -31,12 +31,6 @@ def main() -> None:
     taxonomy_path = Path("configs/features.yaml")
     config = load_config(config_path)
     taxonomy = load_taxonomy(taxonomy_path)
-    if not config.artifacts.model.is_file() or not config.artifacts.mahalanobis.is_file():
-        st.error(
-            "Trained model and training-only plausibility artifacts are required. "
-            "Run `prescriptxai train` first."
-        )
-        st.stop()
     if taxonomy.feature_groups.controllable_actuators.features:
         st.info(
             "Configured controllable channels are C-MAPSS telemetry proxies, not verified actuator "
@@ -46,6 +40,12 @@ def main() -> None:
         st.info("No controllable proxies are configured; recourse will report failure explicitly.")
     if taxonomy.coupling is None and not taxonomy.coupling_rules:
         st.info("No sensor-coupling configuration is present; Tier 4 will fail closed.")
+    if not config.artifacts.model.is_file() or not config.artifacts.mahalanobis.is_file():
+        st.error(
+            "Trained model and training-only plausibility artifacts are required. "
+            "Run `prescriptxai train` and the documented Phase 5 validator preparation first."
+        )
+        st.stop()
     upload = st.file_uploader("Upload one raw-unit state as JSON or CSV", type=["json", "csv"])
     if upload is None:
         st.info("Upload a single state record to calculate risk and request a candidate.")
