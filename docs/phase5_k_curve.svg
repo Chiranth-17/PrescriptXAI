@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520">
+<rect width="1000" height="520" fill="white"/>
+<text x="50" y="30" font-size="17">phase5-20261018T092602Z: saved-state K sensitivity (v1, k=3, Dmax=5.0)</text>
+<text x="70" y="53" font-size="13">n=[60]; engines=[14]; 95% whole-engine bootstrap CI</text>
+<path d="M70 440 H930" stroke="#ddd"/>
+<text x="25" y="445">0.0</text>
+<path d="M70 364 H930" stroke="#ddd"/>
+<text x="25" y="369">0.2</text>
+<path d="M70 288 H930" stroke="#ddd"/>
+<text x="25" y="293">0.4</text>
+<path d="M70 212 H930" stroke="#ddd"/>
+<text x="25" y="217">0.6</text>
+<path d="M70 136 H930" stroke="#ddd"/>
+<text x="25" y="141">0.8</text>
+<path d="M70 60 H930" stroke="#ddd"/>
+<text x="25" y="65">1.0</text>
+<path d="M70 292.24621212121207 V190.625" stroke="#2563eb"/>
+<circle cx="70" cy="237.33333333333334" r="4" fill="#2563eb"/>
+<path d="M160 100.9230769230769 V60.0" stroke="#2563eb"/>
+<circle cx="160" cy="79.0" r="4" fill="#2563eb"/>
+<path d="M250 91.66666666666669 V60.0" stroke="#2563eb"/>
+<circle cx="250" cy="72.66666666666669" r="4" fill="#2563eb"/>
+<path d="M430 60.0 V60.0" stroke="#2563eb"/>
+<circle cx="430" cy="60.0" r="4" fill="#2563eb"/>
+<path d="M880 60.0 V60.0" stroke="#2563eb"/>
+<circle cx="880" cy="60.0" r="4" fill="#2563eb"/>
+<polyline points="70,237.33333333333334 160,79.0 250,72.66666666666669 430,60.0 880,60.0" fill="none" stroke="#2563eb" stroke-width="2"/>
+<text x="70" y="495" fill="#2563eb">True-model validity</text>
+<path d="M70 293.85833333333335 V194.83232526881727" stroke="#d97706"/>
+<circle cx="70" cy="243.66666666666666" r="4" fill="#d97706"/>
+<path d="M160 240.33898305084745 V179.99074074074076" stroke="#d97706"/>
+<circle cx="160" cy="212.0" r="4" fill="#d97706"/>
+<path d="M250 226.969696969697 V171.07692307692304" stroke="#d97706"/>
+<circle cx="250" cy="199.33333333333334" r="4" fill="#d97706"/>
+<path d="M430 217.73860667634253 V155.0" stroke="#d97706"/>
+<circle cx="430" cy="186.66666666666669" r="4" fill="#d97706"/>
+<path d="M880 222.85714285714286 V160.0" stroke="#d97706"/>
+<circle cx="880" cy="193.0" r="4" fill="#d97706"/>
+<polyline points="70,243.66666666666666 160,212.0 250,199.33333333333334 430,186.66666666666669 880,193.0" fill="none" stroke="#d97706" stroke-width="2"/>
+<text x="330" y="495" fill="#d97706">Tier 2 plausibility</text>
+<path d="M70 346.6698113207547 V246.77966101694915" stroke="#15803d"/>
+<circle cx="70" cy="294.3333333333333" r="4" fill="#15803d"/>
+<path d="M160 240.655737704918 V182.7645161290323" stroke="#15803d"/>
+<circle cx="160" cy="212.0" r="4" fill="#15803d"/>
+<path d="M250 235.93849206349202 V175.64479813664605" stroke="#15803d"/>
+<circle cx="250" cy="205.66666666666666" r="4" fill="#15803d"/>
+<path d="M430 221.96721311475412 V160.37735849056605" stroke="#15803d"/>
+<circle cx="430" cy="193.0" r="4" fill="#15803d"/>
+<path d="M880 231.2676056338028 V164.3107210626186" stroke="#15803d"/>
+<circle cx="880" cy="199.33333333333334" r="4" fill="#15803d"/>
+<polyline points="70,294.3333333333333 160,212.0 250,205.66666666666666 430,193.0 880,199.33333333333334" fill="none" stroke="#15803d" stroke-width="2"/>
+<text x="610" y="495" fill="#15803d">Joint Tiers 1–4</text>
+<text x="65" y="463">1</text>
+<text x="155" y="463">2</text>
+<text x="245" y="463">3</text>
+<text x="425" y="463">5</text>
+<text x="875" y="463">10</text>
+<text x="370" y="480">Assumed horizon K (no actuator evidence)</text>
+</svg>

@@ -9,8 +9,8 @@
 | 2 — Predictive models | Complete | XGBoost, differentiable MLP/LSTM, validation-only calibration, and real FD001 metrics |
 | 3 — Feature taxonomy and sensor coupling | Complete | Proxy taxonomy, fitted physical bounds, coupling propagation and Tier 4 checks |
 | 4 — Constrained recourse engine | Closed; synopsis targets measured honestly | Constrained search, final protocol audit, grouped uncertainty, historical errata |
-| 5 — Product surfaces and evaluation | Complete | CLI, optional API, dashboard, reports |
-| 6 — End-to-end verification and documentation | Complete | Current measured limits in docs and artifacts |
+| 5 — Multi-tier validation (current prompt) | Closed; measured gaps retained | Shared tiers, bounded feedback, real funnels, audits and phase5-closed |
+| 6–11 — Remaining current phases | Not started | Source prompts / Part B changes table not supplied |
 
 ## Decisions
 
@@ -394,3 +394,57 @@ measurement: NaN in the original Tier 3 state, and persisted validator/config mi
 The first real run was interrupted without publishing a report; its cache is not reused by the
 new source revision. Both cases have explicit regression tests. Config thresholds, bounds, rates,
 predictor and solver settings are unchanged. Historical config mirrors now load successfully.
+
+
+## Phase 5 multi-tier validation — closed
+
+Real FD001 run `phase5-20261018T092602Z`; measured source `8b1a206fc1800a0674019b6e0527c2a31a5159df`; preregistration `d64826c5c1bd69dc6310c7c2d11506a7add11822`.
+
+Implemented: shared true-predictor Tier 1, train-only Ledoit–Wolf/Cholesky Tier 2 with regime/reference/quantile options, reused bound/rate Tier 3, validation-only residual-calibrated Tier 4, explicit skipped simulator, schema 1.1.0, and bounded in-loop feedback. API/dashboard preserve margins, rules, evidence and assumptions.
+
+### Headline measurements and gaps
+
+Phase5 integrated solver: run `phase5-20261018T092602Z`; config `configs\experiments\phase5-validation-v1.yaml` SHA-256 `a9a32d9d0623db1038a58389b4624c5255c939b4a9ad32f38ef92293c65bd661`; git `8b1a206fc1800a0674019b6e0527c2a31a5159df`; protocol `v1`; k_max=3; K=1; D_max version `v1`=5.0; population `internal_headline_integrated`.
+
+| Metric | Observed (engine bootstrap) |
+|---|---:|
+| tier1_all_queries | 112/200 = 0.560 [0.473, 0.638]; 15 engines |
+| tier2_all_queries | 106/200 = 0.530 [0.437, 0.616]; 15 engines |
+| tier3_all_queries | 200/200 = 1.000 [1.000, 1.000]; 15 engines |
+| tier4_all_queries | 190/200 = 0.950 [0.923, 0.979]; 15 engines |
+| joint_tiers1_to4_all_queries | 87/200 = 0.435 [0.364, 0.502]; 15 engines |
+
+Phase5 integrated solver: run `phase5-20261018T092602Z`; config `configs\experiments\phase5-validation-v2.yaml` SHA-256 `7c74cabf0f2b8347c116a29cf03dfae16184f39066a46e441c42479f985b8bae`; git `8b1a206fc1800a0674019b6e0527c2a31a5159df`; protocol `v2`; k_max=3; K=1; D_max version `v2`=8.0; population `internal_headline_integrated`.
+
+| Metric | Observed (engine bootstrap) |
+|---|---:|
+| tier1_all_queries | 112/200 = 0.560 [0.473, 0.638]; 15 engines |
+| tier2_all_queries | 198/200 = 0.990 [0.977, 1.000]; 15 engines |
+| tier3_all_queries | 200/200 = 1.000 [1.000, 1.000]; 15 engines |
+| tier4_all_queries | 190/200 = 0.950 [0.923, 0.979]; 15 engines |
+| joint_tiers1_to4_all_queries | 106/200 = 0.530 [0.452, 0.600]; 15 engines |
+
+The 95% true-model target is missed under both protocols. Tier 2 meets its 90% all-query target only under v2. Joint is reported separately and is not compared with 90%. Final-validation p95 is 10.92/16.46 ms (pass); optimization p95 is 4618.75/6735.16 ms (fail). The report supplies engine-bootstrap intervals and population labels for every latency table.
+
+### Coverage, audits and evidence limits
+
+- Produced 42 labeled funnels and 752 integrated population rows; 456 accepted recommendations. These named populations overlap, so the combined counts are an audit total, not an unbiased pooled success rate.
+- Two independent read-only audits found zero accepted unsafe, frozen-feature, support, bound, rate or coupling violations. Frozen-predictor risks reproduced exactly; maximum D_M difference was 1.78e-15. All 12 partition sets and 51 input/artifact hashes were checked. Feedback never exceeded the configured two refinements.
+- 20 rejected development rows contain 24 bound and 24 rate-interval violations, covering 10 engine/cycle queries across both protocols. All have `infeasible_actuator_interval`, infeasible actuator constraints, and acceptance=False. These original/diagnostic states are not recommended actions.
+- All 11 missing OOF candidates per protocol remain in the 200-query denominator. The OOF first-alert run covers all 100 engines; full 2378-alert paired coverage remains Partial because Phase 4 did not save all candidates. Official replay covers 159 alerts / 19 engines. The K curve carries 60 queries / 14 engines beside its bootstrap intervals.
+- Reused saved states are explicitly not fresh independent generalization. Proxy mapping, raw bounds/rates and assumed K are unchanged. Only the required covariance estimator and validation-only residual calibration were revised; risk gates and D_max stay frozen.
+- sensor_6 calibration R² is 0.031962, residual std 0.001653, and threshold-exceedance share 0.029068 on 2649 healthy-to-moderate rows from 16 validation engines. Historical grouped fit warnings remain. Available checks reach E3 at most; no E4/E5 or RUL-extension claim.
+
+### Verification and reproduction
+
+- `mingw32-make all-checks`: Ruff clean; mypy clean for 51 source files; 215 tests passed; coverage 79.7753% (80% displayed), above Phase 4’s reported 79%; docs check passed. The 24 convergence warnings come from deliberately short test-only nonlinear-backend fits.
+- Run: `uv run python scripts/diagnostics/phase5_validate.py`. Measurement inputs/configs were committed before the run. Presentation additions were rendered offline from the saved JSON without rerunning or tuning the solver.
+- Main report: `docs/phase5_changes.md`; curve: `docs/phase5_k_curve.svg`; detailed ignored evidence: `artifacts/phase5/funnel.json`; diagnostics/validators: `artifacts/phase5/`.
+- Detailed evidence SHA-256: `8cefe8e69091369e4db1d4935e7b57fd9bc1fbaec16dac646790e0e1564e7e13`.
+- Independent audits and the final gate passed; closure tag: `phase5-closed`.
+
+### Open issues / next phase
+
+- The validity and optimization-latency targets remain missed. Any tuning or performance changes must be developed on validation engines and frozen before a future test run; no targets were adjusted for this closure.
+- Full OOF all-alert paired coverage and new unseen-engine generalization are Partial/Not met as recorded in `docs/traceability.md`. No dynamic simulator or validated emulator is available; NullSimulator correctly skips.
+- Phase 6–11 prompts and the Part B changes table remain unavailable. The directly supplied Phase 5 prompt is complete; later phases have not been inferred or started.

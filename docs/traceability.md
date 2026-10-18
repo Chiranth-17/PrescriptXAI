@@ -34,23 +34,42 @@ The remaining required sources are `docs/prompts/remaining_phases_5_to_11.md` an
 measurements.
 
 
-## Phase 5 direct prompt — active revision
+## Phase 5 direct prompt — closed revision
 
 The user supplied Phase 5 directly after preflight. This supplies its tasks/gate and authorizes
 execution now. Phase 6–11 and Part B remain unavailable; no replacements are invented.
 
-| Prompt task | Implementation / evidence | Status before measurement |
+| Prompt task | Implementation / evidence | Final status |
 |---|---|---|
-| 1. Training-only shrinkage/Cholesky, regimes, both quantiles, reference choice | validation/tier2_mahalanobis.py, validation/pipeline.py; statistical and regime tests | Implemented; test gate pending |
-| 2. Bounds/rates with violation margins | validation/tier3_engineering.py reuses constraints/bounds.py | Implemented |
-| 3. Validation-only residual calibration and per-rule margins | validation/tier4_coupling.py; calibration ID overlap tests | Implemented; real fit pending |
-| 4. True calibrated risk and surrogate warning | validation/tier1_model.py, shared pipeline | Implemented |
-| 5. Dynamic hook and skipped NullSimulator, evidence | validation/simulator.py, base.py, versioned schemas | Implemented; E4/E5 unavailable by design |
-| 6. Ordered modes and independent verdict truth table | validation/pipeline.py; all sixteen combinations tested | Implemented |
-| 7. Shared in-search constraints and bounded refinement | validation/feasibility.py; recourse/objective.py and optimizer.py | Implemented; real integrated run pending |
-| 8. Engine-bootstrap paired/integrated funnels | scripts/diagnostics/phase5_validate.py, validation/funnel.py | Real run pending |
+| 1. Training-only shrinkage/Cholesky, regimes, both quantiles, reference choice | validation/tier2_mahalanobis.py, validation/pipeline.py; statistical and regime tests | Met: real FD001 artifact fit; singular/regime/quantile/reference tests pass |
+| 2. Bounds/rates with violation margins | validation/tier3_engineering.py reuses constraints/bounds.py | Met |
+| 3. Validation-only residual calibration and per-rule margins | validation/tier4_coupling.py; calibration ID overlap tests | Met: 16 validation engines; saved calibration diagnostics |
+| 4. True calibrated risk and surrogate warning | validation/tier1_model.py, shared pipeline | Met |
+| 5. Dynamic hook and skipped NullSimulator, evidence | validation/simulator.py, base.py, versioned schemas | Met: explicit skipped NullSimulator and interface; E4/E5 unavailable |
+| 6. Ordered modes and independent verdict truth table | validation/pipeline.py; all sixteen combinations tested | Met |
+| 7. Shared in-search constraints and bounded refinement | validation/feasibility.py; recourse/objective.py and optimizer.py | Met: 752 integrated population rows; refinement cap verified |
+| 8. Engine-bootstrap paired/integrated funnels | scripts/diagnostics/phase5_validate.py, validation/funnel.py | Met: 42 funnels, before/after CIs, two protocols and K curve |
 | Full OOF all-alert paired replay | Saved sample retains 11 missing records; separately evaluate actual first alerts | Partial: no before candidates for every OOF alert |
 | New unseen-engine generalization after validator change | No new public FD001 engines beyond existing populations | Not met; paired replay explicitly labeled |
 
 No generated telemetry or simulator results substitute for missing evidence. A measured target
 miss is recorded with gap analysis, not treated as an implementation blocker.
+
+
+### Phase 5 closure gate evidence
+
+`docs/phase5_changes.md` contains all run/config/git/protocol/population labels, before/after
+engine-bootstrap CIs, coupling/covariance diagnostics, headline target gaps and measured latency.
+Real-run source is `8b1a206fc1800a0674019b6e0527c2a31a5159df`; preregistration is
+`d64826c5c1bd69dc6310c7c2d11506a7add11822`. The phase-specific audit reproduced frozen
+predictor scores and distances, checked all twelve engine partition sets, and found no accepted
+constraint or safety violations. Rejected infeasible development diagnostics remain visible.
+
+Final `mingw32-make all-checks` exited zero: Ruff, strict mypy, 215 pytest cases with 79.7753%
+coverage (displayed 80%), and docs presence checks. Independent audits were read-only; their
+findings were fixed by the primary agent. No predictor, risk gate, physical bound, proxy rate,
+sigma multiplier or D_max was tuned using evaluation results. New real-data outputs, validators
+and caches remain git-ignored. E3 is a proxy constraint level, not causal or real-machine safety.
+
+Phases 6–11 still require their actual prompts and the actual Part B table. No such content was
+invented and no later closure tag is claimed.

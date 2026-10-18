@@ -901,6 +901,10 @@ def render_k_curve(document: dict[str, Any]) -> None:
         key=lambda f: f["metadata"]["K"],
     )
 
+    counts = sorted({f["query_count"] for f in items})
+    engines = sorted({f["engine_count"] for f in items})
+    caption = f"n={counts}; engines={engines}; 95% whole-engine bootstrap CI"
+    plot_meta = items[0]["metadata"]
     fig = go.Figure()
 
     for metric, label in (
@@ -926,7 +930,7 @@ def render_k_curve(document: dict[str, Any]) -> None:
         )
 
     fig.update_layout(
-        title=f"{document['run_id']}: saved-state sensitivity, v1 / k=3 / Dmax=5",
+        title=f"{document['run_id']}: saved-state sensitivity, {plot_meta['protocol_version']} / k={plot_meta['k_max']} / Dmax={plot_meta['D_max']}<br><sup>{caption}</sup>",
         xaxis_title="Assumed intervention horizon K",
         yaxis_title="Rate (whole-engine bootstrap CI)",
         yaxis_range=[0, 1.05],
@@ -942,7 +946,8 @@ def render_k_curve(document: dict[str, Any]) -> None:
     parts = [
         '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="520" viewBox="0 0 1000 520">',
         '<rect width="1000" height="520" fill="white"/>',
-        f'<text x="50" y="30" font-size="17">{escape(document["run_id"])}: saved-state K sensitivity (v1, k=3, Dmax=5)</text>',
+        f'<text x="50" y="30" font-size="17">{escape(document["run_id"])}: saved-state K sensitivity ({plot_meta["protocol_version"]}, k={plot_meta["k_max"]}, Dmax={plot_meta["D_max"]})</text>',
+        f'<text x="70" y="53" font-size="13">{escape(caption)}</text>',
     ]
 
     for tick in range(6):
@@ -990,6 +995,122 @@ def render_k_curve(document: dict[str, Any]) -> None:
     (ROOT / "docs/phase5_k_curve.svg").write_text("\n".join(parts), encoding="utf-8")
 
 
+def render_diagnostics(document: dict[str, Any]) -> list[str]:
+    """Display frozen target gaps and actual residual/covariance evidence from the saved run."""
+    lines = ["## Integrated headline targets and gaps", ""]
+    for version in ("v1", "v2"):
+        funnel = next(
+            f
+            for f in document["funnels"]
+            if f["metadata"]["population"] == "internal_headline_integrated"
+            and f["metadata"]["protocol_version"] == version
+        )
+        config = load_config(ROOT / funnel["metadata"]["config_path"])
+        lines += [
+            labels(funnel),
+            "",
+            "| Metric (all queries) | Measured [95% engine CI] | Target | Gap | Result |",
+            "|---|---:|---:|---:|---|",
+        ]
+        for metric, target in (
+            ("tier1_all_queries", config.evaluation.recourse_validity_rate),
+            ("tier2_all_queries", config.evaluation.physical_plausibility_rate),
+        ):
+            result = funnel["independent"][metric]
+            lines.append(
+                f"| {metric} | {format_metric(result)} | >= {target:.2f} | {result['rate'] - target:+.3f} | {'Pass' if result['rate'] >= target else 'Fail'} |"
+            )
+        joint = funnel["independent"]["joint_tiers1_to4_all_queries"]
+        lines += [
+            f"| Joint Tiers 1–4 | {format_metric(joint)} | No synopsis joint target | — | Reported separately |",
+            "",
+        ]
+    lines += [
+        "Target gaps are measured against the frozen configuration. A paired joint-count difference is descriptive, not a claim of general improvement. Returned-counterfactual plausibility is conditional on acceptance.",
+        "",
+        "Latency budget pass/fail is measured below. In-loop constraint checks are charged to optimization, not hidden in the final-validation stage. "
+        "Residual-preserving propagation leaves absolute learned residual violations invariant, so repeated search cannot repair those violations. "
+        "Any performance work must be developed and frozen on validation engines before a future test run.",
+        "",
+    ]
+    base = document["provenance"]["base/v1"]
+    calibration = base["coupling_calibration"]
+    assert calibration == document["provenance"]["base/v2"]["coupling_calibration"]
+    meta = dict(
+        next(
+            f["metadata"]
+            for f in document["funnels"]
+            if f["metadata"]["population"] == "internal_headline_integrated"
+            and f["metadata"]["protocol_version"] == "v1"
+        )
+    )
+    meta.update(
+        population="validation calibration: healthy_to_moderate",
+        comparison="Phase5 calibration diagnostic",
+    )
+    lines += [
+        "## Coupling calibration evidence",
+        "",
+        labels({"metadata": meta}),
+        "",
+        f"Reference: {calibration['row_count']} rows from {calibration['engine_count']} validation engines; RUL > {calibration['min_rul_exclusive']}; "
+        f"fixed multiplier {calibration['sigma_multiplier']}. The same residual calibration is used for v1 and v2. "
+        "R² here is a calibration-reference diagnostic, not an independent test-fit score. Propagation regressors were not refitted.",
+        "",
+        "| Sensor | R² | Residual mean | Residual std (raw units) | Absolute limit | Share beyond limit |",
+        "|---|---:|---:|---:|---:|---:|",
+    ]
+    for sensor, value in sorted(calibration["per_sensor"].items()):
+        lines.append(
+            f"| {sensor} | {value['r2']:.6f} | {value['residual_mean']:.6g} | {value['residual_std']:.6g} | {value['threshold']:.6g} | {value['share_beyond_threshold']:.6f} |"
+        )
+    taxonomy = load_taxonomy(ROOT / "configs/features.yaml")
+    assert taxonomy.coupling is not None
+    below = [
+        name
+        for name, value in calibration["per_sensor"].items()
+        if value["r2"] < taxonomy.coupling.min_r2
+    ]
+    lines += [
+        "",
+        f"Below the configured diagnostic R² floor ({taxonomy.coupling.min_r2}): {below}. "
+        "Historical engine-grouped fit-floor warnings remain in Phase 4 evidence; calibration does not replace them.",
+        "",
+    ]
+    meta.update(
+        population="fitting telemetry: all_cycles", comparison="Phase5 covariance diagnostic"
+    )
+    lines += [
+        "## Covariance evidence",
+        "",
+        labels({"metadata": meta}),
+        "",
+        f"Fitting engines: {len(base['fitting_engine_ids'])}; method: {base['threshold_method']}; reference: {base['covariance_reference']}. "
+        "The fixed quantile setting is unused for D_max=5/8. Both quantile methods and healthy-reference selection are tested; real method/reference comparisons are reserved for Phase 7.",
+        "",
+        "| Regime | Rows | Shrinkage | Condition number | Unregularized rank |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for regime, value in base["covariance"].items():
+        lines.append(
+            f"| {regime} | {value['row_count']} | {value['shrinkage']:.6g} | {value['condition_number']:.6g} | {value['unregularized_rank']} |"
+        )
+    lines += [
+        "",
+        "Covariance factors and calibrated coupling artifacts have SHA-256 fingerprints in the JSON provenance. "
+        "Mean/p50/p95 D_M distributions and per-query signed margins are also retained there. "
+        "No inverse matrix is computed or persisted.",
+        "",
+        "## Schema and migration notes",
+        "",
+        "Result/report schema 1.1.0 adds independent verdicts, tier status (including skipped), signed margins, per-rule checks, surrogate warnings, evidence and assumptions. "
+        "Legacy precision-only validators require a train-engine refit. Config/validator mismatches fail clearly. "
+        "No validated emulator or simulator is installed; E4/E5 are unavailable.",
+        "",
+    ]
+    return lines
+
+
 def render(document: dict[str, Any]) -> str:
     """Render measured per-tier funnels with complete labels and explicit historical errata."""
 
@@ -1012,6 +1133,7 @@ def render(document: dict[str, Any]) -> str:
         "",
     ]
 
+    lines.extend(render_diagnostics(document))
     paired: dict[tuple[str, str, int], list[dict[str, Any]]] = {}
 
     for funnel in document["funnels"]:

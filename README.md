@@ -77,6 +77,28 @@ recorded in [`PROGRESS.md`](PROGRESS.md) and the generated `artifacts/` reports.
 do not establish that the proxy adjustments are physically realizable or safe on a real engine.
 Evaluation target statuses use measured run outputs; synopsis case-study values are illustrative.
 
+## Multi-tier validation
+
+Validation reports true-model validity (Tier 1), distributional plausibility (Tier 2), proxy
+engineering/coupling constraints (Tiers 3–4), and their joint verdict separately. Each tier includes
+status, evidence and signed margins. Unavailable dynamics report **skipped**, never pass; the
+highest available static evidence is E3, conditional on C-MAPSS sensor-proxy assumptions.
+
+Phase 5 covariance artifacts use training-only Ledoit–Wolf shrinkage with Cholesky solves.
+Precision-only older artifacts require refitting. Learned residual thresholds must be calibrated
+on disjoint validation engines before Tier 4 can pass; `calibrate_coupling_thresholds` is the
+library preparation function. The existing frozen Phase 4 artifact/state comparison is run with:
+
+```powershell
+uv run python scripts/diagnostics/phase5_validate.py
+```
+
+It uses committed configs under `configs/experiments/`, preserves both D_max protocols and all
+query denominators, and writes fitted validation artifacts plus engine-bootstrap funnels.
+See [the evaluation protocol](docs/evaluation_protocol.md), [Phase 5 changes](docs/phase5_changes.md),
+and [assumptions](docs/assumptions.md). Replay of existing states is not fresh generalization
+or validated real-engine intervention evidence.
+
 ## Verify changes
 
 ```powershell
