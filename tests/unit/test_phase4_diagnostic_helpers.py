@@ -124,3 +124,12 @@ def test_legacy_report_count_parser_preserves_numerator_and_denominator() -> Non
         "tier2": [[106, 200]],
         "joint": [[87, 200]],
     }
+
+
+def test_json_conversion_encodes_undefined_float_metrics_as_null() -> None:
+    """Undefined diagnostics remain explicit JSON nulls instead of invalid NaN tokens."""
+    converted = _DIAGNOSTICS._jsonable(
+        {"scalar": np.float64(np.nan), "array": np.asarray([1.0, np.inf, -np.inf])}
+    )
+
+    assert converted == {"scalar": None, "array": [1.0, None, None]}
