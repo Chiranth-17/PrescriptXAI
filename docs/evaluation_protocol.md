@@ -84,3 +84,46 @@ unchanged. Phase 4 summary labels that conflate physical conjunction with all-fo
 corrected in the new paired report; the historical report is retained with an explicit erratum.
 Unavailable saved candidates or unavailable dynamic evidence are labeled Partial/Not met in
 `docs/traceability.md`, never replaced with synthetic benchmark data. Synthetic fixtures are tests only.
+
+
+## Phase 6 preregistration — public pipeline and modes
+
+Committed before Phase 6 real measurements. This adds no new D_max version: v1=5 and v2=8
+remain unchanged, as do risk gates, bounds, proxy rates, K=1, k=3, predictor and calibrator.
+The Phase 5 frozen solver settings are retained. FAST uses the existing support-ordered certified
+true-model grid; THOROUGH evaluates the full existing grid. Semantics-preserving batched checks
+may remove repeated computation; no setting is tuned on reported outcomes. Development is the
+validation-engine population; no predictor is selected based on recourse.
+
+- Public triage: RECOVERABLE requires Tiers 1–4 and sparse action feasibility. PARTIAL requires
+  Tiers 2–4 and sparse feasibility, true risk reduction >= configured delta_min=0.30, and final
+  risk > tau_safe. Otherwise ESCALATE. Below tau_danger returns NO_INTERVENTION, triage=null,
+  unchanged state; it does not imply risk <= tau_safe. Exactly tau_danger enters recourse.
+- Bench populations: true first alert per engine for development validation engines, internal
+  held-out engines, each of the five frozen grouped OOF models across all 100 engines, and
+  official test engines (namespaced IDs and derived cycle-level RUL). Both modes/protocols use
+  identical queries. Include failures and infeasible queries. These are previously evaluated
+  engines; no fresh generalization claim. A new high-risk CLI/API demo also selects the first
+  chronological failing/partial result from the declared population if present.
+- Warm cache after artifact loading; one validation-engine warmup per mode/protocol, excluded
+  and disclosed. One timed repetition of each query. All settings/selection are YAML governed;
+  no post-result tuning. Timing benchmarks run serially with no concurrent test workloads.
+- Stage boundaries: ingestion normalizes/validates raw input; inference measures the true gate
+  probability; optimization includes all search/in-loop checks and true rescoring; validation
+  measures final checks. Backend total is measured directly around the public request including
+  lock wait and serialization setup. Startup and UI rendering remain separate/unmeasured.
+- p50/p95/p99 are measured per stage and total. p95 <= the upper budget is a pass; faster is a
+  pass. UI is null, never inferred from backend latency. Whole-engine bootstrap intervals and
+  engine counts accompany p95. Every mode/protocol/population table includes run/config/git,
+  k_max, K and D_max version. Validity/Tier2/Tier3/Tier4/joint/evidence accompany latency.
+- Snapshot vectors use the saved model feature order; dict/Series inputs use named columns.
+  Context may provide actual omitted telemetry/context plus units and an LSTM history. No missing
+  measured sensors or past timesteps are fabricated. Missing history is an explicit input error
+  for LSTM. Earlier history stays fixed; recourse changes only the latest timestep.
+- Optional multiprocessing is a throughput mode and is not used for serial latency claims.
+  Artifact caching is bounded and keyed by config/taxonomy/artifact fingerprints; per-engine
+  access is locked. Modes use request-local copied configuration.
+- Schema 2.0.0 is frozen at closure with JSON-schema snapshots and a migration/changelog entry.
+  Future changes require a version bump, changelog and agreement from library/CLI/API/dashboard
+  owners under rule19. Existing Phase 5 K sensitivity remains linked as historical assumed-K
+  sensitivity; it is not relabeled as a newly measured Phase 6 mode curve.

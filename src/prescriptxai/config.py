@@ -67,6 +67,11 @@ class ApiConfig(BaseModel):
 
     host: str = Field(min_length=1)
     port: int = Field(ge=1, le=65535)
+    cors_origins: list[str] = Field(default_factory=list)
+    cors_methods: list[str] = Field(default_factory=lambda: ["GET", "POST"])
+    cors_headers: list[str] = Field(default_factory=lambda: ["Content-Type", "X-API-Key", "X-Request-ID"])
+    api_key_env: str = "PRESCRIPTXAI_API_KEY"
+    max_payload_bytes: int = Field(default=1048576, ge=1)
 
 
 class ModelConfig(BaseModel):
@@ -262,11 +267,29 @@ class PathsConfig(BaseModel):
     evaluation_report: Path
 
 
+class PipelineConfig(BaseModel):
+    """Public input, concurrency, triage and artifact policies."""
+
+    model_config = ConfigDict(extra="forbid")
+    taxonomy_path: Path = Path("configs/features.yaml")
+    delta_min: float = Field(default=0.30, ge=0, le=1)
+    default_mode: Literal["fast", "thorough"] = "fast"
+    max_batch_rows: int = Field(default=1024, ge=1)
+    batch_workers: int = Field(default=1, ge=1)
+    max_workers: int = Field(default=4, ge=1)
+    artifact_cache_size: int = Field(default=4, ge=1)
+    benchmark_warmups: int = Field(default=1, ge=0)
+    benchmark_repeats: int = Field(default=1, ge=1)
+    escalation_message: str = "Schedule maintenance and obtain domain review before intervention."
+    model_artifacts: dict[str, ArtifactConfig] = Field(default_factory=dict)
+
+
 class AppConfig(BaseModel):
     """Complete PrescriptXAI configuration."""
 
     model_config = ConfigDict(extra="forbid")
 
+    pipeline: PipelineConfig = Field(default_factory=PipelineConfig)
     seed: int = Field(ge=0)
     horizon_H: int = Field(gt=0)
     tau_danger: float = Field(ge=0, le=1)

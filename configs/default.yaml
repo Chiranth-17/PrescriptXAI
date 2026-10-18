@@ -1,8 +1,12 @@
 seed: 1729
 horizon_H: 30
-tau_danger: 0.80
-tau_safe: 0.20
-dataset_subsets: [FD001, FD002, FD003, FD004]
+tau_danger: 0.8
+tau_safe: 0.2
+dataset_subsets:
+- FD001
+- FD002
+- FD003
+- FD004
 model_choice: xgboost
 paths:
   raw_data: data/raw
@@ -27,6 +31,16 @@ artifacts:
 api:
   host: 127.0.0.1
   port: 8000
+  cors_origins: []
+  cors_methods:
+  - GET
+  - POST
+  cors_headers:
+  - Content-Type
+  - X-API-Key
+  - X-Request-ID
+  api_key_env: PRESCRIPTXAI_API_KEY
+  max_payload_bytes: 1048576
 data:
   root: data/raw
   archive_name: CMAPSSData.zip
@@ -35,24 +49,36 @@ data:
   dataset_url: https://phm-datasets.s3.amazonaws.com/NASA/6.+Turbofan+Engine+Degradation+Simulation+Data+Set.zip
   dataset_sha256: null
   expected_row_counts:
-    FD001: {train: 20631, test: 13096, test_rul: 100}
-    FD002: {train: 53759, test: 33991, test_rul: 259}
-    FD003: {train: 24720, test: 16596, test_rul: 100}
-    FD004: {train: 61249, test: 41214, test_rul: 248}
+    FD001:
+      train: 20631
+      test: 13096
+      test_rul: 100
+    FD002:
+      train: 53759
+      test: 33991
+      test_rul: 259
+    FD003:
+      train: 24720
+      test: 16596
+      test_rul: 100
+    FD004:
+      train: 61249
+      test: 41214
+      test_rul: 248
   download_timeout_seconds: 120
   rul_cap: null
   failure_horizon: 30
-  variance_threshold: 0.00000001
+  variance_threshold: 1.0e-08
   regime_k: 6
   lifetime_buckets: 6
   rolling_features: false
   rolling_window: 5
-  train_fraction: 0.70
+  train_fraction: 0.7
   validation_fraction: 0.15
   test_fraction: 0.15
 model:
-  danger_threshold: 0.80
-  safe_threshold: 0.20
+  danger_threshold: 0.8
+  safe_threshold: 0.2
   calibration_method: sigmoid
   calibration_folds: 5
   risk_estimator: xgboost
@@ -64,7 +90,9 @@ model:
   xgb_reg_lambda: 1.0
   xgb_early_stopping_rounds: 20
   calibration_bins: 10
-  torch_hidden_dims: [64, 32]
+  torch_hidden_dims:
+  - 64
+  - 32
   torch_learning_rate: 0.001
   torch_epochs: 100
   torch_batch_size: 128
@@ -81,11 +109,11 @@ recourse:
   beta: 1.0
   gamma: 1.0
   max_iter: 500
-  solver_ftol: 0.000000001
+  solver_ftol: 1.0e-09
   safety_margin: 0.005
   l1_mode: smooth
   l1_weight: 1.0
-  l1_smoothing_epsilon: 0.000001
+  l1_smoothing_epsilon: 1.0e-06
   prediction_loss: squared_hinge
   restarts: 2
   alpha_growth: 2.0
@@ -98,7 +126,7 @@ recourse:
   true_model_grid_points: 5
   search_mode: thorough
   record_candidate_trace: false
-  change_tolerance: 0.0000001
+  change_tolerance: 1.0e-07
   max_line_search_steps: 20
 validation:
   D_max: 5.0
@@ -106,7 +134,7 @@ validation:
   d_max_threshold_method: fixed
   d_max_quantile: 0.99
   rate_limits: {}
-  covariance_regularization: 0.000001
+  covariance_regularization: 1.0e-06
   simulator_enabled: false
   reference_distribution: all_cycles
   healthy_min_rul: 30
@@ -124,6 +152,18 @@ evaluation:
   max_queries: 100
   direction_similarity_radius: 1.0
   recourse_validity_rate: 0.95
-  physical_plausibility_rate: 0.90
+  physical_plausibility_rate: 0.9
   average_sparsity_max: 3
-  mean_risk_drop_min: 0.60
+  mean_risk_drop_min: 0.6
+pipeline:
+  taxonomy_path: configs/features.yaml
+  delta_min: 0.3
+  default_mode: fast
+  max_batch_rows: 1024
+  batch_workers: 1
+  max_workers: 4
+  artifact_cache_size: 4
+  benchmark_warmups: 1
+  benchmark_repeats: 1
+  escalation_message: Schedule maintenance and obtain domain review before intervention.
+  model_artifacts: {}
