@@ -923,31 +923,42 @@ def _coupling_candidate_diagnostics(records: tuple[EvaluationRecord, ...]) -> di
         if record.dependent_sensor_count is not None
         and record.dependent_residual_violation_count is not None
     ]
-    denominator = sum(int(record.dependent_sensor_count or 0) for record in measured)
-    violations = sum(int(record.dependent_residual_violation_count or 0) for record in measured)
-    candidate_violations = sum(
-        int((record.dependent_residual_violation_count or 0) > 0) for record in measured
-    )
+
+    def summarize(candidates: list[EvaluationRecord], *, seed: int) -> dict[str, Any]:
+        denominator = sum(int(record.dependent_sensor_count or 0) for record in candidates)
+        violations = sum(
+            int(record.dependent_residual_violation_count or 0) for record in candidates
+        )
+        candidate_violations = sum(
+            int((record.dependent_residual_violation_count or 0) > 0)
+            for record in candidates
+        )
+        return {
+            "candidate_count": len(candidates),
+            "any_dependent_over_tier4_threshold": {
+                "count": candidate_violations,
+                "rate": candidate_violations / len(candidates) if candidates else None,
+                "engine_bootstrap_ci": (
+                    _bootstrap(
+                        pd.DataFrame({"engine_id": [item.engine_id for item in candidates]}),
+                        [bool(item.dependent_residual_violation_count) for item in candidates],
+                        seed=seed,
+                    )
+                    if candidates
+                    else None
+                ),
+            },
+            "dependent_sensor_checks_over_threshold": {
+                "count": violations,
+                "denominator": denominator,
+                "rate": violations / denominator if denominator else None,
+            },
+        }
+
+    returned = [record for record in measured if record.recourse_feasible]
     return {
-        "candidate_count": len(measured),
-        "any_dependent_over_tier4_threshold": {
-            "count": candidate_violations,
-            "rate": candidate_violations / len(measured) if measured else None,
-            "engine_bootstrap_ci": (
-                _bootstrap(
-                    pd.DataFrame({"engine_id": [item.engine_id for item in measured]}),
-                    [bool(item.dependent_residual_violation_count) for item in measured],
-                    seed=4_129,
-                )
-                if measured
-                else None
-            ),
-        },
-        "dependent_sensor_checks_over_threshold": {
-            "count": violations,
-            "denominator": denominator,
-            "rate": violations / denominator if denominator else None,
-        },
+        "attempted_optimizer_candidates": summarize(measured, seed=4_129),
+        "returned_counterfactuals": summarize(returned, seed=4_130),
     }
 
 
@@ -1217,9 +1228,17 @@ def _oracle_diagnosis(
         positions = np.sort(rng.choice(len(failed), size=60, replace=False))
         selected = [failed[int(index)] for index in positions]
     results = []
+    state_features = tuple(
+        dict.fromkeys(
+            name
+            for group in engine.taxonomy.feature_groups.model_dump().values()
+            for name in group["features"]
+        )
+    )
     for record in selected:
         row = outcome_by_key[(record.engine_id, record.cycle)]
-        original = {name: float(row[name]) for name in engine.model.feature_names}
+        row_values = row._asdict()
+        original = {name: float(row_values[name]) for name in state_features}
         result = _oracle_for_failed_state(
             engine,
             original,
@@ -1897,7 +1916,25 @@ def run() -> dict[str, Any]:
         }
         train_view = labeled[labeled.engine_id.isin(engine.coupling.training_engine_ids)]
         engine.coupling.write_diagnostic_report(OUTPUT_ROOT / "coupling-fit", train_view)
-    coupling_candidates = _coupling_candidate_diagnostics(headline_records_v1)
+    coupling_candidates = {
+        f"headline_sample_{protocol}": _coupling_candidate_diagnostics(
+            tuple(
+                record
+                for record in holdout_records[protocol]
+                if (record.engine_id, record.cycle)
+                in {_key(row) for row in headline_rows.itertuples()}
+            )
+        )
+        for protocol in ("v1", "v2")
+    }
+    coupling_candidates.update(
+        {
+            f"all_alert_states_{protocol}": _coupling_candidate_diagnostics(
+                holdout_records[protocol]
+            )
+            for protocol in ("v1", "v2")
+        }
+    )
 
     surrogate = _surrogate_diagnostics(engine, splits.test)
 
