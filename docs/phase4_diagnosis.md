@@ -1,107 +1,26 @@
-# Phase 4 Diagnosis Report
+# Phase 4 diagnosis — superseded historical record
 
-**Config**: `data/processed/phase4-grid-final.yaml`
-**Evaluation git commit**: `10b7e5efdd65d1062c93978f98369268c1ba641e`
-**Source dirty at eval time**: `True`
-**Total queries**: 200
-**Sampling policy**: seeded uniform sample from high-risk states with feasible intervals
-**Population**: Queries are sampled from high-risk test-split states with feasible actuator intervals (all alert states from held-out test engines, seeded uniform sample when count exceeds max_queries).  This is NOT 'first alert per engine'.
+This historical report is superseded by [the final Phase 4 evaluation](phase4_final.md). The
+historical table below is preserved only to explain a count discrepancy; it is not a current result
+or an approved headline protocol. Its original content was hashed as
+`75abd02b4ca3183fa1f9ce97e1d11964ccbd3c8afcc83bcc9cafd17176953f56` in the closure evidence.
 
-> [!WARNING]
-> WARNING: expanded solver settings (k_max=5, max_scaled_distance=6.0, restarts=3, max_iter=100, true_model_grid_points=10) were applied while observing results from these same test states.  Per tuning protocol (item 5), these settings must be frozen under configs/experiments/, tuned on validation engines, and a fresh run on test states must be done before quoting a headline number.
+## Historical count audit
 
----
+| Source | Runtime settings | Tier 1 | Tier 2 | Joint |
+|---|---|---:|---:|---:|
+| Old diagnosis table | Claimed expanded: k=5, scaled movement radius=6, 3 restarts, 100 iterations, 10-point grid | 112/200 | 106/200 | 87/200 |
+| Saved k3 run | k=3, radius=4, 1 restart, 25 iterations, 5-point grid | 135/200 | 158/200 | 127/200 |
+| Saved k5 run | k=5, radius=6, 3 restarts, 100 iterations, 10-point grid | 174/200 | 161/200 | 156/200 |
 
-## D1 - Recourse funnel (all queries = denominator)
+The saved k3 and k5 artifacts do not show identical outcomes. The old diagnosis table has no
+matching per-query run artifact, so its cause cannot be established. The current one-factor
+sensitivity experiment confirms that k=5 changes measured outcomes relative to k=3; the radius 2
+and radius 6 experiments leave the measured Tier 1, Tier 2, and joint rates unchanged on that
+sample, while latency differs. `max_scaled_distance=6` is a scaled per-feature movement radius,
+not Mahalanobis `D_max`; the old expanded run retained `D_max=5`.
 
-| Metric | N | D | Rate | Target | Status |
-|--------|---|---|------|--------|--------|
-| Recourse Validity (Tier 1: f(x') <= tau_safe) | 112 | 200 | 56.0% | >=0.95 | FAIL |
-| Distributional Plausibility (Tier 2: D_M <= D_max) | 106 | 200 | 53.0% | >=0.90 | FAIL |
-| Engineering validity (Tier 3) | 200 | 200 | 100.0% | no synopsis target | no synopsis target |
-| Sensor coupling validity (Tier 4) | 189 | 200 | 94.5% | no synopsis target | no synopsis target |
-| Joint success (Tiers 1-4) | 87 | 200 | 43.5% | strictly separate; NOT the 90% plausibility target | - |
-| Tier 2 plausibility among model-valid (extra diagnostic) | 88 | 112 | 78.6% | extra diagnostic; not a synopsis target denominator | - |
-
----
-
-## D2 - Constraint ladder (first failing constraint per query)
-
-| Failure type | N | % of all queries |
-|---|---|---|
-| Fail Tier 1 (model invalid) | 88 | 88/200 = 44.0% |
-| Fail Tier 2 only (model valid, not plausible) | 24 | 24/200 = 12.0% |
-| Fail Tier 3 only | 0 | 0/200 = 0.0% |
-| Fail Tier 4 only | 1 | 1/200 = 0.5% |
-| All pass (joint success) | 87 | 87/200 = 43.5% |
-
----
-
-## D3 - Failure classification
-
-Total failures: 113
-- Search failures (solver missed valid candidate): 0
-- True infeasible (exhaustive search confirmed): 0
-- Remaining failures not yet classified: 113
-
-> Exhaustive reference search (D3 protocol) has not yet been run. All failures remain unclassified.  Do not claim 'fundamental limitation' until this step is complete.
-
----
-
-## D4 - Latency
-
-**Mode**: THOROUGH (expanded grid; offline only)
-
-> FAST (production) mode not yet measured. p95 optimization budget is <=1800 ms. This run is expected to be well above budget.
-
-| Stage | Mean ms | P50 ms | P95 ms | P99 ms | Budget (p95) |
-|-------|---------|--------|--------|--------|--------------|
-| Optimization | 980.6 | 996.4 | 1834.5 | 1993.3 | <=1800 ms -> FAIL |
-| Validation | 8.9 | 8.8 | 11.2 | 12.4 | - |
-| Pipeline | 989.8 | 1006.5 | 1841.7 | 2002.6 | - |
-
-**FAST (production) mode**: not yet measured.  Speedups to explore: early stopping on first margin-passing candidate, vectorized batch true-model scoring, pruning dominated supports before grid search.
-
----
-
-## D5 - Sparsity and risk reduction
-
-- Mean changed features (all queries): 2.91
-- Mean changed features (joint successes): 2.8161
-- Mean risk drop (all queries): 0.6095
-- Average sparsity target: <=3 (over joint successes)
-- Average sparsity passes: True
-
----
-
-## D6 - Constraint violation counts
-
-- Frozen-feature violations: 0
-- Actuator-bound violations: 0
-- Rate-limit violations: 0
-
----
-
-## D7 - Provenance
-
-- Config path: `data/processed/phase4-grid-final.yaml`
-- Evaluation git commit: `10b7e5efdd65d1062c93978f98369268c1ba641e`
-- Config SHA-256: `a18c9193c220af1c2f3c2c0584724baa9db6a36ec59b74fe874e0952e2dec918`
-- Model training commit: `fa5adcbe914f95e6efe25f4edc8f8f50a234881a`
-- Total queries: 200
-- Held-out test engine IDs: [2, 5, 7, 13, 20, 23, 29, 30, 32, 41, 43, 64, 86, 88, 98]
-- Query engine IDs in this run: [2, 5, 7, 13, 20, 23, 29, 30, 32, 41, 43, 64, 86, 88, 98]
-
----
-
-## Decision table (Prompt 4R-A)
-- Recourse validity rate  : 56.0%  (target >=95%)
-- Tier 2 plausibility rate: 53.0%  (target >=90%)
-- Optimization p95 latency: 1834.5 ms  (budget <=1800 ms)
-
-OUTCOME: Both targets missed -> one round of 4R-B allowed. After that, close Phase 4 with honest numbers.
-LATENCY: THOROUGH mode exceeds budget (1834.5 ms p95 vs 1800 ms). FAST mode must be designed and measured before claiming production readiness.
-
----
-
-_Generated by `scripts/diagnostics/phase4_diagnose.py`. All numbers computed from saved JSON records._
+See `docs/phase4_final.md` and `docs/phase4_full_diagnosis_results.json` for the current frozen
+k≤3 headline, protocol v1/v2, all-alert, first-alert, grouped OOF, official-test, triage, sensitivity,
+and diagnostic evidence. C-MAPSS has no real actuator commands or intervention responses; the
+results are E1 software/dataset evidence and do not show RUL extension or operational safety.

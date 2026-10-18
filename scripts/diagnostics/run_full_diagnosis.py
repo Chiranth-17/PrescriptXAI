@@ -1601,10 +1601,15 @@ def _render_final_report(document: dict[str, Any]) -> str:
     lines = [
         "# Phase 4 final evaluation",
         "",
-        f"Run ID: `{document['run_id']}`  ",
-        f"Source commit: `{document['source_commit']}`  ",
-        f"Protocol v2 freeze commit: `{document['protocol_v2_freeze_commit']}`  ",
-        f"Protocol document SHA-256: `{document['protocol_v2_sha256']}`  ",
+        "| Run metadata | Value |",
+        "|---|---|",
+        f"| Run ID | `{document['run_id']}` |",
+        f"| Run timestamp UTC | {document['run_timestamp_utc']} |",
+        f"| Evaluation/oracle source commit | `{document['source_commit']}` |",
+        f"| Protocol v2 freeze commit | `{document['protocol_v2_freeze_commit']}` |",
+        f"| Protocol document SHA-256 | `{document['protocol_v2_sha256']}` |",
+        f"| Holdout and sensitivity measurement source | `{document['measurement_source_commits']['holdout_v1_v2']}` |",
+        f"| Grouped OOF and official-test measurement source | `{document['measurement_source_commits']['grouped_cv_oof']}` |",
         "",
         "## Design targets and measured values",
         "",
@@ -1737,7 +1742,7 @@ def _render_final_report(document: dict[str, Any]) -> str:
             f"| {document['run_id']} / {sensitivity['label']} | {sensitivity['effective_configuration_sha256']} | {sensitivity['protocol_version']} | {sensitivity['k_max']} | {sensitivity['K']} | {sensitivity['D_max']:.1f} | {sensitivity['population']} | {format_number(metrics['model_valid_all_queries']['estimate'])} {format_ci(metrics['model_valid_all_queries'])} | {format_number(metrics['tier2_plausible_all_queries']['estimate'])} {format_ci(metrics['tier2_plausible_all_queries'])} | {format_number(metrics['tiers2_to4_joint_all_queries']['estimate'])} {format_ci(metrics['tiers2_to4_joint_all_queries'])} | {format_number(outcomes['optimization_latency']['p95_ms'], 1)} {format_ci(outcomes['optimization_latency'], 1)} | {outcomes['engine_count']} |"
         )
     lines.extend(["", "## Diagnostic evidence", ""])
-    lines.append("### Constraint ladder (60-state saved-state sample)")
+    lines.append("### Constraint ladder (headline k≤3 sample, 200 states)")
     ladder = document["constraint_ladder"]
     lines.extend(
         [
@@ -1815,6 +1820,12 @@ def _render_final_report(document: dict[str, Any]) -> str:
             "The full risk-reduction histograms, per-population triage rates, effective runtime settings, and historical count audit are also stored in the JSON run artifact.",
             "",
             "### Historical count-collision audit",
+            "",
+            "The archived diagnosis table reported 112/200 Tier 1, 106/200 Tier 2, and 87/200 joint. Its stated runtime settings were `k_max=5`, `max_scaled_distance=6`, 3 restarts, 100 iterations, and a 10-point true-model grid. The matching saved per-query run is unavailable, so the cause of that table cannot be established.",
+            "",
+            "The saved k3 artifact used `k_max=3`, `max_scaled_distance=4`, 1 restart, 25 iterations, and a 5-point grid; it records 135/200 Tier 1, 158/200 Tier 2, and 127/200 joint. The saved k5 artifact used the expanded settings above and records 174/200, 161/200, and 156/200. These saved artifacts do not show identical outcomes.",
+            "",
+            "`max_scaled_distance` is a per-feature scaled movement radius, not the Mahalanobis `D_max`; the archived expanded run retained Mahalanobis `D_max=5`. In the fresh one-factor experiment, changing only `k_max` from 3 to 5 changed Tier 1/Tier 2/joint rates from 0.533/0.517/0.383 to 0.833/0.733/0.717. Changing only the movement radius to 2 or 6 left those rates at 0.533/0.517/0.383. All successful headline actions obey `k_max=3`; the report records bound, rate, and support checks separately.",
             "",
             history["interpretation"],
             "",

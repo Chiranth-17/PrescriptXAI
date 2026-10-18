@@ -8,7 +8,7 @@
 | 1 — Data ingestion and preprocessing | Complete | Real FD001–FD004 loaded, split, filtered, scaled, and reported |
 | 2 — Predictive models | Complete | XGBoost, differentiable MLP/LSTM, validation-only calibration, and real FD001 metrics |
 | 3 — Feature taxonomy and sensor coupling | Complete | Proxy taxonomy, fitted physical bounds, coupling propagation and Tier 4 checks |
-| 4 — Constrained recourse engine | Complete with target failures | L-BFGS-B, hard constraints, sparse support search, true-model scoring |
+| 4 — Constrained recourse engine | Closed; synopsis targets measured honestly | Constrained search, final protocol audit, grouped uncertainty, historical errata |
 | 5 — Product surfaces and evaluation | Complete | CLI, optional API, dashboard, reports |
 | 6 — End-to-end verification and documentation | Complete | Current measured limits in docs and artifacts |
 
@@ -70,10 +70,9 @@
 - The LSTM supports sequence scoring and gradients, but the current snapshot recourse request does
   not carry the history window. LSTM training/evaluation works; current interactive LSTM recourse
   remains unsupported until that request interface accepts history.
-- The corrected Phase 4 200-state FD001 sample met the sparsity target but missed true model
-  validity (12.5%), sparse recourse feasibility (11.5%), joint success (11%), physical plausibility
-  (68%), risk reduction (0.52495), and mean latency targets. These measured outcomes must not be
-  presented as demonstrated operational recourse.
+- Phase 4 closure metrics are in `docs/phase4_final.md`; the earlier contradictory summary has
+  been superseded. The final report distinguishes model validity from Tiers 2–4 plausibility and
+  reports v1 and frozen v2, all-alert, first-alert, grouped OOF, and official-test populations.
 
 Phase 0 scaffold verification is complete. GNU Make's Windows executable is named mingw32-make in
 this environment; its all-checks target passed using Python 3.11.17. The same target also passed in
@@ -269,83 +268,89 @@ documented in `docs/limitations.md`.
   129 tests passed with 77% total coverage; the documentation target passed. Unit tests emitted
   convergence warnings only for deliberately short (8-iteration) nonlinear-backend fixtures.
 
-## Phase 4 — Constrained recourse engine
+## Phase 4 — Constrained recourse engine and final closure
 
-Implemented constrained recourse with L-BFGS-B, hard-frozen immutable inputs, physical/rate/trust
-intersections, coupling propagation, calibrated true-model rescoring, sparse support re-optimization,
-structured failures, raw/scaled deltas, and per-stage timings. The objective and its L1 parameterizations
-are documented in `docs/math.md`. A configurable bounded grid fallback now searches sparse actuator
-supports against the true calibrated model when gradient/support search finds no physically valid
-candidate. It prefers candidates passing Tiers 2–4. Initial controls outside their allowed intervals
-are mandatory grid changes and count toward `k_max`; the grid does not relax any limits. It is finite
-resolution and does not claim continuous/global optimality.
+The constrained engine and the final evidence audit are closed. Closure means the implementation,
+protocol comparison, diagnostics, and documentation are complete; it does not mean that every
+synopsis target passed. The measured headline result remains below the true-risk target. All results
+use the true calibrated predictor for Tier 1, and report plausibility independently for Tiers 2–4.
 
-The final benchmark uses real FD001 data, a deterministic engine-level holdout and a seeded sample of
-200 actionable high-risk rows from 378 eligible rows. The selected model and validator remain fit on
-training engines only. The ignored benchmark config is `data/processed/phase4-grid-final.yaml`; its
-report and per-row records are in `artifacts/FD001-evaluation-grid-final.json` and `.md`.
-The search config used `max_iterations=25`, one restart, three alpha steps, one L1 step, a two-support
-local search, and the five-point true-model grid. The separate 9-point 40-state diagnostic produced
-no more model-valid or joint-success cases than the 5-point run, and increased mean optimization
-time from about 660 ms to 888 ms, so five points remain the default.
+The authoritative report is `docs/phase4_final.md`; its complete saved evidence is
+`docs/phase4_full_diagnosis_results.json`. The SVG K curve is `docs/phase4_k_curve.svg`. The report
+uses the v1 protocol (`k_max=3`, `K=1`, `D_max=5`) and the precommitted v2 protocol (`k_max=3`,
+`K=1`, `D_max=8`). Engine-cluster bootstrap intervals are used throughout. Headline status:
 
-| Measured outcome | Final FD001 result | Synopsis target/status |
-|---|---:|---|
-| Actionable high-risk states evaluated | 200 / 378 | At least 200: pass |
-| True model-valid (`f(x') <= tau_safe`) | 131 / 200 = 65.5% | ≥95%: fail |
-| Sparse recourse feasibility | 129 / 200 = 64.5% | Reported separately |
-| Joint successful recourse | 127 / 200 = 63.5% | Model-safe, sparse, and Tiers 2–4 pass |
-| Physical plausibility (Tiers 2–4) | 152 / 200 = 76% | ≥90%: fail |
-| Tier 2 Mahalanobis plausibility | 76% | No separate target |
-| Tier 3 engineering validity | 100% | No separate target |
-| Tier 4 coupling validity | 100% | No separate target |
-| Mean risk reduction | 0.66151 | ≥0.60: pass |
-| Mean changed features among joint successes | 2.59055 | ≤3: pass |
-| Mean returned diagnostic action size | 2.79 | Diagnostic only |
-| Mean / P95 optimization time | 705.04 / 1,171.68 ms | Mean target 1,200–1,800 ms: fail |
-| Mean / P95 pipeline time | 712.74 / 1,179.41 ms | Mean target 1,500–2,200 ms: fail |
-| Frozen / actuator-bound / rate violations | 0 / 0 / 0 | Zero observed |
-| Grid fallback usage | 178 / 200; mean 3,103 candidates | Diagnostic |
-| Mean grid-search time per evaluated state | 39.77 ms | Included in optimization time |
+| Headline metric | Target | V1 | V2 | Result |
+|---|---:|---:|---:|---|
+| True calibrated model validity, all 200 queries | ≥0.95 | 0.560 [0.468, 0.636] | 0.560 [0.469, 0.637] | Fail both |
+| Tier 2 plausibility, all 200 queries | ≥0.90 | 0.530 [0.432, 0.615] | 0.990 [0.975, 1.000] | V1 fail; V2 pass |
+| Joint Tiers 2–4 plausibility, all 200 | reported separately | 0.435 [0.362, 0.498] | 0.525 [0.447, 0.592] | Low; not model validity |
+| Mean risk reduction | ≥0.60 | 0.610 [0.551, 0.662] | 0.611 [0.553, 0.667] | Pass both |
+| Mean changed features among joint successes | ≤3 | 2.816 [2.735, 2.879] | 2.781 [2.739, 2.829] | Pass both |
+| Optimization p95 | ≤1,800 ms | 1,904.5 ms [1,648.9, 2,175.5] | 2,022.5 ms [1,679.7, 2,514.5] | Fail both |
 
-A search that runs faster than the synopsis latency minimum is reported as measured; the code does not
-add delay to manufacture a latency pass. Direction consistency remains unmeasured because the sampled
-states had no nearby pairs inside the configured scaled-space radius. The C-MAPSS proxy, fitted p99
-adjacent-cycle rates, one-step recourse, `k_max=3`, calibrated predictor, and configured `D_max` do not
-produce the synopsis validity and plausibility targets on this holdout. The 40-state grid experiment
-and a finer-grid check did not remove that gap. The feature channels are sensor proxies, not verified
-actuators; this evaluation cannot establish physical control efficacy, RUL extension, or maintenance
-benefit.
+Headline uses 200 sampled rows from 378 actionable alerts across 15 held-out engines. The all-alert
+results, first alert per engine, grouped out-of-fold sample, and official NASA test sample are all
+reported separately with engine-cluster intervals. The official test sample contains 159 alerts from
+19 engines; grouped OOF contains 200 sampled queries from 78 engines across five folds. Protocol v2
+Tier 2 rates were 0.989 for all alerts, 0.935 for grouped OOF, and 1.000 for official test; corresponding
+joint Tiers 2–4 rates were 0.521, 0.575, and 0.881. These do not change the headline model-validity
+result. First-alert summaries have only 15 engines and are not used to claim the headline target.
 
-Diagnostic-only sparsity ablation on the first same 40 benchmark states retained all physical, rate,
-trust-region, coupling, predictor, and Mahalanobis rules while allowing up to all seven configured
-controllable proxies to change. A deterministic three-point grid found a safe, Tier 2-plausible
-candidate on 36/40 states, compared with 29/40 model-valid and joint-success cases from the accepted
-`k_max=3` results. Refining the four remaining cases to a five-point grid produced no safe candidate;
-their lowest sampled true risks were 0.9044, 0.8865, 0.4812, and 0.9622. The all-seven-feature search
-is diagnostic only and is not an accepted policy or a resolution of the `k_max=3` gate. It indicates
-that the cap contributes to failures, while the remaining cases also appear unreachable under the
-current single-step proxy intervals. Grid minima are sampled values, not proofs of global infeasibility.
+### Closure diagnostics and decisions
+
+- **Oracle and failures:** 60 of 113 failed headline cases were replayed against the verified finite
+  search superset: 59 had no safe candidate found within that set and one had a missed candidate.
+  Every replay matched the production return. No case is classified as globally infeasible; finite
+  candidate searches do not prove continuous-space infeasibility.
+- **Sparsity and settings:** headline policy is `k_max≤3`. `k_max=5` is one-factor sensitivity only.
+  On a 60-query/14-engine sample, k3 baseline Tier 1/Tier 2/joint rates were 0.533/0.517/0.383;
+  changing only k to 5 gave 0.833/0.733/0.717. Successful headline candidates passed recorded
+  support, bound, and rate checks.
+- **Movement distance and Dmax:** `max_scaled_distance=6` in the old expanded run meant a per-feature
+  scaled movement radius; it was not Mahalanobis `D_max`, which remained 5. Fresh one-factor radius
+  2 and 6 runs both measured 0.533/0.517/0.383 for Tier 1/Tier 2/joint, with latency differences.
+  Dmax v1=5 and v2=8 are separately frozen and reported; the v2 setting improves Tier 2 and does not
+  produce the Tier 1 target.
+- **Historical count discrepancy:** an old diagnosis table reported 112/200, 106/200, and 87/200
+  against expanded settings (`k_max=5`, movement radius 6, 3 restarts, 100 iterations, grid 10).
+  The saved k3 run instead records 135/158/127 and the saved k5 run 174/161/156; the old table has
+  no matching per-query artifact. Its cause cannot be determined. Fresh k5-only sensitivity changes
+  outcomes, so the settings are honored in the current implementation. The old report is marked
+  superseded in `docs/phase4_diagnosis.md`.
+- **K sensitivity:** the one-factor K={1,2,3,5,10} measurements and confidence intervals are in the
+  final report. K>1 multiplies adjacent-cycle sensor-proxy rates and is an assumed intervention
+  horizon, not observed actuator dynamics.
+- **Tier 2 and fallbacks:** Tier 2 is constraint-first. Any fallback that does not pass all physical
+  tiers is flagged as engineering-only and excluded from successful recourse. Distances for queries
+  and returns are both reported. Validation-alert Mahalanobis p95 was 7.959; low-risk p95 was 5.342
+  (secondary diagnostic only).
+- **FAST mode:** among 32 shared successes, FAST and thorough returned exactly the same candidate
+  and risk. FAST optimization p95 was 2,435.7 ms, above the 1,800 ms target.
+- **End-of-life concentration:** among headline queries with RUL≤10 (83 rows across 15 engines),
+  joint success was 0.096 [0.025, 0.190]. Risk-reduction histograms and RECOVERABLE/PARTIAL/ESCALATE
+  triage appear by population and life stage in the final report.
+- **Coupling quality:** engine-grouped held-out R² and residual standard deviation are reported for
+  every dependent sensor. `sensor_3` (R²=0.3469) and `sensor_6` (R²=0.0304) fall below the configured
+  0.35 fit floor and remain explicitly flagged.
+- **Evidence boundary:** the work is E1 dataset/model and software evidence only. C-MAPSS has sensor
+  telemetry, no commanded actuator interventions or validated counterfactual simulator. The proxy
+  rate limits are adjacent-cycle sensor movement. Do not infer physical control efficacy, maintenance
+  benefit, or RUL extension.
 
 ### Phase 4 verification
 
-- Real benchmark command: `uv run prescriptxai evaluate --queries 200 --config data/processed/phase4-grid-final.yaml`.
-- The final 200-record report confirms zero frozen-feature, actuator-bound, and rate-limit violations.
-- Unit/integration tests cover finite-difference objective gradients, smooth/split L1 comparison,
-  frozen controls, bounds and rate checks, bounded-grid support enumeration including mandatory
-  projections, surrogate/true-model mismatch, true-model-safe recovery, structured closest-candidate
-  failure, Tiers 2–4 selection, determinism, and recorded grid timing/evaluation counts.
-- `mingw32-make all-checks`: Ruff passed; mypy passed for 49 source files; 146 tests passed with
-  77% total coverage; documentation target passed. The 24 convergence warnings came from deliberately
-  short nonlinear coupling fixtures.
+The final run/oracle used source commit `d1a6945fa9671beb6c48ebbbf89f0a2c72221488`;
+holdout/sensitivity metrics came from `7860fed5a99b6c94eefc2ffd2c8327052ea56b24`, and grouped
+OOF/official-test metrics came from `4a8275a788c9998d80acf07f3e7e9dfe2fcbe179`. Protocol v2 was
+frozen at `5f88d27b329a3ff673f841e525b154bfc853432c`. Exact run/config hashes, model and data hashes,
+thresholds, populations, and timings are preserved in the JSON evidence.
 
-### Open issue / acceptance blocker
-
-Phase 4's constrained algorithm and tests are implemented, but its full synopsis acceptance gate is not
-met: model validity is 65.5% (target 95%), physical plausibility is 76% (target 90%), and the mean
-optimization/pipeline measurements are below their specified minimum latency bands. These failures
-are not hidden or redefined. Reaching the risk/plausibility rates may require a reviewed multi-step
-action horizon, real actuator/control telemetry and limits, a different validated risk model, or
-additional intervention/physics evidence. Do not widen telemetry-derived rates, change `D_max`, or
-relax thresholds merely to force a pass; those choices need domain evidence and must be evaluated as a
-new experiment.
+- Real-data closure command: `uv run python scripts/diagnostics/run_full_diagnosis.py`.
+- Main implementation checks: `uv run ruff check src/prescriptxai tests scripts/diagnostics/run_full_diagnosis.py`,
+  `uv run mypy src/prescriptxai`, and `uv run pytest --cov=prescriptxai`.
+- Closure verification on Python 3.13.9: `mingw32-make all-checks` passed; Ruff passed, mypy passed
+  for 49 source files, 188 tests passed at 79% total coverage, and the documentation target passed.
+  The 24 convergence warnings are from deliberately short nonlinear-backend fixtures.
+- Report target misses remain visible and are not corrected by redefining metrics or changing the
+  frozen headline protocol.

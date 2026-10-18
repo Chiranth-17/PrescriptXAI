@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+<rect width="100%" height="100%" fill="white"/>
+<text x="450" y="25" text-anchor="middle" font-family="sans-serif" font-size="18">Measured Phase 4 validity by assumed intervention horizon</text>
+<line x1="86" y1="448.0" x2="872" y2="448.0" stroke="#dddddd"/>
+<text x="74" y="453.0" text-anchor="end" font-family="sans-serif" font-size="12">0.0</text>
+<line x1="86" y1="367.2" x2="872" y2="367.2" stroke="#dddddd"/>
+<text x="74" y="372.2" text-anchor="end" font-family="sans-serif" font-size="12">0.2</text>
+<line x1="86" y1="286.4" x2="872" y2="286.4" stroke="#dddddd"/>
+<text x="74" y="291.4" text-anchor="end" font-family="sans-serif" font-size="12">0.4</text>
+<line x1="86" y1="205.6" x2="872" y2="205.6" stroke="#dddddd"/>
+<text x="74" y="210.6" text-anchor="end" font-family="sans-serif" font-size="12">0.6</text>
+<line x1="86" y1="124.8" x2="872" y2="124.8" stroke="#dddddd"/>
+<text x="74" y="129.8" text-anchor="end" font-family="sans-serif" font-size="12">0.8</text>
+<line x1="86" y1="44.0" x2="872" y2="44.0" stroke="#dddddd"/>
+<text x="74" y="49.0" text-anchor="end" font-family="sans-serif" font-size="12">1.0</text>
+<line x1="86" y1="44" x2="86" y2="448" stroke="#333333"/>
+<line x1="86" y1="448" x2="872" y2="448" stroke="#333333"/>
+<text x="479.0" y="500" text-anchor="middle" font-family="sans-serif" font-size="14">Assumed intervention horizon K (steps)</text>
+<text x="20" y="246.0" transform="rotate(-90 20 246.0)" text-anchor="middle" font-family="sans-serif" font-size="14">Rate</text>
+<line x1="86.0" y1="448" x2="86.0" y2="453" stroke="#333333"/>
+<text x="86.0" y="470" text-anchor="middle" font-family="sans-serif" font-size="12">1</text>
+<line x1="173.3" y1="448" x2="173.3" y2="453" stroke="#333333"/>
+<text x="173.3" y="470" text-anchor="middle" font-family="sans-serif" font-size="12">2</text>
+<line x1="260.7" y1="448" x2="260.7" y2="453" stroke="#333333"/>
+<text x="260.7" y="470" text-anchor="middle" font-family="sans-serif" font-size="12">3</text>
+<line x1="435.3" y1="448" x2="435.3" y2="453" stroke="#333333"/>
+<text x="435.3" y="470" text-anchor="middle" font-family="sans-serif" font-size="12">5</text>
+<line x1="872.0" y1="448" x2="872.0" y2="453" stroke="#333333"/>
+<text x="872.0" y="470" text-anchor="middle" font-family="sans-serif" font-size="12">10</text>
+<polyline points="86.0,232.5 173.3,64.2 260.7,57.5 435.3,44.0 872.0,44.0" fill="none" stroke="#1759a6" stroke-width="3"/>
+<circle cx="86.0" cy="232.5" r="5" fill="#1759a6"/>
+<circle cx="173.3" cy="64.2" r="5" fill="#1759a6"/>
+<circle cx="260.7" cy="57.5" r="5" fill="#1759a6"/>
+<circle cx="435.3" cy="44.0" r="5" fill="#1759a6"/>
+<circle cx="872.0" cy="44.0" r="5" fill="#1759a6"/>
+<line x1="680" y1="44" x2="702" y2="44" stroke="#1759a6" stroke-width="3"/>
+<text x="710" y="48" font-family="sans-serif" font-size="12">Tier 1 model validity</text>
+<polyline points="86.0,239.3 173.3,205.6 260.7,192.1 435.3,178.7 872.0,185.4" fill="none" stroke="#c45318" stroke-width="3"/>
+<circle cx="86.0" cy="239.3" r="5" fill="#c45318"/>
+<circle cx="173.3" cy="205.6" r="5" fill="#c45318"/>
+<circle cx="260.7" cy="192.1" r="5" fill="#c45318"/>
+<circle cx="435.3" cy="178.7" r="5" fill="#c45318"/>
+<circle cx="872.0" cy="185.4" r="5" fill="#c45318"/>
+<line x1="680" y1="62" x2="702" y2="62" stroke="#c45318" stroke-width="3"/>
+<text x="710" y="66" font-family="sans-serif" font-size="12">Tier 2 plausibility</text>
+<polyline points="86.0,293.1 173.3,205.6 260.7,198.9 435.3,185.4 872.0,192.1" fill="none" stroke="#328453" stroke-width="3"/>
+<circle cx="86.0" cy="293.1" r="5" fill="#328453"/>
+<circle cx="173.3" cy="205.6" r="5" fill="#328453"/>
+<circle cx="260.7" cy="198.9" r="5" fill="#328453"/>
+<circle cx="435.3" cy="185.4" r="5" fill="#328453"/>
+<circle cx="872.0" cy="192.1" r="5" fill="#328453"/>
+<line x1="680" y1="80" x2="702" y2="80" stroke="#328453" stroke-width="3"/>
+<text x="710" y="84" font-family="sans-serif" font-size="12">Joint Tiers 2–4</text>
+</svg>

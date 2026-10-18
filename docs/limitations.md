@@ -29,17 +29,17 @@
 - **Evaluation scope.** Metrics are for the configured model, seed, engine split, taxonomy, and
   sampled held-out rows. Synopsis case-study values are illustrative and never substituted for
   measured results.
-- **Phase 4 FD001 outcome.** The final seeded sample included 200 of 378 actionable high-risk
-  states in the engine-held-out split. True model validity was 65.5%, Tiers 2–4 plausibility was
-  76%, and 127/200 (63.5%) were joint successful sparse recourses. Mean risk reduction was
-  0.66151, and mean sparsity among the 127 joint successes was 2.59055. Mean/P95 optimization
-  latency was 705.04/1,171.68 ms; mean/P95 pipeline latency was 712.74/1,179.41 ms. There were
-  zero frozen-feature, actuator-bound, or rate-limit violations. Validity, plausibility, sparse
-  feasibility, and joint success remain separately reported. The run used explicitly recorded
-  reduced search limits (25 iterations, one restart, three alpha steps, one L1 step, two local
-  supports) plus a five-point bounded true-model grid fallback; all per-state measurements and
-  settings are saved in the ignored generated report. The synopsis validity, plausibility, and
-  latency targets remain unmet, and the run does not establish a maintenance effect.
+- **Phase 4 FD001 outcome.** The reproducible closure report at `docs/phase4_final.md` records the
+  200-state headline sample and all 378 actionable high-risk states from 15 held-out engines.
+  Under protocol v1 (`k_max=3`, `K=1`, `D_max=5`), headline true model validity was 56.0%, Tier 2
+  plausibility was 53.0%, and joint Tiers 2–4 plausibility was 43.5%. Protocol v2 changes only
+  `D_max` to 8: Tier 2 rose to 99.0%, while true model validity remained 56.0% and joint
+  plausibility was 52.5%. Optimization p95 was 1,904.5 ms (v1) and 2,022.5 ms (v2), above the
+  1,800 ms target. The full report includes engine-cluster bootstrap intervals, all-alert and
+  first-alert results, grouped OOF and official-test strata, risk-reduction histograms, triage,
+  sensitivity, and saved JSON evidence. No synopsis pass is inferred from a subgroup result.
+  These are E1 dataset/model measurements using sensor telemetry proxies; they do not establish
+  actuator efficacy, physical safety, maintenance benefit, or RUL extension.
 - **Latency scope.** The evaluation measures inference, optimization, and validation in the Python
   process. Raw telemetry ingestion and interactive dashboard render latency remain unmeasured until
   an instrumented live-input deployment is available.
