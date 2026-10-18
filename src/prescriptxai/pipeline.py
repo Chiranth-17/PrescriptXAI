@@ -19,6 +19,7 @@ from prescriptxai.validation.pipeline import (
     load_mahalanobis_validator,
     try_load_coupling_model,
     validate_candidate,
+    verify_validator_compatibility,
 )
 from prescriptxai.validation.tier2_mahalanobis import MahalanobisValidator
 
@@ -74,8 +75,7 @@ class PrescriptXAIEngine:
                 resolved_bounds, getattr(model, "resolved_rate_limits", None)
             )
         mahalanobis = load_mahalanobis_validator(mahalanobis_path or config.artifacts.mahalanobis)
-        if model.feature_names != mahalanobis.feature_names:
-            raise ValueError("model and Mahalanobis artifacts have different feature orders")
+        verify_validator_compatibility(mahalanobis, model, config)
         if not taxonomy.active_controllable_feature_names(model.feature_names):
             raise ValueError("at least one configured controllable proxy must be a model feature")
         resolved_coupling_path = (

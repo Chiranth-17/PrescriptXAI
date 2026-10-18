@@ -60,6 +60,36 @@ def load_mahalanobis_validator(path: Path) -> MahalanobisValidator:
     return loaded
 
 
+def verify_validator_compatibility(
+    validator: MahalanobisValidator, bundle: ModelBundle, config: AppConfig
+) -> None:
+    """Reject persisted statistics whose effective protocol differs from runtime labels."""
+    if validator.feature_names != bundle.feature_names:
+        raise ValueError("model and Mahalanobis artifacts have different feature orders")
+    if set(validator.training_engine_ids) != set(bundle.training_engine_ids):
+        raise ValueError("Mahalanobis fitting engines differ from model fitting engines")
+    expected = config.validation
+    if (
+        validator.threshold_method != expected.d_max_threshold_method
+        or validator.reference_distribution != expected.reference_distribution
+        or validator.regularization != expected.covariance_regularization
+        or (
+            validator.threshold_method == "fixed"
+            and validator.max_distance != expected.mahalanobis_max
+        )
+        or (
+            validator.threshold_method != "fixed"
+            and validator.threshold_quantile != expected.d_max_quantile
+        )
+    ):
+        raise ValueError(
+            "Mahalanobis artifact protocol differs from config; refit matching validation artifacts"
+        )
+    regimes = expected.regime_k if config.data.dataset in {"FD002", "FD004"} else 1
+    if len(validator.regime_statistics) != regimes:
+        raise ValueError("Mahalanobis artifact regime count differs from config")
+
+
 @dataclass(frozen=True)
 class ValidationReport:
     """Four separate tier results and aggregate outcome."""

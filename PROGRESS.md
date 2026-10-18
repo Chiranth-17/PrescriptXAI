@@ -386,3 +386,11 @@ validation-only residual calibration, independent tier verdicts, explicit skippe
 bounded in-loop feedback. Read-only independent audits identified provenance and adapter gaps;
 these are being addressed before the measurement run. Gate results and measured funnels will
 be added after execution; this section does not claim closure.
+
+
+Preflight: 213 tests passed, coverage 79.6811% (displayed 80%), Ruff and mypy clean. A final
+read-only audit caught two additional negative-input/integration cases before the completed
+measurement: NaN in the original Tier 3 state, and persisted validator/config mismatches.
+The first real run was interrupted without publishing a report; its cache is not reused by the
+new source revision. Both cases have explicit regression tests. Config thresholds, bounds, rates,
+predictor and solver settings are unchanged. Historical config mirrors now load successfully.

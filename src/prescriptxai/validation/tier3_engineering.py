@@ -28,9 +28,17 @@ def validate_engineering(
     missing = (declared - set(initial)) | (declared - set(candidate))
     if missing:
         return TierResult(False, (f"state is missing configured features: {sorted(missing)}",))
-    non_finite = [name for name in declared if not np.isfinite(candidate[name])]
+    non_finite = [
+        name
+        for name in declared
+        if not np.isfinite(candidate[name]) or not np.isfinite(initial[name])
+    ]
     if non_finite:
-        return TierResult(False, (f"candidate has non-finite values: {sorted(non_finite)}",))
+        return TierResult(
+            False,
+            (f"initial/candidate has non-finite values: {sorted(non_finite)}",),
+            evidence_level="E3",
+        )
     immutable = taxonomy.immutable_feature_names()
     failures: list[str] = []
     checks: list[CheckResult] = []

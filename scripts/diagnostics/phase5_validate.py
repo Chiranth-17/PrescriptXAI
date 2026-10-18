@@ -132,11 +132,13 @@ class Experiment:
 
         self.commit = revision()
 
-        dirty = subprocess.check_output(["git", "diff", "--name-only", "HEAD"], cwd=ROOT).decode()
+        dirty = subprocess.check_output(
+            ["git", "status", "--porcelain", "--untracked-files=all"], cwd=ROOT
+        ).decode()
 
         if any(
             line.startswith(("src/", "scripts/", "configs/", "docs/evaluation_protocol"))
-            for line in dirty.splitlines()
+            for line in (entry[3:] for entry in dirty.splitlines())
         ):
             raise ValueError(
                 "commit implementation, protocol and configs before real-data measurement"

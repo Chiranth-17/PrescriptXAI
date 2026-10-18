@@ -27,6 +27,7 @@ from prescriptxai.validation.pipeline import (
     load_mahalanobis_validator,
     save_mahalanobis_validator,
     validate_candidate,
+    verify_validator_compatibility,
 )
 from prescriptxai.validation.simulator import NullSimulator, run_simulator_validation
 from prescriptxai.validation.tier1_model import validate_model_risk
@@ -298,6 +299,27 @@ def test_validation_only_coupling_calibration_preserves_regressors_and_provenanc
         calibrate_coupling_thresholds(
             fitted, validation, (6,), reference_distribution="all_cycles", min_rul=30
         )
+
+
+def test_nonfinite_original_and_persisted_protocol_mismatch_fail_closed() -> None:
+    """Invalid origins and mislabeled D_max artifacts cannot pass engineering/loading checks."""
+    bundle, taxonomy, training = make_recourse_fixture()
+    config = load_config(Path("configs/default.yaml"))
+    validator = fit_mahalanobis_validator(training, bundle, bundle.training_engine_ids, config)
+    verify_validator_compatibility(validator, bundle, config)
+    for value in (float("nan"), float("inf"), float("-inf")):
+        report = validate_engineering(
+            {"actuator": value, "sensor": 2.0}, {"actuator": 1.0, "sensor": 2.0}, taxonomy
+        )
+        assert not report.valid and "non-finite" in report.diagnostics[0]
+    with pytest.raises(ValueError, match="protocol differs"):
+        verify_validator_compatibility(replace(validator, max_distance=8.0), bundle, config)
+    with pytest.raises(ValueError, match="fitting engines"):
+        verify_validator_compatibility(
+            replace(validator, training_engine_ids=(999,)), bundle, config
+        )
+    with pytest.raises(ValueError, match="regime count"):
+        verify_validator_compatibility(replace(validator, regime_statistics={}), bundle, config)
 
 
 def test_manifold_penalty_gradient_and_feedback_termination() -> None:
