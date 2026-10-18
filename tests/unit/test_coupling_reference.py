@@ -111,6 +111,27 @@ def test_torch_propagation_still_requires_every_predictor(
         coupling.propagate_torch_module(names)
 
 
+def test_batch_propagation_ignores_absent_dependent_targets(
+    coupling_data: tuple[SensorCouplingModel, pd.DataFrame],
+) -> None:
+    """Vectorized true-model search supports folds that omit constant dependent channels."""
+    coupling, frame = coupling_data
+    omitted = coupling.dependent_features[0]
+    names = tuple(name for name in coupling.feature_names if name != omitted)
+    values = frame.loc[:2, list(names)].to_numpy(dtype=float)
+
+    propagated = coupling.propagate_batch(
+        values, names, reference_state=values
+    )
+
+    np.testing.assert_allclose(propagated, values, rtol=1e-10, atol=1e-10)
+    missing_predictor = coupling.predictor_features[0]
+    predictor_names = tuple(name for name in names if name != missing_predictor)
+    predictor_values = values[:, [names.index(name) for name in predictor_names]]
+    with pytest.raises(ValueError, match="missing coupling predictors"):
+        coupling.propagate_batch(predictor_values, predictor_names)
+
+
 @pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
 def test_scaled_reference_identity_and_raw_scaled_mapping(
     coupling_data: tuple[SensorCouplingModel, pd.DataFrame], dtype: torch.dtype,

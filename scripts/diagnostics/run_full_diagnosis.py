@@ -71,6 +71,7 @@ BOOTSTRAP_REPLICATES = 2_000
 SENSITIVITY_SAMPLE = 60
 ORACLE_GRID_POINTS = 9
 CHECKPOINT_VERSION = 1
+COMPATIBLE_HOLDOUT_SOURCE_COMMIT = "7860fed5a99b6c94eefc2ffd2c8327052ea56b24"
 
 
 def _commit() -> str:
@@ -102,6 +103,7 @@ def _write_checkpoint(name: str, context_hash: str, run_id: str, payload: Any) -
                 "version": CHECKPOINT_VERSION,
                 "context_hash": context_hash,
                 "run_id": run_id,
+                "source_commit": _commit(),
                 "payload": payload,
             },
             stream,
@@ -110,7 +112,12 @@ def _write_checkpoint(name: str, context_hash: str, run_id: str, payload: Any) -
     temporary.replace(target)
 
 
-def _read_checkpoint(name: str, context_hash: str) -> dict[str, Any] | None:
+def _read_checkpoint(
+    name: str,
+    context_hash: str,
+    *,
+    compatible_context_hashes: dict[str, str] | None = None,
+) -> dict[str, Any] | None:
     """Load a compatible stage checkpoint; discard results from different inputs or code."""
     path = OUTPUT_ROOT / "checkpoints" / f"{name}.pickle"
     if not path.is_file():
@@ -121,13 +128,23 @@ def _read_checkpoint(name: str, context_hash: str) -> dict[str, Any] | None:
     except (OSError, pickle.PickleError, EOFError, AttributeError, ImportError):
         LOGGER.warning("Ignoring unreadable diagnostic checkpoint %s", path)
         return None
-    if (
-        not isinstance(checkpoint, dict)
-        or checkpoint.get("version") != CHECKPOINT_VERSION
-        or checkpoint.get("context_hash") != context_hash
-    ):
+    if not isinstance(checkpoint, dict) or checkpoint.get("version") != CHECKPOINT_VERSION:
         LOGGER.info("Ignoring stale diagnostic checkpoint %s", path)
         return None
+    if checkpoint.get("context_hash") != context_hash:
+        compatible = compatible_context_hashes or {}
+        matched_commit = next(
+            (
+                commit
+                for commit, compatible_hash in compatible.items()
+                if checkpoint.get("context_hash") == compatible_hash
+            ),
+            None,
+        )
+        if name not in {"holdout", "sensitivity"} or matched_commit is None:
+            LOGGER.info("Ignoring stale diagnostic checkpoint %s", path)
+            return None
+        checkpoint["source_commit"] = matched_commit
     return checkpoint
 
 
@@ -1824,30 +1841,52 @@ def run() -> dict[str, Any]:
                 subset=engine.config.data.dataset
             )
         )
-    checkpoint_context = hashlib.sha256(
-        json.dumps(
-            {
-                "version": CHECKPOINT_VERSION,
-                "source_commit": source_commit,
-                "config_hash": _config_hash(engine.config),
-                "taxonomy_sha256": _sha256_file(TAXONOMY_PATH),
-                "dataset_archive_sha256": _sha256_file(
-                    engine.config.data.root / engine.config.data.archive_name
-                ),
-                "protocol_sha256": _sha256_file(PROTOCOL_PATH),
-                "artifact_sha256": {
-                    str(path): _sha256_file(path) for path in artifact_paths
-                },
-            },
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-    ).hexdigest()
+    checkpoint_context_data = {
+        "version": CHECKPOINT_VERSION,
+        "config_hash": _config_hash(engine.config),
+        "taxonomy_sha256": _sha256_file(TAXONOMY_PATH),
+        "dataset_archive_sha256": _sha256_file(
+            engine.config.data.root / engine.config.data.archive_name
+        ),
+        "protocol_sha256": _sha256_file(PROTOCOL_PATH),
+        "artifact_sha256": {
+            str(path): _sha256_file(path) for path in artifact_paths
+        },
+    }
+
+    def context_hash(value: dict[str, Any]) -> str:
+        """Hash stage inputs with deterministic JSON serialization."""
+        return hashlib.sha256(
+            json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+
+    checkpoint_context = context_hash(checkpoint_context_data)
+    compatible_holdout_context = context_hash(
+        {
+            **checkpoint_context_data,
+            "source_commit": COMPATIBLE_HOLDOUT_SOURCE_COMMIT,
+        }
+    )
+    compatible_holdout_checkpoints = {
+        COMPATIBLE_HOLDOUT_SOURCE_COMMIT: compatible_holdout_context
+    }
+    if engine.coupling is not None:
+        coupled_features = set(engine.coupling.predictor_features) | set(
+            engine.coupling.dependent_features
+        )
+        if coupled_features - set(engine.model.feature_names):
+            compatible_holdout_checkpoints = {}
     initial_checkpoint = next(
         (
             checkpoint
             for name in ("holdout", "sensitivity", "grouped-cv", "official-test")
-            if (checkpoint := _read_checkpoint(name, checkpoint_context)) is not None
+            if (
+                checkpoint := _read_checkpoint(
+                    name,
+                    checkpoint_context,
+                    compatible_context_hashes=compatible_holdout_checkpoints,
+                )
+            ) is not None
         ),
         None,
     )
@@ -1913,7 +1952,11 @@ def run() -> dict[str, Any]:
     )
 
     # Protocol v1 and frozen v2 are evaluated on identical holdout alert states.
-    holdout_checkpoint = _read_checkpoint("holdout", checkpoint_context)
+    holdout_checkpoint = _read_checkpoint(
+        "holdout",
+        checkpoint_context,
+        compatible_context_hashes=compatible_holdout_checkpoints,
+    )
     if holdout_checkpoint is None:
         holdout, holdout_records = _evaluate_holdout_protocols(
             engine, test_alerts, headline_rows
@@ -1950,7 +1993,11 @@ def run() -> dict[str, Any]:
         for key in (_key(row) for row in sensitivity_rows.itertuples())
         if key in headline_lookup
     )
-    sensitivity_checkpoint = _read_checkpoint("sensitivity", checkpoint_context)
+    sensitivity_checkpoint = _read_checkpoint(
+        "sensitivity",
+        checkpoint_context,
+        compatible_context_hashes=compatible_holdout_checkpoints,
+    )
     if sensitivity_checkpoint is None:
         sensitivity, fast_records = _evaluate_sensitivity(
             engine,
@@ -2169,6 +2216,20 @@ def run() -> dict[str, Any]:
         "run_id": run_id,
         "run_timestamp_utc": datetime.now(UTC).isoformat(),
         "source_commit": source_commit,
+        "measurement_source_commits": {
+            "holdout_v1_v2": holdout_checkpoint.get("source_commit", source_commit)
+            if holdout_checkpoint is not None
+            else source_commit,
+            "sensitivity": sensitivity_checkpoint.get("source_commit", source_commit)
+            if sensitivity_checkpoint is not None
+            else source_commit,
+            "grouped_cv_oof": grouped_checkpoint.get("source_commit", source_commit)
+            if grouped_checkpoint is not None
+            else source_commit,
+            "official_test": official_checkpoint.get("source_commit", source_commit)
+            if official_checkpoint is not None
+            else source_commit,
+        },
         "protocol_v2_freeze_commit": "5f88d27b329a3ff673f841e525b154bfc853432c",
         "protocol_v2_sha256": _sha256_file(PROTOCOL_PATH),
         "dataset": "FD001",

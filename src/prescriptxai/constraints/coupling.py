@@ -314,9 +314,15 @@ class SensorCouplingModel:
             raise ValueError("coupling features must be finite")
         if len(feature_names) != len(set(feature_names)):
             raise ValueError("coupling feature names must be unique")
-        missing = (set(self.predictor_features) | set(self.dependent_features)) - set(feature_names)
-        if missing:
-            raise ValueError(f"feature order missing coupling fields: {sorted(missing)}")
+        missing_predictors = set(self.predictor_features) - set(feature_names)
+        if missing_predictors:
+            raise ValueError(
+                "feature order missing coupling predictors: "
+                f"{sorted(missing_predictors)}"
+            )
+        active_dependents = tuple(
+            name for name in self.dependent_features if name in feature_names
+        )
         positions = {name: index for index, name in enumerate(feature_names)}
         predictor_indices = [positions[name] for name in self.predictor_features]
         reference: NDArray[np.float64] | None = None
@@ -333,7 +339,7 @@ class SensorCouplingModel:
             if not np.isfinite(reference).all():
                 raise ValueError("coupling reference values must be finite")
         output = matrix.copy()
-        for target in self.dependent_features:
+        for target in active_dependents:
             index = positions[target]
             model = self.models[target]
             predicted = np.asarray(model.predict(matrix[:, predictor_indices]), dtype=np.float64)
