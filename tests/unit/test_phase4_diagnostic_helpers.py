@@ -108,3 +108,19 @@ def test_effective_solver_settings_do_not_treat_missing_grid_checks_as_pass() ->
     }
     assert summary["all_grid_runs_honored_k_max"] is True
     assert summary["all_grid_runs_honored_max_scaled_distance"] is False
+
+
+def test_legacy_report_count_parser_preserves_numerator_and_denominator() -> None:
+    """The historical mismatch audit reads counts as pairs, not flattened digits."""
+    report = """| Recourse Validity | 112 | 200 | 56.0% |
+| Distributional Plausibility | 106 | 200 | 53.0% |
+| Joint success | 87 | 200 | 43.5% |
+"""
+
+    counts = _DIAGNOSTICS._parse_legacy_d1_counts(report)
+
+    assert counts == {
+        "tier1": [[112, 200]],
+        "tier2": [[106, 200]],
+        "joint": [[87, 200]],
+    }

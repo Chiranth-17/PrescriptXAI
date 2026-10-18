@@ -215,18 +215,24 @@ def _saved_run_counts(path: Path) -> dict[str, Any] | None:
     }
 
 
+def _parse_legacy_d1_counts(report_text: str) -> dict[str, list[list[int]]]:
+    """Extract reported numerator/denominator pairs from the superseded D1 table."""
+    patterns = {
+        "tier1": r"Recourse Validity[^|]*\|\s*(\d+)\s*\|\s*(\d+)",
+        "tier2": r"Distributional Plausibility[^|]*\|\s*(\d+)\s*\|\s*(\d+)",
+        "joint": r"Joint success[^|]*\|\s*(\d+)\s*\|\s*(\d+)",
+    }
+    return {
+        label: [[int(value) for value in pair] for pair in re.findall(pattern, report_text)]
+        for label, pattern in patterns.items()
+    }
+
+
 def _historical_count_audit() -> dict[str, Any]:
     """Audit the reported dirty-run count collision against the saved local evidence."""
     legacy_doc_path = ROOT / "docs/phase4_diagnosis.md"
     legacy_text = legacy_doc_path.read_text(encoding="utf-8") if legacy_doc_path.is_file() else ""
-    d1_rows = {
-        label: [int(value) for value in re.findall(pattern, legacy_text)]
-        for label, pattern in {
-            "tier1": r"Recourse Validity[^|]*\|\s*(\d+)\s*\|\s*(\d+)",
-            "tier2": r"Distributional Plausibility[^|]*\|\s*(\d+)\s*\|\s*(\d+)",
-            "joint": r"Joint success[^|]*\|\s*(\d+)\s*\|\s*(\d+)",
-        }.items()
-    }
+    d1_rows = _parse_legacy_d1_counts(legacy_text)
     k3 = _saved_run_counts(ROOT / "artifacts/FD001-evaluation-grid-200.json")
     k5 = _saved_run_counts(ROOT / "artifacts/FD001-evaluation-grid-final.json")
     same_artifact_outcomes = bool(
