@@ -16,6 +16,7 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from pydantic import BaseModel
 
 from prescriptxai.config import load_config
 from prescriptxai.constraints.coupling import SensorCouplingModel
@@ -63,6 +64,8 @@ def write_json(path: Path, value: Any) -> None:
 
         if isinstance(item, np.generic):
             return item.item()
+        if isinstance(item, BaseModel):
+            return item.model_dump(mode="json")
 
         raise TypeError(type(item).__name__)
 

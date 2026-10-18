@@ -51,3 +51,33 @@ safety. See [limitations](limitations.md).
 - Evaluation: JSON and Markdown report with denominators, configured target statuses, and
   unmeasured stages left unmeasured, including direction agreement among nearby states and explicit
   frozen-feature, actuator-bound, and rate-limit violation counts.
+
+
+## Phase 5 validation boundary
+
+All consumers share `validation.pipeline.validate_candidate`. Its report has independent
+`model_valid`, `plausible` (Tier 2 only), `constraints_ok` (Tiers 3–4), `joint`, failing-tier names,
+signed margins, per-rule explanations and E1–E5 evidence. Collect-all and fail-fast use the same
+checks; fail-fast unrun tiers and unavailable dynamics are skipped rather than passed. Version
+1.1.0 of the public result/report adds this evidence, status and assumptions without changing the
+underlying delta units. The Phase 6 interface freeze has not occurred yet.
+
+`validation.feasibility` supplies differentiable penalties to the existing optimizer, while final
+acceptance reuses the exact runtime checks and true calibrated predictor. At most N configured
+feedback refinements increase only the penalty weight. The diagnostic return remains separate
+from an accepted counterfactual. Persisted validators are checked against runtime feature order,
+fitting engines, threshold method/value, reference choice, covariance floor and regime count.
+
+Run the frozen real-data funnel/preparation with:
+
+```powershell
+uv run python scripts/diagnostics/phase5_validate.py
+```
+
+Commit code, protocol and configs before measuring. This command verifies the raw archive hash,
+loads the saved Phase 4 candidates, preserves query denominators, fits validators on the declared
+fitting engines, calibrates coupling residuals on validation engines, writes ignored fitted
+artifacts/query caches, and generates `docs/phase5_changes.md` plus the K sensitivity figure.
+Historical configs under `configs/experiments/phase4-historical-*` are executable mirrors created
+for traceability, not retroactive preregistration. Original effective hashes/measurement commits
+remain attached to each historical report column.

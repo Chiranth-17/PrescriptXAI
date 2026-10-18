@@ -2,6 +2,7 @@
 
 import itertools
 import json
+import runpy
 from dataclasses import replace
 from pathlib import Path
 
@@ -17,6 +18,7 @@ from prescriptxai.config import load_config
 from prescriptxai.constraints.coupling import SensorCouplingModel
 from prescriptxai.constraints.taxonomy import BoundsSpec, FeatureSpec, load_taxonomy
 from prescriptxai.recourse.optimizer import optimize_recourse
+from prescriptxai.schemas import DeltaMapping
 from prescriptxai.schemas import ValidationReport as PublicReport
 from prescriptxai.validation.base import TierResult
 from prescriptxai.validation.feasibility import build_feasibility_penalty
@@ -375,3 +377,23 @@ def test_funnel_retains_failed_queries_and_matches_hand_counts() -> None:
             bootstrap_replicates=10,
             seed=1,
         )
+
+
+def test_funnel_cache_serializes_real_optimizer_schema_objects(tmp_path: Path) -> None:
+    """The report writer supports nested typed deltas and rejects nonfinite measurements."""
+    helpers = runpy.run_path(str(Path("scripts/diagnostics/phase5_validate.py")))
+    destination = tmp_path / "cache.json"
+    helpers["write_json"](
+        destination,
+        {
+            "deltas": [DeltaMapping(feature="actuator", raw_delta=1.0, scaled_delta=0.5)],
+            "array": np.array([1.0]),
+            "count": np.int64(1),
+        },
+    )
+    saved = json.loads(destination.read_text(encoding="utf-8"))
+    assert saved["deltas"][0]["raw_delta"] == 1.0
+    assert saved["array"] == [1.0] and saved["count"] == 1
+    with pytest.raises(ValueError, match="compliant"):
+        helpers["write_json"](destination, {"invalid": float("nan")})
+    assert json.loads(destination.read_text(encoding="utf-8")) == saved

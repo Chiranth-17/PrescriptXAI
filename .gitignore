@@ -28,3 +28,4 @@ diagnostic_bundle.zip
 .agent/
 .agents/
 bundle_prompt.txt
+coverage.json
