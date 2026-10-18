@@ -168,3 +168,8 @@ Tier 1 passes. Runtime metadata records the actual refinement count, effective s
 per-stage timing. Collect-all mode exposes each tier independently; fail-fast mode marks every
 unrun tier skipped, with no fabricated pass. Model validity, Tier 2 plausibility, Tiers 3–4
 constraints and all-four joint are separate boolean verdicts.
+
+
+Tier 3 domain checks apply cycle bounds as well as physical control bounds. Engine identifiers
+are frozen nominal labels, not physical quantities; official-test namespaces must not be rejected
+against an arbitrary identifier display range. This changes no actuator or cycle bound.

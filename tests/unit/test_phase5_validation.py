@@ -229,6 +229,22 @@ def test_healthy_fixture_collect_all_fail_fast_simulator_and_ood_tiers() -> None
     assert not validate_engineering(
         {**initial, "cycle": 0.0}, {**initial, "cycle": 0.0}, taxonomy
     ).valid
+    taxonomy.feature_groups.context.features.append("engine_id")
+    taxonomy.features += (
+        FeatureSpec(
+            name="engine_id",
+            label="Engine ID",
+            unit="identifier",
+            cmapss_column="unit_id",
+            group="context",
+            bounds=BoundsSpec(minimum=1, maximum=1000),
+        ),
+    )
+    namespaced = {**initial, "engine_id": 10020.0}
+    assert validate_engineering(namespaced, namespaced, taxonomy).valid
+    assert not validate_engineering(
+        namespaced, {**namespaced, "engine_id": 10021.0}, taxonomy
+    ).valid
 
 
 def test_validation_only_coupling_calibration_preserves_regressors_and_provenance() -> None:

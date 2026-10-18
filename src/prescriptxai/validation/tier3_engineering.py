@@ -58,7 +58,14 @@ def validate_engineering(
     # actuator limits. Immutable and dependent telemetry is handled by its own freeze/propagation,
     # Tier 2, and Tier 4 checks. Tier 3 therefore applies hard physical bounds only to controls.
     actuator_names = tuple(taxonomy.actuator_constraints)
-    context_names = tuple(taxonomy.feature_groups.context.features)
+    # Identifiers are immutable labels, including namespaced official-test engine IDs. Their
+    # arbitrary display range is not a physical constraint; cycle-domain bounds still apply.
+    specs = taxonomy.feature_by_name()
+    context_names = tuple(
+        name
+        for name in taxonomy.feature_groups.context.features
+        if specs[name].unit != "identifier"
+    )
     bound_violations = check_bound_violations(
         candidate, taxonomy, features=actuator_names + context_names
     )
