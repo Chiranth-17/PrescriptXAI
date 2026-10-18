@@ -57,6 +57,11 @@ class OptimizationResult:
     solver_calls: int = 0
     true_model_evaluations: int = 0
     actuator_constraints_feasible: bool = False
+    effective_solver_settings: dict[str, int | float | bool | str | None] = field(
+        default_factory=dict
+    )
+    engineering_only_fallback: bool = False
+    search_candidate_states: tuple[dict[str, float], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -179,7 +184,9 @@ class RecourseOptimizer:
         try:
             for name, current, scale in zip(controls, current_raw, control_scales, strict=True):
                 raw_lower, raw_upper = allowed_interval(
-                    float(current), self.taxonomy.actuator_constraints[name]
+                    float(current),
+                    self.taxonomy.actuator_constraints[name],
+                    horizon_steps=config.recourse.rate_horizon_steps,
                 )
                 scaled_lower = (raw_lower - current) / scale
                 scaled_upper = (raw_upper - current) / scale
@@ -232,6 +239,9 @@ class RecourseOptimizer:
         rng = np.random.default_rng(config.seed)
         solver_calls = 0
         true_model_evaluations = 0
+        grid_candidates_generated = 0
+        grid_max_changed_features = 0
+        grid_max_scaled_distance = 0.0
         initial_penalty = prediction_flip_loss(
             initial_risk,
             config.model.safe_threshold,
@@ -251,6 +261,7 @@ class RecourseOptimizer:
             config.recourse.l1_weight,
         )
         valid_candidates: list[_Candidate] = []
+        candidate_trace: list[dict[str, float]] = []
         optimization_started = perf_counter_ns()
         sparsification_ns = 0
         rescore_ns = 0
@@ -321,6 +332,8 @@ class RecourseOptimizer:
                 for index, name in enumerate(controls)
                 if abs(float(delta[index])) > config.recourse.change_tolerance
             }
+            if config.recourse.record_candidate_trace:
+                candidate_trace.append(dict(candidate_state))
             return _Candidate(
                 candidate_state,
                 delta_map,
@@ -499,6 +512,8 @@ class RecourseOptimizer:
         def true_model_grid_search() -> list[_Candidate]:
             """Search bounded sparse supports against the true predictor in one batch."""
             nonlocal closest, rescore_ns, true_model_evaluations
+            nonlocal grid_candidates_generated, grid_max_changed_features
+            nonlocal grid_max_scaled_distance
             delta_grid = bounded_sparse_delta_grid(
                 lower_array,
                 upper_array,
@@ -506,9 +521,26 @@ class RecourseOptimizer:
                 grid_points=config.recourse.true_model_grid_points,
                 change_tolerance=config.recourse.change_tolerance,
             )
-            true_model_evaluations += len(delta_grid)
             if not len(delta_grid):
                 return []
+            grid_candidates_generated += len(delta_grid)
+            grid_max_changed_features = max(
+                grid_max_changed_features,
+                int(
+                    np.max(
+                        np.count_nonzero(
+                            np.abs(delta_grid) > config.recourse.change_tolerance, axis=1
+                        )
+                    )
+                ),
+            )
+            grid_max_scaled_distance = max(
+                grid_max_scaled_distance,
+                float(np.max(np.abs(delta_grid))) if delta_grid.size else 0.0,
+            )
+            if config.recourse.search_mode == "fast":
+                return true_model_grid_search_fast(delta_grid)
+            true_model_evaluations += len(delta_grid)
 
             raw_initial = np.asarray(
                 [state[name] for name in self.bundle.feature_names], dtype=np.float64
@@ -574,7 +606,12 @@ class RecourseOptimizer:
                 best_grid_candidate = candidate_at(int(np.argmin(probabilities)))
                 if (
                     best_grid_candidate.risk < closest.risk
-                    and validate_engineering(state, best_grid_candidate.state, self.taxonomy).valid
+                    and validate_engineering(
+                        state,
+                        best_grid_candidate.state,
+                        self.taxonomy,
+                        horizon_steps=config.recourse.rate_horizon_steps,
+                    ).valid
                 ):
                     closest = best_grid_candidate
                 return []
@@ -611,10 +648,189 @@ class RecourseOptimizer:
             plausible_ordered = [index for index in ordered if index in plausible_set]
             for index in plausible_ordered:
                 candidate = candidate_at(index)
-                if self._is_physically_valid(state, candidate.state):
+                if self._is_physically_valid(
+                    state, candidate.state, config.recourse.rate_horizon_steps
+                ):
                     physically_valid.append(candidate)
                     break
             return physically_valid or [best_safe]
+
+        def true_model_grid_search_fast(
+            delta_grid: NDArray[np.float64],
+        ) -> list[_Candidate]:
+            """Batch-score supports and stop when a discrete-grid bound certifies optimality.
+
+            For each unvisited support, its minimum configured grid L1 cost is a lower bound
+            because the prediction loss is non-negative. Once a physical candidate with the
+            requested risk margin is found and all remaining support lower bounds exceed its
+            objective, it is safe to stop without changing the THOROUGH grid optimum.
+            """
+            nonlocal closest, rescore_ns, true_model_evaluations
+            raw_initial = np.asarray(
+                [state[name] for name in self.bundle.feature_names], dtype=np.float64
+            )
+            support_groups: dict[tuple[int, ...], list[int]] = {}
+            for row_index, delta in enumerate(delta_grid):
+                support = tuple(
+                    int(index)
+                    for index in np.flatnonzero(
+                        np.abs(delta) > config.recourse.change_tolerance
+                    )
+                )
+                if support:
+                    support_groups.setdefault(support, []).append(row_index)
+
+            def support_l1_lower_bound(indices: list[int]) -> float:
+                return min(_grid_l1_value(delta_grid[index], config) for index in indices)
+
+            ordered_groups = sorted(
+                support_groups.items(),
+                key=lambda item: (support_l1_lower_bound(item[1]), item[0]),
+            )
+            best_safe: _Candidate | None = None
+            best_physical: _Candidate | None = None
+            found_margin = False
+            for group_position, (_, indices) in enumerate(ordered_groups):
+                raw_rows = np.repeat(raw_initial[None, :], len(indices), axis=0)
+                deltas = delta_grid[np.asarray(indices, dtype=np.int64)]
+                raw_rows[:, control_positions] = current_raw + deltas * control_scales
+                if self.coupling is not None:
+                    raw_rows = self.coupling.propagate_batch(
+                        raw_rows, self.bundle.feature_names, reference_state=raw_initial
+                    )
+                true_model_evaluations += len(indices)
+                score_started = perf_counter_ns()
+                probabilities = self.bundle.predict_risk(
+                    pd.DataFrame(raw_rows, columns=self.bundle.feature_names)
+                )
+                scaled_rows = self.bundle.scaler.transform(
+                    pd.DataFrame(raw_rows, columns=self.bundle.feature_names)
+                )
+                rescore_ns += perf_counter_ns() - score_started
+                safe_indices = np.flatnonzero(
+                    probabilities <= config.model.safe_threshold
+                )
+                if (
+                    self.mahalanobis is not None
+                    and self.validate_plausibility
+                    and len(safe_indices)
+                ):
+                    differences = scaled_rows[safe_indices] - self.mahalanobis.mean
+                    distances = np.sqrt(
+                        np.maximum(
+                            0.0,
+                            np.einsum(
+                                "ni,ij,nj->n",
+                                differences,
+                                self.mahalanobis.precision,
+                                differences,
+                            ),
+                        )
+                    )
+                    plausible_indices = safe_indices[
+                        distances <= self.mahalanobis.max_distance
+                    ]
+                else:
+                    plausible_indices = safe_indices
+                safe_order = sorted(
+                    (int(index) for index in safe_indices),
+                    key=lambda index: _grid_objective_score(
+                        deltas[index], float(probabilities[index]), config
+                    ),
+                )
+                if safe_order:
+                    group_best_safe = materialize_fast_candidate(
+                        raw_rows, deltas, probabilities, safe_order[0]
+                    )
+                    if best_safe is None or group_best_safe.score < best_safe.score:
+                        best_safe = group_best_safe
+                lowest_risk_index = int(np.argmin(probabilities))
+                group_closest = materialize_fast_candidate(
+                    raw_rows, deltas, probabilities, lowest_risk_index
+                )
+                if (
+                    group_closest.risk < closest.risk
+                    and validate_engineering(
+                        state,
+                        group_closest.state,
+                        self.taxonomy,
+                        horizon_steps=config.recourse.rate_horizon_steps,
+                    ).valid
+                ):
+                    closest = group_closest
+                plausible_set = set(int(index) for index in plausible_indices)
+                for candidate_index in safe_order:
+                    if candidate_index not in plausible_set:
+                        continue
+                    candidate = materialize_fast_candidate(
+                        raw_rows, deltas, probabilities, candidate_index
+                    )
+                    if not self._is_physically_valid(
+                        state, candidate.state, config.recourse.rate_horizon_steps
+                    ):
+                        continue
+                    if best_physical is None or candidate.score < best_physical.score:
+                        best_physical = candidate
+                    margin_threshold = (
+                        config.model.safe_threshold - config.recourse.safety_margin
+                    )
+                    found_margin = found_margin or candidate.risk <= margin_threshold
+                if found_margin and best_physical is not None:
+                    if group_position + 1 == len(ordered_groups):
+                        break
+                    next_lower_bound = support_l1_lower_bound(
+                        ordered_groups[group_position + 1][1]
+                    )
+                    if next_lower_bound > best_physical.score:
+                        break
+            if best_physical is not None:
+                return [best_physical]
+            return [best_safe] if best_safe is not None else []
+
+        def materialize_fast_candidate(
+            raw_rows: NDArray[np.float64],
+            deltas: NDArray[np.float64],
+            probabilities: NDArray[np.float64],
+            index: int,
+        ) -> _Candidate:
+            """Materialize a candidate from one vector-scored support batch."""
+            delta = deltas[index]
+            risk = float(probabilities[index])
+            hinge = max(
+                0.0,
+                risk - config.model.safe_threshold + config.recourse.safety_margin,
+            )
+            l1_value = _grid_l1_value(delta, config)
+            prediction_term = config.recourse.prediction_weight * (
+                hinge**2
+                if config.recourse.prediction_loss == "squared_hinge"
+                else hinge
+            )
+            candidate_state = {
+                **state,
+                **{
+                    name: float(raw_rows[index, position])
+                    for position, name in enumerate(self.bundle.feature_names)
+                },
+            }
+            terms = ObjectiveTerms(
+                l1=l1_value,
+                prediction=prediction_term,
+                immutable=0.0,
+                bounds=0.0,
+                total=l1_value + prediction_term,
+                risk=risk,
+            )
+            return score_candidate(
+                candidate_state,
+                delta,
+                risk,
+                solver_success=True,
+                message="bounded sparse grid candidate rescored by the true model (FAST)",
+                terms=terms,
+                alpha=config.recourse.prediction_weight,
+                l1_weight=config.recourse.l1_weight,
+            )
 
         # Find one dense true-model-safe point by increasing alpha. Only then escalate L1 and
         # solve sparse supports; a larger L1 weight cannot help an already-unsafe dense point.
@@ -665,7 +881,12 @@ class RecourseOptimizer:
                     if (
                         attempt.risk < closest.risk
                         and len(attempt.delta_scaled) <= config.recourse.max_changed_features
-                        and validate_engineering(state, attempt.state, self.taxonomy).valid
+                        and validate_engineering(
+                            state,
+                            attempt.state,
+                            self.taxonomy,
+                            horizon_steps=config.recourse.rate_horizon_steps,
+                        ).valid
                     ):
                         closest = attempt
                 valid_candidates.extend(
@@ -687,7 +908,12 @@ class RecourseOptimizer:
                 if (
                     attempt.risk < closest.risk
                     and len(attempt.delta_scaled) <= config.recourse.max_changed_features
-                    and validate_engineering(state, attempt.state, self.taxonomy).valid
+                    and validate_engineering(
+                        state,
+                        attempt.state,
+                        self.taxonomy,
+                        horizon_steps=config.recourse.rate_horizon_steps,
+                    ).valid
                 ):
                     closest = attempt
             valid_candidates.extend(
@@ -700,13 +926,20 @@ class RecourseOptimizer:
         engineering_valid_candidates = [
             candidate
             for candidate in valid_candidates
-            if validate_engineering(state, candidate.state, self.taxonomy).valid
+            if validate_engineering(
+                state,
+                candidate.state,
+                self.taxonomy,
+                horizon_steps=config.recourse.rate_horizon_steps,
+            ).valid
         ]
         physically_valid_candidates = (
             [
                 candidate
                 for candidate in engineering_valid_candidates
-                if self._is_physically_valid(state, candidate.state)
+                if self._is_physically_valid(
+                    state, candidate.state, config.recourse.rate_horizon_steps
+                )
             ]
             if self.mahalanobis is not None
             else list(engineering_valid_candidates)
@@ -718,13 +951,20 @@ class RecourseOptimizer:
             engineering_valid_candidates = [
                 candidate
                 for candidate in valid_candidates
-                if validate_engineering(state, candidate.state, self.taxonomy).valid
+                if validate_engineering(
+                    state,
+                    candidate.state,
+                    self.taxonomy,
+                    horizon_steps=config.recourse.rate_horizon_steps,
+                ).valid
             ]
             if self.mahalanobis is not None:
                 physically_valid_candidates = [
                     candidate
                     for candidate in engineering_valid_candidates
-                    if self._is_physically_valid(state, candidate.state)
+                    if self._is_physically_valid(
+                        state, candidate.state, config.recourse.rate_horizon_steps
+                    )
                 ]
             else:
                 physically_valid_candidates = list(engineering_valid_candidates)
@@ -811,6 +1051,36 @@ class RecourseOptimizer:
             solver_calls=solver_calls,
             true_model_evaluations=true_model_evaluations,
             actuator_constraints_feasible=True,
+            engineering_only_fallback=bool(
+                engineering_valid_candidates and not physically_valid_candidates
+            ),
+            search_candidate_states=tuple(candidate_trace),
+            effective_solver_settings={
+                "search_mode": config.recourse.search_mode,
+                "k_max": config.recourse.max_changed_features,
+                "max_scaled_distance": config.recourse.max_scaled_distance,
+                "true_model_grid_points": config.recourse.true_model_grid_points,
+                "grid_ran": grid_candidates_generated > 0,
+                "grid_candidates_generated": grid_candidates_generated,
+                "grid_candidates_scored": true_model_evaluations,
+                "grid_max_changed_features": (
+                    grid_max_changed_features if grid_candidates_generated else None
+                ),
+                "grid_max_scaled_distance": (
+                    grid_max_scaled_distance if grid_candidates_generated else None
+                ),
+                "grid_k_limit_honored": (
+                    grid_max_changed_features <= config.recourse.max_changed_features
+                    if grid_candidates_generated
+                    else None
+                ),
+                "grid_scaled_distance_honored": (
+                    grid_max_scaled_distance
+                    <= config.recourse.max_scaled_distance + config.recourse.change_tolerance
+                    if grid_candidates_generated
+                    else None
+                ),
+            },
         )
         LOGGER.info(
             "Recourse optimization completed",
@@ -828,7 +1098,10 @@ class RecourseOptimizer:
         return result
 
     def _is_physically_valid(
-        self, initial_state: dict[str, float], candidate_state: dict[str, float]
+        self,
+        initial_state: dict[str, float],
+        candidate_state: dict[str, float],
+        horizon_steps: int,
     ) -> bool:
         """Apply independent empirical and engineering tiers when their fit is available."""
         if self.mahalanobis is None or not self.validate_plausibility:
@@ -838,7 +1111,12 @@ class RecourseOptimizer:
         )[0]
         if not self.mahalanobis.validate(np.asarray(scaled, dtype=np.float64)).valid:
             return False
-        if not validate_engineering(initial_state, candidate_state, self.taxonomy).valid:
+        if not validate_engineering(
+            initial_state,
+            candidate_state,
+            self.taxonomy,
+            horizon_steps=horizon_steps,
+        ).valid:
             return False
         return validate_sensor_coupling(candidate_state, self.taxonomy, self.coupling).valid
 

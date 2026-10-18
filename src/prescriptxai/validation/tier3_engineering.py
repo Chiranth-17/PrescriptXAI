@@ -12,9 +12,17 @@ from prescriptxai.validation.base import TierResult
 
 
 def validate_engineering(
-    initial: Mapping[str, float], candidate: Mapping[str, float], taxonomy: FeatureTaxonomy
+    initial: Mapping[str, float],
+    candidate: Mapping[str, float],
+    taxonomy: FeatureTaxonomy,
+    *,
+    horizon_steps: int = 1,
 ) -> TierResult:
-    """Check actuator bounds/rates and freeze immutable operating/context fields."""
+    """Check actuator bounds/rates and freeze immutable operating/context fields.
+
+    ``horizon_steps`` multiplies the configured one-step telemetry rate limit. Values above one
+    are sensitivity assumptions, not verified physical actuator dynamics.
+    """
     groups = taxonomy.feature_groups.model_dump()
     declared = {name for group in groups.values() for name in group["features"]}
     missing = (declared - set(initial)) | (declared - set(candidate))
@@ -36,6 +44,8 @@ def validate_engineering(
         candidate, taxonomy, features=actuator_names
     )
     failures.extend(f"{item.feature}: {item.reason}" for item in bound_violations)
-    rate_violations = check_rate_violations(initial, candidate, taxonomy)
+    rate_violations = check_rate_violations(
+        initial, candidate, taxonomy, horizon_steps=horizon_steps
+    )
     failures.extend(f"{item.feature}: {item.reason}" for item in rate_violations)
     return TierResult(not failures, tuple(failures))

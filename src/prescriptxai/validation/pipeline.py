@@ -144,6 +144,11 @@ def validate_candidate(
     if mahalanobis.feature_names != bundle.feature_names:
         raise ValueError("Mahalanobis and model feature orders do not match")
     tier2 = mahalanobis.validate(np.asarray(scaled_candidate, dtype=float))
-    tier3 = validate_engineering(initial_state, candidate_state, taxonomy)
+    tier3 = validate_engineering(
+        initial_state,
+        candidate_state,
+        taxonomy,
+        horizon_steps=config.recourse.rate_horizon_steps,
+    )
     tier4 = validate_sensor_coupling(candidate_state, taxonomy, coupling)
     return ValidationReport(tier1, tier2, tier3, tier4)

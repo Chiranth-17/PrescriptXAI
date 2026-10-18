@@ -6,6 +6,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.stats import spearmanr
 from sklearn.metrics import (
     average_precision_score,
@@ -114,6 +115,81 @@ class EvaluationRecord:
     true_model_evaluations: int = 0
     inference_ms: float | None = None
     backend_pipeline_ms: float | None = None
+    effective_solver_settings: Mapping[str, int | float | bool | str | None] = field(
+        default_factory=dict
+    )
+    candidate_state: Mapping[str, float] = field(default_factory=dict)
+    final_mahalanobis_distance: float | None = None
+    engineering_only_fallback: bool = False
+    dependent_sensor_count: int | None = None
+    dependent_residual_violation_count: int | None = None
+    searched_candidate_states: tuple[Mapping[str, float], ...] = ()
+
+
+@dataclass(frozen=True)
+class EngineBootstrapInterval:
+    """Percentile confidence interval resampling whole engines, not individual cycles."""
+
+    estimate: float
+    lower: float
+    upper: float
+    engine_count: int
+    observation_count: int
+    replicate_count: int
+    seed: int
+
+
+def engine_bootstrap_interval(
+    engine_ids: Sequence[int],
+    values: Sequence[float | bool],
+    *,
+    seed: int,
+    replicates: int = 2_000,
+    confidence: float = 0.95,
+    statistic: Callable[[NDArray[np.float64]], float] = np.mean,
+) -> EngineBootstrapInterval:
+    """Compute a deterministic percentile interval by resampling engine clusters.
+
+    Every state for a sampled engine is carried into that replicate, including repeated copies
+    when the engine is sampled more than once. This preserves within-engine dependence.
+    """
+    engines = np.asarray(engine_ids)
+    observations = np.asarray(values, dtype=np.float64)
+    if engines.ndim != 1 or observations.ndim != 1 or engines.shape != observations.shape:
+        raise ValueError("engine_ids and values must be matching one-dimensional vectors")
+    if len(engines) == 0:
+        raise ValueError("engine bootstrap requires at least one observation")
+    if not np.isfinite(engines.astype(np.float64)).all() or not np.isfinite(observations).all():
+        raise ValueError("engine IDs and values must be finite")
+    if replicates < 100:
+        raise ValueError("replicates must be at least 100")
+    if not 0 < confidence < 1:
+        raise ValueError("confidence must be in (0, 1)")
+    unique_engines = np.unique(engines)
+    grouped = {
+        engine: observations[engines == engine]
+        for engine in unique_engines
+    }
+    rng = np.random.default_rng(seed)
+    estimates: NDArray[np.float64] = np.empty(replicates, dtype=np.float64)
+    for index in range(replicates):
+        sampled = rng.choice(unique_engines, size=len(unique_engines), replace=True)
+        sample = np.concatenate([grouped[engine] for engine in sampled])
+        estimates[index] = float(statistic(sample))
+    estimate = float(statistic(observations))
+    if not np.isfinite(estimates).all() or not np.isfinite(estimate):
+        raise ValueError("bootstrap statistic must return finite values")
+    tail = (1.0 - confidence) / 2.0
+    lower, upper = np.quantile(estimates, [tail, 1.0 - tail])
+    return EngineBootstrapInterval(
+        estimate=estimate,
+        lower=float(lower),
+        upper=float(upper),
+        engine_count=len(unique_engines),
+        observation_count=len(observations),
+        replicate_count=replicates,
+        seed=seed,
+    )
 
 
 @dataclass(frozen=True)

@@ -81,6 +81,25 @@ choices address the nonsmooth and constrained parts of the synopsis formulation:
    or global optimality: a finite grid can miss a safe interval between sample points. Enablement
    and resolution are set by `recourse.true_model_grid_enabled` and
    `recourse.true_model_grid_points` in YAML.
+8. **FAST versus THOROUGH grid search.** THOROUGH scores every bounded sparse-grid point in one
+   batch and selects the minimum common objective among points that pass Tier 2–4, with an
+   engineering-only fallback explicitly flagged if no Tier 2 point exists. FAST groups points by
+   support, vector-scores each visited support, and orders supports by a lower bound on their L1
+   cost. It can stop only after a Tier 2–4-valid point reaches the configured risk margin and the
+   next unvisited support's L1 lower bound is greater than the best physical candidate's full
+   objective. The prediction penalty is nonnegative, so that lower bound cannot hide a better
+   finite-grid candidate. FAST and THOROUGH therefore have the same optimum on the configured
+   finite grid when the bound is applied; this does not certify a continuous-space optimum. The
+   evaluation also compares their returned true-model states and risks on the same saved queries.
+9. **Intervention horizon sensitivity.** `rate_horizon_steps=K` multiplies the training-derived
+   one-step rate limit by K around the current state, while retaining physical and scaled trust
+   bounds. K greater than one assumes the movement can be spread over K steps. It is reported as a
+   sensitivity assumption because static C-MAPSS data cannot validate actuator response or the
+   chosen horizon.
+10. **Historical `d_max=6.0` setting.** The expanded experimental profile used
+    `recourse.max_scaled_distance=6.0`, a per-feature scaled-space movement trust radius. Its
+    Mahalanobis plausibility threshold remained `D_max=5.0`. The two quantities have different
+    units and roles and must not be conflated.
 
 Train-derived rates describe observed telemetry movement and are proxy envelopes because C-MAPSS
 has no actuator commands. They must not be presented as real actuator slew limits. The grid uses

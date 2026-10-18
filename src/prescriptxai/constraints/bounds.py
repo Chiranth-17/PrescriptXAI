@@ -25,10 +25,19 @@ class BoundViolation:
     margin: float
 
 
-def allowed_interval(current: float, constraint: ActuatorConstraint) -> tuple[float, float]:
-    """Intersect an actuator's absolute range with its per-step rate limit."""
-    lower = max(constraint.minimum, current - constraint.max_change_per_step)
-    upper = min(constraint.maximum, current + constraint.max_change_per_step)
+def allowed_interval(
+    current: float, constraint: ActuatorConstraint, *, horizon_steps: int = 1
+) -> tuple[float, float]:
+    """Intersect absolute limits with cumulative rate allowance over ``horizon_steps``.
+
+    Horizons above one are a sensitivity assumption that applies a one-step telemetry rate
+    allowance cumulatively; it is not a validated actuator-dynamics model.
+    """
+    if horizon_steps < 1:
+        raise ValueError("horizon_steps must be a positive integer")
+    cumulative_limit = constraint.max_change_per_step * horizon_steps
+    lower = max(constraint.minimum, current - cumulative_limit)
+    upper = min(constraint.maximum, current + cumulative_limit)
     if lower > upper:
         raise ValueError("current actuator state and rate limit have no feasible interval")
     if constraint.direction == "increase_only":
@@ -153,8 +162,12 @@ def check_rate_violations(
     initial: Mapping[str, float],
     candidate: Mapping[str, float],
     taxonomy: FeatureTaxonomy,
+    *,
+    horizon_steps: int = 1,
 ) -> tuple[BoundViolation, ...]:
-    """Report per-step rate and directional violations for controllable proxies."""
+    """Report cumulative rate and directional violations for controllable proxies."""
+    if horizon_steps < 1:
+        raise ValueError("horizon_steps must be a positive integer")
     violations: list[BoundViolation] = []
     for name, constraint in taxonomy.actuator_constraints.items():
         if name not in initial or name not in candidate:
@@ -173,16 +186,20 @@ def check_rate_violations(
             violations.append(
                 BoundViolation(name, "increase violates decrease_only direction", margin=delta)
             )
-        if abs(delta) > constraint.max_change_per_step + 1e-12:
+        cumulative_limit = constraint.max_change_per_step * horizon_steps
+        if abs(delta) > cumulative_limit + 1e-12:
             violations.append(
                 BoundViolation(
                     name,
-                    f"per-step change {delta:g} exceeds limit {constraint.max_change_per_step:g}",
-                    margin=abs(delta) - constraint.max_change_per_step,
+                    f"change {delta:g} exceeds limit {cumulative_limit:g} "
+                    f"over {horizon_steps} step(s)",
+                    margin=abs(delta) - cumulative_limit,
                 )
             )
         try:
-            lower, upper = allowed_interval(current, constraint)
+            lower, upper = allowed_interval(
+                current, constraint, horizon_steps=horizon_steps
+            )
         except ValueError:
             violations.append(
                 BoundViolation(name, "no feasible rate-limited interval", margin=float("inf"))

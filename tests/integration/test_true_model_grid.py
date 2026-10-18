@@ -65,6 +65,7 @@ def test_bounded_true_model_search_recovers_safe_sparse_physical_candidate() -> 
     config.recourse.l1_escalation_steps = 1
     config.recourse.max_iterations = 8
     config.recourse.true_model_grid_points = 5
+    config.recourse.record_candidate_trace = True
     training_rows = training.rename(columns={"actuator": "actuator", "sensor": "sensor"})
     validator = fit_mahalanobis_validator(
         training_rows, bundle, bundle.training_engine_ids, config
@@ -85,6 +86,7 @@ def test_bounded_true_model_search_recovers_safe_sparse_physical_candidate() -> 
     ].max_change_per_step
     assert result.true_model_evaluations > 0
     assert result.stage_timings_ms["true_model_grid_search"] >= 0.0
+    assert result.state in result.search_candidate_states
     assert "Tier 2–4 checks pass" in result.message
     assert validator.validate(bundle.scaler.transform(pd.DataFrame([result.state]))[0]).valid
 
@@ -119,3 +121,41 @@ def test_grid_failure_returns_its_closest_true_model_candidate() -> None:
     assert result.final_risk > config.model.safe_threshold
     assert len(result.deltas) == 1
     assert result.true_model_evaluations > 0
+
+
+def test_fast_grid_mode_matches_thorough_on_saved_fixture_state() -> None:
+    """The admissible early-stop path preserves the THOROUGH finite-grid optimum."""
+    original, taxonomy, training = make_recourse_fixture()
+    bundle = ModelBundle(
+        estimator=ThresholdEstimator(),
+        scaler=original.scaler,
+        feature_names=original.feature_names,
+        training_engine_ids=original.training_engine_ids,
+        model_type="test-only-step-model",
+        seed=original.seed,
+        surrogate=OpposingSurrogate(),
+    )
+    validator = fit_mahalanobis_validator(
+        training, bundle, bundle.training_engine_ids, load_config(Path("configs/default.yaml"))
+    )
+    results = []
+    for mode in ("thorough", "fast"):
+        config = load_config(Path("configs/default.yaml"))
+        config.recourse.max_changed_features = 1
+        config.recourse.restarts = 1
+        config.recourse.alpha_steps = 1
+        config.recourse.l1_escalation_steps = 1
+        config.recourse.max_iterations = 8
+        config.recourse.true_model_grid_points = 5
+        config.recourse.search_mode = mode
+        results.append(
+            RecourseOptimizer(bundle, taxonomy, mahalanobis=validator).solve(
+                {"actuator": -2.5, "sensor": 2.0}, config
+            )
+        )
+
+    thorough, fast = results
+    assert thorough.model_valid and fast.model_valid
+    assert fast.state == thorough.state
+    assert fast.final_risk == thorough.final_risk
+    assert fast.deltas == thorough.deltas

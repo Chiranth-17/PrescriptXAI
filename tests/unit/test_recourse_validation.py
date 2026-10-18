@@ -55,6 +55,15 @@ def test_absolute_bounds_and_rate_limit_intersection() -> None:
         allowed_interval(13, constraint)
 
 
+def test_cumulative_rate_horizon_scales_allowance_and_keeps_hard_bounds() -> None:
+    """The K-step sensitivity expands rate allowance but never physical actuator bounds."""
+    constraint = ActuatorConstraint(minimum=0, maximum=10, max_change_per_step=2)
+    assert allowed_interval(5, constraint, horizon_steps=2) == (1.0, 9.0)
+    assert allowed_interval(5, constraint, horizon_steps=3) == (0.0, 10.0)
+    with pytest.raises(ValueError, match="positive integer"):
+        allowed_interval(5, constraint, horizon_steps=0)
+
+
 def test_tier1_checks_safe_threshold_without_claiming_physical_validity() -> None:
     """Tier 1 reports only the model target result."""
     assert validate_model_risk(0.2, 0.2).valid

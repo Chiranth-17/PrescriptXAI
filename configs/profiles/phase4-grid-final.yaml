@@ -93,6 +93,7 @@ model:
 recourse:
   k_max: 3
   max_scaled_distance: 4.0
+  rate_horizon_steps: 1
   alpha: 10.0
   beta: 1.0
   gamma: 1.0
@@ -114,6 +115,8 @@ recourse:
   max_line_search_steps: 8
   true_model_grid_enabled: true
   true_model_grid_points: 5
+  search_mode: thorough
+  record_candidate_trace: false
 validation:
   D_max: 5.0
   d_max_method: mahalanobis

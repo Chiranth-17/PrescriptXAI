@@ -121,7 +121,10 @@ def evaluate_states(
             result.optimization.state, engine.taxonomy, features=actuator_names
         )
         rate_violations = check_rate_violations(
-            state, result.optimization.state, engine.taxonomy
+            state,
+            result.optimization.state,
+            engine.taxonomy,
+            horizon_steps=engine.config.recourse.rate_horizon_steps,
         )
         records.append(
             EvaluationRecord(
@@ -149,6 +152,45 @@ def evaluate_states(
                 true_model_evaluations=result.optimization.true_model_evaluations,
                 inference_ms=inference_samples_ms[-1],
                 backend_pipeline_ms=backend_pipeline_ms,
+                effective_solver_settings=(
+                    result.optimization.effective_solver_settings
+                    or {
+                        "search_mode": engine.config.recourse.search_mode,
+                        "k_max": engine.config.recourse.max_changed_features,
+                        "max_scaled_distance": engine.config.recourse.max_scaled_distance,
+                        "true_model_grid_points": engine.config.recourse.true_model_grid_points,
+                        "grid_ran": False,
+                        "grid_candidates_generated": 0,
+                        "grid_candidates_scored": 0,
+                        "grid_max_changed_features": None,
+                        "grid_max_scaled_distance": None,
+                        "grid_k_limit_honored": None,
+                        "grid_scaled_distance_honored": None,
+                    }
+                ),
+                candidate_state=dict(result.optimization.state),
+                final_mahalanobis_distance=result.validation.tier2_plausibility.measurement,
+                engineering_only_fallback=(
+                    result.optimization.engineering_only_fallback
+                ),
+                dependent_sensor_count=(
+                    len(engine.coupling.dependent_features)
+                    if engine.coupling is not None
+                    else None
+                ),
+                dependent_residual_violation_count=(
+                    sum(
+                        not item.passed
+                        for item in engine.coupling.evaluate_learned_constraints(
+                            result.optimization.state
+                        )
+                    )
+                    if engine.coupling is not None
+                    else None
+                ),
+                searched_candidate_states=(
+                    result.optimization.search_candidate_states
+                ),
             )
         )
     inference_per_row = float(np.mean(inference_samples_ms)) if inference_samples_ms else None
@@ -268,7 +310,9 @@ def _has_feasible_actuator_intervals(
     for name in active_controls:
         try:
             raw_lower, raw_upper = allowed_interval(
-                float(row[name]), engine.taxonomy.actuator_constraints[name]
+                float(row[name]),
+                engine.taxonomy.actuator_constraints[name],
+                horizon_steps=engine.config.recourse.rate_horizon_steps,
             )
         except (KeyError, ValueError):
             return False
