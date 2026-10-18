@@ -83,6 +83,34 @@ def test_reference_propagation_matches_batch_and_torch_with_gradients(
     np.testing.assert_array_equal(propagated[:, untouched], candidate[:, untouched])
 
 
+def test_torch_propagation_ignores_dependent_features_absent_from_model_order(
+    coupling_data: tuple[SensorCouplingModel, pd.DataFrame],
+) -> None:
+    """A fold may drop constant targets while retaining all required coupling predictors."""
+    coupling, frame = coupling_data
+    omitted = coupling.dependent_features[0]
+    names = tuple(name for name in coupling.feature_names if name != omitted)
+    values = frame.loc[:2, list(names)].to_numpy(dtype=float)
+    tensor = torch.tensor(values, dtype=torch.float64, requires_grad=True)
+
+    output = coupling.propagate_torch_module(names)(tensor, tensor.detach())
+
+    np.testing.assert_array_equal(output.detach().numpy()[:, :], values)
+    output.sum().backward()
+    assert tensor.grad is not None
+    assert torch.isfinite(tensor.grad).all()
+
+
+def test_torch_propagation_still_requires_every_predictor(
+    coupling_data: tuple[SensorCouplingModel, pd.DataFrame],
+) -> None:
+    """Missing a required model input is an explicit configuration error."""
+    coupling, _ = coupling_data
+    names = tuple(name for name in coupling.feature_names if name != coupling.predictor_features[0])
+    with pytest.raises(ValueError, match="missing coupling predictors"):
+        coupling.propagate_torch_module(names)
+
+
 @pytest.mark.parametrize("dtype", [torch.float32, torch.float64])
 def test_scaled_reference_identity_and_raw_scaled_mapping(
     coupling_data: tuple[SensorCouplingModel, pd.DataFrame], dtype: torch.dtype,

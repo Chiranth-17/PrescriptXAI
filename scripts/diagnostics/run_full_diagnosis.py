@@ -11,6 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import pickle
 import re
 import subprocess
 from collections import Counter
@@ -69,6 +70,7 @@ D_MAX_V2 = 8.0
 BOOTSTRAP_REPLICATES = 2_000
 SENSITIVITY_SAMPLE = 60
 ORACLE_GRID_POINTS = 9
+CHECKPOINT_VERSION = 1
 
 
 def _commit() -> str:
@@ -86,6 +88,47 @@ def _sha256_file(path: Path) -> str:
         for block in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+def _write_checkpoint(name: str, context_hash: str, run_id: str, payload: Any) -> None:
+    """Atomically persist an ignored, versioned stage result for diagnostic resumption."""
+    directory = OUTPUT_ROOT / "checkpoints"
+    directory.mkdir(parents=True, exist_ok=True)
+    target = directory / f"{name}.pickle"
+    temporary = target.with_suffix(".pickle.tmp")
+    with temporary.open("wb") as stream:
+        pickle.dump(
+            {
+                "version": CHECKPOINT_VERSION,
+                "context_hash": context_hash,
+                "run_id": run_id,
+                "payload": payload,
+            },
+            stream,
+            protocol=pickle.HIGHEST_PROTOCOL,
+        )
+    temporary.replace(target)
+
+
+def _read_checkpoint(name: str, context_hash: str) -> dict[str, Any] | None:
+    """Load a compatible stage checkpoint; discard results from different inputs or code."""
+    path = OUTPUT_ROOT / "checkpoints" / f"{name}.pickle"
+    if not path.is_file():
+        return None
+    try:
+        with path.open("rb") as stream:
+            checkpoint = pickle.load(stream)
+    except (OSError, pickle.PickleError, EOFError, AttributeError, ImportError):
+        LOGGER.warning("Ignoring unreadable diagnostic checkpoint %s", path)
+        return None
+    if (
+        not isinstance(checkpoint, dict)
+        or checkpoint.get("version") != CHECKPOINT_VERSION
+        or checkpoint.get("context_hash") != context_hash
+    ):
+        LOGGER.info("Ignoring stale diagnostic checkpoint %s", path)
+        return None
+    return checkpoint
 
 
 def _config_hash(config: AppConfig) -> str:
@@ -1298,6 +1341,127 @@ def _sensitivity_run(
     }
 
 
+def _evaluate_holdout_protocols(
+    engine: PrescriptXAIEngine,
+    test_alerts: pd.DataFrame,
+    headline_rows: pd.DataFrame,
+) -> tuple[dict[str, Any], dict[str, tuple[EvaluationRecord, ...]]]:
+    """Evaluate frozen v1 and v2 on the same all-alert holdout population."""
+    holdout: dict[str, Any] = {}
+    holdout_records: dict[str, tuple[EvaluationRecord, ...]] = {}
+    first_rows = _first_alert_rows(test_alerts)
+    headline_keys = {_key(row) for row in headline_rows.itertuples()}
+    for protocol, d_max in (("v1", 5.0), ("v2", D_MAX_V2)):
+        run_engine = _engine_with_settings(
+            engine, mahalanobis_max=d_max, max_queries=len(test_alerts) + 1
+        )
+        run = evaluate_states(run_engine, test_alerts)
+        holdout_records[protocol] = run.records
+        record_index = _records_by_key(run.records)
+        first_records = tuple(
+            record_index[key]
+            for key in (_key(row) for row in first_rows.itertuples())
+            if key in record_index
+        )
+        headline_records = tuple(
+            record for record in run.records
+            if (record.engine_id, record.cycle) in headline_keys
+        )
+        populations: dict[str, Any] = {}
+        for name, rows, records in (
+            ("headline_sample", headline_rows, headline_records),
+            ("all_alert_states", test_alerts, run.records),
+            ("first_alert_per_engine", first_rows, first_records),
+        ):
+            populations[name] = _population_outcomes(
+                run_engine,
+                rows,
+                records,
+                seed=engine.config.seed + (0 if protocol == "v1" else 50),
+            )
+            populations[name]["strata"] = _strata_table(
+                run_engine, rows, records, seed=engine.config.seed + 100
+            )
+            populations[name]["provenance"] = build_evaluation_provenance(
+                run_engine, rows
+            )
+        holdout[protocol] = {
+            "effective_configuration_sha256": _config_hash(run_engine.config),
+            "protocol_version": protocol,
+            "D_max": d_max,
+            "k_max": run_engine.config.recourse.max_changed_features,
+            "K": run_engine.config.recourse.rate_horizon_steps,
+            "effective_solver_settings": _effective_solver_settings(run.records),
+            "summary": run.summary.to_dict(),
+            "infeasible_high_risk_state_count": run.infeasible_high_risk_states,
+            **populations,
+        }
+    return holdout, holdout_records
+
+
+def _evaluate_sensitivity(
+    engine: PrescriptXAIEngine,
+    headline_rows: pd.DataFrame,
+    headline_records: tuple[EvaluationRecord, ...],
+    baseline_configuration_hash: str,
+) -> tuple[list[dict[str, Any]], tuple[EvaluationRecord, ...]]:
+    """Run the fixed seeded one-factor sensitivity set on a shared 60-state sample."""
+    headline_lookup = _records_by_key(headline_records)
+    sensitivity_size = min(SENSITIVITY_SAMPLE, len(headline_rows))
+    rng = np.random.default_rng(engine.config.seed + 1)
+    positions = np.sort(
+        rng.choice(len(headline_rows), size=sensitivity_size, replace=False)
+    ) if sensitivity_size else np.asarray([], dtype=np.int64)
+    rows = headline_rows.iloc[positions].copy()
+    baseline_records = tuple(
+        headline_lookup[key]
+        for key in (_key(row) for row in rows.itertuples())
+        if key in headline_lookup
+    )
+    sensitivity: list[dict[str, Any]] = [
+        {
+            "label": "baseline-k3-dist4-K1-Dmax5-thorough",
+            "effective_configuration_sha256": baseline_configuration_hash,
+            "protocol_version": "v1",
+            "D_max": 5.0,
+            "k_max": 3,
+            "K": 1,
+            "search_mode": "thorough",
+            "population": f"seeded saved-state sensitivity subset, n={len(rows)}",
+            "effective_solver_settings": _effective_solver_settings(baseline_records),
+            "outcomes": _population_outcomes(
+                engine, rows, baseline_records, seed=engine.config.seed + 300
+            ),
+            "records": baseline_records,
+        }
+    ]
+    variants = [
+        ("k5-only", {"max_changed_features": 5}, 5.0),
+        ("max-distance-2-only", {"max_scaled_distance": 2.0}, 5.0),
+        ("max-distance-6-only", {"max_scaled_distance": 6.0}, 5.0),
+        ("K2-only", {"rate_horizon_steps": 2}, 5.0),
+        ("K3-only", {"rate_horizon_steps": 3}, 5.0),
+        ("K5-only", {"rate_horizon_steps": 5}, 5.0),
+        ("K10-only", {"rate_horizon_steps": 10}, 5.0),
+        ("Dmax8-only", {}, D_MAX_V2),
+        ("fast-mode-only", {"search_mode": "fast"}, 5.0),
+    ]
+    fast_records: tuple[EvaluationRecord, ...] = ()
+    for index, (label, updates, d_max) in enumerate(variants, start=1):
+        result = _sensitivity_run(
+            engine,
+            rows,
+            label=label,
+            updates=updates,
+            d_max=d_max,
+            seed=engine.config.seed + 300 + index,
+        )
+        sensitivity.append(result)
+        if label == "fast-mode-only":
+            fast_records = tuple(result["records"])
+    return sensitivity, fast_records
+
+
 def _surrogate_diagnostics(engine: PrescriptXAIEngine, heldout: pd.DataFrame) -> dict[str, Any]:
     """Measure surrogate fidelity on actual held-out engine telemetry."""
     if engine.model.surrogate is None or engine.model.calibrator is None:
@@ -1647,11 +1811,50 @@ def run() -> dict[str, Any]:
     if not PROTOCOL_PATH.is_file():
         raise FileNotFoundError("commit docs/phase4_protocol_v2.md before v2 evaluation")
     source_commit = _commit()
-    run_id = datetime.now(UTC).strftime("phase4-%Y%m%dT%H%M%SZ")
     engine = PrescriptXAIEngine.from_files(CONFIG_PATH, TAXONOMY_PATH)
     archive = load_cmapss_archive(
         engine.config.data.root / engine.config.data.archive_name,
         engine.config.data.dataset,
+    )
+    artifact_paths = [engine.config.artifacts.model, engine.config.artifacts.mahalanobis]
+    if engine.taxonomy.coupling is not None:
+        artifact_paths.append(
+            engine.config.artifacts.model.parent
+            / engine.taxonomy.coupling.artifact_name.format(
+                subset=engine.config.data.dataset
+            )
+        )
+    checkpoint_context = hashlib.sha256(
+        json.dumps(
+            {
+                "version": CHECKPOINT_VERSION,
+                "source_commit": source_commit,
+                "config_hash": _config_hash(engine.config),
+                "taxonomy_sha256": _sha256_file(TAXONOMY_PATH),
+                "dataset_archive_sha256": _sha256_file(
+                    engine.config.data.root / engine.config.data.archive_name
+                ),
+                "protocol_sha256": _sha256_file(PROTOCOL_PATH),
+                "artifact_sha256": {
+                    str(path): _sha256_file(path) for path in artifact_paths
+                },
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    initial_checkpoint = next(
+        (
+            checkpoint
+            for name in ("holdout", "sensitivity", "grouped-cv", "official-test")
+            if (checkpoint := _read_checkpoint(name, checkpoint_context)) is not None
+        ),
+        None,
+    )
+    run_id = (
+        str(initial_checkpoint["run_id"])
+        if initial_checkpoint is not None
+        else datetime.now(UTC).strftime("phase4-%Y%m%dT%H%M%SZ")
     )
     labeled = add_training_labels(
         to_model_frame(archive.train),
@@ -1710,57 +1913,22 @@ def run() -> dict[str, Any]:
     )
 
     # Protocol v1 and frozen v2 are evaluated on identical holdout alert states.
-    holdout: dict[str, Any] = {}
-    holdout_records: dict[str, tuple[EvaluationRecord, ...]] = {}
-    for protocol, d_max in (("v1", 5.0), ("v2", D_MAX_V2)):
-        run_engine = _engine_with_settings(
-            engine, mahalanobis_max=d_max, max_queries=len(test_alerts) + 1
+    holdout_checkpoint = _read_checkpoint("holdout", checkpoint_context)
+    if holdout_checkpoint is None:
+        holdout, holdout_records = _evaluate_holdout_protocols(
+            engine, test_alerts, headline_rows
         )
-        run = evaluate_states(run_engine, test_alerts)
-        holdout_records[protocol] = run.records
-        record_index = _records_by_key(run.records)
-        first_rows = _first_alert_rows(test_alerts)
-        first_records = tuple(
-            record_index[key]
-            for key in (_key(row) for row in first_rows.itertuples())
-            if key in record_index
+        _write_checkpoint(
+            "holdout",
+            checkpoint_context,
+            run_id,
+            {"holdout": holdout, "records": holdout_records},
         )
-        headline_keys = {_key(row) for row in headline_rows.itertuples()}
-        headline_records = tuple(
-            record for record in run.records if (record.engine_id, record.cycle) in headline_keys
-        )
-        populations: dict[str, Any] = {}
-        for name, rows, records in (
-            ("headline_sample", headline_rows, headline_records),
-            ("all_alert_states", test_alerts, run.records),
-            ("first_alert_per_engine", first_rows, first_records),
-        ):
-            populations[name] = _population_outcomes(
-                run_engine,
-                rows,
-                records,
-                seed=engine.config.seed + (0 if protocol == "v1" else 50),
-            )
-            populations[name]["strata"] = _strata_table(
-                run_engine,
-                rows,
-                records,
-                seed=engine.config.seed + 100,
-            )
-            populations[name]["provenance"] = build_evaluation_provenance(
-                run_engine, rows
-            )
-        holdout[protocol] = {
-            "effective_configuration_sha256": _config_hash(run_engine.config),
-            "protocol_version": protocol,
-            "D_max": d_max,
-            "k_max": run_engine.config.recourse.max_changed_features,
-            "K": run_engine.config.recourse.rate_horizon_steps,
-            "effective_solver_settings": _effective_solver_settings(run.records),
-            "summary": run.summary.to_dict(),
-            "infeasible_high_risk_state_count": run.infeasible_high_risk_states,
-            **populations,
-        }
+    else:
+        payload = holdout_checkpoint["payload"]
+        holdout = payload["holdout"]
+        holdout_records = payload["records"]
+        LOGGER.info("Resumed Phase 4 holdout records from checkpoint")
 
     # All-alert and first-alert views are taken from the full run; the headline sample is fixed
     # in Protocol v1 and remains identical under v2.
@@ -1777,53 +1945,30 @@ def run() -> dict[str, Any]:
         rng.choice(len(headline_rows), size=sensitivity_size, replace=False)
     ) if sensitivity_size else np.asarray([], dtype=np.int64)
     sensitivity_rows = headline_rows.iloc[sensitivity_positions].copy()
-    sensitivity: list[dict[str, Any]] = []
     baseline_sample_records = tuple(
         headline_lookup[key]
         for key in (_key(row) for row in sensitivity_rows.itertuples())
         if key in headline_lookup
     )
-    sensitivity.append(
-        {
-            "label": "baseline-k3-dist4-K1-Dmax5-thorough",
-            "effective_configuration_sha256": holdout["v1"]["effective_configuration_sha256"],
-            "protocol_version": "v1",
-            "D_max": 5.0,
-            "k_max": 3,
-            "K": 1,
-            "search_mode": "thorough",
-            "population": f"seeded saved-state sensitivity subset, n={len(sensitivity_rows)}",
-            "effective_solver_settings": _effective_solver_settings(baseline_sample_records),
-            "outcomes": _population_outcomes(
-                engine, sensitivity_rows, baseline_sample_records, seed=engine.config.seed + 300
-            ),
-            "records": baseline_sample_records,
-        }
-    )
-    sensitivity_variants = [
-        ("k5-only", {"max_changed_features": 5}, 5.0),
-        ("max-distance-2-only", {"max_scaled_distance": 2.0}, 5.0),
-        ("max-distance-6-only", {"max_scaled_distance": 6.0}, 5.0),
-        ("K2-only", {"rate_horizon_steps": 2}, 5.0),
-        ("K3-only", {"rate_horizon_steps": 3}, 5.0),
-        ("K5-only", {"rate_horizon_steps": 5}, 5.0),
-        ("K10-only", {"rate_horizon_steps": 10}, 5.0),
-        ("Dmax8-only", {}, D_MAX_V2),
-        ("fast-mode-only", {"search_mode": "fast"}, 5.0),
-    ]
-    fast_records: tuple[EvaluationRecord, ...] = ()
-    for index, (label, updates, d_max) in enumerate(sensitivity_variants, start=1):
-        result = _sensitivity_run(
+    sensitivity_checkpoint = _read_checkpoint("sensitivity", checkpoint_context)
+    if sensitivity_checkpoint is None:
+        sensitivity, fast_records = _evaluate_sensitivity(
             engine,
-            sensitivity_rows,
-            label=label,
-            updates=updates,
-            d_max=d_max,
-            seed=engine.config.seed + 300 + index,
+            headline_rows,
+            headline_records_v1,
+            holdout["v1"]["effective_configuration_sha256"],
         )
-        sensitivity.append(result)
-        if label == "fast-mode-only":
-            fast_records = tuple(result["records"])
+        _write_checkpoint(
+            "sensitivity",
+            checkpoint_context,
+            run_id,
+            {"sensitivity": sensitivity, "fast_records": fast_records},
+        )
+    else:
+        payload = sensitivity_checkpoint["payload"]
+        sensitivity = payload["sensitivity"]
+        fast_records = payload["fast_records"]
+        LOGGER.info("Resumed Phase 4 sensitivity records from checkpoint")
 
     # FAST/THOROUGH exact candidate comparison on identical saved states.
     thorough_index = _records_by_key(baseline_sample_records)
@@ -1955,37 +2100,53 @@ def run() -> dict[str, Any]:
 
     # Five-fold outer OOF and official test engines are fresh engine groups for protocol comparison.
     taxonomy = load_taxonomy(TAXONOMY_PATH)
-    grouped_cv = _run_grouped_cv(
-        engine,
-        labeled,
-        taxonomy,
-        sample_size=200,
-        seed=engine.config.seed + 500,
-    )
+    grouped_checkpoint = _read_checkpoint("grouped-cv", checkpoint_context)
+    if grouped_checkpoint is None:
+        grouped_cv = _run_grouped_cv(
+            engine,
+            labeled,
+            taxonomy,
+            sample_size=200,
+            seed=engine.config.seed + 500,
+        )
+        _write_checkpoint(
+            "grouped-cv", checkpoint_context, run_id, {"grouped_cv": grouped_cv}
+        )
+    else:
+        grouped_cv = grouped_checkpoint["payload"]["grouped_cv"]
+        LOGGER.info("Resumed grouped out-of-fold records from checkpoint")
     official = _official_test_frame(engine, archive)
     official_alerts = _alert_rows(engine, official)
-    official_results: dict[str, Any] = {"all_alert_rows": len(official_alerts)}
-    for protocol, d_max in (("v1", 5.0), ("v2", D_MAX_V2)):
-        official_engine = _engine_with_settings(
-            engine, mahalanobis_max=d_max, max_queries=len(official_alerts) + 1
+    official_checkpoint = _read_checkpoint("official-test", checkpoint_context)
+    if official_checkpoint is None:
+        official_results: dict[str, Any] = {"all_alert_rows": len(official_alerts)}
+        for protocol, d_max in (("v1", 5.0), ("v2", D_MAX_V2)):
+            official_engine = _engine_with_settings(
+                engine, mahalanobis_max=d_max, max_queries=len(official_alerts) + 1
+            )
+            official_run = evaluate_states(official_engine, official_alerts)
+            official_results.setdefault("by_protocol", {})[protocol] = {
+                "records": official_run.records,
+                "population": "official FD001 test engines; RUL labels from official file",
+                "protocol_version": protocol,
+                "effective_solver_settings": _effective_solver_settings(official_run.records),
+                "outcomes": _population_outcomes(
+                    official_engine,
+                    official_alerts,
+                    official_run.records,
+                    seed=engine.config.seed + (800 if protocol == "v1" else 900),
+                ),
+                "effective_configuration_sha256": _config_hash(official_engine.config),
+                "k_max": official_engine.config.recourse.max_changed_features,
+                "K": official_engine.config.recourse.rate_horizon_steps,
+                "D_max": d_max,
+            }
+        _write_checkpoint(
+            "official-test", checkpoint_context, run_id, {"official_results": official_results}
         )
-        official_run = evaluate_states(official_engine, official_alerts)
-        official_results.setdefault("by_protocol", {})[protocol] = {
-            "records": official_run.records,
-            "population": "official FD001 test engines; RUL labels from official file",
-            "protocol_version": protocol,
-            "effective_solver_settings": _effective_solver_settings(official_run.records),
-            "outcomes": _population_outcomes(
-                official_engine,
-                official_alerts,
-                official_run.records,
-                seed=engine.config.seed + (800 if protocol == "v1" else 900),
-            ),
-            "effective_configuration_sha256": _config_hash(official_engine.config),
-            "k_max": official_engine.config.recourse.max_changed_features,
-            "K": official_engine.config.recourse.rate_horizon_steps,
-            "D_max": d_max,
-        }
+    else:
+        official_results = official_checkpoint["payload"]["official_results"]
+        LOGGER.info("Resumed official test records from checkpoint")
 
     # Historical run explanation: d_max=6 was a scaled movement radius, not Mahalanobis D_max.
     dirty_profile_path = ROOT / "configs/experiments/phase4-thorough-expanded.yaml"

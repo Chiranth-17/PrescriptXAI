@@ -530,21 +530,29 @@ class TorchCouplingPropagation(nn.Module):
     ) -> TorchCouplingPropagation:
         """Construct torch propagation from a fitted sklearn ridge coupling model."""
         name_to_index = {name: index for index, name in enumerate(feature_names)}
-        missing = (set(coupling.predictor_features) | set(coupling.dependent_features)) - set(
-            name_to_index
+        missing_predictors = set(coupling.predictor_features) - set(name_to_index)
+        if missing_predictors:
+            raise ValueError(
+                "feature order missing coupling predictors: "
+                f"{sorted(missing_predictors)}"
+            )
+        # A model/scaler may intentionally omit constant dependent sensors. They cannot affect
+        # its prediction or optimization, so propagate only dependent fields represented in the
+        # fitted feature order. Predictor fields remain mandatory because the learned relation
+        # cannot be evaluated without them.
+        active_dependents = tuple(
+            name for name in coupling.dependent_features if name in name_to_index
         )
-        if missing:
-            raise ValueError(f"feature order missing coupling fields: {sorted(missing)}")
         predictor_indices = np.asarray(
             [name_to_index[name] for name in coupling.predictor_features], dtype=np.int64
         )
         dependent_indices = np.asarray(
-            [name_to_index[name] for name in coupling.dependent_features], dtype=np.int64
+            [name_to_index[name] for name in active_dependents], dtype=np.int64
         )
-        missing_models = set(coupling.dependent_features) - set(coupling.torch_models)
+        missing_models = set(active_dependents) - set(coupling.torch_models)
         if missing_models:
             raise ValueError(f"coupling artifact is missing torch models: {sorted(missing_models)}")
-        regressors = [coupling.torch_models[name] for name in coupling.dependent_features]
+        regressors = [coupling.torch_models[name] for name in active_dependents]
         return cls(feature_names, dependent_indices, predictor_indices, regressors)
 
     def forward(self, features: Tensor, reference_features: Tensor | None = None) -> Tensor:
@@ -554,6 +562,8 @@ class TorchCouplingPropagation(nn.Module):
         if not torch.isfinite(features).all():
             raise ValueError("coupling features must be finite")
         output = features.clone()
+        if not self._models:
+            return output
         predictors = features.index_select(1, self._predictor_indices.to(features.device))
         predictions = torch.cat([model(predictors) for model in self._models], dim=1)
         if reference_features is not None:
