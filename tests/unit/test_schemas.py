@@ -75,17 +75,27 @@ def test_recourse_result_round_trips_raw_deltas_and_per_tier_report() -> None:
     result = RecourseResult(
         original_state={"flow": 10.0},
         new_state={"flow": 9.0},
-        delta_per_feature={"flow": FeatureDelta(raw_delta=-1.0, percent_change=-10.0)},
+        delta_per_feature={
+            "flow": FeatureDelta(raw_delta=-1.0, percent_change=-10.0, scaled_delta=-1.0)
+        },
         risk_before=0.84,
         risk_after=0.18,
         validation_report=ValidationReport(
-            tier1_model_safety=tier,
+            tier1_model_safety=TierValidation(passed=True, measurement=0.18),
             tier2_distributional=tier,
             tier3_engineering=tier,
             tier4_sensor_coupling=tier,
         ),
         timings=StageTimings(optimization_ms=10.5, validation_ms=2.5),
         warnings=(),
+        status="RECOVERABLE",
+        triage="RECOVERABLE",
+        action_feasible=True,
+        action_features=("flow",),
+        config_hash="a" * 64,
+        model_version="fixture",
+        seed=17,
+        run_id="unit",
     )
 
     reloaded = RecourseResult.model_validate_json(result.model_dump_json())

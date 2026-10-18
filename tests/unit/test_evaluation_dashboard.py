@@ -71,11 +71,35 @@ def test_nearby_state_direction_diagnostic_reports_sign_disagreement() -> None:
     engine = SimpleNamespace(model=bundle, taxonomy=taxonomy)
     records = (
         EvaluationRecord(
-            1, 20, 0.9, 0.2, True, True, True, True, 1, 1.0, 1.0, True, "first",
+            1,
+            20,
+            0.9,
+            0.2,
+            True,
+            True,
+            True,
+            True,
+            1,
+            1.0,
+            1.0,
+            True,
+            "first",
             {"actuator": 1},
         ),
         EvaluationRecord(
-            2, 21, 0.9, 0.2, True, True, True, True, 1, 1.0, 1.0, True, "second",
+            2,
+            21,
+            0.9,
+            0.2,
+            True,
+            True,
+            True,
+            True,
+            1,
+            1.0,
+            1.0,
+            True,
+            "second",
             {"actuator": -1},
         ),
     )
@@ -113,7 +137,8 @@ def test_latency_uses_measured_values_and_rejects_nan() -> None:
     """Latency target status is computed from samples; NaN cannot look like a pass."""
     measured = summarize_latency([2.0, 4.0, 6.0], None, 5.0)
     assert measured.mean_ms == 4.0
-    assert measured.passed
+    assert not measured.passed
+    assert measured.p95_ms > 5.0
     with pytest.raises(ValueError, match="finite and non-negative"):
         summarize_latency([float("nan")], None, 5.0)
 

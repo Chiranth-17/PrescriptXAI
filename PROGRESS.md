@@ -448,3 +448,19 @@ The 95% true-model target is missed under both protocols. Tier 2 meets its 90% a
 - The validity and optimization-latency targets remain missed. Any tuning or performance changes must be developed on validation engines and frozen before a future test run; no targets were adjusted for this closure.
 - Full OOF all-alert paired coverage and new unseen-engine generalization are Partial/Not met as recorded in `docs/traceability.md`. No dynamic simulator or validated emulator is available; NullSimulator correctly skips.
 - Phase 6–11 prompts and the Part B changes table remain unavailable. The directly supplied Phase 5 prompt is complete; later phases have not been inferred or started.
+
+
+## Phase 6 — implementation and preregistered measurement in progress
+
+- Public PrescriptXAI facade, versioned shared results, risk gate, triage, FAST/THOROUGH,
+  genuine fixed-prefix LSTM adaptation, bounded process batches and locked artifact cache implemented.
+- CLI recommend/assess/batch/info/latency-bench and FastAPI endpoints use the same contract.
+  API includes request IDs, environment API keys, streamed payload limits and configured CORS.
+- Preregistration: commit 9921c38; explicit base and fold configs under configs/experiments/.
+  Predictor, calibration, risk gates, D_max v1/v2, bounds/rates, K=1 and solver settings stay frozen.
+- Focused verification: 44 pipeline/CLI/API/error tests and 8 search regression tests passed.
+  Full gate passed: 254 tests, Ruff/mypy clean; coverage 80.1219% (Phase 5 79.7753%). No Phase 6 target is claimed before real measurements.
+- Regression decisions: below-alert states stay unchanged while retaining failed tier diagnostics;
+  RECOVERABLE requires all four tiers; PARTIAL is not a safe-model verdict. Metadata is mandatory.
+- How to run: see docs/decision_pipeline.md. Real benchmark: uv run python scripts/diagnostics/phase6_pipeline.py.
+- Open: real population benchmark, full gate, freeze evidence and closure tag pending.

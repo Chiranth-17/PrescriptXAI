@@ -99,7 +99,7 @@ class ValidationReport:
     tier3_engineering: TierResult
     tier4_coupling: TierResult
     simulator: TierResult = field(default_factory=lambda: TierResult.skipped("no simulator"))
-    schema_version: str = "1.1.0"
+    schema_version: str = "2.0.0"
     assumptions: tuple[str, ...] = (
         "C-MAPSS controllables and their bounds/rate limits are documented telemetry proxies.",
         "The intervention horizon K is an assumption, not validated actuator dynamics.",

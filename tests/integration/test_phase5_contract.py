@@ -25,7 +25,7 @@ def test_validation_modes_margins_and_evidence_survive_api() -> None:
     )
     assert response.status_code == 200
     payload = response.json()
-    assert payload["schema_version"] == "1.1.0"
+    assert payload["schema_version"] == "2.0.0"
     assert payload["evidence_level"] == "E3"
     assert payload["plausible"] and payload["constraints_ok"] and payload["joint"]
     assert payload["assumptions"]

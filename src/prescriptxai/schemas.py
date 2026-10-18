@@ -89,6 +89,8 @@ class RecourseRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     state: dict[str, float]
+    context: "InputContext | None" = None
+    mode: Literal["fast", "thorough"] = "fast"
 
     @model_validator(mode="after")
     def state_values_are_finite(self) -> "RecourseRequest":
@@ -111,6 +113,9 @@ class FeatureDelta(BaseModel):
     percent_change: float | None
     percent_of_range: float | None = None
 
+    scaled_delta: float | None = None
+    role: Literal["action", "dependent", "other"] = "action"
+
     @model_validator(mode="after")
     def values_are_finite(self) -> "FeatureDelta":
         """Reject non-finite amounts while permitting undefined percent at a zero origin."""
@@ -118,6 +123,7 @@ class FeatureDelta(BaseModel):
             not isfinite(self.raw_delta)
             or (self.percent_change is not None and not isfinite(self.percent_change))
             or (self.percent_of_range is not None and not isfinite(self.percent_of_range))
+            or (self.scaled_delta is not None and not isfinite(self.scaled_delta))
         ):
             raise ValueError("delta values must be finite when defined")
         return self
@@ -141,6 +147,10 @@ class TierValidation(BaseModel):
     @model_validator(mode="after")
     def status_matches_passed(self) -> "TierValidation":
         """Prevent a skipped tier from counting as a successful check."""
+        if any(
+            v is not None and not isfinite(v) for v in (self.measurement, self.limit, self.margin)
+        ) or any(c.margin is not None and not isfinite(c.margin) for c in self.checks):
+            raise ValueError("tier measurements and margins must be finite when defined")
         if self.status is None:
             object.__setattr__(self, "status", "pass" if self.passed else "fail")
         if self.passed != (self.status == "pass"):
@@ -153,7 +163,7 @@ class ValidationReport(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal["1.1.0"] = "1.1.0"
+    schema_version: Literal["2.0.0"] = "2.0.0"
     tier1_model_safety: TierValidation
     tier2_distributional: TierValidation
     tier3_engineering: TierValidation
@@ -246,7 +256,7 @@ class ValidationReport(BaseModel):
 class StageTimings(BaseModel):
     """Measured wall-clock time for named pipeline stages, in milliseconds."""
 
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(extra="forbid", frozen=True, allow_inf_nan=False)
 
     ingestion_ms: float | None = Field(default=None, ge=0)
     inference_ms: float | None = Field(default=None, ge=0)
@@ -256,12 +266,75 @@ class StageTimings(BaseModel):
     dashboard_ms: float | None = Field(default=None, ge=0)
 
 
+Mode = Literal["FAST", "THOROUGH"]
+Triage = Literal["RECOVERABLE", "PARTIAL", "ESCALATE"]
+
+
+class InputContext(BaseModel):
+    """Observed context, canonical vector order, units, and fixed LSTM prefix."""
+
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    telemetry: dict[str, float] = Field(default_factory=dict)
+    units: dict[str, str] = Field(default_factory=dict)
+    feature_names: tuple[str, ...] | None = None
+    history: tuple[tuple[float, ...], ...] | None = None
+    engine_id: int | None = Field(default=None, ge=1)
+    cycle: int | None = Field(default=None, ge=1)
+
+    @model_validator(mode="after")
+    def rectangular_history(self) -> "InputContext":
+        """Require rectangular observed raw feature rows."""
+        if self.history and len({len(row) for row in self.history}) != 1:
+            raise ValueError("history rows must have equal lengths")
+        return self
+
+
+class Assessment(BaseModel):
+    """True calibrated risk and alert decision without optimization."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True, allow_inf_nan=False)
+    mode: Literal["FAST", "THOROUGH"] = "FAST"
+    risk: float = Field(ge=0, le=1)
+    alert: bool
+    tau_danger: float
+    tau_safe: float
+    model_version: str
+    config_hash: str
+    seed: int
+    warnings: tuple[str, ...] = ()
+
+
+class FailureInformation(BaseModel):
+    """Diagnostic state and operator escalation; not a globally infeasible certificate."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True, allow_inf_nan=False)
+    reason: str
+    message: str
+    closest_candidate: dict[str, float]
+    risk_reached: float
+    failing_tiers: tuple[str, ...]
+    suggested_escalation: str
+
+
+class Explanation(BaseModel):
+    """Plain-text actions and independently measured decision evidence."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    summary: str
+    actions: tuple[str, ...]
+    risk_before: float
+    risk_after: float
+    verdict: dict[str, bool]
+    evidence_level: EvidenceLevel
+    warnings: tuple[str, ...]
+
+
 class RecourseResult(BaseModel):
     """Serialized recourse decision with raw-unit changes and per-tier evidence."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal["1.1.0"] = "1.1.0"
+    schema_version: Literal["2.0.0"] = "2.0.0"
     original_state: dict[str, float]
     new_state: dict[str, float]
     delta_per_feature: dict[str, FeatureDelta]
@@ -270,16 +343,45 @@ class RecourseResult(BaseModel):
     validation_report: ValidationReport
     timings: StageTimings
     warnings: tuple[str, ...] = ()
+    alert: bool = True
+    status: Literal["NO_INTERVENTION", "RECOVERABLE", "PARTIAL", "ESCALATE"] = "ESCALATE"
+    triage: Triage | None = "ESCALATE"
+    mode: Mode = "FAST"
+    surrogate_risk_before: float | None = Field(default=None, ge=0, le=1)
+    surrogate_risk_after: float | None = Field(default=None, ge=0, le=1)
+    failure: FailureInformation | None = None
+    proxy_assumptions: bool = True
+    assumptions: tuple[str, ...] = ()
+    action_features: tuple[str, ...] = ()
+    action_feasible: bool = False
+    config_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    model_version: str = Field(min_length=1)
+    seed: int = Field(ge=0)
+    run_id: str = Field(min_length=1)
+    tau_danger: float = Field(default=0.8, ge=0, le=1)
+    tau_safe: float = Field(default=0.2, ge=0, le=1)
+    delta_min: float = Field(default=0.3, ge=0, le=1)
+    solver_settings: dict[str, int | float | str | bool | None] = Field(default_factory=dict)
 
     @model_validator(mode="before")
     @classmethod
     def verify_serialized_evidence(cls, value: object) -> object:
         """Reject altered evidence labels while accepting the public JSON round trip."""
-        if isinstance(value, dict) and "evidence_level" in value:
-            inputs = {name: item for name, item in value.items() if name != "evidence_level"}
-            verified = cls.model_validate(inputs)
-            if value["evidence_level"] != verified.evidence_level:
-                raise ValueError("serialized evidence_level disagrees with validation report")
+        outputs = (
+            "evidence_level",
+            "plausible",
+            "constraints_ok",
+            "joint",
+            "tiers",
+            "outcome",
+            "actuator_constraints_feasible",
+        )
+        if isinstance(value, dict) and any(name in value for name in outputs):
+            inputs = {name: item for name, item in value.items() if name not in outputs}
+            verified = cls.model_validate(inputs).model_dump(mode="json")
+            for name in outputs:
+                if name in value and value[name] != verified[name]:
+                    raise ValueError(f"serialized {name} disagrees with validation report")
             return inputs
         return value
 
@@ -288,6 +390,75 @@ class RecourseResult(BaseModel):
     def evidence_level(self) -> EvidenceLevel:
         """Attach achieved evidence to every public recommendation."""
         return self.validation_report.evidence_level
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def plausible(self) -> bool:
+        """Retain the read-only Tier 2 alias for existing service clients."""
+        return self.validation_report.plausible
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def constraints_ok(self) -> bool:
+        """Retain the read-only Tiers 3–4 alias."""
+        return self.validation_report.constraints_ok
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def joint(self) -> bool:
+        """Retain the read-only all-static-tiers alias."""
+        return self.validation_report.joint
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def actuator_constraints_feasible(self) -> bool:
+        """Expose the same sparse-action feasibility under the legacy name."""
+        return self.action_feasible
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def outcome(self) -> RecourseOutcome:
+        """Adapt existing service clients without a second decision computation."""
+        return RecourseOutcome(
+            initial_risk=self.risk_before,
+            final_risk=self.risk_after,
+            model_valid=self.validation_report.model_valid,
+            recourse_feasible=self.action_feasible,
+            tier2_plausible=self.plausible,
+            tier3_engineering_valid=self.validation_report.tier3_engineering.passed,
+            tier4_coupling_valid=self.validation_report.tier4_sensor_coupling.passed,
+            deltas=tuple(
+                DeltaMapping(
+                    feature=n,
+                    raw_delta=self.delta_per_feature[n].raw_delta,
+                    scaled_delta=self.delta_per_feature[n].scaled_delta or 0.0,
+                    percent_of_current=self.delta_per_feature[n].percent_change,
+                    percent_of_range=self.delta_per_feature[n].percent_of_range,
+                )
+                for n in self.action_features
+            ),
+            success=self.validation_report.joint and self.action_feasible,
+        )
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def tiers(self) -> dict[str, dict[str, object]]:
+        """Preserve legacy tier names with the same status, margins and evidence."""
+        names = (
+            ("tier1_model", "tier1_model_safety"),
+            ("tier2_plausibility", "tier2_distributional"),
+            ("tier3_engineering", "tier3_engineering"),
+            ("tier4_coupling", "tier4_sensor_coupling"),
+            ("simulator", "simulator"),
+        )
+        result = {}
+        for old, new in names:
+            tier = getattr(self.validation_report, new)
+            if tier is not None:
+                record = tier.model_dump(mode="json")
+                record["valid"] = record.pop("passed")
+                result[old] = record
+        return result
 
     @model_validator(mode="after")
     def states_and_deltas_are_consistent(self) -> "RecourseResult":
@@ -312,6 +483,64 @@ class RecourseResult(BaseModel):
                     or abs(delta.percent_change - expected_percent) > 1e-6
                 ):
                     raise ValueError(f"percent change for {name} does not match raw units")
+        if not self.original_state or self.tau_safe >= self.tau_danger:
+            raise ValueError("nonempty states and tau_safe < tau_danger are required")
+        if len(set(self.action_features)) != len(self.action_features) or set(
+            self.action_features
+        ) != {n for n, d in self.delta_per_feature.items() if d.role == "action"}:
+            raise ValueError("action_features must match unique action deltas")
+        if any(self.delta_per_feature[n].scaled_delta is None for n in self.action_features):
+            raise ValueError("action deltas require scaled_delta")
+        physical = self.validation_report.plausible and self.validation_report.constraints_ok
+        if self.alert != (self.risk_before >= self.tau_danger):
+            raise ValueError("alert disagrees with the true risk gate")
+        if not self.alert:
+            expected = "NO_INTERVENTION"
+            if (
+                self.risk_before != self.risk_after
+                or self.original_state != self.new_state
+                or any(d.raw_delta for d in self.delta_per_feature.values())
+            ):
+                raise ValueError("below-alert result must have zero change")
+        elif (
+            self.risk_after <= self.tau_safe
+            and self.validation_report.joint
+            and self.action_feasible
+        ):
+            expected = "RECOVERABLE"
+        elif (
+            self.risk_after > self.tau_safe
+            and physical
+            and self.action_feasible
+            and self.risk_before - self.risk_after >= self.delta_min
+        ):
+            expected = "PARTIAL"
+        else:
+            expected = "ESCALATE"
+        if self.status != expected or self.triage != (
+            None if expected == "NO_INTERVENTION" else expected
+        ):
+            raise ValueError("triage disagrees with risk, feasibility or validation")
+        if (
+            self.validation_report.tier1_model_safety.measurement != self.risk_after
+            or self.validation_report.model_valid != (self.risk_after <= self.tau_safe)
+        ):
+            raise ValueError("true risk_after disagrees with Tier 1 measurement/verdict")
+        if self.status in {"PARTIAL", "ESCALATE"} and (
+            self.failure is None
+            or self.failure.closest_candidate != self.new_state
+            or self.failure.risk_reached != self.risk_after
+        ):
+            raise ValueError(
+                "failed/partial decisions require consistent structured failure information"
+            )
+        changed = {
+            name
+            for name in self.original_state
+            if self.original_state[name] != self.new_state[name]
+        }
+        if not changed.issubset(self.delta_per_feature):
+            raise ValueError("every changed feature must have a raw delta")
         return self
 
 
@@ -341,7 +570,7 @@ class TierPayload(BaseModel):
 class RecommendationResponse(BaseModel):
     """API response preserving optimizer and independent validation outcomes."""
 
-    schema_version: Literal["1.1.0"] = "1.1.0"
+    schema_version: Literal["2.0.0"] = "2.0.0"
     evidence_level: EvidenceLevel = "none"
     plausible: bool = False
     constraints_ok: bool = False
@@ -362,3 +591,15 @@ class RecommendationResponse(BaseModel):
     solver_calls: int = Field(default=0, ge=0)
     actuator_constraints_feasible: bool = False
     tiers: dict[str, TierPayload]
+
+
+class BatchRequest(BaseModel):
+    """Bounded service batch; per-row input checks are performed by the shared pipeline."""
+
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    states: list[dict[str, float]] = Field(min_length=1)
+    mode: Literal["fast", "thorough"] = "fast"
+    contexts: list[InputContext | None] | None = None
+
+
+RecourseRequest.model_rebuild()

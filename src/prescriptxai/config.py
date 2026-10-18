@@ -69,7 +69,9 @@ class ApiConfig(BaseModel):
     port: int = Field(ge=1, le=65535)
     cors_origins: list[str] = Field(default_factory=list)
     cors_methods: list[str] = Field(default_factory=lambda: ["GET", "POST"])
-    cors_headers: list[str] = Field(default_factory=lambda: ["Content-Type", "X-API-Key", "X-Request-ID"])
+    cors_headers: list[str] = Field(
+        default_factory=lambda: ["Content-Type", "X-API-Key", "X-Request-ID"]
+    )
     api_key_env: str = "PRESCRIPTXAI_API_KEY"
     max_payload_bytes: int = Field(default=1048576, ge=1)
 
@@ -329,6 +331,9 @@ class AppConfig(BaseModel):
         if "tau_safe" in raw:
             model["safe_threshold"] = raw["tau_safe"]
         if "model_choice" in raw:
+            raw["model_choice"] = {"xgb": "xgboost", "mlp": "torch"}.get(
+                raw["model_choice"], raw["model_choice"]
+            )
             model["risk_estimator"] = raw["model_choice"]
         raw["model"] = model
         raw["data"] = data

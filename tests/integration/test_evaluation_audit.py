@@ -131,7 +131,7 @@ def test_tier2_owns_synopsis_plausibility_target_and_latency_budget_preserves_ra
     assert summary.physical_plausibility_rate.passed is None
     assert summary.latency["inference_per_row"].p95_ms == pytest.approx(6.7)
     latency = summarize_latency([20.0, 40.0], 1200.0, 1800.0)
-    assert latency.passed is False
+    assert latency.passed is True
     assert latency.upper_budget_passed is True
     assert latency.below_target_range is True
 

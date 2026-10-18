@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
-from contextvars import ContextVar
+from contextvars import ContextVar, Token
 from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
@@ -57,3 +57,13 @@ def configure_logging(level: int = logging.INFO, run_id: str | None = None) -> s
         root.addHandler(handler)
     root.setLevel(level)
     return active_id
+
+
+def bind_run_id(run_id: str) -> Token[str]:
+    """Bind one request ID in its context and return a reset token."""
+    return _RUN_ID.set(run_id)
+
+
+def reset_run_id(token: Token[str]) -> None:
+    """Restore the parent request/logging context."""
+    _RUN_ID.reset(token)

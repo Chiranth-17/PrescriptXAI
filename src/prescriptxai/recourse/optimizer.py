@@ -31,7 +31,7 @@ from prescriptxai.schemas import DeltaMapping
 from prescriptxai.validation.feasibility import build_feasibility_penalty, frozen_settings
 from prescriptxai.validation.tier2_mahalanobis import MahalanobisValidator
 from prescriptxai.validation.tier3_engineering import validate_engineering
-from prescriptxai.validation.tier4_coupling import validate_sensor_coupling
+from prescriptxai.validation.tier4_coupling import coupling_pass_mask, validate_sensor_coupling
 
 LOGGER = logging.getLogger(__name__)
 
@@ -674,7 +674,16 @@ class RecourseOptimizer:
             best_safe = candidate_at(ordered[0])
             physically_valid: list[_Candidate] = []
             plausible_set = set(int(index) for index in plausible_indices)
-            plausible_ordered = [index for index in ordered if index in plausible_set]
+            coupling_mask = (
+                coupling_pass_mask(
+                    raw_rows, self.bundle.feature_names, state, self.taxonomy, self.coupling
+                )
+                if self.mahalanobis is not None and self.validate_plausibility
+                else np.ones(len(raw_rows), dtype=bool)
+            )
+            plausible_ordered = [
+                index for index in ordered if index in plausible_set and coupling_mask[index]
+            ]
             for index in plausible_ordered:
                 candidate = candidate_at(index)
                 if self._is_physically_valid(
@@ -777,8 +786,15 @@ class RecourseOptimizer:
                 ):
                     closest = group_closest
                 plausible_set = set(int(index) for index in plausible_indices)
+                coupling_mask = (
+                    coupling_pass_mask(
+                        raw_rows, self.bundle.feature_names, state, self.taxonomy, self.coupling
+                    )
+                    if self.mahalanobis is not None and self.validate_plausibility
+                    else np.ones(len(raw_rows), dtype=bool)
+                )
                 for candidate_index in safe_order:
-                    if candidate_index not in plausible_set:
+                    if candidate_index not in plausible_set or not coupling_mask[candidate_index]:
                         continue
                     candidate = materialize_fast_candidate(
                         raw_rows, deltas, probabilities, candidate_index
@@ -791,6 +807,8 @@ class RecourseOptimizer:
                         best_physical = candidate
                     margin_threshold = config.model.safe_threshold - config.recourse.safety_margin
                     found_margin = found_margin or candidate.risk <= margin_threshold
+                    if found_margin:
+                        break
                 if found_margin and best_physical is not None:
                     if group_position + 1 == len(ordered_groups):
                         break

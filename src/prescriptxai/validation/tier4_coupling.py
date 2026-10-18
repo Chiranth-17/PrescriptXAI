@@ -5,6 +5,7 @@ from copy import deepcopy
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 from sklearn.metrics import r2_score
 
 from prescriptxai.constraints.coupling import (
@@ -113,3 +114,52 @@ def calibrate_coupling_thresholds(
         "per_sensor": metrics,
     }
     return calibrated
+
+
+def coupling_pass_mask(
+    rows: NDArray[np.float64],
+    feature_names: tuple[str, ...],
+    initial: Mapping[str, float],
+    taxonomy: FeatureTaxonomy,
+    coupling: SensorCouplingModel | None,
+) -> NDArray[np.bool_]:
+    """Prefilter grid rows with batched true teachers; exact scalar checks decide acceptance.
+
+    Omitted dependent channels retain their observed initial values. Roundoff-near-boundary
+    rows remain eligible for exact scalar checking, so vectorization never relaxes final limits.
+    """
+    values: dict[str, NDArray[np.float64]] = {
+        name: np.full(len(rows), value, dtype=float) for name, value in initial.items()
+    }
+    values.update({name: rows[:, index] for index, name in enumerate(feature_names)})
+    passed: NDArray[np.bool_] = np.ones(len(rows), dtype=bool)
+    if coupling is not None:
+        if not getattr(coupling, "calibration_engine_ids", ()):
+            return np.zeros(len(rows), dtype=bool)
+        predictors = np.column_stack([values[name] for name in coupling.predictor_features])
+        for target in coupling.dependent_features:
+            predicted = np.asarray(coupling.models[target].predict(predictors), dtype=float)
+            actual = values[target]
+            limit = coupling.residual_sigma_k * coupling.residual_std[target]
+            residual = np.abs(actual - predicted)
+            rounding = np.spacing(np.abs(actual) + np.abs(predicted) + 1) * (
+                len(coupling.predictor_features) + 1
+            )
+            passed &= residual <= limit + 1e-12 + rounding
+    elif not taxonomy.coupling_rules:
+        return np.zeros(len(rows), dtype=bool)
+    for rule in taxonomy.coupling_rules:
+        if rule.feature_a not in values or rule.feature_b not in values:
+            if coupling is None:
+                passed[:] = False
+            continue
+        a, b = values[rule.feature_a], values[rule.feature_b]
+        if rule.relation == "less_than":
+            margin = b - a + rule.tolerance
+        elif rule.relation == "greater_than":
+            margin = a - b + rule.tolerance
+        else:
+            assert rule.slope is not None and rule.intercept is not None
+            margin = rule.tolerance - np.abs(b - (rule.slope * a + rule.intercept))
+        passed &= margin >= -1e-12 - np.spacing(np.abs(a) + np.abs(b) + 1)
+    return passed

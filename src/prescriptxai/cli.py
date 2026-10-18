@@ -30,7 +30,7 @@ from prescriptxai.evaluation.runner import evaluate_states
 from prescriptxai.logging_utils import configure_logging
 from prescriptxai.models.registry import save_model_bundle
 from prescriptxai.models.train import train_risk_model
-from prescriptxai.pipeline import PrescriptXAIEngine
+from prescriptxai.pipeline import PrescriptXAI, PrescriptXAIEngine
 from prescriptxai.validation.pipeline import (
     fit_mahalanobis_validator,
     save_mahalanobis_validator,
@@ -285,9 +285,7 @@ def train_model(
     stem = f"{subset}-{model_label}"
     model_path = config.artifacts.model.with_name(f"{stem}.joblib")
     validator_name = (
-        f"{subset}-mahalanobis.joblib"
-        if model_label == "xgboost"
-        else f"{stem}-mahalanobis.joblib"
+        f"{subset}-mahalanobis.joblib" if model_label == "xgboost" else f"{stem}-mahalanobis.joblib"
     )
     validator_path = config.artifacts.mahalanobis.with_name(validator_name)
     metrics_path = config.artifacts.evaluation_report.with_name(f"{stem}-metrics.json")
@@ -340,52 +338,110 @@ def train_model(
     )
 
 
+def _select_state(
+    state_path: Path | None, engine_id: int | None, cycle: int | None, config: AppConfig
+) -> dict[str, float]:
+    """Read an explicit state or select one real engine-cycle from the archive."""
+    if state_path is not None:
+        if engine_id is not None or cycle is not None:
+            raise typer.BadParameter("provide a state file or engine-id/cycle, not both")
+        return _read_state(state_path)
+    if engine_id is None or cycle is None:
+        raise typer.BadParameter("provide a state JSON or both --engine-id and --cycle")
+    frame = to_model_frame(
+        load_cmapss_archive(config.data.root / config.data.archive_name, config.data.dataset).train
+    )
+    row = frame.loc[(frame.engine_id == engine_id) & (frame.cycle == cycle)]
+    if len(row) != 1:
+        raise typer.BadParameter("engine/cycle not found exactly once")
+    return {str(name): float(value) for name, value in row.iloc[0].items()}
+
+
 @app.command("recommend")
 def recommend_state(
-    state_path: Path = typer.Argument(..., exists=True, readable=True),
+    state_path: Path | None = typer.Argument(None, exists=True, readable=True),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
-    taxonomy_path: Path = typer.Option(Path("configs/features.yaml"), "--features"),
+    taxonomy_path: Path | None = typer.Option(None, "--features"),
+    engine_id: int | None = typer.Option(None, "--engine-id"),
+    cycle: int | None = typer.Option(None, "--cycle"),
+    mode: Literal["fast", "thorough"] = typer.Option("fast", "--mode"),
 ) -> None:
-    """Recommend and validate an intervention for a JSON machine state."""
-    engine = PrescriptXAIEngine.from_files(config_path, taxonomy_path)
-    state = _read_state(state_path)
-    result = engine.recommend(state)
-    payload = {
-        "original_state": state,
-        "new_state": result.optimization.state,
-        "outcome": result.outcome.model_dump(mode="json"),
-        "optimizer": {
-            "solver_success": result.optimization.solver_success,
-            "message": result.optimization.message,
-            "objective_value": result.optimization.objective_value,
-            "failure_reason": result.optimization.failure_reason,
-            "risk_reached": result.optimization.risk_reached,
-            "stage_timings_ms": result.optimization.stage_timings_ms,
-            "objective_terms": result.optimization.objective_terms,
-            "counterfactual_signs": result.optimization.counterfactual_signs,
-            "solver_calls": result.optimization.solver_calls,
-            "actuator_constraints_feasible": (
-                result.optimization.actuator_constraints_feasible
-            ),
-            "optimization_ms": result.optimization_ms,
-            "validation_ms": result.validation_ms,
-        },
-        "tiers": {
-            name: {
-                "valid": tier.valid,
-                "diagnostics": tier.diagnostics,
-                "measurement": tier.measurement,
-                "limit": tier.limit,
-            }
-            for name, tier in {
-                "tier1_model": result.validation.tier1_model,
-                "tier2_plausibility": result.validation.tier2_plausibility,
-                "tier3_engineering": result.validation.tier3_engineering,
-                "tier4_coupling": result.validation.tier4_coupling,
-            }.items()
-        },
-    }
-    typer.echo(json.dumps(payload, indent=2, allow_nan=False))
+    """Return the public result for JSON telemetry or a real engine/cycle."""
+    config = load_config(config_path)
+    if taxonomy_path is not None:
+        config.pipeline.taxonomy_path = taxonomy_path
+    pipeline = PrescriptXAI.from_config(config)
+    try:
+        result = pipeline.recommend(_select_state(state_path, engine_id, cycle, config), mode=mode)
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(result.model_dump_json(indent=2))
+
+
+@app.command("assess")
+def assess_state(
+    state_path: Path | None = typer.Argument(None, exists=True, readable=True),
+    config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
+    engine_id: int | None = typer.Option(None, "--engine-id"),
+    cycle: int | None = typer.Option(None, "--cycle"),
+) -> None:
+    """Assess true calibrated alert risk without recourse."""
+    config = load_config(config_path)
+    try:
+        result = PrescriptXAI.from_config(config).assess(
+            _select_state(state_path, engine_id, cycle, config)
+        )
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
+    typer.echo(result.model_dump_json(indent=2))
+
+
+@app.command("batch")
+def batch_states(
+    csv_path: Path = typer.Argument(..., exists=True),
+    output: Path = typer.Option(..., "--output"),
+    config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
+    mode: Literal["fast", "thorough"] = typer.Option("fast", "--mode"),
+    workers: int = typer.Option(1, "--workers", min=1),
+) -> None:
+    """Read raw CSV telemetry and write input-ordered public results as JSON."""
+    try:
+        results = PrescriptXAI.from_config(config_path).recommend_batch(
+            pd.read_csv(csv_path), mode, workers=workers
+        )
+    except ValueError as error:
+        raise typer.BadParameter(str(error)) from error
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
+        json.dumps([r.model_dump(mode="json") for r in results], allow_nan=False, indent=2),
+        encoding="utf-8",
+    )
+    typer.echo(json.dumps({"rows": len(results), "output": str(output), "mode": mode.upper()}))
+
+
+@app.command("info")
+def pipeline_info(
+    config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
+) -> None:
+    """Describe loaded artifacts, thresholds, groups, raw units and assumptions."""
+    typer.echo(json.dumps(PrescriptXAI.from_config(config_path).info(), indent=2))
+
+
+@app.command("latency-bench")
+def latency_bench(
+    csv_path: Path = typer.Argument(..., exists=True),
+    config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
+    output: Path | None = typer.Option(None, "--output"),
+) -> None:
+    """Measure both modes with p50/p95/p99 and engine-bootstrap p95 intervals."""
+    from prescriptxai.evaluation.latency import benchmark_pipeline
+
+    result = benchmark_pipeline(PrescriptXAI.from_config(config_path), pd.read_csv(csv_path))
+    encoded = result.model_dump_json(indent=2)
+    if output is not None:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(encoded, encoding="utf-8")
+    typer.echo(encoded)
 
 
 @app.command("evaluate")
@@ -482,7 +538,7 @@ def evaluate_model(
 @app.command("serve")
 def serve_api(
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
-    taxonomy_path: Path = typer.Option(Path("configs/features.yaml"), "--features"),
+    taxonomy_path: Path | None = typer.Option(None, "--features"),
 ) -> None:
     """Start the optional FastAPI service using configured bind settings."""
     try:
@@ -492,7 +548,9 @@ def serve_api(
     except ImportError as error:
         raise typer.BadParameter("install the optional API extra before running serve") from error
     config = load_config(config_path)
-    engine = PrescriptXAIEngine.from_files(config_path, taxonomy_path)
+    if taxonomy_path is not None:
+        config.pipeline.taxonomy_path = taxonomy_path
+    engine = PrescriptXAI.from_config(config)
     uvicorn.run(create_app(engine), host=config.api.host, port=config.api.port)
 
 

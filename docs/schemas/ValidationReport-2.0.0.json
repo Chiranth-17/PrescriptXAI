@@ -1,0 +1,259 @@
+{
+  "$defs": {
+    "CheckResult": {
+      "description": "One rule with a signed compliance margin (negative means violation).",
+      "properties": {
+        "explanation": {
+          "title": "Explanation",
+          "type": "string"
+        },
+        "feature": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Feature"
+        },
+        "margin": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Margin"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "passed": {
+          "title": "Passed",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "passed",
+        "margin",
+        "explanation"
+      ],
+      "title": "CheckResult",
+      "type": "object"
+    },
+    "TierValidation": {
+      "additionalProperties": false,
+      "description": "Machine-readable result and optional measurement for one validation tier.",
+      "properties": {
+        "checks": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/CheckResult"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "diagnostics": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "evidence_level": {
+          "default": "none",
+          "enum": [
+            "none",
+            "E1",
+            "E2",
+            "E3",
+            "E4",
+            "E5"
+          ],
+          "title": "Evidence Level",
+          "type": "string"
+        },
+        "limit": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limit"
+        },
+        "margin": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Margin"
+        },
+        "measurement": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Measurement"
+        },
+        "passed": {
+          "title": "Passed",
+          "type": "boolean"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "enum": [
+                "pass",
+                "fail",
+                "skipped"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        },
+        "warnings": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "passed"
+      ],
+      "title": "TierValidation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Independent validation results for model safety and physical plausibility tiers.",
+  "properties": {
+    "assumptions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "constraints_ok": {
+      "description": "Require both static proxy constraint tiers.",
+      "readOnly": true,
+      "title": "Constraints Ok",
+      "type": "boolean"
+    },
+    "evidence_level": {
+      "description": "State the highest contiguous evidence level reached by this result.",
+      "enum": [
+        "none",
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5"
+      ],
+      "readOnly": true,
+      "title": "Evidence Level",
+      "type": "string"
+    },
+    "failing_tiers": {
+      "description": "Return failed tiers while keeping skipped results distinct.",
+      "items": {
+        "type": "string"
+      },
+      "readOnly": true,
+      "title": "Failing Tiers",
+      "type": "array"
+    },
+    "joint": {
+      "description": "Require all four static checks, without applying a plausibility target to joint.",
+      "readOnly": true,
+      "title": "Joint",
+      "type": "boolean"
+    },
+    "model_valid": {
+      "description": "Expose true model validity independently of plausibility.",
+      "readOnly": true,
+      "title": "Model Valid",
+      "type": "boolean"
+    },
+    "plausible": {
+      "description": "Expose Tier 2 distributional plausibility only.",
+      "readOnly": true,
+      "title": "Plausible",
+      "type": "boolean"
+    },
+    "schema_version": {
+      "const": "2.0.0",
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "simulator": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TierValidation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "tier1_model_safety": {
+      "$ref": "#/$defs/TierValidation"
+    },
+    "tier2_distributional": {
+      "$ref": "#/$defs/TierValidation"
+    },
+    "tier3_engineering": {
+      "$ref": "#/$defs/TierValidation"
+    },
+    "tier4_sensor_coupling": {
+      "$ref": "#/$defs/TierValidation"
+    }
+  },
+  "required": [
+    "tier1_model_safety",
+    "tier2_distributional",
+    "tier3_engineering",
+    "tier4_sensor_coupling",
+    "model_valid",
+    "plausible",
+    "constraints_ok",
+    "joint",
+    "failing_tiers",
+    "evidence_level"
+  ],
+  "title": "ValidationReport",
+  "type": "object"
+}

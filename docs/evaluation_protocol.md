@@ -127,3 +127,13 @@ validation-engine population; no predictor is selected based on recourse.
   Future changes require a version bump, changelog and agreement from library/CLI/API/dashboard
   owners under rule19. Existing Phase 5 K sensitivity remains linked as historical assumed-K
   sensitivity; it is not relabeled as a newly measured Phase 6 mode curve.
+
+Phase 6 denominator clarification (before measurement): a returned counterfactual/diagnostic
+candidate is a nonzero sparse feasible returned state, regardless of Tier 1-4 outcomes; its
+Tier 2 numerator counts only those passing Tier 2. Failed returned candidates remain in this
+denominator. All-query Tier 2 also includes unchanged/infeasible diagnostics. Neither ratio is
+joint success. Every table includes per-base/per-fold config and artifact hashes. First-alert
+results are not compared as an improvement over the different Phase 5 mixed-cycle sample.
+
+Warmup clarification: one validation-engine warmup per population/model/mode/protocol report.
+The three base populations and five folds therefore exclude 32 warmup calls overall.

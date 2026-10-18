@@ -1,0 +1,169 @@
+seed: 1729
+horizon_H: 30
+tau_danger: 0.8
+tau_safe: 0.2
+dataset_subsets:
+- FD001
+- FD002
+- FD003
+- FD004
+model_choice: xgboost
+paths:
+  raw_data: data/raw
+  processed_data: data/processed
+  model: artifacts/phase4-final/grouped-cv/fold-1/model.joblib
+  mahalanobis: artifacts/phase5/fold-1/v2/mahalanobis.joblib
+  evaluation_report: artifacts/phase5/funnel.json
+latency_budget:
+  ingestion_max_ms: 10
+  inference_max_ms: 15
+  optimization_min_ms: 1200
+  optimization_max_ms: 1800
+  validation_max_ms: 100
+  dashboard_max_ms: 250
+  pipeline_min_ms: 1500
+  pipeline_max_ms: 2200
+artifacts:
+  model: artifacts/phase4-final/grouped-cv/fold-1/model.joblib
+  mahalanobis: artifacts/phase5/fold-1/v2/mahalanobis.joblib
+  evaluation_report: artifacts/phase5/funnel.json
+  coupling: artifacts/phase5/fold-1/v2/coupling.joblib
+api:
+  host: 127.0.0.1
+  port: 8000
+  cors_origins: []
+  cors_methods:
+  - GET
+  - POST
+  cors_headers:
+  - Content-Type
+  - X-API-Key
+  - X-Request-ID
+  api_key_env: PRESCRIPTXAI_API_KEY
+  max_payload_bytes: 1048576
+data:
+  root: data/raw
+  archive_name: CMAPSSData.zip
+  processed_root: data/processed
+  dataset: FD001
+  dataset_url: https://phm-datasets.s3.amazonaws.com/NASA/6.+Turbofan+Engine+Degradation+Simulation+Data+Set.zip
+  dataset_sha256: null
+  expected_row_counts:
+    FD001:
+      train: 20631
+      test: 13096
+      test_rul: 100
+    FD002:
+      train: 53759
+      test: 33991
+      test_rul: 259
+    FD003:
+      train: 24720
+      test: 16596
+      test_rul: 100
+    FD004:
+      train: 61249
+      test: 41214
+      test_rul: 248
+  download_timeout_seconds: 120
+  rul_cap: null
+  failure_horizon: 30
+  variance_threshold: 1.0e-08
+  regime_k: 6
+  lifetime_buckets: 6
+  rolling_features: false
+  rolling_window: 5
+  train_fraction: 0.7
+  validation_fraction: 0.15
+  test_fraction: 0.15
+model:
+  danger_threshold: 0.8
+  safe_threshold: 0.2
+  calibration_method: sigmoid
+  calibration_folds: 5
+  risk_estimator: xgboost
+  xgb_n_estimators: 250
+  xgb_max_depth: 4
+  xgb_learning_rate: 0.05
+  xgb_subsample: 0.8
+  xgb_colsample_bytree: 0.8
+  xgb_reg_lambda: 1.0
+  xgb_early_stopping_rounds: 20
+  calibration_bins: 10
+  torch_hidden_dims:
+  - 64
+  - 32
+  torch_learning_rate: 0.001
+  torch_epochs: 100
+  torch_batch_size: 128
+  torch_early_stopping_patience: 12
+  torch_gradient_clip_norm: 1.0
+  torch_deterministic: true
+  torch_device: cpu
+  lstm_window: 10
+recourse:
+  k_max: 3
+  max_scaled_distance: 4.0
+  rate_horizon_steps: 1
+  alpha: 10.0
+  beta: 1.0
+  gamma: 1.0
+  max_iter: 25
+  solver_ftol: 1.0e-09
+  safety_margin: 0.005
+  l1_mode: smooth
+  l1_weight: 1.0
+  l1_smoothing_epsilon: 1.0e-06
+  prediction_loss: squared_hinge
+  restarts: 1
+  alpha_growth: 2.0
+  alpha_steps: 3
+  l1_growth: 2.0
+  l1_escalation_steps: 1
+  support_search_top_m: 3
+  support_search_limit: 2
+  change_tolerance: 1.0e-07
+  max_line_search_steps: 8
+  true_model_grid_enabled: true
+  true_model_grid_points: 5
+  search_mode: fast
+  record_candidate_trace: false
+validation:
+  D_max: 8.0
+  d_max_method: mahalanobis
+  d_max_quantile: 0.99
+  rate_limits: {}
+  covariance_regularization: 1.0e-06
+  simulator_enabled: false
+  reference_distribution: all_cycles
+  healthy_min_rul: 30
+  regime_k: 6
+  mode: collect_all
+  surrogate_disagreement_threshold: 0.1
+  feedback_max_refinements: 2
+  feedback_penalty_weight: 10.0
+  feedback_penalty_growth: 10.0
+  coupling_calibration_reference: healthy_to_moderate
+  d_max_threshold_method: fixed
+evaluation:
+  random_seed: 1729
+  max_queries: 200
+  direction_similarity_radius: 1.0
+  recourse_validity_rate: 0.95
+  physical_plausibility_rate: 0.9
+  average_sparsity_max: 3
+  mean_risk_drop_min: 0.6
+  bootstrap_replicates: 2000
+  development_max_queries: 60
+pipeline:
+  taxonomy_path: configs/features.yaml
+  delta_min: 0.3
+  default_mode: fast
+  max_batch_rows: 1024
+  batch_workers: 1
+  max_workers: 4
+  artifact_cache_size: 4
+  benchmark_warmups: 1
+  benchmark_repeats: 1
+  escalation_message: Schedule maintenance and obtain domain review before intervention.
+  model_artifacts: {}

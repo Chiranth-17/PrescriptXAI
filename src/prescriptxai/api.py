@@ -1,67 +1,216 @@
-"""Optional FastAPI service over the shared recommendation engine."""
+"""FastAPI service exposing the same frozen public decision-support contract as the CLI."""
 
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
+import os
+import secrets
+from contextvars import Token
+from pathlib import Path
+from uuid import uuid4
 
-from prescriptxai.logging_utils import configure_logging
-from prescriptxai.pipeline import PrescriptXAIEngine
-from prescriptxai.schemas import RecommendationResponse, RecourseRequest, TierPayload
+import pandas as pd
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import ValidationError
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+from prescriptxai.config import AppConfig, load_config
+from prescriptxai.logging_utils import bind_run_id, reset_run_id
+from prescriptxai.pipeline import InputError, PrescriptXAI, PrescriptXAIEngine
+from prescriptxai.schemas import Assessment, BatchRequest, RecourseRequest, RecourseResult
 
 
-def create_app(engine: PrescriptXAIEngine) -> FastAPI:
-    """Create an application bound to an already configured local engine."""
-    configure_logging()
+class RequestGuard:
+    """Bound actual streamed bytes, authenticate and bind an isolated request identifier."""
+
+    def __init__(self, app: ASGIApp, config: AppConfig) -> None:
+        self.app, self.config = app, config
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Check one bounded request and preserve request-local logging context."""
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        headers = dict(scope.get("headers", []))
+        supplied = headers.get(b"x-request-id", b"").decode("utf-8", errors="replace")
+        request_id = (
+            supplied
+            if supplied and len(supplied) <= 128 and all(c.isalnum() or c in "-_" for c in supplied)
+            else uuid4().hex
+        )
+        token: Token[str] = bind_run_id(request_id)
+
+        async def respond(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                message.setdefault("headers", []).append(
+                    (b"x-request-id", request_id.encode("utf-8"))
+                )
+            await send(message)
+
+        try:
+            key = os.environ.get(self.config.api.api_key_env)
+            if key and not secrets.compare_digest(headers.get(b"x-api-key", b""), key.encode()):
+                await JSONResponse(
+                    {
+                        "detail": "invalid API key",
+                        "mode": self.config.pipeline.default_mode.upper(),
+                    },
+                    status_code=401,
+                )(scope, receive, respond)
+                return
+            body = bytearray()
+            while True:
+                message = await receive()
+                if message["type"] == "http.disconnect":
+                    return
+                chunk = message.get("body", b"")
+                if len(body) + len(chunk) > self.config.api.max_payload_bytes:
+                    await JSONResponse(
+                        {
+                            "detail": "payload exceeds configured byte limit",
+                            "mode": self.config.pipeline.default_mode.upper(),
+                        },
+                        status_code=413,
+                    )(scope, receive, respond)
+                    return
+                body.extend(chunk)
+                if not message.get("more_body", False):
+                    break
+            delivered = False
+
+            async def replay() -> Message:
+                nonlocal delivered
+                if not delivered:
+                    delivered = True
+                    return {"type": "http.request", "body": bytes(body), "more_body": False}
+                return await receive()
+
+            await self.app(scope, replay, respond)
+        finally:
+            reset_run_id(token)
+
+
+def create_app(
+    engine: PrescriptXAI | PrescriptXAIEngine | None = None, config: AppConfig | None = None
+) -> FastAPI:
+    """Create a loaded service or an explicit unavailable service (503, never fake output)."""
+    pipeline = (
+        engine
+        if isinstance(engine, PrescriptXAI)
+        else PrescriptXAI(engine)
+        if engine is not None
+        else None
+    )
+    settings = config or (
+        pipeline.config if pipeline else load_config(Path("configs/default.yaml"))
+    )
     app = FastAPI(
         title="PrescriptXAI",
+        version="2.0.0",
         description=(
-            "Maintenance decision support. Model validity and physical plausibility are separate. "
-            "C-MAPSS does not support RUL-extension claims."
+            "Proxy maintenance decision support. "
+            "Model validity is separate from plausibility; no RUL extension is established."
         ),
-        version="0.1.0",
+    )
+    app.add_middleware(RequestGuard, config=settings)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.api.cors_origins,
+        allow_methods=settings.api.cors_methods,
+        allow_headers=settings.api.cors_headers,
     )
 
+    def loaded() -> PrescriptXAI:
+        if pipeline is None:
+            raise HTTPException(503, "no model is loaded")
+        return pipeline
+
+    async def response_mode(request: Request) -> str:
+        try:
+            body = await request.json()
+            mode = body.get("mode") if isinstance(body, dict) else None
+            return (
+                mode.upper()
+                if mode in {"fast", "thorough"}
+                else settings.pipeline.default_mode.upper()
+            )
+        except (ValueError, RuntimeError):
+            return settings.pipeline.default_mode.upper()
+
+    @app.exception_handler(HTTPException)
+    async def http_error_handler(request: Request, error: HTTPException) -> JSONResponse:
+        return JSONResponse(
+            {"detail": error.detail, "mode": await response_mode(request)},
+            status_code=error.status_code,
+        )
+
+    @app.exception_handler(InputError)
+    async def input_error_handler(_request: Request, error: InputError) -> JSONResponse:
+        return JSONResponse(
+            {
+                "detail": str(error),
+                "error_type": type(error).__name__,
+                "mode": await response_mode(_request),
+            },
+            status_code=422,
+        )
+
+    @app.exception_handler(ValidationError)
+    async def validation_error_handler(_request: Request, error: ValidationError) -> JSONResponse:
+        return JSONResponse(
+            {"detail": str(error), "mode": await response_mode(_request)}, status_code=422
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def request_error_handler(
+        _request: Request, error: RequestValidationError
+    ) -> JSONResponse:
+        return JSONResponse(
+            {"detail": str(error), "mode": await response_mode(_request)}, status_code=422
+        )
+
     @app.get("/health")
-    def health() -> dict[str, str]:
-        """Report loaded model and dataset scope without claiming service safety."""
+    def health() -> dict[str, object]:
+        service = loaded()
         return {
             "status": "ready",
-            "model": engine.model.model_type,
-            "dataset": engine.taxonomy.dataset,
+            "model": service.engine.model.model_type,
+            "dataset": service.engine.taxonomy.dataset,
+            "mode": settings.pipeline.default_mode.upper(),
+            "schema_version": "2.0.0",
         }
 
-    @app.post("/recommend", response_model=RecommendationResponse)
-    def recommend(request: RecourseRequest) -> RecommendationResponse:
-        """Generate and validate a candidate from one raw-unit machine state."""
-        try:
-            result = engine.recommend(request.state)
-        except (ValueError, FileNotFoundError) as error:
-            raise HTTPException(status_code=422, detail=str(error)) from error
-        report = result.validation
-        tiers = report.tiers()
-        return RecommendationResponse(
-            evidence_level=report.evidence_level,
-            plausible=report.plausible,
-            constraints_ok=report.constraints_ok,
-            joint=report.joint,
-            failing_tiers=report.failing_tiers,
-            assumptions=report.assumptions,
-            original_state=request.state,
-            new_state=result.optimization.state,
-            outcome=result.outcome,
-            solver_success=result.optimization.solver_success,
-            optimizer_message=result.optimization.message,
-            objective_value=result.optimization.objective_value,
-            failure_reason=result.optimization.failure_reason,
-            risk_reached=result.optimization.risk_reached,
-            stage_timings_ms=result.optimization.stage_timings_ms,
-            objective_terms=result.optimization.objective_terms,
-            counterfactual_signs=result.optimization.counterfactual_signs,
-            solver_calls=result.optimization.solver_calls,
-            actuator_constraints_feasible=result.optimization.actuator_constraints_feasible,
-            tiers={
-                name: TierPayload.model_validate(tier.as_dict()) for name, tier in tiers.items()
-            },
+    @app.get("/config")
+    def configuration() -> dict[str, object]:
+        return {
+            **loaded().info(),
+            "mode": settings.pipeline.default_mode.upper(),
+            "authentication_enabled": bool(os.environ.get(settings.api.api_key_env)),
+        }
+
+    @app.get("/version")
+    def version() -> dict[str, str]:
+        return {
+            "service_version": "0.1.0",
+            "schema_version": "2.0.0",
+            "mode": settings.pipeline.default_mode.upper(),
+        }
+
+    @app.post("/assess", response_model=Assessment)
+    def assess(request: RecourseRequest) -> Assessment:
+        return loaded().assess(request.state, request.context, request.mode)
+
+    @app.post("/recommend", response_model=RecourseResult)
+    def recommend(request: RecourseRequest) -> RecourseResult:
+        return loaded().recommend(request.state, request.context, request.mode)
+
+    @app.post("/recommend/batch", response_model=list[RecourseResult])
+    def batch(request: BatchRequest) -> list[RecourseResult]:
+        service = loaded()
+        return service.recommend_batch(
+            pd.DataFrame(request.states), request.mode, contexts=request.contexts
         )
 
     return app
