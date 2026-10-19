@@ -10,7 +10,8 @@
 | 3 — Feature taxonomy and sensor coupling | Complete | Proxy taxonomy, fitted physical bounds, coupling propagation and Tier 4 checks |
 | 4 — Constrained recourse engine | Closed; synopsis targets measured honestly | Constrained search, final protocol audit, grouped uncertainty, historical errata |
 | 5 — Multi-tier validation (current prompt) | Closed; measured gaps retained | Shared tiers, bounded feedback, real funnels, audits and phase5-closed |
-| 6–11 — Remaining current phases | Not started | Source prompts / Part B changes table not supplied |
+| 6 — Decision support pipeline, CLI and API | In progress | Implementation committed; frozen real benchmark running; closure checks pending |
+| 7–11 — Remaining current phases | Not started | Source prompts / Part B changes table not supplied |
 
 ## Decisions
 
@@ -464,3 +465,16 @@ The 95% true-model target is missed under both protocols. Tier 2 meets its 90% a
   RECOVERABLE requires all four tiers; PARTIAL is not a safe-model verdict. Metadata is mandatory.
 - How to run: see docs/decision_pipeline.md. Real benchmark: uv run python scripts/diagnostics/phase6_pipeline.py.
 - Open: real population benchmark, full gate, freeze evidence and closure tag pending.
+
+
+### Phase 6 post-audit corrections (verification pending)
+
+The running serial benchmark uses committed source a72832c and the frozen base/fold YAMLs.
+Later source audits found API malformed-mode handling, boolean coercion, omitted-mode defaults,
+facade-local process configuration/hash consistency, and final singleton rescore authority gaps.
+These are corrected with additional regression cases. CLI observed context/history support was
+completed. ESCALATE explanations expose escalation rather than imperative diagnostic actions.
+No predictor, threshold, physical bound, rate, D_max or solver search setting was tuned.
+Final tests will run after serial timing finishes to avoid a competing test workload. Benchmark
+records keep their measured source hash; the final closure source will be identified separately.
+The execution crossed dates and contains long timing outliers; none will be removed or padded.

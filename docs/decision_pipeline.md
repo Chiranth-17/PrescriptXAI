@@ -48,7 +48,10 @@ uv run prescriptxai serve --config configs/experiments/phase6-pipeline-v1.yaml
 ```
 
 `recommend` and `assess` engine/cycle selection reads training archive telemetry; official test
-states can be supplied as JSON/CSV. Library multiprocessing uses isolated CPU artifact workers,
+states can be supplied as JSON/CSV. `recommend` and `assess` accept `--context observed_context.json`;
+`batch` accepts `--contexts contexts.json` with one observed context or null per CSV row.
+For LSTM engine/cycle selection, the CLI derives actual preceding archive cycles and rejects
+insufficient history. It never pads or fabricates a sequence. Omitted modes use the YAML default. Library multiprocessing uses isolated CPU artifact workers,
 bounded by YAML worker/batch limits. This is a throughput option, excluded from serial latency claims.
 Cached artifacts are fingerprinted; shared predictor access is locked. Requests copy mode settings.
 
@@ -56,6 +59,7 @@ Cached artifacts are fingerprinted; shared predictor access is locked. Requests 
 
 POST `/assess`, `/recommend` accept `{"state": {...}, "context": {...}, "mode": "fast"}`.
 POST `/recommend/batch` accepts `{"states": [{...}], "mode": "thorough", "contexts": [null]}`.
+Omitted API modes use `pipeline.default_mode`; explicit modes override it.
 GET `/health`, `/config`, `/version` describe loaded artifacts and schema. `/docs` and `/openapi.json`
 describe the contracts. No model loaded returns 503; invalid payloads return 422. Actual streamed
 payload bytes above the configured limit return 413. When the environment variable named by

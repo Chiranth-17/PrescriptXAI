@@ -31,6 +31,7 @@ from prescriptxai.logging_utils import configure_logging
 from prescriptxai.models.registry import save_model_bundle
 from prescriptxai.models.train import train_risk_model
 from prescriptxai.pipeline import PrescriptXAI, PrescriptXAIEngine
+from prescriptxai.schemas import InputContext
 from prescriptxai.validation.pipeline import (
     fit_mahalanobis_validator,
     save_mahalanobis_validator,
@@ -357,6 +358,35 @@ def _select_state(
     return {str(name): float(value) for name, value in row.iloc[0].items()}
 
 
+def _select_context(
+    context_path: Path | None,
+    engine_id: int | None,
+    cycle: int | None,
+    pipeline: PrescriptXAI,
+) -> InputContext | None:
+    """Read supplied observed context or derive actual preceding archive cycles for an LSTM."""
+    if context_path is not None:
+        return InputContext.model_validate_json(context_path.read_text(encoding="utf-8"))
+    window = getattr(pipeline.engine.model.estimator, "window", 1)
+    if window == 1 or engine_id is None or cycle is None:
+        return None
+    config = pipeline.config
+    frame = to_model_frame(
+        load_cmapss_archive(config.data.root / config.data.archive_name, config.data.dataset).train
+    )
+    prefix = frame.loc[
+        (frame.engine_id == engine_id) & (frame.cycle < cycle) & (frame.cycle >= cycle - window + 1)
+    ].sort_values("cycle")
+    if len(prefix) != window - 1:
+        raise ValueError(
+            f"LSTM requires {window - 1} actual preceding cycles; history cannot be padded"
+        )
+    return InputContext(
+        feature_names=pipeline.engine.model.feature_names,
+        history=prefix.loc[:, pipeline.engine.model.feature_names].to_numpy(dtype=float).tolist(),
+    )
+
+
 @app.command("recommend")
 def recommend_state(
     state_path: Path | None = typer.Argument(None, exists=True, readable=True),
@@ -364,7 +394,8 @@ def recommend_state(
     taxonomy_path: Path | None = typer.Option(None, "--features"),
     engine_id: int | None = typer.Option(None, "--engine-id"),
     cycle: int | None = typer.Option(None, "--cycle"),
-    mode: Literal["fast", "thorough"] = typer.Option("fast", "--mode"),
+    context_path: Path | None = typer.Option(None, "--context", exists=True),
+    mode: Literal["fast", "thorough"] | None = typer.Option(None, "--mode"),
 ) -> None:
     """Return the public result for JSON telemetry or a real engine/cycle."""
     config = load_config(config_path)
@@ -372,7 +403,11 @@ def recommend_state(
         config.pipeline.taxonomy_path = taxonomy_path
     pipeline = PrescriptXAI.from_config(config)
     try:
-        result = pipeline.recommend(_select_state(state_path, engine_id, cycle, config), mode=mode)
+        result = pipeline.recommend(
+            _select_state(state_path, engine_id, cycle, config),
+            _select_context(context_path, engine_id, cycle, pipeline),
+            mode=mode,
+        )
     except ValueError as error:
         raise typer.BadParameter(str(error)) from error
     typer.echo(result.model_dump_json(indent=2))
@@ -384,12 +419,15 @@ def assess_state(
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
     engine_id: int | None = typer.Option(None, "--engine-id"),
     cycle: int | None = typer.Option(None, "--cycle"),
+    context_path: Path | None = typer.Option(None, "--context", exists=True),
 ) -> None:
     """Assess true calibrated alert risk without recourse."""
     config = load_config(config_path)
     try:
-        result = PrescriptXAI.from_config(config).assess(
-            _select_state(state_path, engine_id, cycle, config)
+        pipeline = PrescriptXAI.from_config(config)
+        result = pipeline.assess(
+            _select_state(state_path, engine_id, cycle, config),
+            _select_context(context_path, engine_id, cycle, pipeline),
         )
     except ValueError as error:
         raise typer.BadParameter(str(error)) from error
@@ -401,13 +439,23 @@ def batch_states(
     csv_path: Path = typer.Argument(..., exists=True),
     output: Path = typer.Option(..., "--output"),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
-    mode: Literal["fast", "thorough"] = typer.Option("fast", "--mode"),
+    mode: Literal["fast", "thorough"] | None = typer.Option(None, "--mode"),
     workers: int = typer.Option(1, "--workers", min=1),
+    contexts_path: Path | None = typer.Option(None, "--contexts", exists=True),
 ) -> None:
     """Read raw CSV telemetry and write input-ordered public results as JSON."""
     try:
-        results = PrescriptXAI.from_config(config_path).recommend_batch(
-            pd.read_csv(csv_path), mode, workers=workers
+        pipeline = PrescriptXAI.from_config(config_path)
+        contexts = None
+        if contexts_path is not None:
+            payload = json.loads(contexts_path.read_text(encoding="utf-8"))
+            if not isinstance(payload, list):
+                raise ValueError("contexts JSON must be a list matching CSV rows")
+            contexts = [
+                InputContext.model_validate(item) if item is not None else None for item in payload
+            ]
+        results = pipeline.recommend_batch(
+            pd.read_csv(csv_path), mode, workers=workers, contexts=contexts
         )
     except ValueError as error:
         raise typer.BadParameter(str(error)) from error
@@ -416,7 +464,15 @@ def batch_states(
         json.dumps([r.model_dump(mode="json") for r in results], allow_nan=False, indent=2),
         encoding="utf-8",
     )
-    typer.echo(json.dumps({"rows": len(results), "output": str(output), "mode": mode.upper()}))
+    typer.echo(
+        json.dumps(
+            {
+                "rows": len(results),
+                "output": str(output),
+                "mode": (mode or pipeline.config.pipeline.default_mode).upper(),
+            }
+        )
+    )
 
 
 @app.command("info")

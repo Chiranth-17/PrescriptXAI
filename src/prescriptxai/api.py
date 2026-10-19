@@ -133,7 +133,7 @@ def create_app(
             mode = body.get("mode") if isinstance(body, dict) else None
             return (
                 mode.upper()
-                if mode in {"fast", "thorough"}
+                if isinstance(mode, str) and mode in {"fast", "thorough"}
                 else settings.pipeline.default_mode.upper()
             )
         except (ValueError, RuntimeError):
@@ -200,17 +200,26 @@ def create_app(
 
     @app.post("/assess", response_model=Assessment)
     def assess(request: RecourseRequest) -> Assessment:
-        return loaded().assess(request.state, request.context, request.mode)
+        mode = (
+            request.mode if "mode" in request.model_fields_set else settings.pipeline.default_mode
+        )
+        return loaded().assess(request.state, request.context, mode)
 
     @app.post("/recommend", response_model=RecourseResult)
     def recommend(request: RecourseRequest) -> RecourseResult:
-        return loaded().recommend(request.state, request.context, request.mode)
+        mode = (
+            request.mode if "mode" in request.model_fields_set else settings.pipeline.default_mode
+        )
+        return loaded().recommend(request.state, request.context, mode)
 
     @app.post("/recommend/batch", response_model=list[RecourseResult])
     def batch(request: BatchRequest) -> list[RecourseResult]:
         service = loaded()
+        mode = (
+            request.mode if "mode" in request.model_fields_set else settings.pipeline.default_mode
+        )
         return service.recommend_batch(
-            pd.DataFrame(request.states), request.mode, contexts=request.contexts
+            pd.DataFrame(request.states), mode, contexts=request.contexts
         )
 
     return app

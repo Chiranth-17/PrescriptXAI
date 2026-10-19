@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 import yaml
@@ -11,8 +12,8 @@ from typer.testing import CliRunner
 from fixtures.recourse_models import make_recourse_fixture
 from prescriptxai.cli import app
 from prescriptxai.config import load_config
-from prescriptxai.models.registry import save_model_bundle
-from prescriptxai.models.torch_models import MLPFailureModel
+from prescriptxai.models.registry import load_model_bundle, save_model_bundle
+from prescriptxai.models.torch_models import LSTMFailureModel, MLPFailureModel
 from prescriptxai.pipeline import ArtifactError, PrescriptXAI
 from prescriptxai.schemas import RecourseResult, ValidationReport
 from prescriptxai.validation.pipeline import (
@@ -123,3 +124,53 @@ def test_frozen_serialization_schemas_match_snapshot() -> None:
         assert schema.model_json_schema(mode="serialization") == json.loads(
             path.read_text(encoding="utf-8")
         )
+
+
+def test_cli_genuine_lstm_observed_history(fitted_config: Path, tmp_path: Path) -> None:
+    """JSON and CSV entrypoints accept actual explicit history without synthetic padding."""
+    config = load_config(fitted_config)
+    bundle = load_model_bundle(config.artifacts.model)
+    features = np.random.default_rng(17).normal(size=(8, 3, 2))
+    estimator = LSTMFailureModel(window=3, hidden_dims=(4,), epochs=2, batch_size=8, seed=17)
+    estimator.fit(features, np.asarray([0, 1] * 4))
+    bundle.estimator, bundle.model_type = estimator, "lstm"
+    save_model_bundle(bundle, config.artifacts.model)
+    config.model_choice = "lstm"
+    config.model.risk_estimator = "lstm"
+    config.pipeline.default_mode = "thorough"
+    fitted_config.write_text(yaml.safe_dump(config.model_dump(mode="json")), encoding="utf-8")
+    state = tmp_path / "state.json"
+    state.write_text('{"actuator": 2, "sensor": 2}', encoding="utf-8")
+    context = {"history": [[0, 2], [1, 2]], "feature_names": ["actuator", "sensor"]}
+    context_path = tmp_path / "context.json"
+    context_path.write_text(json.dumps(context), encoding="utf-8")
+    runner = CliRunner()
+    for command in ("assess", "recommend"):
+        result = runner.invoke(
+            app,
+            [command, str(state), "--context", str(context_path), "--config", str(fitted_config)],
+        )
+        assert result.exit_code == 0, result.exception
+        assert json.loads(result.output)["mode"] == "THOROUGH"
+    missing = runner.invoke(app, ["assess", str(state), "--config", str(fitted_config)])
+    assert missing.exit_code != 0 and "history" in missing.output
+    contexts = tmp_path / "contexts.json"
+    contexts.write_text(json.dumps([context]), encoding="utf-8")
+    csv = tmp_path / "rows.csv"
+    pd.DataFrame([{"actuator": 2, "sensor": 2}]).to_csv(csv, index=False)
+    output = tmp_path / "decisions.json"
+    result = runner.invoke(
+        app,
+        [
+            "batch",
+            str(csv),
+            "--contexts",
+            str(contexts),
+            "--output",
+            str(output),
+            "--config",
+            str(fitted_config),
+        ],
+    )
+    assert result.exit_code == 0, result.exception
+    assert json.loads(output.read_text(encoding="utf-8"))[0]["mode"] == "THOROUGH"

@@ -3,7 +3,7 @@
 from math import isfinite
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
 from prescriptxai.validation.base import CheckResult, EvidenceLevel, TierStatus
 
@@ -91,6 +91,14 @@ class RecourseRequest(BaseModel):
     state: dict[str, float]
     context: "InputContext | None" = None
     mode: Literal["fast", "thorough"] = "fast"
+
+    @field_validator("state", mode="before")
+    @classmethod
+    def reject_boolean_measurements(cls, value: object) -> object:
+        """Reject booleans before Pydantic can coerce them into physical measurements."""
+        if isinstance(value, dict) and any(isinstance(item, bool) for item in value.values()):
+            raise ValueError("boolean telemetry is not a numeric physical measurement")
+        return value
 
     @model_validator(mode="after")
     def state_values_are_finite(self) -> "RecourseRequest":
@@ -280,6 +288,26 @@ class InputContext(BaseModel):
     history: tuple[tuple[float, ...], ...] | None = None
     engine_id: int | None = Field(default=None, ge=1)
     cycle: int | None = Field(default=None, ge=1)
+
+    @model_validator(mode="before")
+    @classmethod
+    def reject_boolean_context(cls, value: object) -> object:
+        """Preserve numeric physical context before scalar coercion."""
+        if isinstance(value, dict):
+            telemetry = value.get("telemetry", {})
+            if isinstance(telemetry, dict) and any(isinstance(v, bool) for v in telemetry.values()):
+                raise ValueError("boolean telemetry is not a physical measurement")
+            if any(isinstance(value.get(n), bool) for n in ("engine_id", "cycle")):
+                raise ValueError("engine_id/cycle cannot be boolean")
+            history = value.get("history")
+            if isinstance(history, (list, tuple)) and any(
+                isinstance(v, bool)
+                for row in history
+                if isinstance(row, (list, tuple))
+                for v in row
+            ):
+                raise ValueError("history cannot contain boolean measurements")
+        return value
 
     @model_validator(mode="after")
     def rectangular_history(self) -> "InputContext":
@@ -600,6 +628,15 @@ class BatchRequest(BaseModel):
     states: list[dict[str, float]] = Field(min_length=1)
     mode: Literal["fast", "thorough"] = "fast"
     contexts: list[InputContext | None] | None = None
+
+    @field_validator("states", mode="before")
+    @classmethod
+    def reject_boolean_measurements(cls, value: object) -> object:
+        """Apply the same raw numeric contract to every batch item."""
+        if isinstance(value, list):
+            for row in value:
+                RecourseRequest.reject_boolean_measurements(row)
+        return value
 
 
 RecourseRequest.model_rebuild()

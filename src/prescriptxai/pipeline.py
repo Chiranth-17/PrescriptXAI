@@ -242,12 +242,16 @@ class PrescriptXAI:
     def __init__(self, engine: PrescriptXAIEngine) -> None:
         self.engine = engine
         self.config = engine.config.model_copy(deep=True)
-        encoded = json.dumps(self.config.model_dump(mode="json"), sort_keys=True).encode()
-        self.config_hash = hashlib.sha256(encoded).hexdigest()
         self.model_version = (
             f"{engine.model.model_type}:artifact-"
             f"{engine.model.artifact_version}:{engine.model.config_hash}"
         )
+
+    @property
+    def config_hash(self) -> str:
+        """Fingerprint current facade settings without mutating the cached engine."""
+        encoded = json.dumps(self.config.model_dump(mode="json"), sort_keys=True).encode()
+        return hashlib.sha256(encoded).hexdigest()
 
     @classmethod
     def from_config(cls, config: AppConfig | Path | str) -> PrescriptXAI:
@@ -490,7 +494,7 @@ class PrescriptXAI:
         with self.engine.predictor_lock:
             risk = float(self._bundle(observed).predict_risk(pd.DataFrame([state]))[0])
         selected_mode = mode or self.config.pipeline.default_mode
-        if selected_mode not in {"fast", "thorough"}:
+        if not isinstance(selected_mode, str) or selected_mode not in {"fast", "thorough"}:
             raise InputError("mode must be fast or thorough")
         return Assessment(
             mode="FAST" if selected_mode == "fast" else "THOROUGH",
@@ -514,7 +518,7 @@ class PrescriptXAI:
         state, observed = self._normalize(x_raw, context, complete=True)
         ingestion = (perf_counter_ns() - started) / 1e6
         selected_mode = mode or self.config.pipeline.default_mode
-        if selected_mode not in {"fast", "thorough"}:
+        if not isinstance(selected_mode, str) or selected_mode not in {"fast", "thorough"}:
             raise InputError("mode must be fast or thorough")
         with self.engine.predictor_lock:
             bundle = self._bundle(observed)
@@ -564,6 +568,9 @@ class PrescriptXAI:
                 self.engine.coupling,
             )
             validation_ms = (perf_counter_ns() - before) / 1e6
+            final_risk = validation.tier1_model.measurement
+            if final_risk is None:
+                raise ArtifactError("final Tier 1 rescore did not return a true risk")
             surrogate = []
             if bundle.supports_gradients:
                 estimator = (
@@ -604,8 +611,8 @@ class PrescriptXAI:
             else "PARTIAL"
             if physical
             and feasible
-            and optimization.final_risk > config.tau_safe
-            and risk - optimization.final_risk >= config.pipeline.delta_min
+            and final_risk > config.tau_safe
+            and risk - final_risk >= config.pipeline.delta_min
             else "ESCALATE"
         )
         deltas = {}
@@ -632,7 +639,7 @@ class PrescriptXAI:
                 reason=optimization.failure_reason or "validation_failed",
                 message=optimization.message,
                 closest_candidate=optimization.state,
-                risk_reached=optimization.final_risk,
+                risk_reached=final_risk,
                 failing_tiers=validation.failing_tiers,
                 suggested_escalation=config.pipeline.escalation_message,
             )
@@ -643,7 +650,7 @@ class PrescriptXAI:
             new_state=optimization.state,
             delta_per_feature=deltas,
             risk_before=risk,
-            risk_after=optimization.final_risk,
+            risk_after=final_risk,
             validation_report=validation.to_schema(),
             timings=StageTimings(
                 ingestion_ms=ingestion,
@@ -679,12 +686,15 @@ class PrescriptXAI:
     def recommend_batch(
         self,
         frame: pd.DataFrame,
-        mode: Literal["fast", "thorough"] = "fast",
+        mode: Literal["fast", "thorough"] | None = None,
         *,
         workers: int | None = None,
         contexts: Sequence[InputContext | None] | None = None,
     ) -> list[RecourseResult]:
         """Return input-order results, optionally using isolated worker processes."""
+        selected_mode = mode or self.config.pipeline.default_mode
+        if not isinstance(selected_mode, str) or selected_mode not in {"fast", "thorough"}:
+            raise InputError("mode must be fast or thorough")
         if not isinstance(frame, pd.DataFrame) or frame.empty or frame.columns.has_duplicates:
             raise FeatureError("batch must be a nonempty DataFrame with unique columns")
         if len(frame) > self.config.pipeline.max_batch_rows:
@@ -696,11 +706,11 @@ class PrescriptXAI:
             raise InputError("workers outside configured range")
         observed = list(contexts) if contexts is not None else [None] * len(frame)
         records = [
-            (cast(dict[str, float], row.to_dict()), mode, ctx)
+            (cast(dict[str, float], row.to_dict()), selected_mode, ctx)
             for (_, row), ctx in zip(frame.iterrows(), observed, strict=True)
         ]
         if count == 1:
-            return [self.recommend(row, ctx, mode) for row, _, ctx in records]
+            return [self.recommend(row, ctx, selected_mode) for row, _, ctx in records]
         devices = [
             getattr(self.engine.model.estimator, "device", "cpu"),
             getattr(self.engine.model.surrogate, "device", "cpu"),
@@ -713,7 +723,13 @@ class PrescriptXAI:
         with ProcessPoolExecutor(
             max_workers=count,
             initializer=_initialize_worker,
-            initargs=(e.config, e.taxonomy, e.model, e.mahalanobis, e.coupling),
+            initargs=(
+                self.config.model_copy(deep=True),
+                e.taxonomy,
+                e.model,
+                e.mahalanobis,
+                e.coupling,
+            ),
         ) as pool:
             return list(pool.map(_recommend_worker, records))
 
@@ -721,7 +737,7 @@ class PrescriptXAI:
         """Describe measured raw-unit actions without plotting or claiming efficacy."""
         specs = self.engine.taxonomy.feature_by_name()
         actions = []
-        for name in result.action_features:
+        for name in () if result.status == "ESCALATE" else result.action_features:
             delta = result.delta_per_feature[name]
             amount = (
                 f"{abs(delta.percent_change):.3g}%"
@@ -733,8 +749,13 @@ class PrescriptXAI:
                 f"by {amount} (from {result.original_state[name]:.6g} to "
                 f"{result.new_state[name]:.6g} {specs[name].unit}); proxy assumption."
             )
+        summary = "no intervention required" if not result.alert else result.status
+        if result.status == "ESCALATE" and result.failure is not None:
+            summary += ": " + result.failure.suggested_escalation
+        elif result.status == "PARTIAL":
+            summary += ": true risk remains above the safe target"
         return Explanation(
-            summary="no intervention required" if not result.alert else result.status,
+            summary=summary,
             actions=tuple(actions),
             risk_before=result.risk_before,
             risk_after=result.risk_after,
@@ -745,7 +766,7 @@ class PrescriptXAI:
                 "joint": result.validation_report.joint,
             },
             evidence_level=result.evidence_level,
-            warnings=result.warnings,
+            warnings=(*result.warnings, *result.assumptions),
         )
 
     def info(self) -> dict[str, object]:

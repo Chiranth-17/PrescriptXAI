@@ -14,10 +14,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from fastapi.testclient import TestClient
-from typer.testing import CliRunner
 
 from prescriptxai.api import create_app
-from prescriptxai.cli import app
 from prescriptxai.data.cmapss import load_cmapss_archive, to_model_frame
 from prescriptxai.data.preprocess import add_training_labels
 from prescriptxai.evaluation.latency import benchmark_pipeline
@@ -39,6 +37,12 @@ def write_json(path: Path, value: Any) -> None:
     temporary = path.with_suffix(".tmp")
     temporary.write_text(json.dumps(value, indent=2, allow_nan=False), encoding="utf-8")
     temporary.replace(path)
+
+
+def save_document(document: dict[str, Any]) -> None:
+    """Preserve run-specific evidence and update the convenience latest pointer."""
+    write_json(OUTPUT / document["run_id"] / "pipeline.json", document)
+    write_json(OUTPUT / "pipeline.json", document)
 
 
 def raw_frame(frame: pd.DataFrame) -> pd.DataFrame:
@@ -255,7 +259,7 @@ def run() -> None:
                 for mode, records in report["results"].items()
             }
             document["reports"].append(report)
-            write_json(OUTPUT / "pipeline.json", document)
+            save_document(document)
         # Real CLI/API demonstration: include first chronological nonrecoverable result if present.
         records = next(
             r
@@ -263,17 +267,32 @@ def run() -> None:
             if r["metadata"]["protocol_version"] == version
             and r["metadata"]["population"] == "internal_heldout_first_alert"
         )["results"]["FAST"]
-        selected = [records[0]] + next(
-            ([r] for r in records if r["status"] in {"PARTIAL", "ESCALATE"}), []
+        declared = (
+            records
+            + next(
+                r
+                for r in document["reports"]
+                if r["metadata"]["protocol_version"] == version
+                and r["metadata"]["population"] == "development_first_alert"
+            )["results"]["FAST"]
         )
+        selected = [records[0]]
+        for status in ("PARTIAL", "ESCALATE"):
+            matches = sorted(
+                (r for r in declared if r["status"] == status),
+                key=lambda r: (r["original_state"]["engine_id"], r["original_state"]["cycle"]),
+            )
+            selected.extend(matches[:1])
         for saved in selected:
             state = saved["original_state"]
             response = TestClient(create_app(pipeline)).post(
                 "/recommend", json={"state": state, "mode": "fast"}
             )
-            cli = CliRunner().invoke(
-                app,
+            cli = subprocess.run(
                 [
+                    "uv",
+                    "run",
+                    "prescriptxai",
                     "recommend",
                     "--engine-id",
                     str(int(state["engine_id"])),
@@ -282,16 +301,20 @@ def run() -> None:
                     "--config",
                     str(config_path),
                 ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+                check=False,
             )
-            if response.status_code != 200 or cli.exit_code != 0:
-                raise ValueError(f"real API/CLI gate failed: {response.text} {cli.output}")
-            cli_result = json.loads(cli.output)
+            if response.status_code != 200 or cli.returncode != 0:
+                raise ValueError(f"real API/CLI gate failed: {response.text} {cli.stdout}")
+            cli_result = json.loads(cli.stdout)
             if cli_result["new_state"] != response.json()["new_state"]:
                 raise ValueError("real CLI/API candidate mismatch")
             document["api_cli"].append(
                 {"protocol": version, "state": state, "api": response.json(), "cli": cli_result}
             )
-            write_json(OUTPUT / "pipeline.json", document)
+            save_document(document)
     for version in ("v1", "v2"):
         fold_records: dict[str, list[dict[str, Any]]] = {"FAST": [], "THOROUGH": []}
         fold_reports = []
@@ -331,7 +354,7 @@ def run() -> None:
                 fold_records[mode].extend(records)
             fold_reports.append(report)
             document["oof_folds_" + version] = fold_reports
-            write_json(OUTPUT / "pipeline.json", document)
+            save_document(document)
         # Pooled OOF counts are per-engine, each assessed only by its held-out fold model.
         document["oof_quality_" + version] = {
             mode: summary(records, pipeline.config) for mode, records in fold_records.items()
@@ -345,7 +368,7 @@ def run() -> None:
             ),
             "fold_config_hashes": [r["metadata"]["config_file_sha256"] for r in fold_reports],
         }
-        write_json(OUTPUT / "pipeline.json", document)
+        save_document(document)
     LOGGER.info("Completed %s; evidence written to %s", run_id, OUTPUT / "pipeline.json")
 
 

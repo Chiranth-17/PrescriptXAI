@@ -16,7 +16,7 @@ from fixtures.recourse_models import make_recourse_fixture
 from prescriptxai.api import create_app
 from prescriptxai.config import load_config
 from prescriptxai.evaluation.latency import benchmark_pipeline, summarize_latency
-from prescriptxai.models.torch_models import LSTMFailureModel
+from prescriptxai.models.torch_models import LSTMFailureModel, MLPFailureModel
 from prescriptxai.pipeline import (
     FeatureError,
     HistoryError,
@@ -146,6 +146,12 @@ def test_batch_threads_processes_and_memory(service: PrescriptXAI) -> None:
     single = [comparable(service.recommend(row)) for _, row in frame.iterrows()]
     assert [comparable(r) for r in service.recommend_batch(frame)] == single
     assert [comparable(r) for r in service.recommend_batch(frame, workers=2)] == single
+    service.config.pipeline.delta_min = 0.4
+    assert service.info()["config_hash"] != single[0]["config_hash"]
+    assert service.assess(frame.iloc[0]).config_hash == service.info()["config_hash"]
+    configured = [comparable(service.recommend(row)) for _, row in frame.iterrows()]
+    assert [comparable(r) for r in service.recommend_batch(frame, workers=2)] == configured
+    service.config.pipeline.delta_min = 0.3
     with ThreadPoolExecutor(max_workers=4) as pool:
         results = list(pool.map(service.recommend, [frame.iloc[0]] * 4))
     assert all(comparable(r) == single[0] for r in results)
@@ -194,6 +200,26 @@ def test_genuine_lstm_fixed_history(service: PrescriptXAI, window: int) -> None:
             service.assess([0.5, 2])
 
 
+def test_genuine_mlp_final_singleton_rescore_is_authoritative(service: PrescriptXAI) -> None:
+    """Public risk and triage use final singleton scoring after genuine torch grid search."""
+    bundle = service.engine.model
+    raw = pd.DataFrame({"actuator": [-2, -1, 0, 1, 2], "sensor": [2] * 5})
+    estimator = MLPFailureModel(hidden_dims=(8, 4), epochs=20, batch_size=5, seed=17)
+    estimator.fit(bundle.scaler.transform(raw), np.asarray([1, 1, 0, 0, 0]))
+    bundle.estimator = estimator
+    bundle.model_type = "mlp"
+    risk = bundle.predict_risk(raw)
+    index = int(np.argmax(risk))
+    service.config.tau_danger = service.config.model.danger_threshold = float(risk[index]) - 1e-4
+    result = service.recommend(raw.iloc[index])
+    assert result.alert and result.solver_settings["grid_ran"]
+    final = float(bundle.predict_risk(pd.DataFrame([result.new_state]))[0])
+    assert result.risk_after == result.validation_report.tier1_model_safety.measurement == final
+    assert result.validation_report.model_valid == (final <= service.config.tau_safe)
+    if result.failure is not None:
+        assert result.failure.risk_reached == final
+
+
 @pytest.mark.parametrize("status,risk", [("PARTIAL", 0.4), ("ESCALATE", 0.75)])
 def test_constructed_triage_and_forgery(service: PrescriptXAI, status: str, risk: float) -> None:
     """Contract triage follows independent tiers and the documented minimum risk drop."""
@@ -213,6 +239,9 @@ def test_constructed_triage_and_forgery(service: PrescriptXAI, status: str, risk
     payload["validation_report"] = report
     validated = RecourseResult.model_validate(payload)
     assert validated.status == status and not validated.joint
+    explanation = service.explain_result(validated)
+    assert bool(explanation.actions) == (status == "PARTIAL")
+    assert explanation.warnings
     payload.update(status="RECOVERABLE", triage="RECOVERABLE")
     with pytest.raises(ValidationError, match="triage"):
         RecourseResult.model_validate(payload)
@@ -262,6 +291,19 @@ def test_api_routes_and_guardrails(service: PrescriptXAI, monkeypatch: pytest.Mo
         rejected = client.post("/recommend", json=bad)
         assert rejected.status_code == 422 and rejected.json()["mode"] == "THOROUGH"
     assert client.post("/recommend", content="{").status_code == 422
+    for malformed_mode in ([], {}, 42, True):
+        rejected = client.post("/recommend", json={"state": state, "mode": malformed_mode})
+        assert rejected.status_code == 422 and rejected.json()["mode"] == "FAST"
+    assert (
+        client.post("/recommend", json={"state": {"actuator": True, "sensor": 2}}).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            "/recommend/batch", json={"states": [{"actuator": True, "sensor": 2}]}
+        ).status_code
+        == 422
+    )
     cors = client.options(
         "/recommend",
         headers={"Origin": "https://operator.example", "Access-Control-Request-Method": "POST"},
@@ -289,6 +331,27 @@ def test_api_routes_and_guardrails(service: PrescriptXAI, monkeypatch: pytest.Mo
     ):
         # Use a separate unloaded config with the ordinary byte limit.
         assert TestClient(create_app()).post(path, json=body).status_code == 503
+
+
+def test_configured_default_mode_is_shared(service: PrescriptXAI) -> None:
+    """Omitted API/library batch modes honor YAML, while an explicit mode overrides it."""
+    service.config.pipeline.default_mode = "thorough"
+    state = {"actuator": 2, "sensor": 2}
+    client = TestClient(create_app(service))
+    assert service.recommend_batch(pd.DataFrame([state]))[0].mode == "THOROUGH"
+    assert client.post("/recommend", json={"state": state}).json()["mode"] == "THOROUGH"
+    assert client.post("/assess", json={"state": state}).json()["mode"] == "THOROUGH"
+    assert client.post("/recommend/batch", json={"states": [state]}).json()[0]["mode"] == "THOROUGH"
+    assert client.post("/recommend", json={"state": state, "mode": "fast"}).json()["mode"] == "FAST"
+
+
+@pytest.mark.parametrize(
+    "context", [{"telemetry": {"sensor": True}}, {"engine_id": True}, {"history": [[True, 2]]}]
+)
+def test_boolean_context_is_not_coerced(service: PrescriptXAI, context: dict[str, object]) -> None:
+    """Context uses the same strict boolean rule as the observed latest raw state."""
+    with pytest.raises(InputError):
+        service.assess({"actuator": 2, "sensor": 2}, context)
 
 
 def test_measured_latency_and_upper_budget_rule(service: PrescriptXAI) -> None:
