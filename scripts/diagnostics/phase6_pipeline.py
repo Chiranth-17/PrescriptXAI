@@ -312,7 +312,15 @@ def run() -> None:
             if cli_result["new_state"] != response.json()["new_state"]:
                 raise ValueError("real CLI/API candidate mismatch")
             document["api_cli"].append(
-                {"protocol": version, "state": state, "api": response.json(), "cli": cli_result}
+                {
+                    "protocol": version,
+                    "population": next(
+                        r["metadata"]["population"] for r in document["reports"]
+                        if r["metadata"]["protocol_version"] == version
+                        and any(x["original_state"] == state for x in r["results"]["FAST"])
+                    ),
+                    "state": state, "api": response.json(), "cli": cli_result,
+                }
             )
             save_document(document)
     for version in ("v1", "v2"):

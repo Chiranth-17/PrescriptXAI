@@ -93,7 +93,7 @@ def render(path: Path = ROOT / "artifacts/phase6/pipeline.json") -> str:
                     f"Population `{metadata['population']}`: committed config `{metadata['config_path']}`, file SHA-256 `{metadata['config_file_sha256']}`, base config SHA-256 `{metadata['config_hash']}`; runtime {mode} config SHA-256 `{', '.join(sorted({record['config_hash'] for record in report['results'][mode]}))}`."
                 )
             labels.append(
-                "The base config hash identifies the committed YAML configuration; the actual per-mode hashes are carried in every saved RecourseResult. Pooled grouped OOF uses all five listed fold configs/model hashes; every query uses only its held-out fold predictor and validator. No fold percentiles are averaged."
+                "The base config hash identifies the committed YAML configuration; the actual per-mode hashes are carried in every saved RecourseResult. Pooled grouped OOF uses all five listed fold configs; model/validator/coupling hashes are preserved under input_fingerprints.artifacts in the detailed JSON. Every query uses only its held-out fold predictor and validator. No fold percentiles are averaged."
             )
             lines.extend(labels + [""])
             caption = "Tables below carry the run/config/git/protocol/mode/k_max/K/D_max/population labels above."
@@ -179,8 +179,15 @@ def render(path: Path = ROOT / "artifacts/phase6/pipeline.json") -> str:
         demos = demos + closure["api_cli"]
     for demo in demos:
         result = demo["api"]
+        population = demo.get("population")
+        if population is None:
+            population = ", ".join(
+                r["metadata"]["population"] for r in document["reports"]
+                if r["metadata"]["protocol_version"] == demo["protocol"]
+                and any(x["original_state"] == result["original_state"] for x in r["results"]["FAST"])
+            ) or "unresolved saved demonstration population"
         lines.append(
-            f"- {demo['protocol']}, FAST, population {demo.get('population', 'internal_heldout_first_alert')}, engine {int(result['original_state']['engine_id'])}, cycle {int(result['original_state']['cycle'])}: {result['status']}; true risk {result['risk_before']:.6f} -> {result['risk_after']:.6f}; Tier1={result['validation_report']['model_valid']}, Tier2={result['plausible']}, Tier3={result['validation_report']['tier3_engineering']['passed']}, Tier4={result['validation_report']['tier4_sensor_coupling']['passed']}; evidence {result['evidence_level']}. CLI/API states match. Config hash `{result['config_hash']}`; model `{result['model_version']}`. Proxy assumptions apply."
+            f"- {demo['protocol']}, FAST, population {population}, engine {int(result['original_state']['engine_id'])}, cycle {int(result['original_state']['cycle'])}: {result['status']}; true risk {result['risk_before']:.6f} -> {result['risk_after']:.6f}; Tier1={result['validation_report']['model_valid']}, Tier2={result['plausible']}, Tier3={result['validation_report']['tier3_engineering']['passed']}, Tier4={result['validation_report']['tier4_sensor_coupling']['passed']}; evidence {result['evidence_level']}. CLI/API states match. Config hash `{result['config_hash']}`; model `{result['model_version']}`. Proxy assumptions apply."
         )
     if closure_path.exists():
         measured = closure["latency_cli"]

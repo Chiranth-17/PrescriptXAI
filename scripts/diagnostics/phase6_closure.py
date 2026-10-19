@@ -18,6 +18,14 @@ OUTPUT = ROOT / "artifacts/phase6"
 
 
 def run() -> None:
+    dirty = subprocess.check_output(
+        ["git", "status", "--porcelain", "--untracked-files=all"], cwd=ROOT
+    ).decode()
+    if any(
+        entry[3:].startswith(("src/", "scripts/", "configs/", "docs/evaluation_protocol"))
+        for entry in dirty.splitlines()
+    ):
+        raise ValueError("commit implementation/configuration/protocol before delivery checks")
     source = json.loads((OUTPUT / "pipeline.json").read_text(encoding="utf-8"))
     if "oof_latency_v2" not in source:
         raise ValueError("serial population benchmark must finish before closure checks")

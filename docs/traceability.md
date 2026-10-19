@@ -75,3 +75,27 @@ and caches remain git-ignored. E3 is a proxy constraint level, not causal or rea
 
 Phases 7–11 still require their actual prompts and the actual Part B table. Phase 6 is authorized
 by the subsequent direct prompt. No missing content is invented.
+
+## Phase 6 direct prompt — closure verification in progress
+
+The directly supplied Phase 6 prompt is the specification for this implementation. Its preregistration
+is committed at `9921c38`; measured implementation is `a72832c`; subsequent interface corrections
+are committed at `79cb7f4`. No frozen predictor or constraint setting changed in those corrections.
+
+| Prompt task | Implementation / evidence | Status |
+|---|---|---|
+| 1. Public factories, assessment, recommendations, batches, explanation | `pipeline.py`; typed facade, artifact fingerprints, bounded CPU workers, structured explanations | Implemented; final gate pending |
+| 2. Full result, triage, provenance, timings, schema freeze | `schemas.py`; schema 2.0.0 snapshots and `schema_changelog.md`; strict round-trip consistency | Implemented; closure freeze pending |
+| 3. Below-alert gate | Zero change below tau_danger; exact boundary tests; independent tier diagnostics retained | Implemented; final gate pending |
+| 4. FAST and THOROUGH | Request-local modes and recorded effective settings; production budget measured | Modes implemented; FAST p95 target Not met in saved measurements |
+| 5. Real stage p50/p95/p99 | `evaluation/latency.py`, `phase6_pipeline.py`, `phase6_report.py`; direct total, engine CIs | Population run in progress; interrupted-run timing qualification retained |
+| 6. Input handling | Vector/Series/dict, named order, finite values, units, observed history/context, typed errors | Implemented; final gate pending |
+| 7. CLI | Recommend by engine/cycle or JSON, batch CSV, assess, latency-bench, info; observed sequence context | Implemented; final real delivery gate pending |
+| 8. FastAPI | Six endpoints, OpenAPI, request IDs, 422/503, CORS, environment API key, actual-byte limit | Implemented; final real delivery gate pending |
+| 9. Cache/thread safety/model choice | Fingerprint cache, shared inference lock, request config copies, xgb/MLP/LSTM adapters | Implemented; concurrency/config/history tests pending final gate |
+| UI rendering latency and cold startup | Excluded from backend timing; returned as unmeasured | Not measured in this phase; no inferred pass |
+| Fresh unseen-engine efficacy / real actuators / dynamics | Previously evaluated public engines and documented telemetry proxies only | Not established; E3 maximum, simulator skipped |
+
+Constructed fixtures exercise PARTIAL and negative cases only in tests. Real benchmark results are
+never replaced with synthetic values. No deployment-readiness or causal maintenance-benefit claim
+follows from a passing software gate. Phase closure can retain measured target gaps under rule 13.
