@@ -172,8 +172,8 @@ def render(path: Path = ROOT / "artifacts/phase6/pipeline.json") -> str:
             f"Final delivery run `{closure['run_id']}`; git `{closure['git_hash']}`; "
             f"evidence SHA-256 `{hashlib.sha256(closure_path.read_bytes()).hexdigest()}`. "
             "The additional development-state checks are delivery demonstrations, excluded "
-            "from population metrics. PARTIAL is tested with constructed cases when absent "
-            "from the declared real populations. K=1, k_max=3, D_max v1=5/v2=8; proxy assumptions apply.",
+            "from population metrics. PARTIAL has constructed schema tests and its observed "
+            "real population counts are reported above. K=1, k_max=3, D_max v1=5/v2=8; proxy assumptions apply.",
             "",
         ])
         demos = demos + closure["api_cli"]

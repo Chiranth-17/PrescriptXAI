@@ -383,7 +383,10 @@ def _select_context(
         )
     return InputContext(
         feature_names=pipeline.engine.model.feature_names,
-        history=prefix.loc[:, pipeline.engine.model.feature_names].to_numpy(dtype=float).tolist(),
+        history=tuple(
+            tuple(float(value) for value in row)
+            for row in prefix.loc[:, pipeline.engine.model.feature_names].to_numpy(dtype=float)
+        ),
     )
 
 

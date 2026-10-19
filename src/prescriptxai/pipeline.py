@@ -749,7 +749,7 @@ class PrescriptXAI:
                 f"by {amount} (from {result.original_state[name]:.6g} to "
                 f"{result.new_state[name]:.6g} {specs[name].unit}); proxy assumption."
             )
-        summary = "no intervention required" if not result.alert else result.status
+        summary: str = "no intervention required" if not result.alert else result.status
         if result.status == "ESCALATE" and result.failure is not None:
             summary += ": " + result.failure.suggested_escalation
         elif result.status == "PARTIAL":
