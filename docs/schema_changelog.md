@@ -6,7 +6,8 @@ One public RecourseResult is shared by library PrescriptXAI, CLI and HTTP respon
 status/triage, explicit mode, separate true/surrogate probabilities, complete raw/scaled deltas
 with action/dependent roles, escalation diagnostics, proxy assumptions, timings and provenance.
 ValidationReport retains independent Tier 1/Tier 2/Tiers 3–4/joint and explicit skipped dynamics.
-Read-only outcome/tiers aliases preserve existing API clients without a separate computation.
+Read-only outcome/tiers aliases retain those views for readers without a separate computation.
+This major version changes the service contract; clients using other legacy fields need migration.
 The existing PrescriptXAIEngine runtime remains available for earlier internal dashboard and
 evaluation callers; new callers use PrescriptXAI.from_config/from_artifacts.
 
@@ -19,3 +20,16 @@ remain schema1.1.0 and are preserved as evidence, not relabeled as new contract 
 
 Independent tier verdicts, status, margins, evidence and assumptions. Legacy precision-only
 covariance artifacts need refitting; result schema migration does not refit a model.
+
+
+### Service migration from 1.1 to 2.0
+
+| Legacy field | Public 2.0 representation |
+|---|---|
+| solver_success / optimizer_message | status and triage; structured failure and explain_result |
+| stage_timings_ms | timings with named ingestion/inference/optimization/validation/pipeline fields |
+| objective_value / objective_terms / counterfactual_signs / solver_calls | Internal search diagnostics remain on PrescriptXAIEngine results; public solver_settings contains effective runtime settings |
+| outcome.recourse_feasible | Sparse actuator feasibility (action_feasible), independent of true-model validity |
+
+Historical 1.1 reports remain unchanged. The legacy internal engine supports existing dashboard
+and evaluation callers; new HTTP consumers adopt the 2.0 schema and independent verdict fields.

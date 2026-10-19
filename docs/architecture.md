@@ -81,3 +81,27 @@ artifacts/query caches, and generates `docs/phase5_changes.md` plus the K sensit
 Historical configs under `configs/experiments/phase4-historical-*` are executable mirrors created
 for traceability, not retroactive preregistration. Original effective hashes/measurement commits
 remain attached to each historical report column.
+
+
+## Phase 6 public decision pipeline
+
+```mermaid
+flowchart LR
+  R[Raw vector / named row / JSON] --> N[Validate units, columns and observed history]
+  N --> P[True calibrated predictor]
+  P --> G{Risk >= tau_danger?}
+  G -->|Yes| O[FAST or THOROUGH bounded sparse search]
+  G -->|No| Z[Zero change]
+  O --> V[Independent Tiers 1-4 and skipped dynamic hook]
+  Z --> V
+  V --> T[Gate outcome or RECOVERABLE / PARTIAL / ESCALATE]
+  T --> S[Versioned RecourseResult]
+  S --> C[CLI / FastAPI / dashboard consumer]
+```
+
+`PrescriptXAI` is the public facade. Artifact contents, taxonomy and configuration fingerprint a
+bounded cache; predictor/coupling access is locked and each request copies its mode settings.
+Optional CPU process workers receive the facade configuration snapshot. LSTM history consists
+of actual preceding observations; propagation and optimization affect the latest timestep.
+Final Tier 1 rescoring determines every public risk and triage field. Core library calls return
+Pydantic objects; plotting belongs to reporting or operator interfaces. See decision_pipeline.md.

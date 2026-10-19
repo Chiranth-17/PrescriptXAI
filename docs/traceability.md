@@ -2,8 +2,9 @@
 
 ## Orchestration preflight — 2026-10-18
 
-Status: **Not met — required source instructions are unavailable.** No phase has started under the
-new Phases 5–11 orchestration request. No phase gate, commit, or closure tag is claimed.
+Historical status: **Not met — required source instructions were unavailable.** At this preflight
+no phase had started under the new Phases 5–11 orchestration request. Later direct Phase 5/6 prompts
+supersede this missing-input status for those phases; see their task records below.
 A separate read-only audit independently confirmed the missing inputs and older-roadmap mismatch.
 
 - **Full Phase 5–11 prompts — Not met.** `docs/prompts/remaining_phases_5_to_11.md` does not exist.
@@ -20,7 +21,7 @@ A separate read-only audit independently confirmed the missing inputs and older-
 
 ## Phase execution status
 
-Phases **5, 6, 7, 8, 9, 10, and 11** are **Not started** for this orchestration. Their individual
+At preflight, phases **5, 6, 7, 8, 9, 10, and 11** were **Not started** for this orchestration. Their individual
 tasks and gates cannot be enumerated or marked complete until the referenced source prompts and
 Part B changes are available. No implementation task has been skipped or replaced with an inferred
 task. Earlier completion labels in `PROGRESS.md` describe the previous roadmap, not these missing
@@ -37,7 +38,8 @@ measurements.
 ## Phase 5 direct prompt — closed revision
 
 The user supplied Phase 5 directly after preflight. This supplies its tasks/gate and authorizes
-execution now. Phase 6–11 and Part B remain unavailable; no replacements are invented.
+execution. The user subsequently supplied Phase 6 directly. Phase 7–11 and Part B remain unavailable;
+no replacements are invented.
 
 | Prompt task | Implementation / evidence | Final status |
 |---|---|---|
@@ -71,5 +73,5 @@ findings were fixed by the primary agent. No predictor, risk gate, physical boun
 sigma multiplier or D_max was tuned using evaluation results. New real-data outputs, validators
 and caches remain git-ignored. E3 is a proxy constraint level, not causal or real-machine safety.
 
-Phases 6–11 still require their actual prompts and the actual Part B table. No such content was
-invented and no later closure tag is claimed.
+Phases 7–11 still require their actual prompts and the actual Part B table. Phase 6 is authorized
+by the subsequent direct prompt. No missing content is invented.

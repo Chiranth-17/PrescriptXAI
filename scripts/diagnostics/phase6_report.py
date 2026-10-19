@@ -59,6 +59,20 @@ def render(path: Path = ROOT / "artifacts/phase6/pipeline.json") -> str:
         "RUL extension is established. The [historical assumed-K sensitivity curve](phase5_changes.md) "
         "remains next to this K=1 headline; it is not a new FAST/THOROUGH K experiment.",
         "",
+        "![Historical assumed-K sensitivity, not a new Phase 6 experiment](phase5_k_curve.svg)",
+        "",
+        "The main measurement predates final interface corrections: invalid-input handling, "
+        "configured mode defaults, request-local process configuration, LSTM CLI history, and "
+        "authoritative final singleton scoring. The population benchmark used the frozen XGBoost "
+        "predictors. Final delivery checks below identify their own source commit. No population "
+        "result is relabeled as measured on a later source revision.",
+        "",
+        "The original benchmark's CLI demonstration reset its logging context. Individual request "
+        "IDs therefore differ from the enclosing report run ID in later rows; both are retained. "
+        "The subsequent harness isolates CLI subprocesses and saves each run in its own directory. "
+        "Shared base coupling artifact serialization matches the Phase 5 v2 copy; the frozen "
+        "v1/v2 calibration diagnostics are numerically identical. This is not a calibration refit.",
+        "",
     ]
     for version in ("v1", "v2"):
         base = [r for r in document["reports"] if r["metadata"]["protocol_version"] == version]
@@ -150,11 +164,38 @@ def render(path: Path = ROOT / "artifacts/phase6/pipeline.json") -> str:
                 ]
             )
     lines.extend(["## Real CLI/API gate", ""])
-    for demo in document["api_cli"]:
+    demos = document["api_cli"]
+    closure_path = ROOT / "artifacts/phase6/closure_checks.json"
+    if closure_path.exists():
+        closure = json.loads(closure_path.read_text(encoding="utf-8"))
+        lines.extend([
+            f"Final delivery run `{closure['run_id']}`; git `{closure['git_hash']}`; "
+            f"evidence SHA-256 `{hashlib.sha256(closure_path.read_bytes()).hexdigest()}`. "
+            "The additional development-state checks are delivery demonstrations, excluded "
+            "from population metrics. PARTIAL is tested with constructed cases when absent "
+            "from the declared real populations. K=1, k_max=3, D_max v1=5/v2=8; proxy assumptions apply.",
+            "",
+        ])
+        demos = demos + closure["api_cli"]
+    for demo in demos:
         result = demo["api"]
         lines.append(
-            f"- {demo['protocol']}, FAST, engine {int(result['original_state']['engine_id'])}, cycle {int(result['original_state']['cycle'])}: {result['status']}; true risk {result['risk_before']:.6f} -> {result['risk_after']:.6f}; Tier1={result['validation_report']['model_valid']}, Tier2={result['plausible']}, Tier3={result['validation_report']['tier3_engineering']['passed']}, Tier4={result['validation_report']['tier4_sensor_coupling']['passed']}; evidence {result['evidence_level']}. CLI/API states match. Config hash `{result['config_hash']}`; model `{result['model_version']}`. Proxy assumptions apply."
+            f"- {demo['protocol']}, FAST, population {demo.get('population', 'internal_heldout_first_alert')}, engine {int(result['original_state']['engine_id'])}, cycle {int(result['original_state']['cycle'])}: {result['status']}; true risk {result['risk_before']:.6f} -> {result['risk_after']:.6f}; Tier1={result['validation_report']['model_valid']}, Tier2={result['plausible']}, Tier3={result['validation_report']['tier3_engineering']['passed']}, Tier4={result['validation_report']['tier4_sensor_coupling']['passed']}; evidence {result['evidence_level']}. CLI/API states match. Config hash `{result['config_hash']}`; model `{result['model_version']}`. Proxy assumptions apply."
         )
+    if closure_path.exists():
+        measured = closure["latency_cli"]
+        lines.extend(["", "### CLI latency-bench delivery check", "",
+                      f"Run `{closure['run_id']}`; git `{closure['git_hash']}`; protocol/D_max version v1=5; "
+                      "k_max=3; K=1; population: one development engine. These are smoke measurements, "
+                      "not population latency estimates. All intervals bootstrap that one engine.", ""])
+        for mode, stages in measured["modes"].items():
+            hashes = sorted({r["config_hash"] for r in measured["results"][mode]})
+            lines.extend([f"Mode {mode}; config `configs/experiments/phase6-pipeline-v1.yaml`; "
+                          f"runtime hashes `{', '.join(hashes)}`.", "",
+                          "| Stage | p50 / p95 / p99 and engine CI |", "|---|---|"])
+            for stage, item in stages.items():
+                lines.append(f"| {stage} | {latency(item)} |")
+            lines.append("")
     lines.extend(
         [
             "",

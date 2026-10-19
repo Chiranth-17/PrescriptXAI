@@ -68,9 +68,9 @@
 - The measured FD001 coupling fit falls below the configured R² floor for `sensor_3` and `sensor_6`;
   those relations remain flagged and need better predictors or additional validated measurements.
 - The optional simulator remains an interface only and is disabled by default.
-- The LSTM supports sequence scoring and gradients, but the current snapshot recourse request does
-  not carry the history window. LSTM training/evaluation works; current interactive LSTM recourse
-  remains unsupported until that request interface accepts history.
+- The Phase 6 interface accepts observed LSTM history and fixes earlier timesteps during recourse.
+  Real Phase 6 population measurements use the preregistered XGBoost predictor; LSTM interface
+  behavior is verified with genuine fitted test models, not substituted into those measurements.
 - Phase 4 closure metrics are in `docs/phase4_final.md`; the earlier contradictory summary has
   been superseded. The final report distinguishes model validity from Tiers 2–4 plausibility and
   reports v1 and frozen v2, all-alert, first-alert, grouped OOF, and official-test populations.
@@ -366,8 +366,8 @@ the user and added verbatim to `AGENTS.md`, preserving the original instructions
 
 The requested Phase 5–11 tasks and gates cannot be inferred from the older roadmap. Existing
 Phase 5/6 completion rows above describe that earlier delivery and do not certify execution of the
-new prompts. All seven requested phases remain unstarted; zero phase gates have run and no new
-`phase<N>-closed` tags have been created for this request. Evidence and missing-input requirements
+new prompts. At that point all seven requested phases were unstarted, zero phase gates had run and no new
+`phase<N>-closed` tags existed for this request. Evidence and missing-input requirements
 are recorded in `docs/traceability.md`.
 
 The remaining inputs are the Phase 5–11 prompt file and Part B table. Copy the actual Part B table
@@ -375,10 +375,10 @@ into the changes file before executing Phase 5; then run the per-phase gates, re
 commit, tag, and proceed in order.
 
 
-## Phase 5 validation revision — active
+## Phase 5 validation revision — historical work log
 
 The user subsequently supplied the complete Phase 5 prompt directly; it supersedes the Phase 5
-missing-prompt preflight above. Phase 6–11 prompts and the Part B table remain unavailable.
+missing-prompt preflight above. At that point Phase 6–11 prompts and the Part B table were unavailable.
 Rules 12–29 are preserved in AGENTS.md. No later phase is inferred from an older roadmap.
 
 The Phase 5 protocol/configs were committed at `d64826c` before real-data measurements. The
@@ -448,7 +448,7 @@ The 95% true-model target is missed under both protocols. Tier 2 meets its 90% a
 
 - The validity and optimization-latency targets remain missed. Any tuning or performance changes must be developed on validation engines and frozen before a future test run; no targets were adjusted for this closure.
 - Full OOF all-alert paired coverage and new unseen-engine generalization are Partial/Not met as recorded in `docs/traceability.md`. No dynamic simulator or validated emulator is available; NullSimulator correctly skips.
-- Phase 6–11 prompts and the Part B changes table remain unavailable. The directly supplied Phase 5 prompt is complete; later phases have not been inferred or started.
+- At Phase 5 closure, Phase 6–11 prompts and the Part B changes table were unavailable. The user subsequently supplied Phase 6 directly; Phases 7–11 and Part B still need their actual source instructions.
 
 
 ## Phase 6 — implementation and preregistered measurement in progress

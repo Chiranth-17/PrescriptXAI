@@ -44,12 +44,26 @@ label semantics, optional cap, data-quality report, and manual download recovery
 See [predictive models](docs/predictive_models.md) for engine-disjoint fitting, validation-only
 calibration, held-out metrics, sequence window semantics, and artifact outputs.
 
-To score a raw-unit machine-state JSON file, provide model features plus configured context
-(`engine_id`, `cycle`, and `op_setting_3` for default FD001):
+To score a raw-unit machine-state JSON file, provide the declared telemetry and context.
+The public pipeline checks names, units, finite values and artifact compatibility. Actual omitted
+telemetry and observed LSTM history can be supplied as context; missing measurements are errors.
+With the existing fitted Phase 5 artifacts:
 
 ```powershell
-uv run prescriptxai recommend .\state.json
+uv run prescriptxai info --config configs/experiments/phase6-pipeline-v1.yaml
+uv run prescriptxai assess --engine-id 1 --cycle 1 --config configs/experiments/phase6-pipeline-v1.yaml
+uv run prescriptxai recommend .\state.json --mode fast --config configs/experiments/phase6-pipeline-v1.yaml
+uv run prescriptxai batch telemetry.csv --output decisions.json --config configs/experiments/phase6-pipeline-v1.yaml
+uv run prescriptxai latency-bench telemetry.csv --output latency.json --config configs/experiments/phase6-pipeline-v1.yaml
 ```
+
+The library exports `PrescriptXAI.from_config(...)`, `assess`, `recommend`, `recommend_batch` and
+`explain_result`. CLI and HTTP use the same versioned result with independent tier verdicts,
+RECOVERABLE/PARTIAL/ESCALATE triage, raw/scaled changes, metadata and measured timings.
+Below the alert threshold, the state is unchanged and status is NO_INTERVENTION.
+FAST and THOROUGH modes are explicit; FAST's name does not certify its latency budget.
+See [decision pipeline and HTTP usage](docs/decision_pipeline.md),
+[schema migration](docs/schema_changelog.md) and [Phase 6 measurements](docs/phase6_changes.md).
 
 Run deterministic held-out evaluation, producing JSON and Markdown reports under `artifacts/`:
 
