@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import shutil
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
@@ -214,6 +215,22 @@ def prepare_study_assets(study: StudyConfig) -> dict[str, Any]:
     """Prepare all declared models/folds and H sensitivities; resume existing exact assets."""
     revision = source_revision()
     index_path = study.artifact_root / "index.json"
+    if index_path.exists():
+        previous: dict[str, Any] = json.loads(index_path.read_text(encoding="utf-8"))
+        for key, asset in previous["models"].items():
+            for name, path in asset["paths"].items():
+                if file_hash(Path(path)) != asset["hashes"][name]:
+                    raise ValueError(f"asset changed since checkpoint: {key}/{name}")
+        from prescriptxai.evaluation.study import verify_asset_index
+
+        try:
+            verify_asset_index(study, previous)
+        except ValueError as error:
+            if not str(error).startswith("asset preparation is incomplete"):
+                raise
+        else:
+            seal_preparation_inputs(study, previous)
+            return previous
     signature = {
         "asset_code_hashes": {
             str(path): file_hash(path)
@@ -343,4 +360,53 @@ def prepare_study_assets(study: StudyConfig) -> dict[str, Any]:
                         local, taxonomy, frame, horizon_path, horizon_root, study.d_max_versions
                     )
     index_path.write_text(json.dumps(index, indent=2, allow_nan=False), encoding="utf-8")
+    seal_preparation_inputs(study, index)
     return index
+
+
+def seal_preparation_inputs(study: StudyConfig, index: dict[str, Any]) -> None:
+    """Seal current completed assets and verify archive/source identities on every later resume.
+
+    The original preparation commit is retained. Existing legacy preparations have a dated
+    post-preparation seal, not a retroactive claim that omitted inputs were signed before fitting.
+    """
+    config = load_config(study.frozen_solver_config)
+    archive_hash = file_hash(config.data.root / config.data.archive_name)
+    historical = json.loads(Path("artifacts/phase6/pipeline.json").read_text(encoding="utf-8"))
+    expected = historical.get("archive_sha256")
+    if expected is not None and archive_hash != expected:
+        raise ValueError("raw archive differs from historical frozen measurement")
+    sources = {"archive": archive_hash}
+    for model in ("xgboost", "mlp", "lstm"):
+        path = Path(f"artifacts/FD001-{model}.joblib")
+        sources[str(path)] = file_hash(path)
+    seal = {
+        "preparation_source": index["preparation_source"],
+        "index_sha256": content_hash_for_assets(index),
+        "input_hashes": sources,
+        "initial_signature_sha256": file_hash(study.artifact_root / "preparation.json"),
+    }
+    path = study.artifact_root / "completed-seal.json"
+    if path.exists():
+        saved = json.loads(path.read_text(encoding="utf-8"))
+        if {key: saved.get(key) for key in seal} != seal:
+            raise ValueError("completed preparation input/asset seal changed")
+    else:
+        path.write_text(
+            json.dumps(
+                {
+                    **seal,
+                    "sealed_at_utc": datetime.now(UTC).isoformat(),
+                    "seal_source": source_revision(require_clean=False),
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+
+def content_hash_for_assets(index: dict[str, Any]) -> str:
+    """Canonical fingerprint with original per-asset preparation provenance retained."""
+    from prescriptxai.evaluation.experiments import content_hash
+
+    return content_hash(index)

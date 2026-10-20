@@ -44,6 +44,7 @@ def observation() -> ExperimentObservation:
         raw_l1=1,
         scaled_l1=0.5,
         returned=True,
+        action_feasible=True,
         tier2=True,
         tier3=True,
         tier4=True,
@@ -67,6 +68,7 @@ def observation() -> ExperimentObservation:
         K=1,
         D_max=5,
         solver_tau_safe=0.2,
+        solver_tau_danger=0.8,
         solver_settings={},
         validation={},
     )

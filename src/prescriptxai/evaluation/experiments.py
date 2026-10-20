@@ -16,6 +16,9 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from prescriptxai.config import AppConfig
+from prescriptxai.schemas import InputContext
+
 
 class StudyConfig(BaseModel):
     """Precommitted experimental design; numerical choices are loaded from YAML."""
@@ -95,7 +98,7 @@ class StudyConfig(BaseModel):
                 raise ValueError("histogram edges must strictly increase")
         if not self.datasets or any(not models for models in self.datasets.values()):
             raise ValueError("datasets and models must be nonempty")
-        if any(v <= 0 for v in self.d_max_versions.values()):
+        if not self.d_max_versions or any(v <= 0 for v in self.d_max_versions.values()):
             raise ValueError("D_max must be positive")
         return self
 
@@ -158,6 +161,87 @@ def runtime_manifest() -> dict[str, object]:
     }
 
 
+def mark_stage_complete(directory: Path, stage: str, source: str, count: int) -> None:
+    """Atomically record verified stage completion without losing earlier stages."""
+    path = directory / "stages.json"
+    status = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    status[stage] = {"complete": True, "source": source, "observations": count}
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps(status, indent=2), encoding="utf-8")
+    temporary.replace(path)
+
+
+def audit_stage_completion(
+    directory: Path, manifest: dict[str, Any], study: StudyConfig
+) -> dict[str, bool]:
+    """Verify completion flags against saved query identities and measured sample counts."""
+    path = directory / "stages.json"
+    flags = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    expected = manifest.get("expected_queries", {})
+    with sqlite3.connect(directory / "records.sqlite3") as connection:
+        paired = "json_extract(payload,'$.population')='paired_internal_diagnostic'"
+        diagnostic_count = connection.execute(
+            "SELECT COUNT(*) FROM records WHERE " + paired
+        ).fetchone()[0]
+        total_count = connection.execute("SELECT COUNT(*) FROM records").fetchone()[0]
+        failed = connection.execute(
+            "SELECT case_id,json_extract(payload,'$.group') FROM records WHERE "
+            + paired
+            + " AND json_extract(payload,'$.variant')='full' "
+            "AND json_extract(payload,'$.joint')=0 ORDER BY case_id"
+        ).fetchall()
+    counts = {"diagnostics": diagnostic_count, "quality": total_count - diagnostic_count}
+    status = {
+        stage: (
+            flags.get(stage, {}).get("complete", False)
+            and flags[stage].get("source") == manifest["git_hash"]
+            and flags[stage].get("observations") == counts[stage] == expected.get(stage)
+        )
+        for stage in counts
+    }
+    reference_path = directory / "reference.json"
+    reference = (
+        json.loads(reference_path.read_text(encoding="utf-8")) if reference_path.exists() else {}
+    )
+    expected_reference = manifest.get("expected_reference_case_ids")
+    expected_oracles = set()
+    per_group: dict[str, int] = {}
+    for case_id, group in failed:
+        if per_group.get(group, 0) < study.oracle_max_failed_queries:
+            expected_oracles.add(case_id)
+            per_group[group] = per_group.get(group, 0) + 1
+    status["reference"] = bool(
+        status["diagnostics"]
+        and expected_reference is not None
+        and set(reference) == set(expected_reference)
+        and all("leverage" in item for item in reference.values())
+        and {key for key, item in reference.items() if "oracle" in item} == expected_oracles
+        and flags.get("reference", {}).get("complete", False)
+        and flags["reference"].get("source") == manifest["git_hash"]
+        and flags["reference"].get("observations") == len(expected_reference)
+    )
+    latency_path = directory / "latency.json"
+    latency_database = directory / "latency.sqlite3"
+    status["latency"] = False
+    if latency_path.exists() and latency_database.exists():
+        latency = json.loads(latency_path.read_text(encoding="utf-8"))
+        with sqlite3.connect(latency_database) as connection:
+            samples = dict(connection.execute("SELECT mode,COUNT(*) FROM samples GROUP BY mode"))
+        status["latency"] = bool(
+            flags.get("latency", {}).get("complete", False)
+            and flags["latency"].get("source") == manifest["git_hash"]
+            and flags["latency"].get("observations") == study.latency_runs_per_mode * 2
+            and latency["labels"]["git_hash"] == manifest["git_hash"]
+            and all(
+                samples.get(mode.lower()) == study.latency_runs_per_mode
+                and latency.get("modes", {}).get(mode, {}).get("pipeline_ms", {}).get("count")
+                == study.latency_runs_per_mode
+                for mode in ("FAST", "THOROUGH")
+            )
+        )
+    return status
+
+
 class ExperimentObservation(BaseModel):
     """Internal experimental record; frozen public schemas remain unchanged."""
 
@@ -180,14 +264,16 @@ class ExperimentObservation(BaseModel):
     candidate: dict[str, float]
     changed_features: list[str]
     sparsity: int = Field(ge=0)
+    proxy_sparsity: int = Field(default=0, ge=0)
     raw_l1: float = Field(ge=0)
     scaled_l1: float = Field(ge=0)
     returned: bool
+    action_feasible: bool
     tier2: bool
     tier3: bool
     tier4: bool
     joint: bool
-    status: Literal["RECOVERABLE", "PARTIAL", "ESCALATE"]
+    status: Literal["NO_INTERVENTION", "RECOVERABLE", "PARTIAL", "ESCALATE"]
     reason: str | None
     evidence_level: str
     mahalanobis_before: float
@@ -206,8 +292,31 @@ class ExperimentObservation(BaseModel):
     K: int
     D_max: float
     solver_tau_safe: float
+    solver_tau_danger: float
     solver_settings: dict[str, Any]
     validation: dict[str, Any]
+
+
+class QueryCase(BaseModel):
+    """One reproducible model/context/query with its immutable experiment labels."""
+
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+    case_id: str
+    group: str
+    dataset: str
+    model: str
+    population: str
+    protocol: str
+    variant: str
+    mode: Literal["fast", "thorough"]
+    config_path: Path
+    config: AppConfig
+    state: dict[str, float]
+    context: InputContext | None
+    rul: float
+    first_alert: bool
+    policy: dict[str, bool] | None = None
+    free_rate_fraction: float
 
 
 class ExperimentStore:
@@ -231,7 +340,22 @@ class ExperimentStore:
         self.connection.execute(
             "CREATE TABLE IF NOT EXISTS records (case_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
         )
+        self.connection.execute(
+            "CREATE TABLE IF NOT EXISTS cases (case_id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
+        )
         self.connection.commit()
+
+    def register_case(self, case: QueryCase) -> None:
+        """Persist exact effective configuration and observed history before execution."""
+        payload = case.model_dump_json()
+        previous = self.connection.execute(
+            "SELECT payload FROM cases WHERE case_id=?", (case.case_id,)
+        ).fetchone()
+        if previous and json.loads(previous[0]) != json.loads(payload):
+            raise ValueError("case identity was reused for different effective inputs")
+        if not previous:
+            with self.connection:
+                self.connection.execute("INSERT INTO cases VALUES (?,?)", (case.case_id, payload))
 
     def completed(self) -> set[str]:
         """Return committed query IDs; interrupted uncommitted work is retried."""

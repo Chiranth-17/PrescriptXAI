@@ -17,6 +17,7 @@ core = [
   "scipy==1.17.1; python_version < '3.12'",
   "scipy==1.18.1; python_version >= '3.12'",
   "scikit-learn==1.9.1",
+  "threadpoolctl==3.7.0",
   "xgboost==3.1.2",
   "torch==2.14.1",
   "pydantic==2.13.5",
@@ -37,9 +38,15 @@ dev = [
 ]
 dashboard = ["plotly==6.9.0", "streamlit==1.65.0"]
 api = ["fastapi==0.142.2", "uvicorn==0.54.0"]
+baselines = [
+    "dice-ml==0.12",
+    "lightgbm==4.7.0",
+    "raiutils==0.4.2",
+    "tqdm==4.70.1",
+]
 
 [tool.uv]
-default-groups = ["core", "dev", "dashboard", "api"]
+default-groups = ["core", "dev", "dashboard", "api", "baselines"]
 
 [project.scripts]
 prescriptxai = "prescriptxai.cli:app"
@@ -61,7 +68,7 @@ source = ["prescriptxai"]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 0
+fail_under = 81.0170359933393
 
 [tool.ruff]
 line-length = 100

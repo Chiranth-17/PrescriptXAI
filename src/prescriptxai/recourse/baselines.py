@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import random
 from importlib import import_module
 from time import perf_counter_ns
 
@@ -61,7 +62,11 @@ def single_actuator_baseline(
     one_feature_config = config.model_copy(deep=True)
     one_feature_config.recourse.max_changed_features = 1
     return optimize_recourse(
-        initial_state, bundle, taxonomy, one_feature_config, coupling,
+        initial_state,
+        bundle,
+        taxonomy,
+        one_feature_config,
+        coupling,
         validate_plausibility=False,
     )
 
@@ -76,8 +81,14 @@ def unconstrained_gradient_baseline(
         return no_action_baseline(initial_state, bundle, config.model.safe_threshold)
     if not bundle.supports_gradients:
         return OptimizationResult(
-            initial_state, (), initial_risk, initial_risk, False, False,
-            "unconstrained gradient baseline has no differentiable predictor", None,
+            initial_state,
+            (),
+            initial_risk,
+            initial_risk,
+            False,
+            False,
+            "unconstrained gradient baseline has no differentiable predictor",
+            None,
             failure_reason="differentiable_predictor_unavailable",
             risk_reached=initial_risk,
             stage_timings_ms={"total": _elapsed_ms(started)},
@@ -92,15 +103,11 @@ def unconstrained_gradient_baseline(
 
     def value_and_grad(delta: np.ndarray) -> tuple[float, np.ndarray]:
         """Return smooth unconstrained objective and autograd gradient."""
-        change = torch.tensor(
-            delta, dtype=torch.float64, device=base.device, requires_grad=True
-        )
+        change = torch.tensor(delta, dtype=torch.float64, device=base.device, requires_grad=True)
         risk = bundle.torch_forward((base + change.to(torch.float32)).unsqueeze(0)).reshape(())
         hinge = torch.relu(risk - config.model.safe_threshold + config.recourse.safety_margin)
         prediction_loss = (
-            hinge.square()
-            if config.recourse.prediction_loss == "squared_hinge"
-            else hinge
+            hinge.square() if config.recourse.prediction_loss == "squared_hinge" else hinge
         )
         epsilon = config.recourse.l1_smoothing_epsilon
         l1 = (torch.sqrt(change.square() + epsilon**2) - epsilon).sum()
@@ -146,6 +153,14 @@ def unconstrained_gradient_baseline(
         failure_reason=None if valid else "safe_risk_not_reached",
         risk_reached=final_risk,
         stage_timings_ms={"optimization": _elapsed_ms(started)},
+        effective_solver_settings={
+            "method": "L-BFGS-B",
+            "actual_iterations": int(solved.nit),
+            "function_evaluations": int(solved.nfev),
+            "unconstrained": True,
+            "bounds_applied": False,
+            "alpha": config.recourse.prediction_weight,
+        },
         objective_terms={
             "l1": float(np.abs(solved.x).sum()),
             "prediction": config.recourse.prediction_weight
@@ -199,14 +214,10 @@ def dice_baseline(
 
         classes_ = np.asarray([0, 1])
 
-        def predict_proba(
-            self, values: pd.DataFrame | np.ndarray
-        ) -> NDArray[np.float64]:
+        def predict_proba(self, values: pd.DataFrame | np.ndarray) -> NDArray[np.float64]:
             frame = pd.DataFrame(values, columns=bundle.feature_names)
             risk = bundle.predict_risk(frame)
-            probabilities: NDArray[np.float64] = np.empty(
-                (len(risk), 2), dtype=np.float64
-            )
+            probabilities: NDArray[np.float64] = np.empty((len(risk), 2), dtype=np.float64)
             probabilities[:, 0] = 1.0 - risk
             probabilities[:, 1] = risk
             return probabilities
@@ -218,21 +229,42 @@ def dice_baseline(
     )
     model = dice_ml.Model(model=BundleAdapter(), backend="sklearn", model_type="classifier")
     explainer = dice_ml.Dice(data, model, method="random")
-    generated = explainer.generate_counterfactuals(
-        pd.DataFrame([initial_state], columns=bundle.feature_names),
-        total_CFs=1,
-        desired_class=0,
-    )
+    numpy_state, random_state = np.random.get_state(), random.getstate()
+    try:
+        np.random.seed(config.seed)
+        random.seed(config.seed)
+        generated = explainer.generate_counterfactuals(
+            pd.DataFrame([initial_state], columns=bundle.feature_names),
+            total_CFs=1,
+            desired_class=0,
+            stopping_threshold=config.tau_safe,
+            random_seed=config.seed,
+        )
+    except import_module("raiutils.exceptions").UserConfigValidationException as error:
+        if not str(error).startswith("No counterfactuals found"):
+            raise
+        generated = None
+    finally:
+        np.random.set_state(numpy_state)
+        random.setstate(random_state)
     initial_risk = float(bundle.predict_risk(pd.DataFrame([initial_state]))[0])
-    examples = generated.cf_examples_list
+    examples = generated.cf_examples_list if generated is not None else []
     if not examples or examples[0].final_cfs_df is None:
         return OptimizationResult(
-            initial_state, (), initial_risk, initial_risk, False, False,
-            "DiCE did not produce a counterfactual", None,
-            failure_reason="dice_no_candidate", risk_reached=initial_risk,
+            initial_state,
+            (),
+            initial_risk,
+            initial_risk,
+            False,
+            False,
+            "DiCE did not produce a counterfactual",
+            None,
+            failure_reason="dice_no_candidate",
+            risk_reached=initial_risk,
         )
     candidate = {
-        name: float(examples[0].final_cfs_df.iloc[0][name]) for name in bundle.feature_names
+        **initial_state,
+        **{name: float(examples[0].final_cfs_df.iloc[0][name]) for name in bundle.feature_names},
     }
     risk = float(bundle.predict_risk(pd.DataFrame([candidate]))[0])
     deltas = tuple(
@@ -252,9 +284,16 @@ def dice_baseline(
     )
     valid = risk <= config.model.safe_threshold
     return OptimizationResult(
-        candidate, deltas, initial_risk, risk, True, valid,
-        "optional DiCE candidate; physical validity requires separate checks", None,
-        failure_reason=None if valid else "safe_risk_not_reached", risk_reached=risk,
+        candidate,
+        deltas,
+        initial_risk,
+        risk,
+        True,
+        valid,
+        "optional DiCE candidate; physical validity requires separate checks",
+        None,
+        failure_reason=None if valid else "safe_risk_not_reached",
+        risk_reached=risk,
     )
 
 

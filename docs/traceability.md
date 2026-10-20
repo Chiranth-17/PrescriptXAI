@@ -1,5 +1,29 @@
 # Phases 5–11 requirement traceability
 
+## Phase 7 direct prompt — implementation in progress
+
+The directly supplied Phase 7 prompt supplies this phase's requirements. The earlier missing-source
+entries below are historical; Phases 8–11 and the Part B changes table remain unavailable.
+Study inputs were committed at `0c0b6e1` before fitting; preparation began on `4ffb038`.
+
+| Prompt task | Implementation / evidence | Current status |
+|---|---|---|
+| 1. Pure metrics and engine bootstrap | `evaluation/metrics.py`; whole-engine conditional-ratio and hand-count tests | Implemented; full measurement pending |
+| 2. All required datasets/models, seeds, populations, resume/manifest | `evaluation/assets.py`, `study.py`, `experiments.py`, `runner.py`; 28 real bundles / 112 hashes audited | Partial: preparation verified; full run pending |
+| 3. Unconstrained, bounded, full and DiCE baselines | Actual re-optimization with original final validators; pinned DiCE installed and exercised | Partial: real paired diagnostics pending |
+| 4. Funnel, ladder, verified reference, leverage and strata | `diagnostics.py`, `study.py`, generated report; finite absence remains unresolved | Partial: saved production-failure diagnostics pending |
+| 5. One-component search ablations | `ablations.py`; actual search policies, original reporting taxonomy and runtime settings | Partial: real paired effects pending |
+| 6. One-factor sensitivity grids and assumed-K curve | Preregistered YAML grids, true H refits, fixed .20 headline; dense fallback budget disclosed | Partial: real curves / trade-off measurements pending |
+| 7. Surrogate/teacher and adversarial evidence | True singleton rescore, surrogate error / false-safe share, distance and violation metrics | Partial: measured error and margin tables pending |
+| 8. At least 1000 actual serial calls per mode | Checkpointed real-call harness, excluded warmups, stage quantiles and engine CIs | Partial: real serial benchmark pending |
+| 9. Markdown / HTML report and target gaps | Saved-result JSON/CSV/MD/HTML, seed variation, target-gap diagnoses, K plot and risk histogram | Partial: final full report pending |
+| Required software gate | Stable all-checks: Ruff clean, mypy 55 files, 276 passed, 83.350720% coverage; docs check passed | Met for framework source; post-measurement closure pending |
+| FD003 / FD004 optional experiments | Explicitly unscheduled in preregistration | Not evaluated; not a required-subset result |
+| Simulated trajectory health | No validated emulator or simulator exists; interface remains optional | Not evaluated; E3 proxy evidence maximum, no RUL extension |
+
+No Phase 7 target is marked met from test fixtures, model preparation or historical Phase 6 results.
+All generated telemetry, model files and measurement output remain ignored by Git.
+
 ## Orchestration preflight — 2026-10-18
 
 Historical status: **Not met — required source instructions were unavailable.** At this preflight

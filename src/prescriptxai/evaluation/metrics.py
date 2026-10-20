@@ -507,7 +507,18 @@ def experiment_metric_values(
             [a * b * c * d for a, b, c, d in zip(valid, plausible, tier3, tier4, strict=True)],
             ones,
         ),
-        "joint": ([float(bool(r["joint"])) for r in records], ones),
+        "joint": (
+            [
+                a * b * c * d * float(bool(r["action_feasible"]))
+                for a, b, c, d, r in zip(valid, plausible, tier3, tier4, records, strict=True)
+            ],
+            ones,
+        ),
+        "target_relative_validity": (
+            [float(float(r["risk_after"]) <= float(r["solver_tau_safe"])) for r in records],
+            ones,
+        ),
+        "joint_target_relative": ([float(bool(r["joint"])) for r in records], ones),
         "sparsity_all": (sparsity, ones),
         "sparsity_returned": ([a * b for a, b in zip(sparsity, returned, strict=True)], returned),
         "risk_reduction": ([a - b for a, b in zip(before, after, strict=True)], ones),
@@ -520,8 +531,50 @@ def experiment_metric_values(
         "bound_violations": ([float(int(r["bound_violations"]) > 0) for r in records], ones),
         "rate_violations": ([float(int(r["rate_violations"]) > 0) for r in records], ones),
     }
-    for status in ("RECOVERABLE", "PARTIAL", "ESCALATE"):
+    values["risk_gate_eligible"] = (
+        [float(r["risk_before"] >= r["solver_tau_danger"]) for r in records],
+        ones,
+    )
+    for status in ("NO_INTERVENTION", "RECOVERABLE", "PARTIAL", "ESCALATE"):
         values[status] = ([float(r["status"] == status) for r in records], ones)
+    success = values["joint"][0]
+    values["sparsity_success"] = ([a * b for a, b in zip(sparsity, success, strict=True)], success)
+    values["proxy_sparsity"] = (
+        [float(r.get("proxy_sparsity", r["sparsity"])) for r in records],
+        ones,
+    )
+    available = [float(r.get("surrogate_after") is not None) for r in records]
+    values["surrogate_MAE"] = (
+        [
+            abs(float(r["surrogate_after"]) - float(r["risk_after"]))
+            if r.get("surrogate_after") is not None
+            else 0.0
+            for r in records
+        ],
+        available,
+    )
+    values["surrogate_false_safe_share_all"] = (
+        [
+            float(
+                r.get("surrogate_after") is not None
+                and r["surrogate_after"] <= headline_safe_threshold
+                and r["risk_after"] > headline_safe_threshold
+            )
+            for r in records
+        ],
+        ones,
+    )
+    for stage in sorted({s for r in records for s in r["timings"]}):
+        values[f"runtime_{stage}_mean"] = (
+            [float(r["timings"].get(stage, 0.0)) for r in records],
+            [float(stage in r["timings"]) for r in records],
+        )
+    for label, violations in (
+        ("model_safe_and_immutable_violation", [r["immutable_violations"] > 0 for r in records]),
+        ("model_safe_and_bound_violation", [r["bound_violations"] > 0 for r in records]),
+        ("model_safe_and_T2_failure", [not r["tier2"] for r in records]),
+    ):
+        values[label] = ([float(a and b) for a, b in zip(valid, violations, strict=True)], ones)
     return values
 
 

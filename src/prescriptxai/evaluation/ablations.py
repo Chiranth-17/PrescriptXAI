@@ -168,6 +168,7 @@ def run_ablation_search(
         check_distribution=policy.check_distribution,
         check_coupling=policy.check_coupling,
         propagate_dependents=policy.propagate_dependents,
+        grid_support_cap=(config.recourse.k_max if not policy.enforce_sparsity else None),
     ).solve(state, local)
 
 

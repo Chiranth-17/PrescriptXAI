@@ -220,3 +220,33 @@ previous exposure, so this is a reproducible expanded evaluation, not fresh-engi
   reject incompatible resume inputs. No completed query is silently rerun or removed. Markdown/
   HTML reports are generated from saved files with targets, gaps, diagnosis, engine CIs and seed
   variation. Record unmet tasks in traceability; do not hide a target miss or redefine a metric.
+# Phase 7 implementation clarification — 2026-10-20, before recourse measurements
+
+The L0–L4 ladder and no-sparsity ablation retain dense gradient search. Their finite fallback
+grid keeps the frozen configuration's support cap (k_max) as a computational search budget;
+it does not constrain the dense candidate's allowed support. The cap and full effective policy
+are logged. This avoids exponential materialization when all model inputs are freed. These
+diagnostics are finite searches and never continuous infeasibility certificates.
+
+Development FAST selection keeps its preregistered seeded cap. Development THOROUGH uses
+true first alerts selected before that cap, so each eligible engine retains its first alert.
+The reported test populations remain uncapped. Successful-action sparsity and directly
+optimized-input sparsity are reported alongside original controllable-proxy sparsity. In
+tau_safe sensitivity, triage and evidence are labeled target-relative; the fixed .20 validity
+and joint metrics remain separately reported. "Returned counterfactual" means a nonzero,
+action-feasible candidate; saved closest diagnostics are available for every query.
+
+Preparation source is retained per asset. A post-preparation completion seal verifies the raw
+archive and source predictor identities against the audited historical assets on every resume;
+this is explicitly not a retroactive pre-fitting signature. Existing v1 fold coupling artifacts
+are reused for both D_max versions; their validation calibration reports match the historical
+v2 calibration, although the serialized v2 bytes differ. Predictor weights and cutoffs are unchanged.
+
+Alert selection uses authoritative singleton snapshot or genuine-window scoring, matching the
+public gate numerically; predictor scores can be reused across D_max versions. Historical FD001
+XGBoost outer-fold seeds remain as saved (1730–1734); newly fitted models use 1729. The actual
+training seed/source/config hash is reported per artifact. Solver seed repetitions do not estimate
+training-seed uncertainty. H sensitivity retains its paired source population and reports the
+new model's risk-gate eligibility and NO_INTERVENTION share; it never substitutes this population
+for the fixed headline. The post-preparation seal anchors independently audited source predictor
+identities; its automatic historical checksum comparison applies to the raw archive.

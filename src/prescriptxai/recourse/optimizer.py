@@ -94,6 +94,7 @@ class RecourseOptimizer:
         check_distribution: bool = True,
         check_coupling: bool = True,
         propagate_dependents: bool = True,
+        grid_support_cap: int | None = None,
     ) -> None:
         """Bind the calibrated predictor, physical limits, and fitted validation artifacts."""
         self.bundle = bundle
@@ -104,6 +105,7 @@ class RecourseOptimizer:
         self.check_distribution = check_distribution
         self.check_coupling = check_coupling
         self.propagate_dependents = propagate_dependents
+        self.grid_support_cap = grid_support_cap
 
     def solve(self, x: dict[str, float], config: AppConfig) -> OptimizationResult:
         """Solve recourse and return the closest sparse candidate even when unsafe.
@@ -561,7 +563,9 @@ class RecourseOptimizer:
             delta_grid = bounded_sparse_delta_grid(
                 lower_array,
                 upper_array,
-                max_changed_features=config.recourse.max_changed_features,
+                max_changed_features=(
+                    self.grid_support_cap or config.recourse.max_changed_features
+                ),
                 grid_points=config.recourse.true_model_grid_points,
                 change_tolerance=config.recourse.change_tolerance,
             )
@@ -1144,6 +1148,18 @@ class RecourseOptimizer:
             ),
             search_candidate_states=tuple(candidate_trace),
             effective_solver_settings={
+                "selected_alpha": selected.alpha,
+                "selected_l1_weight": selected.l1_weight,
+                "solver_calls": solver_calls,
+                "true_model_evaluations": true_model_evaluations,
+                "validate_plausibility": self.validate_plausibility,
+                "effective_distribution_filter": (
+                    self.validate_plausibility and self.check_distribution
+                ),
+                "effective_coupling_filter": self.validate_plausibility and self.check_coupling,
+                "check_distribution": self.check_distribution,
+                "check_coupling": self.check_coupling,
+                "propagate_dependents": self.propagate_dependents,
                 "max_iter": config.recourse.max_iterations,
                 "restarts": config.recourse.restarts,
                 "alpha_steps": config.recourse.alpha_steps,
@@ -1155,6 +1171,7 @@ class RecourseOptimizer:
                 "k_max": config.recourse.max_changed_features,
                 "max_scaled_distance": config.recourse.max_scaled_distance,
                 "true_model_grid_points": config.recourse.true_model_grid_points,
+                "grid_support_cap": self.grid_support_cap,
                 "grid_ran": grid_candidates_generated > 0,
                 "grid_candidates_generated": grid_candidates_generated,
                 "grid_candidates_scored": true_model_evaluations,

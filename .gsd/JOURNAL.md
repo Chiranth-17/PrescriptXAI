@@ -240,3 +240,26 @@ then measure the requested FD001 held-out benchmark without hiding target failur
 - Schema 2.0.0 snapshots are frozen; report, migration notes, task traceability and PROGRESS.md
   record the evidence and assumptions. Closure tag: phase6-closed. Phases 7–11 await actual prompts
   and the missing Part B table.
+# Phase 7 preparation evidence — 2026-10-20
+
+- Preregistered source `0c0b6e1`; initial asset source `4ffb038`. Real preparation completed with
+  28 model entries / 112 files. Independent audit verified every saved hash, complete OOF engine
+  coverage (100 FD001, 260 FD002), disjoint fit/calibration/test partitions and artifact features.
+- Source archive SHA-256:
+  `c9c5dec12a945a82e8bb4446589d7fb3cc057b5e5d81fa1a12e25ee9912ad3b2`.
+  Canonical asset-index hash:
+  `32d2a5ba1fe00efb0ab214d2a520050115be6ae7cf7f80b19de2e4fb58a77269`.
+- Legacy model migration preserved all 6 MLP and 10 LSTM tensors exactly, scaler arrays and
+  calibrator parameters. Historical XGBoost fold seeds 1730–1734 remain unchanged; actual source,
+  seed, training config and metrics are recorded per bundle.
+- `artifacts/phase7-gate.log`: 276 passed, 66 warnings, 376.36 s. Coverage JSON totals:
+  7196 statements, 915 missing, 2322 branches, 517 partial; 83.33683546963648% overall.
+  Source metadata additions followed this run; a new stable-source all-checks gate is running.
+- Phase 7 full recourse measurements have not started. No target claim follows from these tests.
+  The completed-source protocol clarifications and implementation will be committed first.
+- Stable-source verification: `mingw32-make all-checks` exited 0; Ruff passed, strict mypy
+  passed for 55 source files; 276 passed, 70 warnings in 368.59 s; docs checks passed.
+  `artifacts/phase7-stable-coverage.json`: 7246 statements, 921 missing, 2340 branches,
+  521 partial; 83.3507197997079%, above the enforced Phase 6 floor. `uv lock --check` passed.
+  The independent final source recheck found no remaining correctness blocker and no public
+  schema change. Real recourse measurements remain pending at this commit.

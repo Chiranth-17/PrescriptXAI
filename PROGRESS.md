@@ -11,7 +11,60 @@
 | 4 — Constrained recourse engine | Closed; synopsis targets measured honestly | Constrained search, final protocol audit, grouped uncertainty, historical errata |
 | 5 — Multi-tier validation (current prompt) | Closed; measured gaps retained | Shared tiers, bounded feedback, real funnels, audits and phase5-closed |
 | 6 — Decision support pipeline, CLI and API | Closed; performance target gap retained | Public schema 2.0.0, real delivery gates, 600-result audit, phase6-closed |
-| 7–11 — Remaining current phases | Not started | Source prompts / Part B changes table not supplied |
+| 7 — Full experimental framework | In progress | Preregistered; 28 real model/fold/H assets prepared; evaluation gate pending |
+| 8–11 — Remaining phases | Not started | Source prompts / Part B changes table not supplied |
+
+## Phase 7 — framework implementation and preparation (2026-10-20)
+
+The direct Phase 7 prompt supersedes the earlier missing-prompt status for this phase.
+Preregistration is commit `0c0b6e1`; initial preparation source is `4ffb038`. No Phase 7
+recourse result or design-target pass is claimed before the complete saved measurement.
+
+- Implemented engine-cluster metric intervals, fixed .20 headline validity, separate Tier 2
+  denominators, Tier 3/4/joint metrics, solver-seed mean/std, raw/scaled proximity, failure and
+  triage distributions. Failures and zero-return engines remain in the declared populations.
+- Added transactional per-query resume, exact input/config/history storage, complete-population
+  recipes, actual component-removal searches, constraint ladder, one-factor sensitivities,
+  production-reproducing reference diagnostics, leverage probes, serial checkpointed latency,
+  and Markdown/HTML/JSON/CSV reports with assumptions and evidence labels.
+- Prepared 28 real predictor bundles: FD001 xgb/MLP/LSTM and FD002 xgb, each base plus five outer
+  folds, and four H-sensitivity bundles. An independent read-only audit checked all 112 fitted
+  artifact hashes, engine partitions and feature compatibility. OOF coverage is exactly 100
+  FD001 engines per model and 260 FD002 engines. Original MLP/LSTM tensors, scaler statistics
+  and calibrator parameters were preserved during metadata migration.
+- Frozen historical FD001 XGBoost fold training seeds are 1730–1734; the other prepared models
+  use 1729. The five study seeds vary solver randomness only. Metadata records actual training
+  seeds, source hashes and metrics rather than implying five independent predictor fits.
+- The stable-source `mingw32-make all-checks` passed: Ruff clean, strict mypy clean for 55 source
+  files, 276 tests passed in 368.59 s, and 83.350720% branch-inclusive coverage (Phase 6:
+  81.017036%). Docs checks passed. The coverage gate now enforces the Phase 6 floor.
+- The final read-only source audit found no remaining blocker after completion-count guards,
+  matching-method quantile comparisons and strict committed-source latency checks were added.
+  Public schema files remain unchanged. Locked dependency validation also passed.
+
+### Assumptions and open gate work
+
+The proxy mapping, raw bounds/rates, risk gates, D_max v1=5/v2=8, K=1 headline and frozen solver
+settings remain unchanged. New dense diagnostic searches keep a finite sparse fallback-grid
+budget and disclose that scope. A finite reference search cannot certify continuous infeasibility.
+FD002 prediction retains its fitted global scaler; its distributional validator is regime aware.
+Maximum available evidence is E3, conditional on proxy assumptions. Trajectory health is not
+evaluated; static C-MAPSS supports no RUL-extension claim.
+
+Pending: full real diagnostics/quality run for both subsets and all required models/populations,
+reference diagnostics, 1000 serial latency calls per mode after warmup, generated target/gap tables,
+final independent result audit, closure gate and `phase7-closed` tag. Phase 7 remains in progress.
+
+### How to run Phase 7
+
+```powershell
+uv sync --all-groups --locked
+uv run python scripts/diagnostics/phase7_experiments.py --run-id <unique-run-id> --stage all
+mingw32-make all-checks
+```
+
+Reuse the identical run ID to resume. Source/config/protocol must be committed before measurement.
+See `docs/experimental_framework.md` for stage order, provenance, uncertainty and search scope.
 
 ## Decisions
 
