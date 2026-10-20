@@ -91,6 +91,9 @@ class RecourseOptimizer:
         mahalanobis: MahalanobisValidator | None = None,
         *,
         validate_plausibility: bool = True,
+        check_distribution: bool = True,
+        check_coupling: bool = True,
+        propagate_dependents: bool = True,
     ) -> None:
         """Bind the calibrated predictor, physical limits, and fitted validation artifacts."""
         self.bundle = bundle
@@ -98,6 +101,9 @@ class RecourseOptimizer:
         self.coupling = coupling
         self.mahalanobis = mahalanobis
         self.validate_plausibility = validate_plausibility
+        self.check_distribution = check_distribution
+        self.check_coupling = check_coupling
+        self.propagate_dependents = propagate_dependents
 
     def solve(self, x: dict[str, float], config: AppConfig) -> OptimizationResult:
         """Solve recourse and return the closest sparse candidate even when unsafe.
@@ -234,7 +240,7 @@ class RecourseOptimizer:
         )
         coupling_module = (
             self.coupling.propagate_scaled_torch_module(self.bundle.scaler).to(device)
-            if self.coupling is not None
+            if self.coupling is not None and self.propagate_dependents
             else None
         )
         rng = np.random.default_rng(config.seed)
@@ -281,6 +287,8 @@ class RecourseOptimizer:
                 self.mahalanobis,
                 self.coupling,
                 state,
+                check_distribution=self.check_distribution,
+                check_coupling=self.check_coupling,
             )
             if self.mahalanobis is not None and self.validate_plausibility
             else None
@@ -321,7 +329,7 @@ class RecourseOptimizer:
                 raw_upper = current_raw[index] + upper_array[index] * control_scales[index]
                 candidate[name] = float(np.clip(raw_value, raw_lower, raw_upper))
                 changed[index] = (candidate[name] - current_raw[index]) / control_scales[index]
-            if self.coupling is not None:
+            if self.coupling is not None and self.propagate_dependents:
                 candidate = apply_coupling_for_bundle(
                     candidate, self.coupling, self.bundle.scaler, reference_state=state
                 )
@@ -583,7 +591,7 @@ class RecourseOptimizer:
             )
             raw_rows = np.repeat(raw_initial[None, :], len(delta_grid), axis=0)
             raw_rows[:, control_positions] = current_raw + delta_grid * control_scales
-            if self.coupling is not None:
+            if self.coupling is not None and self.propagate_dependents:
                 raw_rows = self.coupling.propagate_batch(
                     raw_rows, self.bundle.feature_names, reference_state=raw_initial
                 )
@@ -650,7 +658,11 @@ class RecourseOptimizer:
                     closest = best_grid_candidate
                 return []
 
-            if self.mahalanobis is not None and self.validate_plausibility:
+            if (
+                self.mahalanobis is not None
+                and self.validate_plausibility
+                and self.check_distribution
+            ):
                 distances = self.mahalanobis.distance_batch(
                     scaled_rows[safe_indices],
                     frozen_operating_settings=frozen_settings(self.mahalanobis, state),
@@ -678,7 +690,9 @@ class RecourseOptimizer:
                 coupling_pass_mask(
                     raw_rows, self.bundle.feature_names, state, self.taxonomy, self.coupling
                 )
-                if self.mahalanobis is not None and self.validate_plausibility
+                if self.mahalanobis is not None
+                and self.validate_plausibility
+                and self.check_coupling
                 else np.ones(len(raw_rows), dtype=bool)
             )
             plausible_ordered = [
@@ -730,7 +744,7 @@ class RecourseOptimizer:
                 raw_rows = np.repeat(raw_initial[None, :], len(indices), axis=0)
                 deltas = delta_grid[np.asarray(indices, dtype=np.int64)]
                 raw_rows[:, control_positions] = current_raw + deltas * control_scales
-                if self.coupling is not None:
+                if self.coupling is not None and self.propagate_dependents:
                     raw_rows = self.coupling.propagate_batch(
                         raw_rows, self.bundle.feature_names, reference_state=raw_initial
                     )
@@ -747,6 +761,7 @@ class RecourseOptimizer:
                 if (
                     self.mahalanobis is not None
                     and self.validate_plausibility
+                    and self.check_distribution
                     and len(safe_indices)
                 ):
                     distances = self.mahalanobis.distance_batch(
@@ -790,7 +805,9 @@ class RecourseOptimizer:
                     coupling_pass_mask(
                         raw_rows, self.bundle.feature_names, state, self.taxonomy, self.coupling
                     )
-                    if self.mahalanobis is not None and self.validate_plausibility
+                    if self.mahalanobis is not None
+                    and self.validate_plausibility
+                    and self.check_coupling
                     else np.ones(len(raw_rows), dtype=bool)
                 )
                 for candidate_index in safe_order:
@@ -1187,10 +1204,13 @@ class RecourseOptimizer:
         scaled = self.bundle.scaler.transform(
             pd.DataFrame([candidate_state], columns=self.bundle.feature_names)
         )[0]
-        if not self.mahalanobis.validate(
-            np.asarray(scaled, dtype=np.float64),
-            frozen_operating_settings=frozen_settings(self.mahalanobis, initial_state),
-        ).valid:
+        if (
+            self.check_distribution
+            and not self.mahalanobis.validate(
+                np.asarray(scaled, dtype=np.float64),
+                frozen_operating_settings=frozen_settings(self.mahalanobis, initial_state),
+            ).valid
+        ):
             return False
         if not validate_engineering(
             initial_state,
@@ -1199,7 +1219,10 @@ class RecourseOptimizer:
             horizon_steps=horizon_steps,
         ).valid:
             return False
-        return validate_sensor_coupling(candidate_state, self.taxonomy, self.coupling).valid
+        return (
+            not self.check_coupling
+            or validate_sensor_coupling(candidate_state, self.taxonomy, self.coupling).valid
+        )
 
     @staticmethod
     def _failure(

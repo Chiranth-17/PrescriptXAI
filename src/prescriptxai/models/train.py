@@ -191,6 +191,8 @@ def train_risk_model(
     config: AppConfig,
     taxonomy: FeatureTaxonomy,
     model_name: str | None = None,
+    *,
+    engine_partitions: tuple[tuple[int, ...], tuple[int, ...], tuple[int, ...]] | None = None,
 ) -> TrainingResult:
     """Fit on train engines, calibrate on validation engines, and evaluate held-out engines.
 
@@ -206,14 +208,35 @@ def train_risk_model(
         raise ValueError("model must be one of xgb, mlp, or lstm")
     model_telemetry = to_model_frame(training_telemetry)
     labeled = add_training_labels(model_telemetry, config.data.rul_cap, config.data.failure_horizon)
-    splits = split_engines(
-        labeled,
-        config.data.train_fraction,
-        config.data.validation_fraction,
-        config.data.test_fraction,
-        config.seed,
-        lifetime_buckets=config.data.lifetime_buckets,
-    )
+    if engine_partitions is None:
+        splits = split_engines(
+            labeled,
+            config.data.train_fraction,
+            config.data.validation_fraction,
+            config.data.test_fraction,
+            config.seed,
+            lifetime_buckets=config.data.lifetime_buckets,
+        )
+    else:
+        train_ids, val_ids, test_ids = engine_partitions
+        sets = [set(values) for values in engine_partitions]
+        observed = set(int(v) for v in labeled.engine_id.unique())
+        if (
+            any(not values or len(values) != len(set(values)) for values in engine_partitions)
+            or sets[0] & sets[1]
+            or sets[0] & sets[2]
+            or sets[1] & sets[2]
+            or set.union(*sets) != observed
+        ):
+            raise ValueError("explicit engine partitions must be nonempty, disjoint and complete")
+        splits = EngineSplits(
+            labeled.loc[labeled.engine_id.isin(train_ids)].copy(),
+            labeled.loc[labeled.engine_id.isin(val_ids)].copy(),
+            labeled.loc[labeled.engine_id.isin(test_ids)].copy(),
+            train_ids,
+            val_ids,
+            test_ids,
+        )
     feature_names = _model_feature_names(
         taxonomy, labeled, splits.train, config.data.variance_threshold
     )

@@ -8,7 +8,7 @@ model_choice: lstm
 paths:
   raw_data: data/raw
   processed_data: data/processed
-  model: artifacts/FD001-lstm.joblib
+  model: artifacts/phase7-models/FD001-lstm/model.joblib
   mahalanobis: artifacts/phase7-models/FD001-lstm/mahalanobis-v1.joblib
   evaluation_report: artifacts/phase7-models/FD001-lstm/metrics.json
 latency_budget:
@@ -21,7 +21,7 @@ latency_budget:
   pipeline_min_ms: 1500
   pipeline_max_ms: 2200
 artifacts:
-  model: artifacts/FD001-lstm.joblib
+  model: artifacts/phase7-models/FD001-lstm/model.joblib
   mahalanobis: artifacts/phase7-models/FD001-lstm/mahalanobis-v1.joblib
   evaluation_report: artifacts/phase7-models/FD001-lstm/metrics.json
   coupling: artifacts/phase7-models/FD001-lstm/coupling.joblib

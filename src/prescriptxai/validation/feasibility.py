@@ -37,6 +37,9 @@ def build_feasibility_penalty(
     validator: MahalanobisValidator,
     coupling: SensorCouplingModel | None,
     initial: Mapping[str, float],
+    *,
+    check_distribution: bool = True,
+    check_coupling: bool = True,
 ) -> Callable[[torch.Tensor], torch.Tensor]:
     """Penalize normalized Tier 2 distance and Tier 4 relationship excess.
 
@@ -52,13 +55,17 @@ def build_feasibility_penalty(
 
     def penalty(scaled_rows: torch.Tensor) -> torch.Tensor:
         """Return a scalar autograd penalty while leaving every cutoff fixed."""
-        distance = validator.torch_distance(scaled_rows, frozen_operating_settings=regime_settings)
         epsilon = torch.finfo(scaled_rows.dtype).eps
-        value = torch.relu(distance - cutoff).square().sum() / max(cutoff**2, epsilon)
+        value = torch.zeros((), dtype=scaled_rows.dtype, device=scaled_rows.device)
+        if check_distribution:
+            distance = validator.torch_distance(
+                scaled_rows, frozen_operating_settings=regime_settings
+            )
+            value = torch.relu(distance - cutoff).square().sum() / max(cutoff**2, epsilon)
         mean = torch.as_tensor(scaler.mean_, dtype=scaled_rows.dtype, device=scaled_rows.device)
         scale = torch.as_tensor(scaler.scale_, dtype=scaled_rows.dtype, device=scaled_rows.device)
         raw = scaled_rows * scale + mean
-        if coupling is not None:
+        if check_coupling and coupling is not None:
             inputs = raw[:, [positions[name] for name in coupling.predictor_features]]
             for target in coupling.dependent_features:
                 if target not in positions:
@@ -69,7 +76,7 @@ def build_feasibility_penalty(
                 sigma = coupling.residual_std[target]
                 excess = torch.relu(residual - coupling.residual_sigma_k * sigma)
                 value = value + (excess / max(sigma, epsilon)).square().sum()
-        for rule in taxonomy.coupling_rules:
+        for rule in taxonomy.coupling_rules if check_coupling else ():
             if rule.feature_a not in positions or rule.feature_b not in positions:
                 continue
             a, b = raw[:, positions[rule.feature_a]], raw[:, positions[rule.feature_b]]

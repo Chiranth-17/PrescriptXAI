@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass, field
+from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
@@ -166,10 +167,7 @@ def engine_bootstrap_interval(
     if not 0 < confidence < 1:
         raise ValueError("confidence must be in (0, 1)")
     unique_engines = np.unique(engines)
-    grouped = {
-        engine: observations[engines == engine]
-        for engine in unique_engines
-    }
+    grouped = {engine: observations[engines == engine] for engine in unique_engines}
     rng = np.random.default_rng(seed)
     estimates: NDArray[np.float64] = np.empty(replicates, dtype=np.float64)
     for index in range(replicates):
@@ -380,3 +378,167 @@ def calculate_metrics(
         ablation_acceptance_rates=ablations,
         latency=latency,
     )
+
+
+def clustered_ratio_interval(
+    engine_ids: Sequence[int],
+    numerators: Sequence[float],
+    denominators: Sequence[float],
+    *,
+    seed: int,
+    replicates: int,
+    confidence: float,
+) -> dict[str, float | int | None]:
+    r"""Estimate ``sum(n)/sum(d)`` by resampling whole engines jointly.
+
+    Zero-denominator engines remain in the sampling frame. Replicates whose total denominator
+    is zero are explicitly counted; an empty conditional population has no fabricated estimate.
+    The sufficient-statistic aggregation is exactly equivalent to carrying every state and every
+    solver-seed repetition for each sampled engine into the bootstrap replicate.
+    """
+    ids = np.asarray(engine_ids, dtype=float)
+    n, d = np.asarray(numerators, dtype=float), np.asarray(denominators, dtype=float)
+    if ids.ndim != 1 or ids.shape != n.shape or ids.shape != d.shape:
+        raise ValueError("engine IDs, numerators and denominators must be matching vectors")
+    if not np.isfinite(ids).all() or not np.isfinite(n).all() or not np.isfinite(d).all():
+        raise ValueError("bootstrap inputs must be finite")
+    if np.any(ids % 1) or np.any(d < 0) or np.any((d == 0) & (n != 0)):
+        raise ValueError("IDs must be integers and zero denominators must have zero numerator")
+    if replicates < 100 or not 0 < confidence < 1:
+        raise ValueError("bootstrap requires >=100 replicates and confidence in (0,1)")
+    unique = np.unique(ids)
+    total_d = float(d.sum())
+    if not len(unique) or total_d == 0:
+        return {
+            "estimate": None,
+            "lower": None,
+            "upper": None,
+            "engine_count": len(unique),
+            "observation_count": len(ids),
+            "denominator": total_d,
+            "replicate_count": 0,
+            "zero_denominator_replicates": replicates,
+            "seed": seed,
+        }
+    aggregate = np.asarray([[n[ids == unit].sum(), d[ids == unit].sum()] for unit in unique])
+    rng = np.random.default_rng(seed)
+    draws = rng.integers(0, len(unique), size=(replicates, len(unique)))
+    totals = aggregate[draws].sum(axis=1)
+    valid = totals[:, 1] > 0
+    estimates = totals[valid, 0] / totals[valid, 1]
+    tail = (1 - confidence) / 2
+    lower, upper = np.quantile(estimates, [tail, 1 - tail])
+    return {
+        "estimate": float(n.sum() / total_d),
+        "lower": float(lower),
+        "upper": float(upper),
+        "engine_count": len(unique),
+        "observation_count": len(ids),
+        "denominator": total_d,
+        "replicate_count": int(valid.sum()),
+        "zero_denominator_replicates": int((~valid).sum()),
+        "seed": seed,
+    }
+
+
+def action_sparsity(
+    before: Mapping[str, float],
+    after: Mapping[str, float],
+    controls: Sequence[str],
+    scales: Mapping[str, float],
+    tolerance: float,
+) -> int:
+    """Count directly changed actions using the configured scaled change tolerance."""
+    if tolerance < 0 or not np.isfinite(tolerance):
+        raise ValueError("change tolerance must be finite and nonnegative")
+    if any(not np.isfinite(scales[name]) or scales[name] <= 0 for name in controls):
+        raise ValueError("scales must be positive and finite")
+    values = [(after[name] - before[name]) / scales[name] for name in controls]
+    if not np.isfinite(values).all() or any(scales[name] <= 0 for name in controls):
+        raise ValueError("changes must be finite and scales positive")
+    return int(np.count_nonzero(np.abs(values) > tolerance))
+
+
+def state_proximity(
+    before: Mapping[str, float],
+    after: Mapping[str, float],
+    scales: Mapping[str, float],
+) -> tuple[float, float]:
+    r"""Return L1 distance over retained model features, in raw and scaled units.
+
+    Raw mixed-unit L1 is a descriptive quantity, not a dimensionless physical cost. Dependent
+    changes are included; action sparsity is reported separately over directly optimized inputs.
+    """
+    raw = np.asarray([after[name] - before[name] for name in scales], dtype=float)
+    scale = np.asarray(list(scales.values()), dtype=float)
+    if not np.isfinite(raw).all() or not np.isfinite(scale).all() or (scale <= 0).any():
+        raise ValueError("proximity requires finite states and positive finite scales")
+    return float(np.abs(raw).sum()), float(np.abs(raw / scale).sum())
+
+
+def experiment_metric_values(
+    records: Sequence[Mapping[str, Any]],
+    headline_safe_threshold: float,
+) -> dict[str, tuple[list[float], list[float]]]:
+    """Build numerator/denominator vectors without dropping failed queries."""
+    n = len(records)
+    ones = [1.0] * n
+    before = [float(r["risk_before"]) for r in records]
+    after = [float(r["risk_after"]) for r in records]
+    if not 0 < headline_safe_threshold < 1:
+        raise ValueError("safe threshold must be in (0,1)")
+    if any(not np.isfinite(p) or not 0 <= p <= 1 for p in before + after):
+        raise ValueError("probabilities must be finite and in [0,1]")
+    returned = [float(bool(r["returned"])) for r in records]
+    plausible = [float(bool(r["tier2"])) for r in records]
+    valid = [float(p <= headline_safe_threshold) for p in after]
+    tier3, tier4 = ([float(bool(r[key])) for r in records] for key in ("tier3", "tier4"))
+    sparsity = [float(r["sparsity"]) for r in records]
+    values = {
+        "validity": (valid, ones),
+        "plausibility_all": (plausible, ones),
+        "plausibility_returned": (
+            [a * b for a, b in zip(plausible, returned, strict=True)],
+            returned,
+        ),
+        "tier3": (tier3, ones),
+        "tier4": (tier4, ones),
+        "joint_tiers": (
+            [a * b * c * d for a, b, c, d in zip(valid, plausible, tier3, tier4, strict=True)],
+            ones,
+        ),
+        "joint": ([float(bool(r["joint"])) for r in records], ones),
+        "sparsity_all": (sparsity, ones),
+        "sparsity_returned": ([a * b for a, b in zip(sparsity, returned, strict=True)], returned),
+        "risk_reduction": ([a - b for a, b in zip(before, after, strict=True)], ones),
+        "raw_l1": ([float(r["raw_l1"]) for r in records], ones),
+        "scaled_l1": ([float(r["scaled_l1"]) for r in records], ones),
+        "immutable_violations": (
+            [float(int(r["immutable_violations"]) > 0) for r in records],
+            ones,
+        ),
+        "bound_violations": ([float(int(r["bound_violations"]) > 0) for r in records], ones),
+        "rate_violations": ([float(int(r["rate_violations"]) > 0) for r in records], ones),
+    }
+    for status in ("RECOVERABLE", "PARTIAL", "ESCALATE"):
+        values[status] = ([float(r["status"] == status) for r in records], ones)
+    return values
+
+
+def cumulative_funnel(
+    records: Sequence[Mapping[str, Any]], safe_threshold: float
+) -> dict[str, int]:
+    """Count a cumulative alert-to-joint funnel and retain the all-query denominator."""
+    bits: NDArray[np.bool_] = np.ones(len(records), dtype=bool)
+    counts = {"alerts": len(records)}
+    for label, flag in (
+        ("candidate_returned", [bool(r["returned"]) for r in records]),
+        ("tier1", [float(r["risk_after"]) <= safe_threshold for r in records]),
+        ("tier2", [bool(r["tier2"]) for r in records]),
+        ("tier3", [bool(r["tier3"]) for r in records]),
+        ("tier4", [bool(r["tier4"]) for r in records]),
+        ("joint", [bool(r["joint"]) for r in records]),
+    ):
+        bits &= np.asarray(flag, dtype=bool)
+        counts[label] = int(bits.sum())
+    return counts
