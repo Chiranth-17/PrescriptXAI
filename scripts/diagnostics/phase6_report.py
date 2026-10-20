@@ -224,6 +224,59 @@ def render(path: Path = ROOT / "artifacts/phase6/pipeline.json") -> str:
             "",
         ]
     )
+    verification_path = ROOT / "artifacts/phase6/verification.json"
+    if verification_path.exists():
+        verified = json.loads(verification_path.read_text(encoding="utf-8"))
+        lines.extend([
+            "## Software verification and interface freeze", "",
+            f"`{verified['command']}` exited {verified['exit_code']} on runtime source "
+            f"`{verified['git_hash']}`: {verified['tests_passed']} tests passed; "
+            f"coverage {verified['coverage_percent']:.6f}% versus previous phase "
+            f"{verified['previous_phase_coverage_percent']:.6f}%; Ruff clean; mypy clean for "
+            f"{verified['mypy_files']} files; docs check passed. The {verified['warnings']} "
+            "convergence warnings are from deliberately short test-only nonlinear coupling fits. "
+            "The final annotation fixes do not change benchmark behavior.", "",
+            "Frozen serialization snapshot SHA-256 values:", "",
+            *[f"- `{name}`: `{value}`" for name, value in verified["schema_hashes"].items()], "",
+        ])
+    audit_path = ROOT / "artifacts/phase6/independent_audit.json"
+    if audit_path.exists():
+        audit = json.loads(audit_path.read_text(encoding="utf-8"))
+        counts = audit["counts"]
+        comparison = audit["fast_thorough_comparison"]
+        lines.extend([
+            "## Independent audit", "",
+            "Independent read-only audit evidence: `artifacts/phase6/independent_audit.json`, "
+            f"SHA-256 `{hashlib.sha256(audit_path.read_bytes()).hexdigest()}`. "
+            f"Audit `{audit['audit_run_id']}`; delivery source `{audit['audited_delivery_git']}`; "
+            f"measured run `{audit['main_run_id']}`. It checks all configs/populations listed above "
+            "with K=1, k_max=3 and their frozen v1/v2 D_max. These totals include overlapping modes "
+            "and protocols and are not an additional pooled success estimate.", "",
+            f"Verified {counts['population_records']} records: {counts['RECOVERABLE']} RECOVERABLE, "
+            f"{counts['PARTIAL']} PARTIAL, {counts['ESCALATE']} ESCALATE. "
+            f"Audit failures: {audit['failure_count']}; true calibrated-risk maximum error "
+            f"{audit['max_true_risk_error']:.3g}; independently solved D_M maximum error "
+            f"{audit['max_D_M_error']:.3g}. Raw first-alert selection was reconstructed for "
+            f"{counts['first_alert_populations_verified']} cohorts; "
+            f"{counts['artifact_partition_checks']} split partitions, "
+            f"{counts['artifact_hashes_verified']} artifact hashes and "
+            f"{counts['committed_config_checks']} committed config references were checked. "
+            "All accepted records were checked for true risk, sparse support, frozen features, "
+            "bounds, rates and coupling. Failed diagnostics remain visible.", "",
+            f"Across {comparison['shared_recoverable']} shared recoverable FAST/THOROUGH pairs, "
+            "actions and true calibrated risks match exactly. "
+            f"{comparison['exact_recoverable_state_risk_matches']} full states match bit-for-bit; "
+            f"{comparison['recoverable_differences']} differ only in propagated dependent sensors "
+            f"by at most {comparison['maximum_raw_value_difference']:.3g} raw units, with maximum "
+            f"risk difference {comparison['maximum_risk_difference']:.3g}. This is a software/numeric "
+            "comparison, not evidence of causal consistency.", "",
+            "High first-alert validity is conditional on this population. These earlier alert states "
+            "differ from the older mixed-cycle sample; reconstructing every first alert found no "
+            "selection mismatch. It does not establish improved efficacy or new generalization. "
+            "The audit includes initial-risk and observed-RUL distributions for both cohorts.", "",
+            "See the Phase 6 closure entry in PROGRESS.md and traceability.md for task statuses "
+            "and retained gaps.", "",
+        ])
     return "\n".join(lines)
 
 

@@ -10,7 +10,7 @@
 | 3 — Feature taxonomy and sensor coupling | Complete | Proxy taxonomy, fitted physical bounds, coupling propagation and Tier 4 checks |
 | 4 — Constrained recourse engine | Closed; synopsis targets measured honestly | Constrained search, final protocol audit, grouped uncertainty, historical errata |
 | 5 — Multi-tier validation (current prompt) | Closed; measured gaps retained | Shared tiers, bounded feedback, real funnels, audits and phase5-closed |
-| 6 — Decision support pipeline, CLI and API | In progress | Implementation committed; frozen real benchmark running; closure checks pending |
+| 6 — Decision support pipeline, CLI and API | Closed; performance target gap retained | Public schema 2.0.0, real delivery gates, 600-result audit, phase6-closed |
 | 7–11 — Remaining current phases | Not started | Source prompts / Part B changes table not supplied |
 
 ## Decisions
@@ -451,7 +451,7 @@ The 95% true-model target is missed under both protocols. Tier 2 meets its 90% a
 - At Phase 5 closure, Phase 6–11 prompts and the Part B changes table were unavailable. The user subsequently supplied Phase 6 directly; Phases 7–11 and Part B still need their actual source instructions.
 
 
-## Phase 6 — implementation and preregistered measurement in progress
+## Phase 6 — historical implementation work log
 
 - Public PrescriptXAI facade, versioned shared results, risk gate, triage, FAST/THOROUGH,
   genuine fixed-prefix LSTM adaptation, bounded process batches and locked artifact cache implemented.
@@ -467,7 +467,7 @@ The 95% true-model target is missed under both protocols. Tier 2 meets its 90% a
 - Open: real population benchmark, full gate, freeze evidence and closure tag pending.
 
 
-### Phase 6 post-audit corrections (verification pending)
+### Phase 6 post-audit corrections (subsequently verified below)
 
 The running serial benchmark uses committed source a72832c and the frozen base/fold YAMLs.
 Later source audits found API malformed-mode handling, boolean coercion, omitted-mode defaults,
@@ -478,3 +478,55 @@ No predictor, threshold, physical bound, rate, D_max or solver search setting wa
 Final tests will run after serial timing finishes to avoid a competing test workload. Benchmark
 records keep their measured source hash; the final closure source will be identified separately.
 The execution crossed dates and contains long timing outliers; none will be removed or padded.
+
+## Phase 6 — closed with measured performance gaps
+
+Population run `phase6-20261018T114827Z`; measured source `a72832c271015a2391ed452a9dca7776a5131a98`; preregistration `a72832c271015a2391ed452a9dca7776a5131a98`. Final software gate used `d177460282299f915918e7e69a31d28a90c6c84f`. Full labeled tables, config file/runtime hashes, p50/p95/p99 and engine-bootstrap CIs are in `docs/phase6_changes.md`. Committed base configs are `configs/experiments/phase6-pipeline-v1.yaml` and `phase6-pipeline-v2.yaml`; grouped OOF uses the five `phase6-fold-<1..5>-v1.yaml` and five `phase6-fold-<1..5>-v2.yaml` files in the same directory.
+
+### Delivered behavior and decisions
+
+- Public typed PrescriptXAI factories, assessment, gated recommendation, bounded CPU process batches, structured explanations and fingerprinted artifact cache with locked predictor access.
+- Single contract for CLI and FastAPI: raw/scaled changes, percent current/range, true/surrogate risks, independent tiers, triage, closest failure, evidence, assumptions, mode, timings and provenance. Observed LSTM prefix remains fixed; missing history is rejected.
+- CLI assess/recommend/batch/info/latency-bench and six HTTP endpoints, OpenAPI, request IDs, streamed payload cap, configured CORS and optional environment API key are verified. Invalid inputs return 422; absent model returns 503.
+- Schema 2.0.0 serialization snapshots are frozen. Future changes require a version bump, changelog and owner agreement. See docs/schema_changelog.md for migration and docs/decision_pipeline.md for usage.
+- Final singleton Tier 1 risk controls public risk, triage and failure diagnostics. ESCALATE explanations do not present diagnostic changes as accepted actions. No predictor, threshold, bound, rate, K or solver setting was tuned after outcomes.
+
+### Measured outcomes
+
+Both protocols use K=1, k_max=3 and true thresholds 0.80/0.20. D_max versions remain v1=5 and v2=8. The grouped OOF population has one true first alert from each of 100 engines, predicted only by its held-out fold model. All intervals below bootstrap engines (2000 replicates); both modes have identical quality counts, but their timings are measured independently. These are previously evaluated public engines, not fresh generalization.
+
+- **v1, FAST and THOROUGH, grouped OOF:** model validity 99/100 [0.970, 1.000]; 100 engines; Tier 2 over all queries 90/100 [0.840, 0.950]; 100 engines; Tier 2 over returned candidates 90/100 [0.840, 0.950]; 100 engines; Tier 3 100/100 [1.000, 1.000]; 100 engines; Tier 4 96/100 [0.920, 0.990]; 100 engines; joint 90/100 [0.840, 0.950]; 100 engines. PARTIAL=0, ESCALATE=10 per mode. Available evidence is at most E3 and is conditional on proxy assumptions.
+  FAST optimization p95=6838.64 ms [6602.22, 7175.84]; 100 engines. Budget p95<=1800 ms: NOT MET.
+  THOROUGH optimization p95=5924.39 ms [5313.17, 6130.19]; 100 engines. Budget p95<=1800 ms: NOT MET.
+
+- **v2, FAST and THOROUGH, grouped OOF:** model validity 99/100 [0.970, 1.000]; 100 engines; Tier 2 over all queries 100/100 [1.000, 1.000]; 100 engines; Tier 2 over returned candidates 100/100 [1.000, 1.000]; 100 engines; Tier 3 100/100 [1.000, 1.000]; 100 engines; Tier 4 96/100 [0.920, 0.990]; 100 engines; joint 95/100 [0.900, 0.990]; 100 engines. PARTIAL=1, ESCALATE=4 per mode. Available evidence is at most E3 and is conditional on proxy assumptions.
+  FAST optimization p95=6282.10 ms [5949.73, 6874.71]; 100 engines. Budget p95<=1800 ms: NOT MET.
+  THOROUGH optimization p95=5138.14 ms [4820.40, 5664.40]; 100 engines. Budget p95<=1800 ms: NOT MET.
+
+- Development, internal held-out, grouped OOF and official test populations are reported side by side for both modes/protocols. All returned diagnostics and failures remain in the disclosed denominators. The high first-alert validity is not compared as an improvement over Phase 5’s later mixed-cycle sample.
+- The run crossed dates and contains interruption-related timing outliers. All samples are retained; timing is not a controlled steady-state estimate. FAST is not certified to meet the production budget. UI/cold startup are unmeasured. The separate one-engine CLI timing demonstration also missed optimization/total budgets.
+- The historical assumed-K curve remains beside K=1 in the report. No new K tuning, causal intervention, validated simulator or RUL-extension claim is made.
+
+### Gate and independent audit
+
+- `mingw32-make all-checks` exited 0: 260 tests passed; coverage 81.017036% (Phase 5 79.775281%); Ruff clean; strict mypy clean for 51 source files; docs check passed. 66 convergence warnings are from intentionally short test-only nonlinear coupling fits. The focused Phase 6 gate separately passed 45 tests.
+- Real CLI/API RECOVERABLE and ESCALATE demonstrations matched in both protocols; both-mode CLI latency-bench produced real quantiles. Their source is 1e41d77; the later annotation fixes passed the full gate and do not change behavior.
+- Independent audit `phase6-independent-audit-20261019T171210Z` checked 600 population records, 36 artifact hashes, 16 committed config references, 12 engine partitions and 16 reconstructed first-alert cohorts. No leakage, unsafe accepted action, frozen-feature, bound/rate, support or coupling acceptance violation was found. Maximum true-risk error=0; maximum independently solved D_M error=1.78e-15.
+- Audit totals across overlapping protocols/modes: 558 RECOVERABLE, 2 PARTIAL, 40 ESCALATE. These are not an additional pooled performance estimate. All 40 ESCALATE rows remain physical-failing diagnostics; no bound/rate violations occur in the 600 saved rows.
+- Across 279 shared recoverable FAST/THOROUGH pairs, actions and true risks match exactly. Full states match bit-for-bit in 275 pairs; four differ only in propagated dependent sensors by at most 1.4552e-11 raw units, with zero risk difference. This does not establish causal consistency.
+- Raw run SHA-256: `7b2b8d5719c9848bc5504f5277967a3d9d75526718fdbf208f5f6ad7fca1f0b6`. Preserved immutable copy: `artifacts/phase6/phase6-20261018T114827Z/pipeline.json`. Audit SHA-256: `c80f0f611163722b25ccbfc91fe060c2690f06125948ed72f9a8ba708ef02471`. Generated telemetry, results and fitted artifacts remain ignored by Git.
+- Closure tag: `phase6-closed`. Schema snapshot hashes are recorded in docs/phase6_changes.md and artifacts/phase6/verification.json.
+
+### How to run / open issues
+
+```powershell
+uv run prescriptxai info --config configs/experiments/phase6-pipeline-v1.yaml
+uv run prescriptxai recommend --engine-id 1 --cycle 170 --mode fast --config configs/experiments/phase6-pipeline-v1.yaml
+uv run prescriptxai serve --config configs/experiments/phase6-pipeline-v1.yaml
+uv run python scripts/diagnostics/phase6_report.py
+mingw32-make all-checks
+```
+
+- Performance target gaps remain open under rule 13; no threshold or metric definition was relaxed. Controlled latency and future optimization work need a separately frozen development/evaluation plan.
+- Bounds, rate limits, sensor proxies and K are assumptions. Coupling fit limitations from Phase 5 remain. Current evidence cannot establish real actuator efficacy or dynamic safety.
+- Phases 7–11 and the Part B change table are still missing their actual source prompts; they have not been invented or started.

@@ -76,7 +76,7 @@ and caches remain git-ignored. E3 is a proxy constraint level, not causal or rea
 Phases 7–11 still require their actual prompts and the actual Part B table. Phase 6 is authorized
 by the subsequent direct prompt. No missing content is invented.
 
-## Phase 6 direct prompt — closure verification in progress
+## Phase 6 direct prompt — closed with measured performance gaps
 
 The directly supplied Phase 6 prompt is the specification for this implementation. Its preregistration
 is committed at `9921c38`; measured implementation is `a72832c`; subsequent interface corrections
@@ -84,18 +84,41 @@ are committed at `79cb7f4`. No frozen predictor or constraint setting changed in
 
 | Prompt task | Implementation / evidence | Status |
 |---|---|---|
-| 1. Public factories, assessment, recommendations, batches, explanation | `pipeline.py`; typed facade, artifact fingerprints, bounded CPU workers, structured explanations | Implemented; final gate pending |
-| 2. Full result, triage, provenance, timings, schema freeze | `schemas.py`; schema 2.0.0 snapshots and `schema_changelog.md`; strict round-trip consistency | Implemented; closure freeze pending |
-| 3. Below-alert gate | Zero change below tau_danger; exact boundary tests; independent tier diagnostics retained | Implemented; final gate pending |
-| 4. FAST and THOROUGH | Request-local modes and recorded effective settings; production budget measured | Modes implemented; FAST p95 target Not met in saved measurements |
-| 5. Real stage p50/p95/p99 | `evaluation/latency.py`, `phase6_pipeline.py`, `phase6_report.py`; direct total, engine CIs | Population run in progress; interrupted-run timing qualification retained |
-| 6. Input handling | Vector/Series/dict, named order, finite values, units, observed history/context, typed errors | Implemented; final gate pending |
-| 7. CLI | Recommend by engine/cycle or JSON, batch CSV, assess, latency-bench, info; observed sequence context | Implemented; final real delivery gate pending |
-| 8. FastAPI | Six endpoints, OpenAPI, request IDs, 422/503, CORS, environment API key, actual-byte limit | Implemented; final real delivery gate pending |
-| 9. Cache/thread safety/model choice | Fingerprint cache, shared inference lock, request config copies, xgb/MLP/LSTM adapters | Implemented; concurrency/config/history tests pending final gate |
+| 1. Public factories, assessment, recommendations, batches, explanation | `pipeline.py`; typed facade, artifact fingerprints, bounded CPU workers, structured explanations | Met: factory, serialization, process/single parity and explanation tests passed |
+| 2. Full result, triage, provenance, timings, schema freeze | `schemas.py`; schema 2.0.0 snapshots and `schema_changelog.md`; strict round-trip consistency | Met: snapshots frozen, all three triage cases covered; real PARTIAL remains above tau_safe |
+| 3. Below-alert gate | Zero change below tau_danger; exact boundary tests; independent tier diagnostics retained | Met: 0.79/0.80 boundary and zero-change checks passed |
+| 4. FAST and THOROUGH | Request-local modes and recorded effective settings; production budget measured | Partial: both modes delivered; FAST p95<=1.80 s target Not met (OOF v1 6.84 s, v2 6.28 s) |
+| 5. Real stage p50/p95/p99 | `evaluation/latency.py`, `phase6_pipeline.py`, `phase6_report.py`; direct total, engine CIs | Met: 600 real results, both modes/protocols, four populations; interrupted-run timing qualification retained |
+| 6. Input handling | Vector/Series/dict, named order, finite values, units, observed history/context, typed errors | Met: malformed, NaN/inf/boolean, shape/unit/history and artifact mismatch tests passed |
+| 7. CLI | Recommend by engine/cycle or JSON, batch CSV, assess, latency-bench, info; observed sequence context | Met: CliRunner plus real RECOVERABLE/ESCALATE and both-mode latency-bench delivery gates passed |
+| 8. FastAPI | Six endpoints, OpenAPI, request IDs, 422/503, CORS, environment API key, actual-byte limit | Met: TestClient success/error paths, real high-risk parity and payload/security checks passed |
+| 9. Cache/thread safety/model choice | Fingerprint cache, shared inference lock, request config copies, xgb/MLP/LSTM adapters | Met: concurrent threads, seeded repeatability, process parity, genuine fitted MLP/LSTM/history and batch-memory tests passed |
 | UI rendering latency and cold startup | Excluded from backend timing; returned as unmeasured | Not measured in this phase; no inferred pass |
 | Fresh unseen-engine efficacy / real actuators / dynamics | Previously evaluated public engines and documented telemetry proxies only | Not established; E3 maximum, simulator skipped |
 
 Constructed fixtures exercise PARTIAL and negative cases only in tests. Real benchmark results are
 never replaced with synthetic values. No deployment-readiness or causal maintenance-benefit claim
 follows from a passing software gate. Phase closure can retain measured target gaps under rule 13.
+
+### Phase 6 closure gate evidence
+
+Population run `phase6-20261018T114827Z`, source `a72832c271015a2391ed452a9dca7776a5131a98`;
+protocol snapshot committed before measurement; configs `configs/experiments/phase6-pipeline-v1.yaml`,
+`phase6-pipeline-v2.yaml` and ten explicit fold configs. The complete run/config/runtime-hash labels,
+K=1, k_max=3, D_max v1=5/v2=8, population definitions, independent quality metrics and engine-bootstrap
+intervals are in `docs/phase6_changes.md`. All outcomes remain in their disclosed denominators.
+
+`mingw32-make all-checks` exited zero on delivered runtime `d177460`: 260 tests passed, Ruff and
+strict mypy passed (51 files), coverage 81.017036% versus Phase 5 79.775281%, docs check passed.
+Both public schemas are frozen at 2.0.0 with serialization snapshot tests and migration notes.
+The real CLI/API delivery smoke used `1e41d77`; subsequent annotation corrections passed the full gate.
+
+The independent audit verified all 600 records, all 16 true-first-alert cohorts, 12 engine partitions,
+36 fitted-artifact hashes and 16 committed config references with zero acceptance/leakage failures.
+True-risk error was zero; maximum D_M error was 1.78e-15. Evidence is conditional on proxy assumptions,
+at most E3. The raw run, delivery smoke and audit hashes are recorded in the report and PROGRESS.md.
+
+FAST optimization and backend-total budgets remain Not met. The interruption-affected timings
+retain all outliers; controlled steady-state latency remains unestablished. No frozen predictor,
+risk threshold, D_max, actuator bound, rate limit or intervention horizon changed after outcomes.
+Phase closure is recorded with tag `phase6-closed` and this target gap under rule 13.

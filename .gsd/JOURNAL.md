@@ -218,3 +218,25 @@ then measure the requested FD001 held-out benchmark without hiding target failur
   Phase 4 remains in progress because the accepted `k_max=3` benchmark is below the synopsis
   validity/plausibility targets and the required physical limits are proxy-derived rather than
   verified actuator constraints.
+
+## Session: 2026-10-20 — Phase 6 closure
+
+- Population measurement `phase6-20261018T114827Z` completed on source `a72832c` with 600 saved
+  results; configs and protocol were committed before execution. The immutable raw SHA-256 is
+  `7b2b8d5719c9848bc5504f5277967a3d9d75526718fdbf208f5f6ad7fca1f0b6`.
+- Real CLI/API RECOVERABLE and ESCALATE delivery checks passed for both D_max versions on source
+  `1e41d77`. Both-mode CLI latency-bench completed; output and JSON file matched.
+- `mingw32-make all-checks` exited 0 on final runtime `d177460`: Ruff clean, mypy clean for
+  51 source files, `260 passed, 66 warnings in 98.16s`; branch coverage 81.0170359933393%, above
+  Phase 5's 79.7752808988764%. Focused new-path verification separately passed 45 tests.
+- Read-only independent audit reproduced true risks exactly and D_M within 1.78e-15 for every
+  saved record; checked 16 cohorts/12 split partitions/36 artifact hashes/16 committed configs;
+  zero leakage or acceptance errors. Audit counts are 558 RECOVERABLE, 2 PARTIAL, 40 ESCALATE
+  across overlapping protocols/modes. Detailed evidence is ignored under artifacts/phase6/.
+- Budget gaps are retained: FAST grouped-OOF optimization p95 6.84 s (v1) and 6.28 s (v2),
+  above 1.80 s. Report every tier independently with engine-bootstrap CIs; do not compare this
+  first-alert population as an improvement over older mixed-cycle evaluations. Execution outliers
+  remain; controlled steady-state latency is not established.
+- Schema 2.0.0 snapshots are frozen; report, migration notes, task traceability and PROGRESS.md
+  record the evidence and assumptions. Closure tag: phase6-closed. Phases 7–11 await actual prompts
+  and the missing Part B table.
