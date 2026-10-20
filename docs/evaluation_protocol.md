@@ -137,3 +137,86 @@ results are not compared as an improvement over the different Phase 5 mixed-cycl
 
 Warmup clarification: one validation-engine warmup per population/model/mode/protocol report.
 The three base populations and five folds therefore exclude 32 warmup calls overall.
+
+## Phase 7 additive preregistration — 2026-10-20
+
+Study version `phase7-20261020`, controlled by committed `configs/experiments/phase7-study.yaml`
+and explicit `phase7-<subset>-<model>-v{1,2}.yaml` inputs. This expansion is committed before
+new fitting or measurement. Earlier protocol sections/results remain historical and unchanged.
+D_max versions remain v1=5 and v2=8; neither is replaced. All existing public FD001 engines have
+previous exposure, so this is a reproducible expanded evaluation, not fresh-engine generalization.
+
+- Required datasets/models: FD001 XGBoost, MLP and LSTM; FD002 XGBoost (the already designated
+  primary predictor family, without selection on recourse). FD003/FD004 are optional and not
+  scheduled in this required run. They remain explicitly not evaluated.
+- Preserve existing FD001 predictor/scaler/calibrator artifacts and partitions. Train missing
+  FD002 and grouped-fold artifacts using model seed 1729. Base splits use fixed split seed 1729,
+  lifetime-stratified by engine. Outer five folds cover every training-file engine exactly once;
+  each outer fold fits on the other engines and uses a fixed validation-engine subset for stopping,
+  calibration and residual thresholds. No outer test engine enters any fit or calibration.
+- Five seeds 1729–1733 vary only the solver randomness on persisted fixed predictors/partitions.
+  They do not represent five independent training datasets or model initializations. Report mean
+  and sample standard deviation across these five solver seeds, including legitimate zero variance.
+  Engine bootstrap keeps each engine's repeated-seed rows together; never count seeds as engines.
+- FAST headline: every true alert in internal held-out, grouped OOF and official truncated-test
+  populations, including empty actuator intersections and all failures. Development is validation
+  engines only (at most 60 seeded all-alert queries). THOROUGH is the true first alert per engine
+  in those populations. Also report first-alert summaries derived from full FAST records and
+  clearly distinguish them from all-alert headlines. No cap applies to FAST test populations.
+- Official cycle-level RUL is terminal RUL plus terminal observed cycle minus current cycle;
+  official IDs use +10000 within each dataset. Life fraction uses cycle/(cycle+observed RUL).
+  It is retrospective stratification, never a model input or RUL-extension estimate.
+- LSTM assessment/recourse uses exactly window-1 actual previous rows from that same engine;
+  only the latest row is changed. Earlier cycles lacking an observed prefix are counted as
+  insufficient-history/unscorable, not padded or silently discarded. Training retains its earlier
+  documented left-padding convention; no training padding is described as observed history.
+- Frozen search settings remain Phase 6's 25 iterations, one restart, three alpha levels,
+  one L1 level, two support searches, five-point teacher grid and two feedback refinements;
+  k_max=3, K=1, tau_danger=.80, tau_safe=.20, bounds/rates unchanged. CPU runtime uses one torch/
+  BLAS thread per worker and at most four quality workers; log effective settings and hardware.
+  FD002 predictor retains global feature scaling; its Tier 2 statistics are regime-conditioned.
+- Primary metrics use all queries, with all-query/returned/success sparsity separately exposed.
+  Returned means a nonzero sparse-feasible diagnostic/CF, regardless of tier outcome; failure is
+  not a filter. Tier 2 returned-ratio CIs resample engines from the complete cohort and aggregate
+  numerator and denominator together; zero-denominator replicates are disclosed, never invented.
+  Mean risk reduction and raw/scaled proximity include failures. Each tier and joint/evidence
+  are separate. Simulator/emulator trajectory health is **not evaluated**.
+- Diagnostic/baseline/ablation/sensitivity queries: the seeded, ordered first at most 12 alerts
+  from internal holdout for each primary XGBoost subset, fixed before outcomes; solver seed 1729,
+  both D_max versions. Every component-removal variant actually reruns search and is validated
+  afterward against the unmodified reporting taxonomy. An omitted search check never becomes a
+  passing validation result. No claim about the Model Realism Fallacy is made without observed
+  immutable/bound/Tier 2 violations. DiCE runs if its optional pinned dependency is compatible;
+  otherwise its install/error evidence is reported, with no substitute result.
+- Constraint ladder is genuine re-optimization: L0 all model inputs free, L1 +immutable freezing,
+  L2 +physical bounds, L3 +rate limits, L4 +dependent propagation, L5 +k sparsity, L6 +Tier 2,
+  L7 +Tier 4. Earlier dependent-free stages and unsafe baselines are research diagnostics only.
+- One-component ablations: no immutable freezing, no physical bounds (retain rates), no Tier 2,
+  no dependent propagation (dependents stay fixed), no sparsity, no in-loop validation;
+  D_max empirical/chi-square methods and healthy-to-moderate reference are labeled changes.
+- Sensitivities are one factor at a time using YAML grids: tau_safe .1/.2/.3, k 1/2/3/5,
+  H 15/30/50, K 1/2/3/5/10, alpha 1/10/100, beta and gamma 0/1/100, quantiles .95/.99/.999.
+  H requires newly labeled/retrained/recalibrated XGBoost on the same base engine partitions.
+  Beta/gamma do not soften hard freezing/boxes; zero effect is an expected valid result.
+  Quantile sensitivity uses empirical and chi-square baselines (fixed D_max ignores quantile).
+  Always retain f(x')<=.20 as headline validity, with variant-target-relative success separate.
+- Oracle: at most 12 failed production states per primary population/protocol. Replay exact
+  production seed/mode/config and preserve its exact candidate. Search the union of its traced
+  terminal candidates, exact returned candidate and the configured seven-point sparse grid.
+  Verify reproduction and record scope before classifying a miss. A found safe/plausible point is
+  a search failure; finite absence is unresolved, not continuous global infeasibility. A truly
+  infeasible label requires a verified superset plus an exact empty physical/rate interval proof.
+- Leverage probes change each control to its allowed interval endpoints with dependent propagation;
+  report true risk slopes, distances, residual margins and feasible interval widths, not causal effects.
+  Risk/RUL/life-fraction strata and the full risk-reduction histogram use committed YAML bin edges.
+- Latency is a separate serial warm-cache experiment: 10 warmups excluded and 1000 actual high-risk
+  public calls per FAST/THOROUGH mode. Cycle through validation-engine alerts in fixed engine/cycle
+  order using the primary FD001 model/v1 config. No competing tests/training/quality jobs run during
+  timing. Include every failure/outlier. Stage p50/p95/p99 and engine-bootstrap p95 CIs use measured
+  calls; missing stages stay unmeasured. Pass means p95<=upper budget. This is the named development
+  latency workload, not a claim of latency for every model/dataset or UI/startup performance.
+- Manifests record the committed study/base config hashes, runtime config hash, source, protocol
+  snapshot, artifact/cohort hashes, seeds, versions and hardware. Atomic per-query checkpoints
+  reject incompatible resume inputs. No completed query is silently rerun or removed. Markdown/
+  HTML reports are generated from saved files with targets, gaps, diagnosis, engine CIs and seed
+  variation. Record unmet tasks in traceability; do not hide a target miss or redefine a metric.
