@@ -22,12 +22,12 @@ from numpy.typing import NDArray
 from pydantic import ValidationError
 
 from prescriptxai.config import AppConfig, load_config
-from prescriptxai.constraints.bounds import check_bound_violations
-from prescriptxai.constraints.coupling import SensorCouplingModel
+from prescriptxai.constraints.bounds import check_bound_violations, check_rate_violations
+from prescriptxai.constraints.coupling import SensorCouplingModel, apply_coupling_for_bundle
 from prescriptxai.constraints.taxonomy import FeatureTaxonomy, load_taxonomy
 from prescriptxai.logging_utils import current_run_id
 from prescriptxai.models.registry import ModelBundle, load_model_bundle
-from prescriptxai.recourse.optimizer import OptimizationResult, optimize_recourse
+from prescriptxai.recourse.optimizer import OptimizationResult, _delta_mappings, optimize_recourse
 from prescriptxai.schemas import (
     Assessment,
     Explanation,
@@ -595,6 +595,121 @@ class PrescriptXAI:
                         .numpy()
                         .tolist()
                     )
+        return self._compose_result(
+            state, optimization, validation, bundle, config, selected_mode,
+            StageTimings(
+                ingestion_ms=ingestion, inference_ms=inference,
+                optimization_ms=optimization_ms, validation_ms=validation_ms,
+            ), started, surrogate,
+        )
+
+    def validate_controls(
+        self,
+        x_raw: RawInput,
+        controls: Mapping[str, float],
+        context: InputContext | Mapping[str, object] | None = None,
+        mode: Literal["fast", "thorough"] | None = None,
+    ) -> RecourseResult:
+        """Preview named proxy controls through the production propagation, tiers and triage.
+
+        This method performs no optimization and does not project invalid controls into a
+        passing interval. Bounds, rate, sparsity and coupling failures remain visible. Only
+        configured control features may be edited; the original observed history is fixed.
+        """
+        started = perf_counter_ns()
+        state, observed = self._normalize(x_raw, context, complete=True)
+        if not isinstance(controls, Mapping):
+            raise InputError("controls must be named raw-unit measurements")
+        selected_mode = mode or self.config.pipeline.default_mode
+        if selected_mode not in {"fast", "thorough"}:
+            raise InputError("mode must be fast or thorough")
+        actions = self.engine.taxonomy.active_controllable_feature_names(
+            self.engine.model.feature_names
+        )
+        if set(controls) - set(actions):
+            raise FeatureError("only configured controllable proxies may be edited")
+        if any(isinstance(value, (bool, np.bool_)) for value in controls.values()):
+            raise InputError("boolean controls are not physical measurements")
+        try:
+            proposed = {**state, **{name: float(value) for name, value in controls.items()}}
+        except (TypeError, ValueError) as error:
+            raise InputError("controls must be finite raw-unit numbers") from error
+        if not np.isfinite(list(proposed.values())).all():
+            raise InputError("controls must be finite raw-unit numbers")
+        ingestion = (perf_counter_ns() - started) / 1e6
+        config = self.config.model_copy(deep=True)
+        config.recourse.search_mode = selected_mode
+        with self.engine.predictor_lock:
+            bundle = self._bundle(observed)
+            before = perf_counter_ns()
+            risk = float(bundle.predict_risk(pd.DataFrame([state]))[0])
+            inference = (perf_counter_ns() - before) / 1e6
+            if risk < config.tau_danger and proposed != state:
+                raise InputError("below the alert gate: no manual intervention is required")
+            candidate = apply_coupling_for_bundle(
+                proposed, self.engine.coupling, reference_state=state
+            )
+            before = perf_counter_ns()
+            validation = validate_candidate(
+                state, candidate, bundle, self.engine.taxonomy, self.engine.mahalanobis,
+                config, self.engine.coupling, mode="collect_all",
+            )
+            validation_ms = (perf_counter_ns() - before) / 1e6
+        final_risk = validation.tier1_model.measurement
+        if final_risk is None:
+            raise ArtifactError("manual Tier 1 rescore did not return a true risk")
+        scales = dict(zip(bundle.feature_names, bundle.scaler.scaler.scale_, strict=True))
+        deltas = _delta_mappings(
+            {name: (candidate[name] - state[name]) / scales[name] for name in actions},
+            actions, state, self.engine.taxonomy.feature_by_name(),
+            np.asarray([scales[name] for name in actions]), 0.0,
+        )
+        feasible = not check_bound_violations(
+            candidate, self.engine.taxonomy, features=actions
+        ) and not check_rate_violations(
+            state, candidate, self.engine.taxonomy,
+            horizon_steps=config.recourse.rate_horizon_steps,
+        )
+        support_exceeded = len(deltas) > config.recourse.k_max
+        feasible = feasible and not support_exceeded
+        optimization = OptimizationResult(
+            candidate, deltas, risk, final_risk, True, validation.model_valid,
+            "Manual control preview; no optimization performed.", None,
+            failure_reason=(
+                "manual_sparsity_exceeded" if support_exceeded
+                else None if validation.joint and feasible else "manual_validation_failed"
+            ),
+            actuator_constraints_feasible=feasible,
+            effective_solver_settings={"manual_preview": True, "mode": selected_mode},
+        )
+        result = self._compose_result(
+            state, optimization, validation, bundle, config, selected_mode,
+            StageTimings(
+                ingestion_ms=ingestion, inference_ms=inference,
+                optimization_ms=0.0, validation_ms=validation_ms,
+            ), started,
+        )
+        return result.model_copy(
+            update={"warnings": (*result.warnings, optimization.message)}
+        )
+
+    def _compose_result(
+        self,
+        state: dict[str, float],
+        optimization: OptimizationResult,
+        validation: ValidationReport,
+        bundle: ModelBundle,
+        config: AppConfig,
+        selected_mode: Literal["fast", "thorough"],
+        timings: StageTimings,
+        started: int,
+        surrogate: Sequence[float] = (),
+    ) -> RecourseResult:
+        """Share the frozen result/delta/triage composition for solves and manual previews."""
+        risk = optimization.initial_risk
+        final_risk = validation.tier1_model.measurement
+        if final_risk is None:
+            raise ArtifactError("final Tier 1 rescore did not return a true risk")
         specs = self.engine.taxonomy.feature_by_name()
         actions = self.engine.taxonomy.active_controllable_feature_names(bundle.feature_names)
         feasible = (
@@ -652,12 +767,8 @@ class PrescriptXAI:
             risk_before=risk,
             risk_after=final_risk,
             validation_report=validation.to_schema(),
-            timings=StageTimings(
-                ingestion_ms=ingestion,
-                inference_ms=inference,
-                optimization_ms=optimization_ms,
-                validation_ms=validation_ms,
-                pipeline_ms=(perf_counter_ns() - started) / 1e6,
+            timings=timings.model_copy(
+                update={"pipeline_ms": (perf_counter_ns() - started) / 1e6}
             ),
             warnings=tuple(w for tier in validation.tiers().values() for w in tier.warnings),
             alert=alert,
@@ -775,6 +886,9 @@ class PrescriptXAI:
             "model_version": self.model_version,
             "schema_version": "2.0.0",
             "config_hash": self.config_hash,
+            "dataset": self.config.data.dataset,
+            "model_choice": self.config.model_choice,
+            "history_rows": max(0, int(getattr(self.engine.model.estimator, "window", 1)) - 1),
             "artifacts": self.config.artifacts.model_dump(mode="json"),
             "tau_danger": self.config.tau_danger,
             "tau_safe": self.config.tau_safe,
@@ -782,6 +896,15 @@ class PrescriptXAI:
             "feature_names": self.engine.model.feature_names,
             "feature_groups": self.engine.taxonomy.feature_groups.model_dump(),
             "units": {n: s.unit for n, s in self.engine.taxonomy.feature_by_name().items()},
+            "feature_metadata": {
+                name: spec.model_dump(mode="json")
+                for name, spec in self.engine.taxonomy.feature_by_name().items()
+            },
+            "scaling": {
+                "feature_names": self.engine.model.feature_names,
+                "mean": self.engine.model.scaler.scaler.mean_.tolist(),
+                "scale": self.engine.model.scaler.scaler.scale_.tolist(),
+            },
             "assumptions": [
                 "C-MAPSS controls, bounds, rates and K are proxies/assumptions; no RUL extension."
             ],

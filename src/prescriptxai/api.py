@@ -13,13 +13,27 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import ValidationError
+from pydantic import ValidationError, field_validator
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from prescriptxai.config import AppConfig, load_config
 from prescriptxai.logging_utils import bind_run_id, reset_run_id
 from prescriptxai.pipeline import InputError, PrescriptXAI, PrescriptXAIEngine
 from prescriptxai.schemas import Assessment, BatchRequest, RecourseRequest, RecourseResult
+
+
+class ControlPreviewRequest(RecourseRequest):
+    """Original observed state plus named manual raw-unit proxy controls."""
+
+    controls: dict[str, float]
+
+    @field_validator("controls", mode="before")
+    @classmethod
+    def reject_boolean_controls(cls, value: object) -> object:
+        """Reject booleans before numeric coercion can hide an invalid measurement."""
+        if isinstance(value, dict) and any(isinstance(item, bool) for item in value.values()):
+            raise ValueError("boolean controls are not physical measurements")
+        return value
 
 
 class RequestGuard:
@@ -221,5 +235,13 @@ def create_app(
         return service.recommend_batch(
             pd.DataFrame(request.states), mode, contexts=request.contexts
         )
+
+    @app.post("/validate-controls", response_model=RecourseResult)
+    def validate_controls(request: ControlPreviewRequest) -> RecourseResult:
+        """Preview controls through the exact same library path used by the dashboard."""
+        mode = (
+            request.mode if "mode" in request.model_fields_set else settings.pipeline.default_mode
+        )
+        return loaded().validate_controls(request.state, request.controls, request.context, mode)
 
     return app

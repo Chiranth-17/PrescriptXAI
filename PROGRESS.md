@@ -12,7 +12,7 @@
 | 5 — Multi-tier validation (current prompt) | Closed; measured gaps retained | Shared tiers, bounded feedback, real funnels, audits and phase5-closed |
 | 6 — Decision support pipeline, CLI and API | Closed; performance target gap retained | Public schema 2.0.0, real delivery gates, 600-result audit, phase6-closed |
 | 7 — Full experimental framework | Closed; measured target gaps retained | 171490 quality + 2496 diagnostics, 48 reference cases, 2000 serial calls; independent audit and full software gate passed |
-| 8 — Streamlit operator dashboard | Queued; not started | Direct prompt supplied; user chose to wait for Phase 7 gate |
+| 8 — Streamlit operator dashboard | In progress | Phase7-closed verified at b4a8614; implementing shared preview path and all five pages |
 | 9 — Systematic testing and hardening | Queued; not started | Direct prompt supplied 2026-10-24 IST; starts after Phase 8 gate |
 | 10 — Packaging, documentation and demo readiness | Queued; not started | Direct prompt supplied 2026-10-24 IST; starts after Phase 9 gate |
 | 11 — Remaining phase | Not started | Source prompt / Part B changes table not supplied |

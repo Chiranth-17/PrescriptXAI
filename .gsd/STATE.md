@@ -1,6 +1,6 @@
 ---
 phase: 8
-status: ready_after_phase7_closure
+status: in_progress
 ---
 
 # Current execution state
@@ -12,7 +12,14 @@ phase10_packaging_reproducibility.md. Do not invent Phase11 or PartB. Existing h
 prescriptxai-phase-7-phase-8 checks every15minutes and stops after verifiedPhase10closure
 or explicit user stop; stay quiet while no meaningful/actionable change.
 
-## Phase7 full gate passed; closure commit/tag next
+## Phase7 closed; Phase8 plan8.1 active
+
+Closure commit b4a8614f663d626925041982a2d1c25b38698f0b and annotated phase7-closed tag verified.
+Phase8 plans .gsd/phases/8/01-PLAN.md through04-PLAN.md preserve complete work/gate requirements.
+Shared manual preview added to facade/API; result composition extracted with unchanged frozen
+schemas. Existing47 pipeline/artifact/schema tests passed. New support-limit test initially used
+read-only k_max alias; corrected to max_changed_features (test setup, not behavior). Foundation
+task verification/commit pending; no Phase8 gate/closure claim. Next: backend/data/state and UI.
 
 Run phase7-20261020T102540Z; measured source63c2ed445fba16c73a2771e184f635abf76b4405.
 Preregistration0c0b6e1; assetprep4ffb038; actual historical training seeds/sources retained.
@@ -40,7 +47,7 @@ Final5command softwaregateexit0:ruffclean,mypy55clean,276passed/70warnings/119.2
 Coverage83.3507197997079%branch-inclusive,87.28953905603092%line; nodecrease. Exactfloor ratcheted
 withprecision12 to fix tool integer rounding without loweringfloor. Gate logs/status/coverage
 artifacts/phase7-final-gate-precise.log,phase7-final-gate-status.json,phase7-final-coverage.json.
-Close with conventionalcommit/tagphase7-closed only now fullgate passed, thenimmediatePhase8.
+Closure commit/tag verified above; proceed with Phase8 and never rerun historical measurements.
 
 Measured gaps retained:FD002highT1/lowT2joint passed leakage guard; no label/RUL/engine/cycle
 inputs or test-fit/calibrationoverlap. LSTMfrozen genuineprefix/lateststate validity0% is not
