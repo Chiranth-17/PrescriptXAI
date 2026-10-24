@@ -101,6 +101,9 @@ def main() -> None:
             st.session_state["cycle"] = hi
         cycle = st.sidebar.slider("Cycle", lo, hi, key="cycle") if lo < hi else lo
         recompute = st.sidebar.button("Recompute", key="recompute")
+        st.sidebar.caption(f"Model: {info['model_version']} · profile: {path}")
+        st.sidebar.caption(f"Profile config hash: {info['config_hash']}")
+        st.sidebar.caption(f"Predictor training source: {info['model_git_hash'] or 'unrecorded'}")
         session = cast(MutableMapping[str, Any], st.session_state)
         select_session(
             session,

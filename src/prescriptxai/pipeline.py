@@ -908,6 +908,7 @@ class PrescriptXAI:
         return {
             "model_version": self.model_version,
             "schema_version": "2.0.0",
+            "model_git_hash": self.engine.model.git_commit,
             "config_hash": self.config_hash,
             "artifact_identity": self.engine.artifact_identity,
             "dataset": self.config.data.dataset,

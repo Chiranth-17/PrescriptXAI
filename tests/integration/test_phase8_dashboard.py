@@ -35,6 +35,11 @@ def test_operator_selection_risk_solve_slider_and_exports(operator_settings: Pat
     app = AppTest.from_file(str(APP), default_timeout=40).run()
     assert not app.exception and not app.error, [v.value for v in app.error]
     initial = app.metric[0].value
+    service = PrescriptXAI.from_config(
+        next(iter(load_settings(operator_settings).profiles["FD001"].values()))
+    )
+    assert any(service.config_hash in item.value for item in app.caption)
+    assert any(service.model_version in item.value for item in app.caption)
     app.selectbox(key="engine").set_value(8).run()
     assert not app.exception and app.metric[0].value != initial
     assert app.warning and any("ALERT" in v.value for v in app.warning)

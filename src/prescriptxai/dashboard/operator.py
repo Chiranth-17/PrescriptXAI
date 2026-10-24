@@ -82,6 +82,12 @@ def result_panels(result: RecourseResult, info: dict[str, Any], config: AppConfi
             st.caption(f"Margin: {tier.margin if tier.margin is not None else 'unavailable'}")
             for reason in tier.diagnostics:
                 st.write(reason)
+            if not tier.diagnostics:
+                st.caption(
+                    "Configured checks passed."
+                    if tier.passed
+                    else "No additional diagnostic text was supplied; inspect the tier checks."
+                )
             for check in tier.checks:
                 st.caption(f"{check.name}: {check.explanation}; margin={check.margin}")
     if report.simulator is None or report.simulator.status == "skipped":
