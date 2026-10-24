@@ -34,6 +34,21 @@ Docker verification when available, reproduction workflow, complete docs/demo/pa
 and the user's license-choice instruction (MIT offered as default). No unavailable Phase 11 or
 Part B content is invented. Current frozen measurements and schema 2.0.0 remain protected.
 
+## Phase 8 implementation checkpoint — 2026-10-24 IST
+
+- Shared manual-preview path committed f9c59ac; independent guard/input fixes committed4a2f6ab.
+  Frozen result/report2.0.0 schemas unchanged; no historical settings or measurements replaced.
+- Direct/API adapters, content identities, observed telemetry/history, typed settings and stale
+  session invalidation implemented. Runtime sources import no training module. Structured
+  manual errors cover missing coupling, invalid modes and numeric range; defects logged.
+- Current focused verification:75 pipeline/config/source/chart tests passed, plus8 actual fitted-
+  model AppTests across all five pages, real solve/manual rejection/fleet navigation/triage.
+  Ruff clean; strict mypy61 source files clean. This is not the final Phase8 gate.
+- Operator/evidence UI and expanded tests are being finished. Real walkthrough/screenshots,
+  complete independent audit, full nondecreasing-coverage gate and closure tag remain pending.
+- Run dashboard with `mingw32-make dashboard`; source selection/config switch in configs/dashboard.yaml.
+  API parity checks selected config/mode and actual artifact content identity; credentials stay in environment.
+
 ## Phase 7 closure — 2026-10-24 IST
 
 Run `phase7-20261020T102540Z`, measured source `63c2ed445fba16c73a2771e184f635abf76b4405`,

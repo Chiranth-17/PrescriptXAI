@@ -430,9 +430,13 @@ def _apply_environment_overrides(raw: dict[str, Any]) -> dict[str, Any]:
     """Apply ``PRESCRIPTXAI_`` variables using ``__`` for nested YAML keys."""
     result = dict(raw)
     env_prefix = "PRESCRIPTXAI_"
+    service_variables = {"PRESCRIPTXAI_DASHBOARD_CONFIG", "PRESCRIPTXAI_API_KEY"}
+    configured_key = raw.get("api", {}).get("api_key_env")
+    if isinstance(configured_key, str):
+        service_variables.add(configured_key)
     changed: set[tuple[str, ...]] = set()
     for env_name, env_value in os.environ.items():
-        if not env_name.startswith(env_prefix):
+        if not env_name.startswith(env_prefix) or env_name in service_variables:
             continue
         path_parts = tuple(part.lower() for part in env_name[len(env_prefix) :].split("__"))
         path = tuple("horizon_H" if part == "horizon_h" else part for part in path_parts)

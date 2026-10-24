@@ -19,9 +19,11 @@ Phase8 plans .gsd/phases/8/01-PLAN.md through04-PLAN.md preserve complete work/g
 Shared manual preview added to facade/API; result composition extracted with unchanged frozen
 schemas. Existing47 pipeline/artifact/schema tests passed. New support-limit test initially used
 read-only k_max alias; corrected to max_changed_features (test setup, not behavior). Foundation
-task committed f9c59ac. Independent audit found required-coupling bypass, malformed mode and
-numeric overflow errors; fixes/regressions in progress, logged docs/defects.md. No Phase8
-gate/closure claim. Next: backend/data/state and UI.
+task committed f9c59ac; guard/input fixes4a2f6ab. Foundation direct/API/content identity/data/
+genuine history/settings/state now implemented;36focusedsource/config/preview tests pass,
+75broaderpipeline/config/chart tests pass and8fitted-modelAppTests pass acrossallpages.
+Ruff/mypy61clean. Defects/fixes logged docs/defects.md. UI/evidence tests stillbeingexpanded;
+realwalkthrough/screenshots/independentaudit/fullcoveragegate/Phase8closure remainpending.
 
 Run phase7-20261020T102540Z; measured source63c2ed445fba16c73a2771e184f635abf76b4405.
 Preregistration0c0b6e1; assetprep4ffb038; actual historical training seeds/sources retained.

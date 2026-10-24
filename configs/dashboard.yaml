@@ -1,0 +1,18 @@
+backend: direct
+api_url: http://127.0.0.1:8000
+api_key_env: PRESCRIPTXAI_API_KEY
+timeout_seconds: 120
+telemetry_path: data/raw/CMAPSSData.zip
+telemetry_population: test
+report_directory: artifacts/experiments/phase7-20261020T102540Z
+profiles:
+  FD001:
+    XGBoost / v1: configs/experiments/phase7-FD001-xgb-v1.yaml
+    XGBoost / v2: configs/experiments/phase7-FD001-xgb-v2.yaml
+    MLP / v1: configs/experiments/phase7-FD001-mlp-v1.yaml
+    MLP / v2: configs/experiments/phase7-FD001-mlp-v2.yaml
+    LSTM / v1: configs/experiments/phase7-FD001-lstm-v1.yaml
+    LSTM / v2: configs/experiments/phase7-FD001-lstm-v2.yaml
+  FD002:
+    XGBoost / v1: configs/experiments/phase7-FD002-xgb-v1.yaml
+    XGBoost / v2: configs/experiments/phase7-FD002-xgb-v2.yaml

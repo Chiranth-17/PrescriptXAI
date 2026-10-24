@@ -9,7 +9,7 @@ from _thread import RLock
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import dataclass, field, replace
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from time import perf_counter_ns
 from typing import Literal, TypeAlias, cast
@@ -80,6 +80,7 @@ class PrescriptXAIEngine:
     mahalanobis: MahalanobisValidator
     coupling: SensorCouplingModel | None = None
     predictor_lock: RLock = field(default_factory=RLock, repr=False)
+    artifact_identity: str | None = None
 
     @classmethod
     def from_files(
@@ -365,7 +366,7 @@ class PrescriptXAI:
                         ):
                             raise ValueError(f"model {key} differs from configured value")
                     _CACHE[identity] = PrescriptXAIEngine(
-                        settings, taxonomy, model, validator, coupling
+                        settings, taxonomy, model, validator, coupling, artifact_identity=identity
                     )
                 except (ValueError, OSError) as error:
                     raise ArtifactError(str(error)) from error
@@ -420,13 +421,13 @@ class PrescriptXAI:
             if name in values and values[name] != value:
                 raise FeatureError(f"conflicting observed value for {name}")
             values[name] = value
+        specs = self.engine.taxonomy.feature_by_name()
         for name in ("engine_id", "cycle"):
             value = getattr(observed, name)
-            if value is not None:
+            if value is not None and (name in specs or name in names):
                 if name in values and values[name] != value:
                     raise FeatureError(f"conflicting context {name}")
                 values[name] = value
-        specs = self.engine.taxonomy.feature_by_name()
         unknown = set(values) - (set(specs) | set(names))
         required = set(names)
         if complete:
@@ -908,9 +909,15 @@ class PrescriptXAI:
             "model_version": self.model_version,
             "schema_version": "2.0.0",
             "config_hash": self.config_hash,
+            "artifact_identity": self.engine.artifact_identity,
             "dataset": self.config.data.dataset,
             "model_choice": self.config.model_choice,
             "history_rows": max(0, int(getattr(self.engine.model.estimator, "window", 1)) - 1),
+            "model_diagnostics": self.engine.model.metrics or {},
+            "coupling_diagnostics": {
+                "fit": asdict(self.engine.coupling.metrics),
+                "calibration": self.engine.coupling.calibration_report,
+            } if self.engine.coupling is not None else None,
             "artifacts": self.config.artifacts.model_dump(mode="json"),
             "tau_danger": self.config.tau_danger,
             "tau_safe": self.config.tau_safe,
