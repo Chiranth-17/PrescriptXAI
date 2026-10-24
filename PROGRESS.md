@@ -12,8 +12,8 @@
 | 5 — Multi-tier validation (current prompt) | Closed; measured gaps retained | Shared tiers, bounded feedback, real funnels, audits and phase5-closed |
 | 6 — Decision support pipeline, CLI and API | Closed; performance target gap retained | Public schema 2.0.0, real delivery gates, 600-result audit, phase6-closed |
 | 7 — Full experimental framework | Closed; measured target gaps retained | 171490 quality + 2496 diagnostics, 48 reference cases, 2000 serial calls; independent audit and full software gate passed |
-| 8 — Streamlit operator dashboard | Complete gate; closure recorded by phase8-closed | Five pages, live shared validation, real walkthrough, 321 tests and independently audited 32-callback UI timing |
-| 9 — Systematic testing and hardening | Queued; not started | Direct prompt supplied 2026-10-24 IST; starts after Phase 8 gate |
+| 8 — Streamlit operator dashboard | Closed at1608d6d / phase8-closed | Five pages, live shared validation, real walkthrough,321 tests and independently audited32-callback UI timing |
+| 9 — Systematic testing and hardening | In progress | Phase8 closure verified; adversarial input/artifact/science audits and regression work started |
 | 10 — Packaging, documentation and demo readiness | Queued; not started | Direct prompt supplied 2026-10-24 IST; starts after Phase 9 gate |
 | 11 — Remaining phase | Not started | Source prompt / Part B changes table not supplied |
 
@@ -60,7 +60,16 @@ Part B content is invented. Current frozen measurements and schema 2.0.0 remain 
 - How to run: `mingw32-make dashboard`; source/config switch in configs/dashboard.yaml;
   optional API uses the same profile and environment-only credentials. Fullgate:
   `mingw32-make all-checks`. See docs/phase8_changes.md and docs/phase8_walkthrough.md.
-  Commit/tag phase8-closed after completed gate/audits; immediately execute full Phase9 then10.
+  Closure1608d6d9c1c995cf024fdcc29d1db5d785564b3f / phase8-closed verified; Phase9 started.
+
+## Phase 9 start — 2026-10-24 IST
+
+Four concrete plans under .gsd/phases/9 preserve all11 task areas. Independent read-only audits
+have reproduced raw corrupt-artifact exceptions, missing-calibrator acceptance, contradictory
+config alias coercion and NumPy/tensor calibration endpoint disagreement. Fixes and actual
+regressions are next; no Phase9 completion or coverage/security/performance result is claimed.
+The >=90% line target will be measured with explicit rendering exclusions and full-package
+coverage retained alongside it. Historical Phase7/8 measurements and frozen2.0.0schemas remain.
 
 ## Phase 7 closure — 2026-10-24 IST
 
