@@ -66,11 +66,15 @@ class ModelBundle:
             risk = probabilities
         elif probabilities.ndim == 2:
             classes = list(getattr(self.estimator, "classes_", [0, 1]))
+            if probabilities.shape != (len(frame), len(classes)):
+                raise ValueError("model probabilities must match input rows and declared classes")
             if 1 not in classes:
                 raise ValueError("trained classifier does not contain the failure class")
             risk = probabilities[:, classes.index(1)]
         else:
             raise ValueError("model returned probabilities with an invalid shape")
+        if risk.shape != (len(frame),):
+            raise ValueError("model probabilities must match input rows")
         if self.calibrator is not None:
             risk = self.calibrator.transform(risk)
         if not np.isfinite(risk).all() or ((risk < 0) | (risk > 1)).any():
@@ -90,7 +94,11 @@ class ModelBundle:
         risk = np.asarray(self.estimator.predict_proba(scaled_sequences), dtype=np.float64)
         if self.calibrator is not None:
             risk = self.calibrator.transform(risk)
-        if risk.shape != (len(raw_sequences),) or not np.isfinite(risk).all():
+        if (
+            risk.shape != (len(raw_sequences),)
+            or not np.isfinite(risk).all()
+            or ((risk < 0) | (risk > 1)).any()
+        ):
             raise ValueError("sequence model returned invalid probabilities")
         return risk
 

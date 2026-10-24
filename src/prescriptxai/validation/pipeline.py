@@ -280,6 +280,8 @@ def fit_mahalanobis_validator(
     config: AppConfig,
 ) -> MahalanobisValidator:
     """Fit Tier 2 only from rows of declared training engines using the model's scaler."""
+    if set(expected_training_engine_ids) != set(bundle.training_engine_ids):
+        raise ValueError("Tier 2 fitting IDs must match the model's training engines")
     if "engine_id" not in training_frame.columns:
         raise ValueError("training frame must contain engine_id provenance")
     observed_ids = tuple(sorted(int(value) for value in training_frame["engine_id"].unique()))

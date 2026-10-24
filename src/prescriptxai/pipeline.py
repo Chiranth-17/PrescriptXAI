@@ -7,12 +7,13 @@ import json
 import logging
 from _thread import RLock
 from collections import OrderedDict
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass, field, replace
+from functools import wraps
 from pathlib import Path
 from time import perf_counter_ns
-from typing import Literal, TypeAlias, cast
+from typing import Literal, ParamSpec, TypeAlias, TypeVar, cast
 from uuid import uuid4
 
 import numpy as np
@@ -204,6 +205,30 @@ class HistoryError(InputError):
 
 class ArtifactError(ValueError):
     """Configured fitted artifacts cannot support the requested predictor."""
+
+
+_P = ParamSpec("_P")
+_T = TypeVar("_T")
+
+
+def _artifact_boundary(function: Callable[_P, _T]) -> Callable[_P, _T]:
+    """Preserve typed input errors and make unexpected fitted-component faults actionable."""
+
+    @wraps(function)
+    def guarded(*args: _P.args, **kwargs: _P.kwargs) -> _T:
+        try:
+            return function(*args, **kwargs)
+        except (InputError, ArtifactError):
+            raise
+        except Exception as error:
+            LOGGER.error("Fitted-component request failed: %s", type(error).__name__)
+            LOGGER.debug("Fitted-component failure details", exc_info=True)
+            raise ArtifactError(
+                "Predictor or validator could not complete the request; reload verified artifacts "
+                f"({type(error).__name__})."
+            ) from error
+
+    return guarded
 
 
 RawInput: TypeAlias = Mapping[str, float] | pd.Series | NDArray[np.float64] | Sequence[float]
@@ -440,7 +465,10 @@ class PrescriptXAI:
                 raise FeatureError("telemetry columns must have string names")
             values = dict(raw)
         else:
-            array = np.asarray(raw)
+            try:
+                array = np.asarray(raw)
+            except (ValueError, TypeError) as error:
+                raise FeatureError("vector must be a regular numeric array") from error
             if array.ndim != 1 or len(array) != len(names):
                 raise FeatureError(
                     f"vector must have shape ({len(names)},) in saved model feature order"
@@ -543,6 +571,7 @@ class PrescriptXAI:
             self.engine.model, estimator=_LatestSequenceEstimator(self.engine.model, history)
         )
 
+    @_artifact_boundary
     def assess(
         self,
         x_raw: RawInput,
@@ -567,6 +596,7 @@ class PrescriptXAI:
             seed=self.config.seed,
         )
 
+    @_artifact_boundary
     def recommend(
         self,
         x_raw: RawInput,
@@ -672,6 +702,7 @@ class PrescriptXAI:
             surrogate,
         )
 
+    @_artifact_boundary
     def validate_controls(
         self,
         x_raw: RawInput,
@@ -894,6 +925,7 @@ class PrescriptXAI:
             solver_settings=optimization.effective_solver_settings,
         )
 
+    @_artifact_boundary
     def recommend_batch(
         self,
         frame: pd.DataFrame,
@@ -913,7 +945,12 @@ class PrescriptXAI:
         if contexts is not None and len(contexts) != len(frame):
             raise InputError("contexts length must match batch rows")
         count = workers if workers is not None else self.config.pipeline.batch_workers
-        if count < 1 or count > self.config.pipeline.max_workers:
+        if (
+            isinstance(count, (bool, np.bool_))
+            or not isinstance(count, (int, np.integer))
+            or count < 1
+            or count > self.config.pipeline.max_workers
+        ):
             raise InputError("workers outside configured range")
         observed = list(contexts) if contexts is not None else [None] * len(frame)
         records = [

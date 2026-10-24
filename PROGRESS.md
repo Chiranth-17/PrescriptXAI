@@ -101,6 +101,13 @@ coverage retained alongside it. Historical Phase7/8 measurements and frozen2.0.0
   preregistered profiling/unchanged-result optimization/before-after timings/10000-call memory,
   complete security/CI checks, final independent audit/full gate/traceability/commit/tag9, then10.
 
+Boundary checkpoint committed as ebc9570a28be6fb3e4904f4172c4a37d78b80b93. A subsequent
+runtime pass reproduced four more defect classes (P9-026..029): post-load component failures,
+wrong predictor output length, covariance partition relabeling and malformed worker counts.
+All7newnegative cases now pass;60pipeline/API cases pass and5property tests pass with explicit
+successful/no-op examples. Typed input failures remain422; unexpected fitted-component faults
+are actionable ArtifactError/503 rather than raw traces. Frozen2.0.0fields remain unchanged.
+
 ## Phase 7 closure — 2026-10-24 IST
 
 Run `phase7-20261020T102540Z`, measured source `63c2ed445fba16c73a2771e184f635abf76b4405`,

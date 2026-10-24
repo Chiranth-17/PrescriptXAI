@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import given, settings
+from hypothesis import example, given, settings
 from hypothesis import strategies as st
 
 from fixtures.recourse_models import make_recourse_fixture
@@ -23,6 +23,12 @@ def property_service() -> PrescriptXAI:
     bundle, taxonomy, training = make_recourse_fixture()
     taxonomy.feature_groups.dependent_sensors.features = []
     taxonomy.feature_groups.immutable_environmental.features = ["sensor"]
+    taxonomy.features = tuple(
+        spec.model_copy(update={"group": "immutable_environmental"})
+        if spec.name == "sensor"
+        else spec
+        for spec in taxonomy.features
+    )
     config = load_config(Path("configs/default.yaml"))
     config.recourse.alpha_steps = config.recourse.restarts = 1
     config.recourse.l1_escalation_steps = config.recourse.support_search_limit = 1
@@ -33,6 +39,8 @@ def property_service() -> PrescriptXAI:
 
 
 @PROPERTY
+@example(actuator=-2.0, frozen=2.0)
+@example(actuator=2.0, frozen=2.0)
 @given(actuator=FINITE, frozen=st.floats(min_value=1, max_value=4, allow_nan=False))
 def test_recourse_frozen_bounds_sparsity_finiteness_and_triage(
     actuator: float, frozen: float
@@ -40,6 +48,8 @@ def test_recourse_frozen_bounds_sparsity_finiteness_and_triage(
     """Every solved state obeys its declared immutable and outcome-dependent guarantees."""
     service = property_service()
     result = service.recommend({"actuator": actuator, "sensor": frozen})
+    if actuator == -2.0 and frozen == 2.0:
+        assert result.status == "RECOVERABLE"  # Exercise successful-property predicates explicitly.
     assert result.new_state["sensor"] == frozen
     numeric = [result.risk_before, result.risk_after, *result.new_state.values()]
     numeric += [d.raw_delta for d in result.delta_per_feature.values()]

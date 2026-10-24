@@ -12,12 +12,18 @@ Subagents only independent read-only auditors; root implements all changes.
 
 ## Phase9 boundary checkpoint; next science/golden/E2E/coverage/performance/CI
 
-Plancommit7c7966c; four plans .gsd/phases/9/. Current boundary changes staged/committed next:
+Plancommit7c7966c; four plans .gsd/phases/9/. Boundary checkpoint committed ebc9570a28be6fb3e4904f4172c4a37d78b80b93:
 central artifacts.py trusted-root decoding, SHA-bound actual bytes for model/validator/coupling/
 taxonomy; fitted scaler/model/calibrator/coupling/regime guards; typed input/history/context/
 complex and NumPyboolean rejection; NumPy/tensor calibration endpoint parity; labels/regimes/K;
 configuration contradiction/null/finite checks and object revalidation; current-stderr logging.
-25defects logged docs/defects.md with actual negative regressions. Public result/report2.0.0
+25defects in thatcommit; subsequent runtime pass addsP9-026..029, now29total. Sevennewnegative
+cases first failedthenpass;60pipeline/API tests pass,5property tests pass withexplicitREC/no-op
+examples andconsistentFeatureSpec frozenmetadata. Latest runtime changes beingcommitted next:
+generic artifact failure boundary around public requests, modelrisk batchlength/range guards,
+covarianceexpectedIDs matchpredictortrainingIDs, strictintegralworker guard. PreserveInputError422;
+unexpectedfittedfaults becomeArtifactError503, defaultlogs omitstacktraces (optindebugonly).
+Nextcontinue all11science regressions,goldens/E2E/coverage. Public result/report2.0.0
 serialization snapshots unchanged. Model true NumPy calibration unchanged; tensor correction
 may change future search paths. Never relabel old measured outcomes as revised engine results.
 
