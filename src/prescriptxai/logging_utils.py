@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import json
 import logging
+import sys
 from contextvars import ContextVar, Token
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, TextIO
 from uuid import uuid4
 
 _RUN_ID: ContextVar[str] = ContextVar("prescriptxai_run_id", default="unassigned")
@@ -41,6 +42,15 @@ class JsonLogFormatter(logging.Formatter):
         return json.dumps(payload, ensure_ascii=False, allow_nan=False)
 
 
+class _CurrentStderrHandler(logging.StreamHandler[TextIO]):
+    """Resolve caller-owned stderr when emitting, rather than retaining a closed capture."""
+
+    def emit(self, record: logging.LogRecord) -> None:
+        """Write through the active CLI/test/application capture stream."""
+        self.stream = sys.stderr
+        super().emit(record)
+
+
 def configure_logging(level: int = logging.INFO, run_id: str | None = None) -> str:
     """Configure JSON logging and return the current run ID.
 
@@ -50,7 +60,7 @@ def configure_logging(level: int = logging.INFO, run_id: str | None = None) -> s
     active_id = run_id or new_run_id()
     if run_id:
         _RUN_ID.set(run_id)
-    handler = logging.StreamHandler()
+    handler = _CurrentStderrHandler()
     handler.setFormatter(JsonLogFormatter())
     root = logging.getLogger()
     if not any(isinstance(item.formatter, JsonLogFormatter) for item in root.handlers):

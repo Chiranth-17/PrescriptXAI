@@ -11,6 +11,7 @@ from fixtures.experiments import fitted_experiment
 from fixtures.recourse_models import make_recourse_fixture
 from prescriptxai.config import load_config
 from prescriptxai.evaluation.runner import make_cases, observed_alert_cohort, run_experiment_case
+from prescriptxai.models.calibration import ProbabilityCalibrator
 from prescriptxai.models.registry import load_model_bundle, save_model_bundle
 from prescriptxai.models.torch_models import LSTMFailureModel
 from prescriptxai.pipeline import PrescriptXAI
@@ -51,6 +52,15 @@ def test_observed_lstm_prefix_and_real_experiment(tmp_path: Path) -> None:
     estimator = LSTMFailureModel(window=2, hidden_dims=(4,), epochs=2, seed=17)
     estimator.fit(scaled.reshape(4, 2, 2), np.asarray([1, 0, 0, 1]))
     bundle.estimator, bundle.model_type = estimator, "lstm"
+    # Calibrate this replacement predictor on engine-5 fixture sequences, never on frame's
+    # engine-6 evaluation states or with the previous analytic predictor's calibrator.
+    validation = pd.DataFrame(
+        {"sensor_1": [-1.8, -0.8, 0.2, 1.2, 1.8, 1.4, 0.4, -0.4], "sensor_2": [2.0] * 8}
+    )
+    validation_risk = estimator.predict_proba(bundle.scaler.transform(validation).reshape(4, 2, 2))
+    bundle.calibrator = ProbabilityCalibrator("sigmoid").fit(
+        validation_risk, np.asarray([1, 0, 0, 1])
+    )
     config.model_choice = config.model.risk_estimator = "lstm"
     # Test-specific low alert gate exercises the prefix path before fitting any study outcome.
     config.tau_safe = config.model.safe_threshold = 0.01

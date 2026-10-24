@@ -3,9 +3,18 @@
 from math import isfinite
 from typing import Literal
 
+import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
 from prescriptxai.validation.base import CheckResult, EvidenceLevel, TierStatus
+
+
+def _reject_nonreal_measurement(value: object, subject: str) -> None:
+    """Reject lossy boolean/complex coercion at raw Pydantic input boundaries."""
+    if isinstance(value, (bool, np.bool_)):
+        raise ValueError(f"{subject} cannot contain boolean measurements")
+    if isinstance(value, (complex, np.complexfloating)):
+        raise ValueError(f"{subject} cannot contain complex measurements")
 
 
 class MachineState(BaseModel):
@@ -16,6 +25,15 @@ class MachineState(BaseModel):
     engine_id: int = Field(ge=1)
     cycle: int = Field(ge=1)
     features: dict[str, float]
+
+    @field_validator("features", mode="before")
+    @classmethod
+    def preserve_measurement_types(cls, value: object) -> object:
+        """Check original scalar types before conversion to raw real-valued telemetry."""
+        if isinstance(value, dict):
+            for item in value.values():
+                _reject_nonreal_measurement(item, "telemetry")
+        return value
 
     @model_validator(mode="after")
     def feature_values_are_finite(self) -> "MachineState":
@@ -96,8 +114,9 @@ class RecourseRequest(BaseModel):
     @classmethod
     def reject_boolean_measurements(cls, value: object) -> object:
         """Reject booleans before Pydantic can coerce them into physical measurements."""
-        if isinstance(value, dict) and any(isinstance(item, bool) for item in value.values()):
-            raise ValueError("boolean telemetry is not a numeric physical measurement")
+        if isinstance(value, dict):
+            for item in value.values():
+                _reject_nonreal_measurement(item, "telemetry")
         return value
 
     @model_validator(mode="after")
@@ -295,18 +314,21 @@ class InputContext(BaseModel):
         """Preserve numeric physical context before scalar coercion."""
         if isinstance(value, dict):
             telemetry = value.get("telemetry", {})
-            if isinstance(telemetry, dict) and any(isinstance(v, bool) for v in telemetry.values()):
-                raise ValueError("boolean telemetry is not a physical measurement")
-            if any(isinstance(value.get(n), bool) for n in ("engine_id", "cycle")):
-                raise ValueError("engine_id/cycle cannot be boolean")
+            if isinstance(telemetry, dict):
+                for item in telemetry.values():
+                    _reject_nonreal_measurement(item, "telemetry")
+            for name in ("engine_id", "cycle"):
+                _reject_nonreal_measurement(value.get(name), name)
             history = value.get("history")
-            if isinstance(history, (list, tuple)) and any(
-                isinstance(v, bool)
-                for row in history
-                if isinstance(row, (list, tuple))
-                for v in row
-            ):
-                raise ValueError("history cannot contain boolean measurements")
+            if isinstance(history, np.ndarray) and history.ndim != 2:
+                raise ValueError("history must be a two-dimensional observed array")
+            if isinstance(history, (list, tuple, np.ndarray)):
+                for row in history:
+                    if isinstance(row, np.ndarray) and row.ndim != 1:
+                        raise ValueError("history rows must be one-dimensional")
+                    if isinstance(row, (list, tuple, np.ndarray)):
+                        for item in row:
+                            _reject_nonreal_measurement(item, "history")
         return value
 
     @model_validator(mode="after")

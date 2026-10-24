@@ -65,11 +65,41 @@ Part B content is invented. Current frozen measurements and schema 2.0.0 remain 
 ## Phase 9 start — 2026-10-24 IST
 
 Four concrete plans under .gsd/phases/9 preserve all11 task areas. Independent read-only audits
-have reproduced raw corrupt-artifact exceptions, missing-calibrator acceptance, contradictory
+ have reproduced raw corrupt-artifact exceptions, missing-calibrator acceptance, contradictory
 config alias coercion and NumPy/tensor calibration endpoint disagreement. Fixes and actual
 regressions are next; no Phase9 completion or coverage/security/performance result is claimed.
 The >=90% line target will be measured with explicit rendering exclusions and full-package
 coverage retained alongside it. Historical Phase7/8 measurements and frozen2.0.0schemas remain.
+
+## Phase 9 boundary checkpoint — not phase closure
+
+- Twenty-five reproduced defects and fixes are logged in docs/defects.md: trusted local Python-
+  object loading, identity snapshots, fitted calibration/model/scaler/coupling/regime validation,
+  typed input/context/history errors, consistent calibration numerics, valid labels/regimes/K,
+  configuration aliases/finite values, closed-capture logging and unsupported legacy reporting.
+  All implementation is by the primary agent; independent auditors only inspected/reproduced.
+- Interim full run:398passed/70warnings/156.54s, combined coverage84.124477473293%, full
+  line87.67410329101442%; app-entrypoint-excluded line88.69077306733168%. This is below the
+  required90% scoped line gate and precedes the final context/config/security edits. No closure.
+  Subsequent patched-environment focused run95passed;37factory/schema/source tests also pass.
+  Ruff and strict mypy62source files are clean. Both frozen2.0.0snapshot contracts still match.
+- Dependency audit2.10.1 initially found51advisories/6packages. Patched lock includes Pillow13
+  with compatible Streamlit1.66.1 and patched certifi/filelock/opentelemetry/setuptools/virtualenv.
+  Re-audit:0known advisories in109distributions; local prescriptxai0.1.0 is the sole public-PyPI
+  exclusion. Original and corrected audits retained in artifacts/phase9/. No historical runtime
+  manifest, fitted artifact, threshold, rate, bound, population or measurement was replaced.
+- Real FD001/FD002 factories still load8/14retained learned relations and1/6regimes. An initial
+  overstrict coupling guard rejected training-dropped constant channels; corrected using the
+  saved predictor's retained features, without changing taxonomy or fitted relationships.
+- The review-bundle helper now copies exact saved reports and records hashes; it refuses
+  incomplete/mismatched stages or overwrite. Actual saved Phase7 bundle copy verified, raw
+  multi-gigabyte records explicitly referenced rather than claimed included. Historical reports
+  remain untouched. Trust policy: docs/artifact_security.md. QA config: configs/experiments/
+  phase9-hardening.yaml. Known risk from trusted pickle remains an explicit administrative limit.
+- Still required: every requested science case, golden/update guard and fresh-process numerical
+  parity, full raw-fixture-to-dashboard E2E, >=90% scoped line gate with full-package ratchets,
+  preregistered profiling/unchanged-result optimization/before-after timings/10000-call memory,
+  complete security/CI checks, final independent audit/full gate/traceability/commit/tag9, then10.
 
 ## Phase 7 closure — 2026-10-24 IST
 

@@ -33,7 +33,11 @@ def allowed_interval(
     Horizons above one are a sensitivity assumption that applies a one-step telemetry rate
     allowance cumulatively; it is not a validated actuator-dynamics model.
     """
-    if horizon_steps < 1:
+    if (
+        isinstance(horizon_steps, (bool, np.bool_))
+        or not isinstance(horizon_steps, (int, np.integer))
+        or horizon_steps < 1
+    ):
         raise ValueError("horizon_steps must be a positive integer")
     cumulative_limit = constraint.max_change_per_step * horizon_steps
     lower = max(constraint.minimum, current - cumulative_limit)
@@ -166,7 +170,11 @@ def check_rate_violations(
     horizon_steps: int = 1,
 ) -> tuple[BoundViolation, ...]:
     """Report cumulative rate and directional violations for controllable proxies."""
-    if horizon_steps < 1:
+    if (
+        isinstance(horizon_steps, (bool, np.bool_))
+        or not isinstance(horizon_steps, (int, np.integer))
+        or horizon_steps < 1
+    ):
         raise ValueError("horizon_steps must be a positive integer")
     violations: list[BoundViolation] = []
     for name, constraint in taxonomy.actuator_constraints.items():

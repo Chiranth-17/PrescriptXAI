@@ -24,12 +24,13 @@ def predictor_metrics(
     labels: np.ndarray, probabilities: np.ndarray, tau_danger: float
 ) -> dict[str, object]:
     """Compute held-out binary-prediction and calibrated-probability metrics."""
-    target = np.asarray(labels, dtype=np.int64)
+    target = np.asarray(labels, dtype=np.float64)
     risk = np.asarray(probabilities, dtype=np.float64)
     if target.ndim != 1 or risk.ndim != 1 or len(target) != len(risk) or len(target) == 0:
         raise ValueError("labels and probabilities must be nonempty matching vectors")
-    if not np.isin(target, [0, 1]).all():
+    if not np.isfinite(target).all() or not np.isin(target, [0, 1]).all():
         raise ValueError("labels must contain only binary values")
+    target = target.astype(np.int64)
     if not np.isfinite(risk).all() or ((risk < 0) | (risk > 1)).any():
         raise ValueError("probabilities must be finite and within [0, 1]")
     if not 0 <= tau_danger <= 1:

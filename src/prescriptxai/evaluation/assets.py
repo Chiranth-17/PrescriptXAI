@@ -8,7 +8,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
-import joblib
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
@@ -183,7 +182,9 @@ def migrate_legacy_predictor(
     This explicit trusted-local migration preserves original artifacts. No legacy validation
     scores or parameters are manufactured. Only bounds/rates and registry version are enriched.
     """
-    bundle = joblib.load(source)
+    from prescriptxai.artifacts import load_trusted_joblib
+
+    bundle = load_trusted_joblib(source)
     if not isinstance(bundle, ModelBundle) or bundle.artifact_version != 2:
         raise ValueError("migration requires a trusted version-2 ModelBundle")
     training = training.loc[training.engine_id.isin(bundle.training_engine_ids)]

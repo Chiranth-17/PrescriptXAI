@@ -6,7 +6,6 @@ import argparse
 import hashlib
 import json
 import logging
-import pickle
 import subprocess
 from dataclasses import asdict, replace
 from datetime import UTC, datetime
@@ -18,6 +17,7 @@ import numpy as np
 import pandas as pd
 from pydantic import BaseModel
 
+from prescriptxai.artifacts import load_trusted_pickle
 from prescriptxai.config import load_config
 from prescriptxai.constraints.coupling import SensorCouplingModel
 from prescriptxai.constraints.taxonomy import load_taxonomy
@@ -165,7 +165,7 @@ class Experiment:
         }
 
         self.checkpoints = {
-            name: pickle.loads(path.read_bytes())["payload"]
+            name: load_trusted_pickle(path)["payload"]
             for name, path in self.input_paths.items()
         }
 

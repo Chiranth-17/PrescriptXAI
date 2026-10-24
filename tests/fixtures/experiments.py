@@ -9,6 +9,7 @@ from fixtures.recourse_models import make_recourse_fixture
 from prescriptxai.config import AppConfig, load_config
 from prescriptxai.constraints.taxonomy import BoundsSpec, FeatureGroup, FeatureSpec
 from prescriptxai.data.preprocess import fit_feature_scaler
+from prescriptxai.models.calibration import ProbabilityCalibrator
 from prescriptxai.models.registry import save_model_bundle
 from prescriptxai.validation.pipeline import fit_mahalanobis_validator, save_mahalanobis_validator
 
@@ -26,6 +27,13 @@ def fitted_experiment(tmp_path: Path) -> tuple[AppConfig, pd.DataFrame]:
     bundle.metrics = {
         "split_engines": {"train": [1, 2, 3, 4], "validation": [5], "test_holdout": [6]}
     }
+    validation = pd.DataFrame(
+        {"engine_id": [5] * 4, "sensor_1": [-1.5, -0.5, 0.5, 1.5], "sensor_2": [2.0] * 4}
+    )
+    bundle.calibrator = ProbabilityCalibrator("sigmoid").fit(
+        bundle.predict_risk(validation), (validation.sensor_1 < 0).astype(int).to_numpy()
+    )
+    bundle.metrics["calibration"] = {"fit_engine_ids": [5]}
     taxonomy.features = tuple(
         spec.model_copy(update={"name": rename[spec.name]}) for spec in taxonomy.features
     ) + tuple(

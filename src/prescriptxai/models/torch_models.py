@@ -14,6 +14,7 @@ from sklearn.utils.validation import check_is_fitted
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
+from prescriptxai.artifacts import load_trusted_joblib
 from prescriptxai.models.base import FailureModel, validate_binary_labels, validate_feature_matrix
 
 
@@ -364,7 +365,7 @@ class MLPFailureModel(FailureModel):
     @classmethod
     def load(cls, path: Path) -> MLPFailureModel:
         """Load a fitted MLP predictor."""
-        loaded = joblib.load(path)
+        loaded = load_trusted_joblib(path)
         if not isinstance(loaded, cls):
             raise ValueError("artifact is not an MLPFailureModel")
         return loaded
@@ -488,7 +489,7 @@ class LSTMFailureModel(FailureModel):
     @classmethod
     def load(cls, path: Path) -> LSTMFailureModel:
         """Load a fitted LSTM predictor."""
-        loaded = joblib.load(path)
+        loaded = load_trusted_joblib(path)
         if not isinstance(loaded, cls):
             raise ValueError("artifact is not an LSTMFailureModel")
         return loaded

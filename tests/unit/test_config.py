@@ -45,6 +45,7 @@ def test_invalid_threshold_order_is_rejected() -> None:
     values = yaml.safe_load(Path("configs/default.yaml").read_text(encoding="utf-8"))
     values["tau_danger"] = 0.2
     values["tau_safe"] = 0.2
+    values["model"]["danger_threshold"] = 0.2
 
     with pytest.raises(ValidationError, match="safe_threshold must be lower"):
         AppConfig.model_validate(values)
@@ -54,6 +55,7 @@ def test_negative_failure_horizon_is_rejected() -> None:
     """The configurable RUL failure horizon must be strictly positive."""
     values = yaml.safe_load(Path("configs/default.yaml").read_text(encoding="utf-8"))
     values["horizon_H"] = -1
+    values["data"]["failure_horizon"] = -1
 
     with pytest.raises(ValidationError, match="greater than 0"):
         AppConfig.model_validate(values)

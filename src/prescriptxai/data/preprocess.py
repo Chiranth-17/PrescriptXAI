@@ -12,6 +12,8 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
+from prescriptxai.artifacts import load_trusted_pickle
+
 
 def _engine_column(frame: pd.DataFrame) -> str:
     """Choose canonical unit provenance, accepting the previous model vocabulary."""
@@ -331,8 +333,7 @@ class RegimeAwarePreprocessor:
     @classmethod
     def load(cls, path: Path) -> RegimeAwarePreprocessor:
         """Load an artifact produced locally by :meth:`save`."""
-        with path.open("rb") as source:
-            loaded = pickle.load(source)  # noqa: S301 - only configured local artifacts are read.
+        loaded = load_trusted_pickle(path)
         if not isinstance(loaded, cls):
             raise ValueError(f"artifact at {path} is not a {cls.__name__}")
         return loaded

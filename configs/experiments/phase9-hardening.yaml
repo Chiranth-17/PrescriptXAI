@@ -1,0 +1,49 @@
+schema_version: 1
+run_id: phase9-system-hardening-v1
+purpose: software_correctness_security_and_numerical_verification
+historical_measurement_source: 63c2ed445fba16c73a2771e184f635abf76b4405
+phase8_closure: 1608d6d9c1c995cf024fdcc29d1db5d785564b3f
+scientific_efficacy_claims: false
+fixtures:
+  recourse_logic:
+    source: tests/fixtures/recourse_models.py
+    seed: 17
+    description: explicit analytic logic fixture; never a benchmark predictor
+  operator:
+    source: tests/fixtures/operator_artifacts.py
+    seed: 17
+    training_engines: [1, 2, 3, 4]
+    calibration_engines: [5, 6]
+    observed_engines: [7, 8]
+  experiment:
+    source: tests/fixtures/experiments.py
+    seed: 17
+    training_engines: [1, 2, 3, 4]
+    calibration_engines: [5]
+    observed_engines: [6]
+coverage:
+  required_scoped_line_percent: 90.0
+  rendering_exclusions:
+    - src/prescriptxai/dashboard/app.py
+  exclusion_reason: actual entrypoint runs through AppTest; runtime data/backend/state and pure charts remain included
+  full_package_line_floor: 87.32997481108312
+  full_package_branch_inclusive_floor: 83.66412213740458
+properties:
+  examples_per_property: 20
+  derandomize: true
+  deadline: null
+security:
+  auditor: pip-audit==2.10.1
+  distribution_scope: installed locked project environment including development tools
+  advisory_database: PyPI Python Packaging Advisory Database
+  private_project_scope: source audits and tests; unavailable on public PyPI advisory lookup
+  legacy_python_objects: operator-trusted local roots only; no upload or request can grant trust
+  secret_scan: high-confidence patterns over tracked and nonignored source text; values never printed
+golden_and_performance:
+  status: separate protocols required before timing; not yet measured
+  historical_timings_replaced: false
+assumptions:
+  - Fixture correctness and timing do not establish fresh C-MAPSS generalization.
+  - Risk validity is distinct from statistical plausibility and proxy engineering/coupling evidence.
+  - The historical Phase7 artifacts, thresholds, rates, bounds and populations remain unchanged.
+  - Gradient calibration corrections may change future search paths; historical results retain their old source.

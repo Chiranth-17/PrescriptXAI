@@ -21,6 +21,7 @@ import torch
 from numpy.typing import NDArray
 from pydantic import ValidationError
 
+from prescriptxai.artifacts import trusted_artifact_bytes
 from prescriptxai.config import AppConfig, load_config
 from prescriptxai.constraints.bounds import check_bound_violations, check_rate_violations
 from prescriptxai.constraints.coupling import SensorCouplingModel, apply_coupling_for_bundle
@@ -94,7 +95,7 @@ class PrescriptXAIEngine:
         """Load an engine from configured YAML and fitted artifacts."""
         config = load_config(config_path)
         taxonomy = load_taxonomy(taxonomy_path)
-        model = load_model_bundle(model_path or config.artifacts.model)
+        model = load_model_bundle(model_path or config.artifacts.model, require_calibrated=True)
         resolved_bounds = getattr(model, "resolved_bounds", None)
         if resolved_bounds:
             taxonomy = taxonomy.with_resolved_bounds(
@@ -257,11 +258,15 @@ class PrescriptXAI:
     @classmethod
     def from_config(cls, config: AppConfig | Path | str) -> PrescriptXAI:
         """Load/cache artifact contents by fingerprints, without caching recommendations."""
-        settings = (
-            load_config(Path(config))
-            if isinstance(config, (str, Path))
-            else config.model_copy(deep=True)
-        )
+        try:
+            if isinstance(config, (str, Path)):
+                settings = load_config(Path(config))
+            elif isinstance(config, AppConfig):
+                settings = AppConfig.model_validate(config.model_dump(mode="python"))
+            else:
+                raise ValueError("configuration must be an AppConfig or YAML path")
+        except (ValueError, TypeError) as error:
+            raise ArtifactError(f"configured settings are invalid: {error}") from error
         selected = settings.pipeline.model_artifacts.get(settings.model_choice)
         if selected is not None:
             settings.artifacts = selected.model_copy(deep=True)
@@ -276,8 +281,13 @@ class PrescriptXAI:
         if settings.artifacts.coupling is not None:
             paths.append(settings.artifacts.coupling)
         try:
-            hashes = [hashlib.sha256(path.read_bytes()).hexdigest() for path in paths]
-        except OSError as error:
+            hashes = [
+                hashlib.sha256(
+                    path.read_bytes() if index == 0 else trusted_artifact_bytes(path)
+                ).hexdigest()
+                for index, path in enumerate(paths)
+            ]
+        except (OSError, ValueError) as error:
             raise ArtifactError(str(error)) from error
         identity = hashlib.sha256(
             (settings.model_dump_json() + json.dumps(hashes)).encode()
@@ -285,8 +295,14 @@ class PrescriptXAI:
         with _CACHE_LOCK:
             if identity not in _CACHE:
                 try:
-                    taxonomy = load_taxonomy(settings.pipeline.taxonomy_path)
-                    model = load_model_bundle(settings.artifacts.model)
+                    taxonomy = load_taxonomy(
+                        settings.pipeline.taxonomy_path, expected_sha256=hashes[0]
+                    )
+                    model = load_model_bundle(
+                        settings.artifacts.model,
+                        require_calibrated=True,
+                        expected_sha256=hashes[1],
+                    )
                 except (ValueError, OSError, TypeError) as error:
                     raise ArtifactError(str(error)) from error
                 expected = {"xgboost": "xgboost", "torch": "mlp", "lstm": "lstm"}[
@@ -304,10 +320,14 @@ class PrescriptXAI:
                         taxonomy = taxonomy.with_resolved_bounds(
                             model.resolved_bounds, model.resolved_rate_limits
                         )
-                    validator = load_mahalanobis_validator(settings.artifacts.mahalanobis)
+                    validator = load_mahalanobis_validator(
+                        settings.artifacts.mahalanobis, expected_sha256=hashes[2]
+                    )
                     verify_validator_compatibility(validator, model, settings)
                     coupling = (
-                        SensorCouplingModel.load(settings.artifacts.coupling)
+                        SensorCouplingModel.load(
+                            settings.artifacts.coupling, expected_sha256=hashes[3]
+                        )
                         if settings.artifacts.coupling
                         else None
                     )
@@ -329,6 +349,13 @@ class PrescriptXAI:
                     if missing_bounds:
                         raise ValueError(f"unresolved training-derived bounds: {missing_bounds}")
                     if coupling is not None:
+                        required_dependents = set(
+                            taxonomy.feature_groups.dependent_sensors.features
+                        ).intersection(model.feature_names)
+                        if not required_dependents.issubset(coupling.dependent_features):
+                            raise ValueError(
+                                "coupling artifact must cover every retained dependent sensor"
+                            )
                         if set(coupling.training_engine_ids) != set(model.training_engine_ids):
                             raise ValueError(
                                 "coupling fitting engines differ from model fitting engines"
@@ -384,11 +411,13 @@ class PrescriptXAI:
     def _normalize(
         self, raw: RawInput, context: InputContext | Mapping[str, object] | None, *, complete: bool
     ) -> tuple[dict[str, float], InputContext]:
+        if context is not None and not isinstance(context, (InputContext, Mapping)):
+            raise InputError("context must be InputContext, a mapping or None")
         try:
             observed = (
                 context
                 if isinstance(context, InputContext)
-                else InputContext.model_validate(context or {})
+                else InputContext.model_validate({} if context is None else context)
             )
         except ValidationError as error:
             raise (
@@ -407,6 +436,8 @@ class PrescriptXAI:
                 raise FeatureError("Series columns must have string names")
             values = cast(dict[str, float], raw.to_dict())
         elif isinstance(raw, Mapping):
+            if any(not isinstance(name, str) for name in raw):
+                raise FeatureError("telemetry columns must have string names")
             values = dict(raw)
         else:
             array = np.asarray(raw)
@@ -443,6 +474,8 @@ class PrescriptXAI:
             )
         if any(isinstance(value, (bool, np.bool_)) for value in values.values()):
             raise InputError("boolean telemetry is not a numeric physical measurement")
+        if any(isinstance(value, (complex, np.complexfloating)) for value in values.values()):
+            raise InputError("complex telemetry is not a real physical measurement")
         try:
             normalized = {str(name): float(value) for name, value in values.items()}
         except (TypeError, ValueError, OverflowError) as error:
@@ -488,7 +521,7 @@ class PrescriptXAI:
         window = int(self.engine.model.estimator.window)
         try:
             history = np.asarray(context.history, dtype=float)
-        except (TypeError, ValueError) as error:
+        except (TypeError, ValueError, OverflowError) as error:
             raise HistoryError("history must be a rectangular numeric array") from error
         if window == 1 and (context.history is None or not context.history):
             history = np.empty((0, width), dtype=float)
@@ -497,6 +530,15 @@ class PrescriptXAI:
                 f"LSTM requires actual prior history of shape ({window - 1}, {width}) "
                 "in saved feature order"
             )
+        for row in history:
+            try:
+                self._check_numeric_range(
+                    dict(zip(self.engine.model.feature_names, row, strict=True))
+                )
+            except InputError as error:
+                raise HistoryError(
+                    "history measurements exceed the predictor numeric range"
+                ) from error
         return replace(
             self.engine.model, estimator=_LatestSequenceEstimator(self.engine.model, history)
         )
@@ -614,11 +656,20 @@ class PrescriptXAI:
                         .tolist()
                     )
         return self._compose_result(
-            state, optimization, validation, bundle, config, selected_mode,
+            state,
+            optimization,
+            validation,
+            bundle,
+            config,
+            selected_mode,
             StageTimings(
-                ingestion_ms=ingestion, inference_ms=inference,
-                optimization_ms=optimization_ms, validation_ms=validation_ms,
-            ), started, surrogate,
+                ingestion_ms=ingestion,
+                inference_ms=inference,
+                optimization_ms=optimization_ms,
+                validation_ms=validation_ms,
+            ),
+            started,
+            surrogate,
         )
 
     def validate_controls(
@@ -652,6 +703,8 @@ class PrescriptXAI:
             raise FeatureError("only configured controllable proxies may be edited")
         if any(isinstance(value, (bool, np.bool_)) for value in controls.values()):
             raise InputError("boolean controls are not physical measurements")
+        if any(isinstance(value, (complex, np.complexfloating)) for value in controls.values()):
+            raise InputError("complex controls are not real physical measurements")
         try:
             proposed = {**state, **{name: float(value) for name, value in controls.items()}}
         except (TypeError, ValueError, OverflowError) as error:
@@ -674,8 +727,14 @@ class PrescriptXAI:
             )
             before = perf_counter_ns()
             validation = validate_candidate(
-                state, candidate, bundle, self.engine.taxonomy, self.engine.mahalanobis,
-                config, self.engine.coupling, mode="collect_all",
+                state,
+                candidate,
+                bundle,
+                self.engine.taxonomy,
+                self.engine.mahalanobis,
+                config,
+                self.engine.coupling,
+                mode="collect_all",
             )
             validation_ms = (perf_counter_ns() - before) / 1e6
         final_risk = validation.tier1_model.measurement
@@ -684,37 +743,57 @@ class PrescriptXAI:
         scales = dict(zip(bundle.feature_names, bundle.scaler.scaler.scale_, strict=True))
         deltas = _delta_mappings(
             {name: (candidate[name] - state[name]) / scales[name] for name in actions},
-            actions, state, self.engine.taxonomy.feature_by_name(),
-            np.asarray([scales[name] for name in actions]), 0.0,
+            actions,
+            state,
+            self.engine.taxonomy.feature_by_name(),
+            np.asarray([scales[name] for name in actions]),
+            0.0,
         )
         feasible = not check_bound_violations(
             candidate, self.engine.taxonomy, features=actions
         ) and not check_rate_violations(
-            state, candidate, self.engine.taxonomy,
+            state,
+            candidate,
+            self.engine.taxonomy,
             horizon_steps=config.recourse.rate_horizon_steps,
         )
         support_exceeded = len(deltas) > config.recourse.k_max
         feasible = feasible and not support_exceeded
         optimization = OptimizationResult(
-            candidate, deltas, risk, final_risk, True, validation.model_valid,
-            "Manual control preview; no optimization performed.", None,
+            candidate,
+            deltas,
+            risk,
+            final_risk,
+            True,
+            validation.model_valid,
+            "Manual control preview; no optimization performed.",
+            None,
             failure_reason=(
-                "manual_sparsity_exceeded" if support_exceeded
-                else None if validation.joint and feasible else "manual_validation_failed"
+                "manual_sparsity_exceeded"
+                if support_exceeded
+                else None
+                if validation.joint and feasible
+                else "manual_validation_failed"
             ),
             actuator_constraints_feasible=feasible,
             effective_solver_settings={"manual_preview": True, "mode": selected_mode},
         )
         result = self._compose_result(
-            state, optimization, validation, bundle, config, selected_mode,
+            state,
+            optimization,
+            validation,
+            bundle,
+            config,
+            selected_mode,
             StageTimings(
-                ingestion_ms=ingestion, inference_ms=inference,
-                optimization_ms=0.0, validation_ms=validation_ms,
-            ), started,
+                ingestion_ms=ingestion,
+                inference_ms=inference,
+                optimization_ms=0.0,
+                validation_ms=validation_ms,
+            ),
+            started,
         )
-        return result.model_copy(
-            update={"warnings": (*result.warnings, optimization.message)}
-        )
+        return result.model_copy(update={"warnings": (*result.warnings, optimization.message)})
 
     def _compose_result(
         self,
@@ -790,9 +869,7 @@ class PrescriptXAI:
             risk_before=risk,
             risk_after=final_risk,
             validation_report=validation.to_schema(),
-            timings=timings.model_copy(
-                update={"pipeline_ms": (perf_counter_ns() - started) / 1e6}
-            ),
+            timings=timings.model_copy(update={"pipeline_ms": (perf_counter_ns() - started) / 1e6}),
             warnings=tuple(w for tier in validation.tiers().values() for w in tier.warnings),
             alert=alert,
             status=cast(Literal["NO_INTERVENTION", "RECOVERABLE", "PARTIAL", "ESCALATE"], status),
@@ -918,7 +995,9 @@ class PrescriptXAI:
             "coupling_diagnostics": {
                 "fit": asdict(self.engine.coupling.metrics),
                 "calibration": self.engine.coupling.calibration_report,
-            } if self.engine.coupling is not None else None,
+            }
+            if self.engine.coupling is not None
+            else None,
             "artifacts": self.config.artifacts.model_dump(mode="json"),
             "tau_danger": self.config.tau_danger,
             "tau_safe": self.config.tau_safe,

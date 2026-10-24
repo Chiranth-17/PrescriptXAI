@@ -11,7 +11,7 @@ from pydantic import AliasChoices, BaseModel, ConfigDict, Field, model_validator
 class ExpectedRowCountsConfig(BaseModel):
     """Published C-MAPSS file row counts used for archive integrity checks."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     train: int = Field(gt=0)
     test: int = Field(gt=0)
@@ -21,7 +21,7 @@ class ExpectedRowCountsConfig(BaseModel):
 class DataConfig(BaseModel):
     """Dataset and engine split settings."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     root: Path
     processed_root: Path
@@ -79,7 +79,7 @@ class ApiConfig(BaseModel):
 class ModelConfig(BaseModel):
     """Risk gate and probability calibration settings."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     danger_threshold: float = Field(ge=0, le=1)
     safe_threshold: float = Field(ge=0, le=1)
@@ -117,7 +117,7 @@ class ModelConfig(BaseModel):
 class RecourseConfig(BaseModel):
     """Optimization weights, numerical choices, and recourse complexity limits."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     max_changed_features: int = Field(
         ge=1, validation_alias=AliasChoices("k_max", "max_changed_features")
@@ -169,7 +169,7 @@ class RecourseConfig(BaseModel):
 class ValidationConfig(BaseModel):
     """Plausibility and optional simulator settings."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     mahalanobis_max: float = Field(gt=0, validation_alias=AliasChoices("D_max", "mahalanobis_max"))
     covariance_regularization: float = Field(gt=0)
@@ -203,7 +203,7 @@ class ValidationConfig(BaseModel):
 class EvaluationConfig(BaseModel):
     """Reproducible evaluation settings."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
     bootstrap_replicates: int = Field(default=2000, ge=1)
     development_max_queries: int = Field(default=60, ge=1)
 
@@ -236,7 +236,7 @@ class EvaluationConfig(BaseModel):
 class LatencyBudgetConfig(BaseModel):
     """Synopsis latency targets, in milliseconds, mapped to measured stages."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     ingestion_max_ms: float = Field(gt=0)
     inference_max_ms: float = Field(gt=0)
@@ -260,7 +260,7 @@ class LatencyBudgetConfig(BaseModel):
 class PathsConfig(BaseModel):
     """Configured filesystem locations for data and fitted artifacts."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     raw_data: Path
     processed_data: Path
@@ -272,7 +272,7 @@ class PathsConfig(BaseModel):
 class PipelineConfig(BaseModel):
     """Public input, concurrency, triage and artifact policies."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
     taxonomy_path: Path = Path("configs/features.yaml")
     delta_min: float = Field(default=0.30, ge=0, le=1)
     default_mode: Literal["fast", "thorough"] = "fast"
@@ -289,7 +289,7 @@ class PipelineConfig(BaseModel):
 class AppConfig(BaseModel):
     """Complete PrescriptXAI configuration."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     pipeline: PipelineConfig = Field(default_factory=PipelineConfig)
     seed: int = Field(ge=0)
@@ -315,11 +315,46 @@ class AppConfig(BaseModel):
         if not isinstance(value, dict):
             return value
         raw = dict(value)
+        for section in ("model", "data", "artifacts", "paths", "evaluation", "api"):
+            if section in raw and not isinstance(raw[section], dict):
+                if isinstance(raw[section], BaseModel):
+                    raw[section] = raw[section].model_dump()
+                else:
+                    raise ValueError(f"configuration section {section} must be a mapping")
+        for root, section, key in (
+            ("tau_safe", "model", "safe_threshold"),
+            ("tau_danger", "model", "danger_threshold"),
+            ("horizon_H", "data", "failure_horizon"),
+            ("model_choice", "model", "risk_estimator"),
+        ):
+            if root in raw and key in raw.get(section, {}):
+                left, right = raw[root], raw[section][key]
+                if root == "model_choice":
+                    aliases = {"xgb": "xgboost", "mlp": "torch"}
+                    left = aliases.get(left, left) if isinstance(left, str) else left
+                    right = aliases.get(right, right) if isinstance(right, str) else right
+                if left != right:
+                    raise ValueError(f"conflicting {root} and {section}.{key} must match")
         model = dict(raw.get("model", {}))
         data = dict(raw.get("data", {}))
         artifacts = dict(raw.get("artifacts", {}))
         paths = raw.get("paths", {})
         if isinstance(paths, dict):
+            for root_key, runtime_values, nested_key in (
+                ("raw_data", data, "root"),
+                ("processed_data", data, "processed_root"),
+                ("model", artifacts, "model"),
+                ("mahalanobis", artifacts, "mahalanobis"),
+                ("evaluation_report", artifacts, "evaluation_report"),
+            ):
+                if root_key in paths and nested_key in runtime_values:
+                    left, right = paths[root_key], runtime_values[nested_key]
+                    if isinstance(left, (str, Path)) and isinstance(right, (str, Path)):
+                        left, right = Path(left), Path(right)
+                    if left != right:
+                        raise ValueError(
+                            f"conflicting paths.{root_key} and runtime paths must match"
+                        )
             data["root"] = paths.get("raw_data", data.get("root"))
             data["processed_root"] = paths.get("processed_data", data.get("processed_root"))
             for name in ("model", "mahalanobis", "evaluation_report"):
@@ -331,9 +366,10 @@ class AppConfig(BaseModel):
         if "tau_safe" in raw:
             model["safe_threshold"] = raw["tau_safe"]
         if "model_choice" in raw:
-            raw["model_choice"] = {"xgb": "xgboost", "mlp": "torch"}.get(
-                raw["model_choice"], raw["model_choice"]
-            )
+            if isinstance(raw["model_choice"], str):
+                raw["model_choice"] = {"xgb": "xgboost", "mlp": "torch"}.get(
+                    raw["model_choice"], raw["model_choice"]
+                )
             model["risk_estimator"] = raw["model_choice"]
         raw["model"] = model
         raw["data"] = data
@@ -341,6 +377,8 @@ class AppConfig(BaseModel):
         budget = raw.get("latency_budget")
         if isinstance(budget, dict):
             evaluation = dict(raw.get("evaluation", {}))
+            if any(key in evaluation and evaluation[key] != item for key, item in budget.items()):
+                raise ValueError("conflicting latency_budget and evaluation settings must match")
             evaluation.update(budget)
             raw["evaluation"] = evaluation
         return raw
@@ -430,8 +468,15 @@ def _apply_environment_overrides(raw: dict[str, Any]) -> dict[str, Any]:
     """Apply ``PRESCRIPTXAI_`` variables using ``__`` for nested YAML keys."""
     result = dict(raw)
     env_prefix = "PRESCRIPTXAI_"
-    service_variables = {"PRESCRIPTXAI_DASHBOARD_CONFIG", "PRESCRIPTXAI_API_KEY"}
-    configured_key = raw.get("api", {}).get("api_key_env")
+    service_variables = {
+        "PRESCRIPTXAI_DASHBOARD_CONFIG",
+        "PRESCRIPTXAI_API_KEY",
+        "PRESCRIPTXAI_TRUSTED_ARTIFACT_ROOTS",
+    }
+    api_settings = raw.get("api", {})
+    if not isinstance(api_settings, dict):
+        raise ValueError("configuration section api must be a mapping")
+    configured_key = api_settings.get("api_key_env")
     if isinstance(configured_key, str):
         service_variables.add(configured_key)
     changed: set[tuple[str, ...]] = set()
@@ -468,6 +513,12 @@ def _apply_environment_overrides(raw: dict[str, Any]) -> dict[str, Any]:
         (("validation", "d_max"), ("validation", "D_max")),
     )
     for root_path, runtime_path in alias_paths:
+        if (
+            root_path in changed
+            and runtime_path in changed
+            and _nested_get(result, root_path) != _nested_get(result, runtime_path)
+        ):
+            raise ValueError("conflicting explicit environment aliases")
         source, target = (
             (root_path, runtime_path) if root_path in changed else (runtime_path, root_path)
         )

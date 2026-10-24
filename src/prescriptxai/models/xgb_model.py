@@ -9,6 +9,7 @@ import numpy as np
 from numpy.typing import NDArray
 from xgboost import XGBClassifier
 
+from prescriptxai.artifacts import load_trusted_joblib
 from prescriptxai.config import ModelConfig
 from prescriptxai.models.base import FailureModel, validate_binary_labels, validate_feature_matrix
 
@@ -99,7 +100,7 @@ class XGBFailureModel(FailureModel):
     @classmethod
     def load(cls, path: Path) -> XGBFailureModel:
         """Load a fitted XGBoost predictor artifact."""
-        loaded = joblib.load(path)
+        loaded = load_trusted_joblib(path)
         if not isinstance(loaded, cls):
             raise ValueError("artifact is not an XGBFailureModel")
         return loaded

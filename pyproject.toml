@@ -23,7 +23,7 @@ core = [
   "pydantic==2.13.5",
   "PyYAML==6.0.3",
   "typer==0.27.2",
-  "pillow==12.3.0",
+  "pillow==13.0.0",
 ]
 dev = [
   "pytest==9.1.1",
@@ -35,8 +35,10 @@ dev = [
   "pandas-stubs==3.0.5.260914",
   "pre-commit==4.6.2",
   "httpx2==2.13.1",
+  "pip-audit==2.10.1",
+  "psutil==7.2.2",
 ]
-dashboard = ["plotly==6.9.0", "streamlit==1.65.0"]
+dashboard = ["plotly==6.9.0", "streamlit==1.66.1"]
 api = ["fastapi==0.142.2", "uvicorn==0.54.0"]
 baselines = [
     "dice-ml==0.12",
@@ -47,6 +49,13 @@ baselines = [
 
 [tool.uv]
 default-groups = ["core", "dev", "dashboard", "api", "baselines"]
+constraint-dependencies = [
+  "certifi==2026.10.23",
+  "filelock==4.2.4",
+  "opentelemetry-api==1.45.1",
+  "setuptools==84.2.1",
+  "virtualenv==21.14.13",
+]
 
 [project.scripts]
 prescriptxai = "prescriptxai.cli:app"

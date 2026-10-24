@@ -19,7 +19,13 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 from prescriptxai.config import AppConfig, load_config
 from prescriptxai.logging_utils import bind_run_id, reset_run_id
 from prescriptxai.pipeline import ArtifactError, InputError, PrescriptXAI, PrescriptXAIEngine
-from prescriptxai.schemas import Assessment, BatchRequest, RecourseRequest, RecourseResult
+from prescriptxai.schemas import (
+    Assessment,
+    BatchRequest,
+    RecourseRequest,
+    RecourseResult,
+    _reject_nonreal_measurement,
+)
 
 
 class ControlPreviewRequest(RecourseRequest):
@@ -31,8 +37,9 @@ class ControlPreviewRequest(RecourseRequest):
     @classmethod
     def reject_boolean_controls(cls, value: object) -> object:
         """Reject booleans before numeric coercion can hide an invalid measurement."""
-        if isinstance(value, dict) and any(isinstance(item, bool) for item in value.values()):
-            raise ValueError("boolean controls are not physical measurements")
+        if isinstance(value, dict):
+            for item in value.values():
+                _reject_nonreal_measurement(item, "controls")
         return value
 
 

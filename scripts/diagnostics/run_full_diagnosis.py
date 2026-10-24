@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold, train_test_split
 
+from prescriptxai.artifacts import load_trusted_pickle
 from prescriptxai.config import AppConfig, load_config
 from prescriptxai.constraints.bounds import allowed_interval
 from prescriptxai.constraints.coupling import SensorCouplingModel
@@ -125,9 +126,8 @@ def _read_checkpoint(
     if not path.is_file():
         return None
     try:
-        with path.open("rb") as stream:
-            checkpoint = pickle.load(stream)
-    except (OSError, pickle.PickleError, EOFError, AttributeError, ImportError):
+        checkpoint = load_trusted_pickle(path)
+    except (OSError, ValueError, pickle.PickleError, EOFError, AttributeError, ImportError):
         LOGGER.warning("Ignoring unreadable diagnostic checkpoint %s", path)
         return None
     if not isinstance(checkpoint, dict) or checkpoint.get("version") != CHECKPOINT_VERSION:

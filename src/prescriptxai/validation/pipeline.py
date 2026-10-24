@@ -13,6 +13,7 @@ import pandas as pd
 import torch
 from numpy.typing import NDArray
 
+from prescriptxai.artifacts import ArtifactLoadError, load_trusted_joblib
 from prescriptxai.config import AppConfig
 from prescriptxai.constraints.coupling import SensorCouplingModel
 from prescriptxai.constraints.taxonomy import FeatureTaxonomy
@@ -48,15 +49,60 @@ def try_load_coupling_model(path: Path) -> SensorCouplingModel | None:
     return load_coupling_model(path)
 
 
-def load_mahalanobis_validator(path: Path) -> MahalanobisValidator:
+def load_mahalanobis_validator(
+    path: Path, *, expected_sha256: str | None = None
+) -> MahalanobisValidator:
     """Load fitted Tier 2 statistics from a configured local artifact."""
     if not path.is_file():
         raise FileNotFoundError(path)
-    loaded: object = joblib.load(path)
+    loaded: object = load_trusted_joblib(path, expected_sha256)
     if not isinstance(loaded, MahalanobisValidator):
         raise ValueError("artifact does not contain a MahalanobisValidator")
     if not hasattr(loaded, "covariance_cholesky"):
         raise ValueError("legacy precision-only validator: refit on training engines for Phase 5")
+    try:
+        width = len(loaded.feature_names)
+        if not width or width != len(set(loaded.feature_names)) or not loaded.regime_statistics:
+            raise ArtifactLoadError("Mahalanobis artifact has invalid features/regimes")
+        if len(loaded.regime_statistics) > 1:
+            if loaded.clusterer is None or loaded.settings_scaler is None:
+                raise ArtifactLoadError("multi-regime artifact requires its fitted regime assigner")
+            centers = np.asarray(loaded.clusterer.cluster_centers_)
+            scale = np.asarray(loaded.settings_scaler.scale_)
+            mean = np.asarray(loaded.settings_scaler.mean_)
+            if (
+                centers.ndim != 2
+                or centers.shape[0] != len(loaded.regime_statistics)
+                or scale.shape != (centers.shape[1],)
+                or mean.shape != scale.shape
+                or not np.isfinite(centers).all()
+                or not np.isfinite(scale).all()
+                or not np.isfinite(mean).all()
+                or (scale <= 0).any()
+            ):
+                raise ArtifactLoadError(
+                    "multi-regime artifact has invalid regime assigner statistics"
+                )
+        factors = [(loaded.mean, loaded.covariance_cholesky, loaded.max_distance)] + [
+            (stats.mean, stats.cholesky, stats.max_distance)
+            for stats in loaded.regime_statistics.values()
+        ]
+        for center, factor, cutoff in factors:
+            if (
+                np.shape(center) != (width,)
+                or np.shape(factor) != (width, width)
+                or not np.isfinite(center).all()
+                or not np.isfinite(factor).all()
+                or not np.array_equal(factor, np.tril(factor))
+                or (np.diag(factor) <= 0).any()
+                or not np.isfinite(cutoff)
+                or cutoff <= 0
+            ):
+                raise ArtifactLoadError("Mahalanobis artifact has invalid covariance factor/cutoff")
+    except (AttributeError, TypeError, KeyError) as error:
+        raise ArtifactLoadError(
+            "Mahalanobis artifact contains malformed fitted metadata"
+        ) from error
     return loaded
 
 

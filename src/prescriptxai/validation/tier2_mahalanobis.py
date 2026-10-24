@@ -193,7 +193,14 @@ class MahalanobisValidator:
                 "legacy precision-only validator: refit on training engines for Phase 5"
             )
         if regime_ids is not None:
-            labels = np.asarray(regime_ids, dtype=np.int64)
+            supplied = np.asarray(regime_ids)
+            if (
+                supplied.dtype.kind not in "iuf"
+                or not np.isfinite(supplied).all()
+                or not np.equal(supplied, np.floor(supplied)).all()
+            ):
+                raise ValueError("regime labels must be finite integers")
+            labels = supplied.astype(np.int64)
         elif frozen_operating_settings is not None:
             labels = self.assign_regimes(frozen_operating_settings)
             if len(labels) == 1:

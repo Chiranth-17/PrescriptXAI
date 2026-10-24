@@ -12,6 +12,7 @@ from typer.testing import CliRunner
 from fixtures.recourse_models import make_recourse_fixture
 from prescriptxai.cli import app
 from prescriptxai.config import load_config
+from prescriptxai.models.calibration import ProbabilityCalibrator
 from prescriptxai.models.registry import load_model_bundle, save_model_bundle
 from prescriptxai.models.torch_models import LSTMFailureModel, MLPFailureModel
 from prescriptxai.pipeline import ArtifactError, PrescriptXAI
@@ -40,7 +41,17 @@ def fitted_config(tmp_path: Path) -> Path:
         (training.actuator < 0).astype(int).to_numpy(),
     )
     bundle.model_type = "mlp"
-    bundle.metrics = {"dataset": "FD001", "horizon_H": 30}
+    validation = pd.DataFrame(
+        {"engine_id": [5, 5, 6, 6], "actuator": [-1.5, 1.5, -0.5, 0.5], "sensor": [2.0] * 4}
+    )
+    bundle.calibrator = ProbabilityCalibrator("sigmoid").fit(
+        bundle.predict_risk(validation), (validation.actuator < 0).astype(int).to_numpy()
+    )
+    bundle.metrics = {
+        "dataset": "FD001",
+        "horizon_H": 30,
+        "calibration": {"fit_engine_ids": [5, 6]},
+    }
     config.artifacts.model = config.paths.model = tmp_path / "model.joblib"
     config.artifacts.mahalanobis = config.paths.mahalanobis = tmp_path / "validator.joblib"
     config.artifacts.coupling = None

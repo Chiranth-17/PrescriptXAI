@@ -107,8 +107,16 @@ class ProbabilityCalibrator:
         """Apply the fitted map while retaining gradients for differentiable predictors."""
         if not torch.is_floating_point(probabilities):
             raise ValueError("probability tensor must use a floating-point dtype")
-        bounded = probabilities.clamp(1e-7, 1 - 1e-7)
-        logits = torch.logit(bounded)
+        if probabilities.ndim != 1 or probabilities.numel() == 0:
+            raise ValueError("probabilities must be a nonempty one-dimensional tensor")
+        if not torch.isfinite(probabilities).all() or (
+            (probabilities < 0) | (probabilities > 1)
+        ).any():
+            raise ValueError("probabilities must be finite and within [0, 1]")
+        # Match the reported NumPy map, including its endpoint rule. Computing in float64
+        # represents 1-1e-12 even for float32 predictors; .to() preserves their gradients.
+        raw = probabilities.to(dtype=torch.float64)
+        logits = torch.log(raw.clamp(1e-12, 1 - 1e-12) / (1 - raw).clamp(1e-12, 1))
         if self.method == "sigmoid":
             if self.slope is None or self.intercept is None:
                 raise ValueError("calibrator has not been fitted")
@@ -120,18 +128,18 @@ class ProbabilityCalibrator:
         if self.model is None:
             raise ValueError("calibrator has not been fitted")
         x = torch.as_tensor(
-            self.model.X_thresholds_, dtype=probabilities.dtype, device=probabilities.device
+            self.model.X_thresholds_, dtype=raw.dtype, device=raw.device
         )
         y = torch.as_tensor(
-            self.model.y_thresholds_, dtype=probabilities.dtype, device=probabilities.device
+            self.model.y_thresholds_, dtype=raw.dtype, device=raw.device
         )
         if len(x) == 1:
-            return y[0].expand_as(probabilities)
-        indices = torch.searchsorted(x, bounded.contiguous()).clamp(1, len(x) - 1)
+            return y[0].expand_as(raw) + raw * 0
+        indices = torch.searchsorted(x, raw.contiguous()).clamp(1, len(x) - 1)
         x0, x1 = x[indices - 1], x[indices]
         y0, y1 = y[indices - 1], y[indices]
         fraction = (
-            (bounded - x0) / (x1 - x0).clamp_min(torch.finfo(probabilities.dtype).eps)
+            (raw - x0) / (x1 - x0).clamp_min(torch.finfo(raw.dtype).tiny)
         ).clamp(0, 1)
         return y0 + fraction * (y1 - y0)
 
@@ -164,8 +172,13 @@ def calibration_diagnostics(
 ) -> dict[str, object]:
     """Return Brier score, equal-width ECE, and per-bin reliability-curve measurements."""
     risk = _validate_probabilities(probabilities)
-    target = np.asarray(labels, dtype=np.int64)
-    if target.ndim != 1 or len(target) != len(risk) or not np.isin(target, [0, 1]).all():
+    target = np.asarray(labels, dtype=np.float64)
+    if (
+        target.ndim != 1
+        or len(target) != len(risk)
+        or not np.isfinite(target).all()
+        or not np.isin(target, [0, 1]).all()
+    ):
         raise ValueError("labels must be a matching one-dimensional binary vector")
     if bins < 2:
         raise ValueError("calibration bins must be at least 2")

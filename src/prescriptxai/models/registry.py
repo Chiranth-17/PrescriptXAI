@@ -13,9 +13,12 @@ import pandas as pd
 import torch
 from numpy.typing import NDArray
 
+from prescriptxai.artifacts import ArtifactLoadError, load_trusted_joblib
 from prescriptxai.data.preprocess import FittedFeatureScaler
 from prescriptxai.models.base import FailureModel
 from prescriptxai.models.calibration import ProbabilityCalibrator
+from prescriptxai.models.torch_models import LSTMFailureModel, MLPFailureModel
+from prescriptxai.models.xgb_model import XGBFailureModel
 
 LOGGER = logging.getLogger(__name__)
 _ARTIFACT_VERSION = 3
@@ -147,22 +150,100 @@ def save_model_bundle(bundle: ModelBundle, path: Path) -> Path:
     return path
 
 
-def load_model_bundle(path: Path, expected_features: tuple[str, ...] | None = None) -> ModelBundle:
+def load_model_bundle(
+    path: Path,
+    expected_features: tuple[str, ...] | None = None,
+    *,
+    require_calibrated: bool = False,
+    expected_sha256: str | None = None,
+) -> ModelBundle:
     """Load a fitted model bundle and optionally enforce feature order."""
     if not path.is_file():
         raise FileNotFoundError(path)
-    loaded: Any = joblib.load(path)
+    loaded: Any = load_trusted_joblib(path, expected_sha256)
     if not isinstance(loaded, ModelBundle):
         raise ValueError("artifact does not contain a PrescriptXAI ModelBundle")
-    if loaded.artifact_version != _ARTIFACT_VERSION:
-        raise ValueError(f"unsupported artifact version: {loaded.artifact_version}")
-    if loaded.feature_names != loaded.scaler.feature_names:
-        raise ValueError("artifact model and scaler feature lists do not match")
-    rate_limits = getattr(loaded, "resolved_rate_limits", None)
-    if rate_limits is not None and any(
-        not name or not np.isfinite(limit) or limit < 0 for name, limit in rate_limits.items()
-    ):
-        raise ValueError("artifact contains invalid resolved actuator rate limits")
+    try:
+        _verify_model_structure(loaded, require_calibrated)
+    except (AttributeError, TypeError, KeyError, IndexError) as error:
+        raise ArtifactLoadError("model artifact contains malformed fitted metadata") from error
     if expected_features is not None and expected_features != loaded.feature_names:
         raise ValueError("artifact feature order does not match the expected feature order")
     return loaded
+
+
+def _verify_model_structure(bundle: ModelBundle, require_calibrated: bool) -> None:
+    """Reject internally corrupt metadata before it reaches an operator request."""
+    if bundle.artifact_version != _ARTIFACT_VERSION:
+        raise ValueError(f"unsupported artifact version: {bundle.artifact_version}")
+    if not isinstance(bundle.scaler, FittedFeatureScaler):
+        raise ArtifactLoadError("model artifact has no fitted feature scaler")
+    names = bundle.feature_names
+    if (
+        not isinstance(names, tuple)
+        or not names
+        or not all(isinstance(name, str) and name for name in names)
+        or len(names) != len(set(names))
+    ):
+        raise ArtifactLoadError("model artifact feature list must be nonempty and unique")
+    if names != bundle.scaler.feature_names:
+        raise ArtifactLoadError("artifact model and scaler feature lists do not match")
+    if bundle.resolved_rate_limits is not None and any(
+        not name or not np.isfinite(limit) or limit < 0
+        for name, limit in bundle.resolved_rate_limits.items()
+    ):
+        raise ArtifactLoadError("artifact contains invalid resolved actuator rate limits")
+    if set(bundle.training_engine_ids) != set(bundle.scaler.training_engine_ids):
+        raise ArtifactLoadError("model and scaler training-engine provenance differs")
+    scale = np.asarray(bundle.scaler.scaler.scale_, dtype=float)
+    mean = np.asarray(bundle.scaler.scaler.mean_, dtype=float)
+    if (
+        scale.shape != (len(names),)
+        or mean.shape != scale.shape
+        or not np.isfinite(scale).all()
+        or not np.isfinite(mean).all()
+        or (scale <= 0).any()
+    ):
+        raise ArtifactLoadError("model artifact has invalid fitted scaler statistics")
+    if not isinstance(bundle.model_type, str) or not callable(
+        getattr(bundle.estimator, "predict_proba", None)
+    ):
+        raise ArtifactLoadError("model artifact has no compatible predictor")
+    for predictor in (bundle.estimator, bundle.surrogate):
+        if isinstance(predictor, (MLPFailureModel, LSTMFailureModel)):
+            if predictor.network_ is None or predictor.n_features_in_ != len(names):
+                raise ArtifactLoadError("model artifact has an unfitted or incompatible predictor")
+            if any(
+                not torch.isfinite(parameter).all() for parameter in predictor.network_.parameters()
+            ):
+                raise ArtifactLoadError("model artifact has nonfinite fitted predictor parameters")
+        elif isinstance(predictor, XGBFailureModel) and (
+            predictor.estimator is None
+            or predictor.estimator.get_booster().num_features() != len(names)
+        ):
+            raise ArtifactLoadError(
+                "model artifact has an unfitted or incompatible XGBoost predictor"
+            )
+    if require_calibrated and bundle.calibrator is None:
+        raise ArtifactLoadError("model artifact is missing its required fitted calibrator")
+    if bundle.calibrator is not None:
+        if not isinstance(bundle.calibrator, ProbabilityCalibrator):
+            raise ArtifactLoadError("model artifact contains an invalid calibrator")
+        if bundle.calibrator.method not in {"sigmoid", "temperature", "isotonic"}:
+            raise ArtifactLoadError("model artifact contains an unknown calibration method")
+        if bundle.calibrator.method == "temperature" and (
+            bundle.calibrator.temperature is None
+            or not np.isfinite(bundle.calibrator.temperature)
+            or bundle.calibrator.temperature <= 0
+        ):
+            raise ArtifactLoadError("model artifact has an invalid fitted calibration temperature")
+        if bundle.calibrator.method == "sigmoid" and (
+            bundle.calibrator.slope is None
+            or bundle.calibrator.intercept is None
+            or not np.isfinite([bundle.calibrator.slope, bundle.calibrator.intercept]).all()
+            or bundle.calibrator.slope < 0
+        ):
+            raise ArtifactLoadError("model artifact has invalid fitted calibration coefficients")
+        calibrated = bundle.calibrator.transform(np.asarray([0.25, 0.75]))
+        if not np.isfinite(calibrated).all() or ((calibrated < 0) | (calibrated > 1)).any():
+            raise ArtifactLoadError("model artifact contains invalid calibrated probabilities")

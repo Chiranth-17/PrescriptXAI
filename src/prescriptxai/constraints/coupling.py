@@ -22,6 +22,7 @@ from sklearn.model_selection import GroupKFold
 from sklearn.neural_network import MLPRegressor
 from torch import Tensor, nn
 
+from prescriptxai.artifacts import ArtifactLoadError, load_trusted_joblib
 from prescriptxai.constraints.taxonomy import CouplingRule, FeatureTaxonomy, load_taxonomy
 from prescriptxai.data.preprocess import FittedFeatureScaler
 
@@ -78,13 +79,40 @@ class SensorCouplingModel:
         return path
 
     @classmethod
-    def load(cls, path: Path) -> SensorCouplingModel:
+    def load(cls, path: Path, *, expected_sha256: str | None = None) -> SensorCouplingModel:
         """Load a persisted coupling model."""
         if not path.is_file():
             raise FileNotFoundError(path)
-        loaded: object = joblib.load(path)
+        loaded: object = load_trusted_joblib(path, expected_sha256)
         if not isinstance(loaded, SensorCouplingModel):
             raise ValueError("artifact does not contain a SensorCouplingModel")
+        try:
+            if (
+                not loaded.dependent_features
+                or not loaded.predictor_features
+                or len(set(loaded.dependent_features)) != len(loaded.dependent_features)
+                or len(set(loaded.predictor_features)) != len(loaded.predictor_features)
+            ):
+                raise ArtifactLoadError("coupling artifact must declare unique nonempty relations")
+            for name in loaded.dependent_features:
+                if (
+                    name not in loaded.models
+                    or not callable(getattr(loaded.models[name], "predict", None))
+                    or name not in loaded.torch_models
+                    or not callable(loaded.torch_models[name])
+                    or name not in loaded.residual_std
+                    or not np.isfinite(loaded.residual_std[name])
+                    or loaded.residual_std[name] < 0
+                ):
+                    raise ArtifactLoadError(
+                        f"coupling artifact has missing/invalid model for {name}"
+                    )
+            if not np.isfinite(loaded.residual_sigma_k) or loaded.residual_sigma_k <= 0:
+                raise ArtifactLoadError("coupling artifact has invalid residual multiplier")
+        except (AttributeError, TypeError, KeyError) as error:
+            raise ArtifactLoadError(
+                "coupling artifact contains malformed fitted metadata"
+            ) from error
         if not getattr(loaded, "training_engine_ids", ()):
             loaded.training_engine_ids = ()
             LOGGER.warning(

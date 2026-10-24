@@ -624,9 +624,14 @@ def bound_vectors(taxonomy: FeatureTaxonomy, scaler: FittedFeatureScaler) -> Bou
     )
 
 
-def load_taxonomy(path: Path) -> FeatureTaxonomy:
+def load_taxonomy(path: Path, *, expected_sha256: str | None = None) -> FeatureTaxonomy:
     """Load and validate feature taxonomy YAML."""
-    raw: Any = yaml.safe_load(path.read_text(encoding="utf-8"))
+    import hashlib
+
+    data = path.read_bytes()
+    if expected_sha256 is not None and hashlib.sha256(data).hexdigest() != expected_sha256:
+        raise ValueError("taxonomy changed after fingerprinting; reload the complete bundle")
+    raw: Any = yaml.safe_load(data.decode("utf-8"))
     if not isinstance(raw, dict):
         raise ValueError("feature taxonomy root must be a mapping")
     if "features" in raw:
