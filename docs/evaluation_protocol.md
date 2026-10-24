@@ -250,3 +250,27 @@ training-seed uncertainty. H sensitivity retains its paired source population an
 new model's risk-gate eligibility and NO_INTERVENTION share; it never substitutes this population
 for the fixed headline. The post-preparation seal anchors independently audited source predictor
 identities; its automatic historical checksum comparison applies to the raw archive.
+
+## Phase 8 UI rendering protocol — registered before timing callbacks, 2026-10-24
+
+Configuration: `configs/experiments/phase8-ui-render.yaml`; measurement code source
+`52affd06d39b03f76a0dd70417c3a75bd76f55c4`. This separate UI study preserves all Phase 7
+measurements and scientific settings. It is not a new recourse quality/generalization run.
+
+The declared population is four serial, actual-browser sidebar Recompute callbacks on each
+of eight official FD001 test engines at their final observed cycle:1/31,2/49,3/126,4/106,
+5/98,6/105,20/184,76/205. Raw NASA test IDs are used; historical Phase7 official IDs have a
+10000 namespace offset. All32 callback records, failures and outliers are retained; no warmups
+are discarded. Preparatory navigation/assessment frames are outside this declared callback population.
+
+Use the existing direct-backend dashboard and frozen FD001 XGBoost v1 profile in FAST mode.
+Predictors, calibration, validators, thresholds, bounds, rates, K and k_max are unchanged.
+The registered statistic is p95 complete Operator-page Python UI construction, including the
+sidebar/header/result panels. Explicitly timed loading/scoring/solve/attribution computation
+is subtracted by the instrumented application. Browser paint/network/startup and other pages
+are outside this statistic and must not be described as measured. Desktop load is not isolated.
+
+Compare p95 with the profile's UI upper budget (faster is a pass). The interval is a percentile
+bootstrap over whole engines, retaining all four repeats within each draw:2000 replicates,
+seed1729,95% confidence; report32 observations and8 engines. Missing callbacks are a software
+failure, not passing zero latency. Do not replace a failure or discard a slow callback.

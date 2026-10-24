@@ -12,7 +12,7 @@ phase10_packaging_reproducibility.md. Do not invent Phase11 or PartB. Existing h
 prescriptxai-phase-7-phase-8 checks every15minutes and stops after verifiedPhase10closure
 or explicit user stop; stay quiet while no meaningful/actionable change.
 
-## Phase7 closed; Phase8 plan8.1 active
+## Phase7 closed; Phase8 plan8.4 active
 
 Closure commit b4a8614f663d626925041982a2d1c25b38698f0b and annotated phase7-closed tag verified.
 Phase8 plans .gsd/phases/8/01-PLAN.md through04-PLAN.md preserve complete work/gate requirements.
@@ -22,8 +22,24 @@ read-only k_max alias; corrected to max_changed_features (test setup, not behavi
 task committed f9c59ac; guard/input fixes4a2f6ab. Foundation direct/API/content identity/data/
 genuine history/settings/state now implemented;36focusedsource/config/preview tests pass,
 75broaderpipeline/config/chart tests pass and8fitted-modelAppTests pass acrossallpages.
-Ruff/mypy61clean. Defects/fixes logged docs/defects.md. UI/evidence tests stillbeingexpanded;
-realwalkthrough/screenshots/independentaudit/fullcoveragegate/Phase8closure remainpending.
+FullUI/evidence implementationcommitted ddf1757; provenance/reasonfix34e5fb7; fullOperatorpage
+timer/cache regressions52affd0. Ruff/mypy61clean. ddf1757 fullgate320pass,83.60718379824226%
+branchinclusive/87.3013871374527%line. Later34e5fb7 also320pass but line87.27158%belowPhase7
+floor, so gatecorrectlyfailed; no floor lowered. Addedrealcopied-cache/mapped-artifact loading
+regressions (9source tests passed); final52affd0 gate mustrerunwithbothline+branchguards.
+RealbrowserREC20/c179:.94666999->.12086279,E3; manualinvalidrate:.05420930,ESC/E1,T2/T3fail;
+PART76/c205:.98495377->.35097007,T1fails,proxytierspass. Screenshotssaved docs/screenshots/;
+exportsignored artifacts/phase8/. Independentall3exportsaudit zeroerrors/33deltas,propagation
+roundoff3.64e-12. Finalsourceauditddf1757 no remainingblockers. No fitting/optim audit reruns.
+Plan8.4 remainsopen:registeredUIrenderp95 study32callbacks/8engines in
+configs/experiments/phase8-ui-render.yaml MUSTbecommittedbeforetiming. Source52affd0;
+protocoladded docs/evaluation_protocol.md. No samplesstarted. Thencompletewalkthroughdocs,
+summaries/traceability/progress,finalfullgate(bothcoveragesnotdecrease),closurecommit/tag8;
+immediatelyPhase9then10. No Phase8closureclaimed. UIserverlauncher17604/actual30220 on8501
+washealthy(lastverified); discovercurrentprocessbeforelaunchduplicate. Browseroriginaltab2
+hasrealUI, possiblemanualusersteering (mode/enginechangedunexpectedly); usefreshhiddenQA
+tabforregisteredstudy. CUAresetduringaccountinterruption; currenthandlesdashboardTab(tab2),
+screenshotFs inREPL; screenshotsuseactualJPEGbytes viafs.writeFile. No nativeAPIneeded.
 
 Run phase7-20261020T102540Z; measured source63c2ed445fba16c73a2771e184f635abf76b4405.
 Preregistration0c0b6e1; assetprep4ffb038; actual historical training seeds/sources retained.

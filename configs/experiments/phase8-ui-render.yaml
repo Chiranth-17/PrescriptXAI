@@ -1,0 +1,40 @@
+schema_version: 1
+run_id: phase8-ui-render-20261024-v1
+measurement_source: 52affd06d39b03f76a0dd70417c3a75bd76f55c4
+dashboard_settings: configs/dashboard.yaml
+profile: configs/experiments/phase7-FD001-xgb-v1.yaml
+dataset: FD001
+population: official_test_last_observed_cycles
+mode: fast
+observations:
+  1: 31
+  2: 49
+  3: 126
+  4: 106
+  5: 98
+  6: 105
+  20: 184
+  76: 205
+repeats_per_engine: 4
+expected_samples: 32
+warmups_discarded: 0
+metric: operator_page_server_build_ms
+callback: sidebar_recompute
+execution: serial_actual_browser
+budget_from_profile: latency_budget.dashboard_max_ms
+quantile: 0.95
+bootstrap:
+  unit: whole_engine_with_all_repeats
+  replicates: 2000
+  confidence: 0.95
+  seed: 1729
+retention: all_declared_callbacks_including_outliers_and_failures
+scope: >-
+  Complete Operator page Python UI construction, including sidebar/header and result panels.
+  Explicitly timed model/data loading, risk scoring, optimization and attribution computations
+  are subtracted. Browser paint, network, startup and other pages are not measured by this statistic.
+assumptions:
+  - This is a desktop UI rendering sample, not a new recourse quality or generalization study.
+  - The predictor, validation artifacts, thresholds, bounds, rates, K and k_max remain frozen.
+  - Protocol selection loads previously committed v1 settings; no threshold or model tuning occurs.
+  - Host desktop load is not isolated; the result is not a production SLA.
