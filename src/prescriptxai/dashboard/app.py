@@ -25,6 +25,8 @@ from prescriptxai.dashboard.state import load_settings, select_session
 
 def main() -> None:
     """Run the local operator workflow without training, mutable thresholds or sample results."""
+    started = perf_counter()
+    loading_seconds = 0.0
     st.set_page_config(page_title="PrescriptXAI", page_icon="⚙", layout="wide")
     st.title("PrescriptXAI · Maintenance Decision Support")
     st.warning(
@@ -51,11 +53,13 @@ def main() -> None:
             "Model / protocol", list(settings.profiles[subset]), key="profile"
         )
         path = settings.profiles[subset][profile]
+        loading_started = perf_counter()
         identity = profile_identity(path)
         backend = Backend(path, identity, settings)
         with st.spinner("Loading the selected trusted artifacts…"):
             info = computation_pool().submit(backend.info).result()
         config = load_config(path)
+        loading_seconds += perf_counter() - loading_started
         mode = cast(
             Literal["fast", "thorough"],
             st.sidebar.radio("Mode", ["fast", "thorough"], format_func=str.upper, key="mode"),
@@ -69,6 +73,7 @@ def main() -> None:
         st.sidebar.caption(
             "Protocol/model selection loads prior committed settings; no tuning occurs."
         )
+        loading_started = perf_counter()
         data_identity = file_identity(settings.telemetry_path)
         with st.spinner("Loading observed telemetry…"):
             frame = (
@@ -82,6 +87,7 @@ def main() -> None:
                 )
                 .result()
             )
+        loading_seconds += perf_counter() - loading_started
         st.caption(
             f"Replay source: {settings.telemetry_path.name} · {settings.telemetry_population} "
             "observations · no new generalization claim"
@@ -135,7 +141,6 @@ def main() -> None:
         st.header(PAGES[0])
         state, context = observed_state(frame, engine_id, cycle, info)
         history = frame.loc[(frame.engine_id == engine_id) & (frame.cycle <= cycle)]
-        started = perf_counter()
         excluded = operator_console(
             backend,
             history,
@@ -146,7 +151,7 @@ def main() -> None:
             mode,
             recompute or st.session_state.pop("pending_fleet_recommend", False),
         )
-        render_ms = max(0, (perf_counter() - started - excluded) * 1000)
+        render_ms = max(0, (perf_counter() - started - excluded - loading_seconds) * 1000)
         upper = config.latency_budget.dashboard_max_ms
         st.caption(
             f"Server UI build: {render_ms:.2f} ms · upper budget {upper:g} ms · "

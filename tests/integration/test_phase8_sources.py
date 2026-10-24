@@ -16,7 +16,13 @@ from fastapi.testclient import TestClient
 from integration.test_phase6_artifacts_cli import fitted_config  # noqa: F401
 from prescriptxai.api import create_app
 from prescriptxai.config import load_config
-from prescriptxai.dashboard.backend import Backend, OperatorError, direct_service, profile_identity
+from prescriptxai.dashboard.backend import (
+    Backend,
+    OperatorError,
+    cached_assessment,
+    direct_service,
+    profile_identity,
+)
 from prescriptxai.dashboard.data import file_identity, observed_state, saved_json, telemetry
 from prescriptxai.dashboard.state import (
     DashboardSettings,
@@ -171,10 +177,34 @@ def test_mapped_artifact_bytes_invalidate_resource_identity(fitted_config: Path)
     )
     fitted_config.write_text(yaml.safe_dump(config.model_dump(mode="json")), encoding="utf-8")
     before = profile_identity(fitted_config)
+    loaded = direct_service(str(fitted_config), before)
+    assert loaded.info()["artifacts"]["model"] == str(mapped_path)
     default_bytes = config.artifacts.model.read_bytes()
     mapped_path.write_bytes(mapped_path.read_bytes() + b"\0")
     assert profile_identity(fitted_config) != before
     assert config.artifacts.model.read_bytes() == default_bytes
+
+
+def test_cached_assessment_copies_real_outputs_and_validates_mode(fitted_config: Path) -> None:  # noqa: F811
+    """A cached score is tied to real inputs/artifacts and cannot be poisoned by a caller edit."""
+    settings = DashboardSettings(profiles={"FD001": {"MLP": fitted_config}})
+    identity = profile_identity(fitted_config)
+    state = {"actuator": 2.0, "sensor": 2.0}
+    args = (
+        str(fitted_config),
+        identity,
+        settings.model_dump_json(),
+        json.dumps(state),
+        InputContext().model_dump_json(),
+    )
+    score = cached_assessment(*args, "fast")
+    actual = direct_service(str(fitted_config), identity).assess(state).risk
+    assert score["risk"] == actual
+    score["risk"] = -1
+    assert cached_assessment(*args, "fast")["risk"] == actual
+    assert cached_assessment(*args, "thorough")["mode"] == "THOROUGH"
+    with pytest.raises(OperatorError, match="Unknown mode"):
+        cached_assessment(*args, "invalid")
 
 
 def test_actual_http_adapter_matches_direct_and_rejects_errors(fitted_config: Path) -> None:  # noqa: F811
