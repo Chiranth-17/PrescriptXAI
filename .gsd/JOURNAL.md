@@ -413,3 +413,17 @@ then measure the requested FD001 held-out benchmark without hiding target failur
   276passed/70warnings/119.22s,coverage83.3507197997079%branchinclusive/87.28953905603092%line,
   docs/lockpass. Initial comparison failed solely integer-rounding;precision12 fixes exactfloor
   without lowering it. Commit/tagphase7-closed after fullgate,thenimmediatelyPhase8->9->10.
+- Phase8 complete gate2026-10-24: shared facade/API preview, real observed-data adapters,
+  five-page dashboard and tests committed f9c59ac..52affd0. Frozen2.0.0schemas/historical
+  Phase7settings/records preserved. Independent three-real-export audit: zero discrepancies,
+  all33deltas match, propagation roundoff3.64e-12. Nine actual browser screenshots retained.
+  Full gate321passed/70warnings/184.09s,Ruffclean,mypy61clean,docs/lockpass; coverage
+  83.66412213740458%combined/87.32997481108312%line,bothabovePhase7. Intermediate line
+  guard failure repaired with real cache/artifact loading tests; no floor lowered.
+  Registered UI study215cb1f before all32callbacks/8engines on52affd0:FAST FD001 XGBv1,
+  K1/k3/Dmax5, p95=115.3545ms,whole-engine95%CI[108.80,120.46]ms;8engines,2000replicates,
+  upper250msbudget passes within server-build scope. Browserpaint/network/startupunmeasured.
+  Same completed callback recovered after one locator timeout without rerun; every record kept.
+  Independent source and40-check timing audits pass. Supported coldrestart after package updates
+  documented and default8501coldprocess verified; no training runtime imports. Closure docs,
+  traceability/progress/summaries prepared; commit/tagphase8-closed then immediatelyPhase9.

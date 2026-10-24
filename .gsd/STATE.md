@@ -1,97 +1,65 @@
 ---
 phase: 8
-status: in_progress
+status: gate_verified
 ---
 
 # Current execution state
 
-Read AGENTS.md and PROGRESS.md first. User authorized Phase7->8->9->10 in this same chat
-without another confirmation, each full gate before next phase. Full prompts are preserved in
-docs/prompts/phase8_operator_dashboard.md, phase9_testing_hardening.md and
-phase10_packaging_reproducibility.md. Do not invent Phase11 or PartB. Existing heartbeat
-prescriptxai-phase-7-phase-8 checks every15minutes and stops after verifiedPhase10closure
-or explicit user stop; stay quiet while no meaningful/actionable change.
+Read AGENTS.md and PROGRESS.md first. User authorized Phase7->8->9->10 in this chat without
+confirmation, full gate before each next phase. Preserved prompts: docs/prompts/phase8_operator_dashboard.md,
+phase9_testing_hardening.md and phase10_packaging_reproducibility.md. No Phase11/PartB invention.
+Existing 15-minute heartbeat stops after verified10 closure or explicit stop. Subagents audit only.
 
-## Phase7 closed; Phase8 plan8.4 active
+## Phase8 gate verified; closure commit/tag next, immediately Phase9
 
-Closure commit b4a8614f663d626925041982a2d1c25b38698f0b and annotated phase7-closed tag verified.
-Phase8 plans .gsd/phases/8/01-PLAN.md through04-PLAN.md preserve complete work/gate requirements.
-Shared manual preview added to facade/API; result composition extracted with unchanged frozen
-schemas. Existing47 pipeline/artifact/schema tests passed. New support-limit test initially used
-read-only k_max alias; corrected to max_changed_features (test setup, not behavior). Foundation
-task committed f9c59ac; guard/input fixes4a2f6ab. Foundation direct/API/content identity/data/
-genuine history/settings/state now implemented;36focusedsource/config/preview tests pass,
-75broaderpipeline/config/chart tests pass and8fitted-modelAppTests pass acrossallpages.
-FullUI/evidence implementationcommitted ddf1757; provenance/reasonfix34e5fb7; fullOperatorpage
-timer/cache regressions52affd0. Ruff/mypy61clean. ddf1757 fullgate320pass,83.60718379824226%
-branchinclusive/87.3013871374527%line. Later34e5fb7 also320pass but line87.27158%belowPhase7
-floor, so gatecorrectlyfailed; no floor lowered. Addedrealcopied-cache/mapped-artifact loading
-regressions (9source tests passed); final52affd0 gate mustrerunwithbothline+branchguards.
-RealbrowserREC20/c179:.94666999->.12086279,E3; manualinvalidrate:.05420930,ESC/E1,T2/T3fail;
-PART76/c205:.98495377->.35097007,T1fails,proxytierspass. Screenshotssaved docs/screenshots/;
-exportsignored artifacts/phase8/. Independentall3exportsaudit zeroerrors/33deltas,propagation
-roundoff3.64e-12. Finalsourceauditddf1757 no remainingblockers. No fitting/optim audit reruns.
-Plan8.4 remainsopen:registeredUIrenderp95 study32callbacks/8engines in
-configs/experiments/phase8-ui-render.yaml MUSTbecommittedbeforetiming. Source52affd0;
-protocoladded docs/evaluation_protocol.md. No samplesstarted. Thencompletewalkthroughdocs,
-summaries/traceability/progress,finalfullgate(bothcoveragesnotdecrease),closurecommit/tag8;
-immediatelyPhase9then10. No Phase8closureclaimed. UIserverlauncher17604/actual30220 on8501
-washealthy(lastverified); discovercurrentprocessbeforelaunchduplicate. Browseroriginaltab2
-hasrealUI, possiblemanualusersteering (mode/enginechangedunexpectedly); usefreshhiddenQA
-tabforregisteredstudy. CUAresetduringaccountinterruption; currenthandlesdashboardTab(tab2),
-screenshotFs inREPL; screenshotsuseactualJPEGbytes viafs.writeFile. No nativeAPIneeded.
+Runtime52affd06d39b03f76a0dd70417c3a75bd76f55c4, preregdocs215cb1f. Shared library/API preview,
+typed errors, observed/genuine LSTM sources, content caches, session invalidation, all five pages,
+true risk/tiers/triage/locked features/attributions/exports done. Public2.0.0 schemas unchanged.
+16defects fixed with regressions. Full gate321pass/70warnings/184.09s,Ruffclean,mypy61clean,
+docs/lockpass;83.66412213740458%combined/87.32997481108312%line exceed both Phase7 floors.
+Logs/status/coverage artifacts/phase8/release-*. No floor lowered after intermediate linefail.
 
-Run phase7-20261020T102540Z; measured source63c2ed445fba16c73a2771e184f635abf76b4405.
-Preregistration0c0b6e1; assetprep4ffb038; actual historical training seeds/sources retained.
-All stages complete:2496diagnostics,171490quality,48reference/leverage,1000serialcalls per
-FAST/THOROUGH. Main ended exit0 at2026-10-24 04:26:44UTC; helper cleared/exited. Do not
-restart or repeat completed measurements. Full reports: ignored artifacts/experiments/
-phase7-20261020T102540Z, including closure_summary.html; committed docs/phase7_changes.md.
+Three actual browser exports independently match full validation/all33deltas,true risks andD_M;
+propagation roundoff3.64e-12. REC20/c179 .94666999->.12086279,E3; manualsensor8=2387.9534
+ends.05420930 butESC/E1 becauseT2/ratefail; PART76/c205ends.35097007,failedT1 retained.
+Nine screenshots docs/screenshots/. docs/phase8_walkthrough.md and phase8_changes.md complete.
 
-Original main47224 stopped2026-10-23 18:34UTC at122821quality, causeUNKNOWN. After no-duplicate
-inventory, SQLitequick_check and independent provenance audit, same run resumed18:39:57UTC
-using sealed assets/completed-ID reuse. Added48669quality; original records/timings retained;
-only4registered uncommitted cases retried. Ignored phase7-active-run.json/resume-status.json
-disclose execution segments. Historical Windows sleep gaps and all outliers remain documented.
-Old PIDs/session56807 are obsolete; completed run is not a live process now.
+Registered phase8-ui-render-20261024-v1 study215cb1f,measured52affd0:exact32serialactualbrowser
+callbacks/8enginesx4,FAST FD001 XGBv1,K1/k3/Dmax5;zero discards/operatorfailures;32uniqueUUIDs.
+p50=100.10,p95=115.3545,p99=119.1177ms;whole-engine95%p95CI[108.80,120.46]ms;8engines,
+2000replicatesseed1729. Upper250msserver-buildbudgetpasses;compute/browser/network/startup
+excluded explicitly. One locatorwaittimeout recovered samecompletedcallback without newclick.
+Independent timing40checks pass, sourceauditclear. Ignored artifacts/phase8/ui-render-20261024-v1/
+and independent-ui-timing-audit.json. Reporthelper scripts/diagnostics/phase8_ui_render_report.py
+added and targetedRuffpassed. Commit helper/docs/screenshots/summaries/progress then tag8closure.
 
-Independent final audit:all173986records/cases checked structurally,112artifact and44validator
-hashes match,64cohorts/28partitions/completeOOF coverage match. Numerical1631strata includes220
-real LSTMhistories; zero discrepancies,true-risk/coupling/raw/scaledL1error0,D_Mmax2.27e-13,
-roundtripmax2.84e-14. All26970wholeengineCIs,9248seedstats,1904funnels match. All48reference
-cases/40failed-state proofs correct,finiteabsence unresolved. Latencyfingerprint reconstructed
-from3145validationrows->376alerts/16engines;all2000orderedindices match. Audits used inference
-only, no fitting/recourse reruns. Full evidence ignored artifacts/phase7-final-audit/.
+Default8501coldserver startedPID18260(metadata artifacts/phase8/dashboard-final-process.json),
+health200. Coldrestart afterpackageupdates avoids developmenthotreload staleclasscache; documented.
+Temporary8502serverPID16892/46704 servedregisteredmeasurements(nowcomplete); close ownedQA
+tabs/server when finished. CUA browser2 handles dashboardTab(tab2default8501),uiTimingTab(tab4
+8502),screenshotFs. Tab3old8501QA,Tab1ownerrorpage. Browserdocs restored. Verify beforecleanup.
 
-Final5command softwaregateexit0:ruffclean,mypy55clean,276passed/70warnings/119.22s,docs+lockpass.
-Coverage83.3507197997079%branch-inclusive,87.28953905603092%line; nodecrease. Exactfloor ratcheted
-withprecision12 to fix tool integer rounding without loweringfloor. Gate logs/status/coverage
-artifacts/phase7-final-gate-precise.log,phase7-final-gate-status.json,phase7-final-coverage.json.
-Closure commit/tag verified above; proceed with Phase8 and never rerun historical measurements.
+## Phase7 closed immutable history
 
-Measured gaps retained:FD002highT1/lowT2joint passed leakage guard; no label/RUL/engine/cycle
-inputs or test-fit/calibrationoverlap. LSTMfrozen genuineprefix/lateststate validity0% is not
-infeasibility proof. FASTopt/totalp95=2339.07/2348.23ms,THOROUGH2080.23/2089.85ms;bothopt
-andFASTtotalmissbudget,THOROUGHtotalpasses. UI/startupunmeasured. Alltestpopulations, twoDmax
-versions, CIs/counts, denominators, Kcurves, targets/gaps inreport. E3maxproxyassumptions,
-K/ratesnotphysicalfacts,noRULextension. No historical measuredsettingsorresults changed.
+Closureb4a8614f663d626925041982a2d1c25b38698f0b / phase7-closed. Runphase7-20261020T102540Z,
+source63c2ed445fba16c73a2771e184f635abf76b4405,prereg0c0b6e1,assetprep4ffb038. Finishedexit0
+2026-10-24T04:26:44UTC; no liveexperiment and never restart.171490quality+2496diagnostics,
+48referencecases,1000serialcalls/mode. All173986records/112artifact/44validatorhashes/64cohorts
+audited. Numerical1631strata/220genuineLSTMprefixes zero discrepancies,D_Mmax2.27e-13.
+All26970engineCIs/9248seedstats/1904funnels match.40oraclefailedstates remain unresolved.
+OriginalOct23interruptioncauseUNKNOWN;compatibleexactresume retained allrecords/timings and
+added48669quality. Metadata phase7-active-run.json/resume-status.json hasobsoletePIDs/exit0.
+Fullgate276pass,Ruff/mypy55clean,83.3507197997079%combined/87.28953905603092%line.
+MeasuredFASTopt/totalp95=2339.07/2348.23ms,THOROUGH2080.23/2089.85ms;bothopt/FASTtotalmiss,
+THOROUGHtotalpasses. Honesttargetgaps remain. Complete docs/phase7_changes.md/reportartifacts.
 
-## Start complete Phase8 after closure commit/tag
+## Next authorized phases
 
-Read full11-task dashboardprompt. Default direct library, optionalAPIadapter. Frozen public
-RecourseResult/ValidationReport2.0.0 mustremain unchanged unlessversion/changelog/allowners
-agree. Use existingrisk/validation/triage; genuineLSTM InputContext; no duplicatedtierrules.
-Existing app useslegacyresults; adopt publicfacade, no trainingimports inruntime.
-PagesOperator/Fleet/Diagnostics/Evaluation/About; sidebar/model/mode/cycle,manualsliders,
-waterfall/cheapShapley,tiers/triage/failure,lockedfeatures,exports,honestbanners,latencybudgets,
-caches/sessionstate; realPhase7JSONdrivesdiagnostic/evaluationvalues. FullAppTests/charttests/
-nohardcodedperformance/no trainingimports; realhighrisk+failurewalkthrough/screenshots in
-docs/screenshots/, completegate,PROGRESS/traceability,conventionalcommit/tagphase8-closed.
-Coverage cannot fall. Then fullPhase9->10gates, no extra confirmation.
-
-Phase9>=90%linecoverage/defects/property/fuzz/fault/golden/numerical/science/performance10000calls/
-security/E2E/CI. Phase10cleaninstall/Dockerifavailable/reproduce/docs/demo/paper/licensechoice.
-AsklicenseatPhase10; userpermitsMITdefaultifnoanswer. No manualdownloadneedednow.
-Subagents onlyindependent audits, neverimplement audited work. Neverretune historicalriskgates,
-Dmax,bounds,rates or choosepredictorsbyrecourseoutcome. Missingrealmachineevidence uses
-conservative documenteddefaults, not a simulatorblocker. Fullhistory inPROGRESS/JOURNAL.
+Phase9>=90%source linecoverage excluding rendering internals coveredAppTest;Hypothesis/fuzz/
+fault/golden/numerical11sciencebugs/tempE2E/CI/security/pip-audit/profile+10000callmemory.
+Defect log complete,limits honest,allchecks/progress/traceability/conventionalcommit/tag9.
+Phase10cleanwheel/sdistinstall,CLI/demo,licenseask(MITdefaultifnoanswer),Dockerifavailable,
+reproducecommand+manifest,fullbuildabledocs/realresults/demofigures/paperskeletonTODO-VERIFY.
+Eachfullgate before next. Sensorproxies/rates/K assumptions,E3max,noRULextension;truecalibrated
+validity distinct fromplausibility/T3/T4/joint. EveryCI wholeengine/counts;failuredenomsretained.
+No modelselection/constraint/threshold retuning from evaluation results; schemas2.0.0frozen.

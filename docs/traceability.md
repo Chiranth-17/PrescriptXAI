@@ -176,6 +176,9 @@ Phase closure is recorded with tag `phase6-closed` and this target gap under rul
 
 ## Newly supplied Phase 9 and Phase 10 prompts — queued 2026-10-24 IST
 
+The completed Phase7/8 closure evidence below supersedes earlier queued-state notes.
+Historical entries retain the state known at their original checkpoint.
+
 The user's explicit sequence is Phase 7, Phase 8, Phase 9, Phase 10, with full gates in between.
 The complete direct requirements are preserved; this section claims receipt, not implementation.
 
@@ -190,3 +193,29 @@ The Phase 7 process interruption at 18:34 UTC on October 23 and exact checkpoint
 and SQLite integrity were verified before resuming the same run; four uncommitted cases may
 be retried, while all 125,317 committed records remain protected by their identities. Frozen
 HEAD/source stays `63c2ed445fba16c73a2771e184f635abf76b4405` until measurement completion.
+
+## Phase 7 full experimental framework — closed
+
+Complete requirement mapping, run identities, populations/protocols and target/gap diagnoses
+are in `docs/phase7_changes.md`. Run phase7-20261020T102540Z on frozen63c2ed4 completed
+171490 quality plus2496diagnostic records,48reference cases and1000serialcalls per mode.
+All26970engine-bootstrap intervals,9248seed statistics and1904funnels independently match.
+Numerical1631strata/220genuineLSTMhistories have zero discrepancies. Full gate276passed,
+Ruff/mypy clean and coverage unchanged. Closure b4a8614 / phase7-closed; target misses retained.
+
+## Phase 8 operator dashboard — complete gate
+
+The complete11-task mapping is in `docs/phase8_changes.md`; actual commands, cases, screenshot
+links, timing protocol/source/config hashes and exclusions are in `docs/phase8_walkthrough.md`.
+Implementation f9c59ac through52affd0 preserves public schemas2.0.0 and historical measurements.
+All five pages, direct/HTTP parity, observed history, manual shared validation, both waterfall
+methods, tier reasons, triage, locked features, exports and source-only evidence are delivered.
+
+Full gate321passed/70warnings,Ruffclean,mypy61clean;83.66412213740458%combined and
+87.32997481108312%line exceed both Phase7 floors. Three real browser exports independently
+match library validation and all33delta mappings. Registered UI study215cb1f / measured52affd0:
+32callbacks/8engines,FAST/FD001-XGB/v1,K1/k3/Dmax5,p95=115.3545ms,whole-engine95%CI
+[108.80,120.46]ms;8engines,upper250msbudget passes in server-build scope only. Independent
+audit40checks passes; zero discards/operator failures. Browser/network/startup unmeasured.
+Sixteen defects are fixed with regression references in docs/defects.md. Closure tagphase8-closed
+follows the verified gate and audits; complete Phase9 starts immediately afterward.

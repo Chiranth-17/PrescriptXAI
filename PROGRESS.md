@@ -12,7 +12,7 @@
 | 5 — Multi-tier validation (current prompt) | Closed; measured gaps retained | Shared tiers, bounded feedback, real funnels, audits and phase5-closed |
 | 6 — Decision support pipeline, CLI and API | Closed; performance target gap retained | Public schema 2.0.0, real delivery gates, 600-result audit, phase6-closed |
 | 7 — Full experimental framework | Closed; measured target gaps retained | 171490 quality + 2496 diagnostics, 48 reference cases, 2000 serial calls; independent audit and full software gate passed |
-| 8 — Streamlit operator dashboard | In progress | Phase7-closed verified at b4a8614; implementing shared preview path and all five pages |
+| 8 — Streamlit operator dashboard | Complete gate; closure recorded by phase8-closed | Five pages, live shared validation, real walkthrough, 321 tests and independently audited 32-callback UI timing |
 | 9 — Systematic testing and hardening | Queued; not started | Direct prompt supplied 2026-10-24 IST; starts after Phase 8 gate |
 | 10 — Packaging, documentation and demo readiness | Queued; not started | Direct prompt supplied 2026-10-24 IST; starts after Phase 9 gate |
 | 11 — Remaining phase | Not started | Source prompt / Part B changes table not supplied |
@@ -34,20 +34,33 @@ Docker verification when available, reproduction workflow, complete docs/demo/pa
 and the user's license-choice instruction (MIT offered as default). No unavailable Phase 11 or
 Part B content is invented. Current frozen measurements and schema 2.0.0 remain protected.
 
-## Phase 8 implementation checkpoint — 2026-10-24 IST
+## Phase 8 closure — 2026-10-24 IST
 
-- Shared manual-preview path committed f9c59ac; independent guard/input fixes committed4a2f6ab.
-  Frozen result/report2.0.0 schemas unchanged; no historical settings or measurements replaced.
-- Direct/API adapters, content identities, observed telemetry/history, typed settings and stale
-  session invalidation implemented. Runtime sources import no training module. Structured
-  manual errors cover missing coupling, invalid modes and numeric range; defects logged.
-- Current focused verification:75 pipeline/config/source/chart tests passed, plus8 actual fitted-
-  model AppTests across all five pages, real solve/manual rejection/fleet navigation/triage.
-  Ruff clean; strict mypy61 source files clean. This is not the final Phase8 gate.
-- Operator/evidence UI and expanded tests are being finished. Real walkthrough/screenshots,
-  complete independent audit, full nondecreasing-coverage gate and closure tag remain pending.
-- Run dashboard with `mingw32-make dashboard`; source selection/config switch in configs/dashboard.yaml.
-  API parity checks selected config/mode and actual artifact content identity; credentials stay in environment.
+- Done: shared manual preview facade/API; direct/HTTP adapters with actual content identity;
+  observed telemetry and genuine LSTM prefix; invalidating session state; all five pages,
+  independent tier reasons/margins, raw/scaled actions, both attribution methods and safe exports.
+  Implementation f9c59ac,4a2f6ab,34c07fd,ddf1757,34e5fb7,52affd0. Frozen schema2.0.0 unchanged.
+- Full gate on215cb1f (runtime52affd0): Ruff clean, strict mypy61 clean,321 passed/70 warnings/
+  184.09s; docs/lock checks pass. Coverage83.66412213740458% branch-inclusive and
+  87.32997481108312% line, both above Phase7 floors. An intermediate line decrease correctly
+  failed and was repaired with real copied-cache/mapped-artifact regressions; no floor lowered.
+- Actual browser walkthrough: REC20/c179 risk .94666999->.12086279,E3; manual sensor_8 edit
+  yields .05420930 but ESC/E1 because plausibility/rate fail; PART76/c205 ends .35097007,
+  failed Tier1 retained. Independent reconstruction: zero discrepancies/all33delta mappings;
+  propagation roundoff<=3.64e-12. Nine real screenshots saved. Individual demos are not a rate.
+- Registered UI study phase8-ui-render-20261024-v1, committed config under configs/experiments/,
+  prereg215cb1f before measurement on52affd0:32 actual serial callbacks/8engines, FAST FD001
+  XGB v1,K1,k3,Dmax5. p95=115.3545ms,95% whole-engine CI[108.80,120.46]ms,8engines,
+  2000replicates/seed1729; upper250ms server-build budget passes. No discarded samples or
+  operator failures. One locator timeout recovered the same completed callback without retry.
+  Independent timing audit40checks/zero discrepancies. Browser/network/startup remain unmeasured.
+- Decisions/assumptions: no historical scientific settings or records changed. Sensor proxies,
+  rates/bounds/K remain assumptions; at mostE3, no physics proof or RUL extension. Phase7 backend
+  target gaps remain. Restart Streamlit after package source changes; final cold launch verified.
+- How to run: `mingw32-make dashboard`; source/config switch in configs/dashboard.yaml;
+  optional API uses the same profile and environment-only credentials. Fullgate:
+  `mingw32-make all-checks`. See docs/phase8_changes.md and docs/phase8_walkthrough.md.
+  Commit/tag phase8-closed after completed gate/audits; immediately execute full Phase9 then10.
 
 ## Phase 7 closure — 2026-10-24 IST
 
