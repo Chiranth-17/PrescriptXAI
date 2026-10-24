@@ -1,74 +1,162 @@
-"""Streamlit operator interface for validated PrescriptXAI recommendations."""
+"""Five-page operator dashboard using frozen library decisions and real saved evidence."""
 
 from __future__ import annotations
 
-import logging
+import os
+from collections.abc import MutableMapping
 from pathlib import Path
+from time import perf_counter
+from typing import Any, Literal, cast
 
 import streamlit as st
 
 from prescriptxai.config import load_config
-from prescriptxai.constraints.taxonomy import load_taxonomy
-from prescriptxai.dashboard.components import show_recommendation
-from prescriptxai.dashboard.state import parse_state_document
-from prescriptxai.logging_utils import configure_logging
-from prescriptxai.pipeline import PrescriptXAIEngine
-
-LOGGER = logging.getLogger(__name__)
+from prescriptxai.dashboard.backend import (
+    Backend,
+    OperatorError,
+    computation_pool,
+    profile_identity,
+)
+from prescriptxai.dashboard.data import file_identity, observed_state, telemetry
+from prescriptxai.dashboard.operator import operator_console
+from prescriptxai.dashboard.pages import PAGES, about_page, evidence_page, fleet_page
+from prescriptxai.dashboard.state import load_settings, select_session
 
 
 def main() -> None:
-    """Render the configured dashboard without synthetic defaults or case-study values."""
-    configure_logging()
-    st.set_page_config(page_title="PrescriptXAI", layout="wide")
-    st.title("PrescriptXAI · Prescriptive Maintenance")
+    """Run the local operator workflow without training, mutable thresholds or sample results."""
+    st.set_page_config(page_title="PrescriptXAI", page_icon="⚙", layout="wide")
+    st.title("PrescriptXAI · Maintenance Decision Support")
     st.warning(
-        "C-MAPSS is static run-to-failure data. This tool does not establish real-machine safety "
-        "or RUL extension. Model validity, sparse-action feasibility, and physical plausibility "
-        "are separate checks."
+        "Model-based validity is not physical validity. No RUL extension is claimed on "
+        "static datasets. Actuator limits are proxy assumptions on C-MAPSS. This tool "
+        "does not establish real-machine safety or RUL extension."
     )
-    config_path = Path("configs/default.yaml")
-    taxonomy_path = Path("configs/features.yaml")
-    config = load_config(config_path)
-    taxonomy = load_taxonomy(taxonomy_path)
-    if taxonomy.feature_groups.controllable_actuators.features:
-        st.info(
-            "Configured controllable channels are C-MAPSS telemetry proxies, not verified actuator "
-            "commands. See docs/limitations.md."
-        )
-    else:
-        st.info("No controllable proxies are configured; recourse will report failure explicitly.")
-    if taxonomy.coupling is None and not taxonomy.coupling_rules:
-        st.info("No sensor-coupling configuration is present; Tier 4 will fail closed.")
-    if not config.artifacts.model.is_file() or not config.artifacts.mahalanobis.is_file():
-        st.error(
-            "Trained model and training-only plausibility artifacts are required. "
-            "Run `prescriptxai train` and the documented Phase 5 validator preparation first."
-        )
-        st.stop()
-    upload = st.file_uploader("Upload one raw-unit state as JSON or CSV", type=["json", "csv"])
-    if upload is None:
-        st.info("Upload a single state record to calculate risk and request a candidate.")
+    st.info(
+        "Configured controllable channels are C-MAPSS telemetry proxies, not verified "
+        "actuator commands. Bounds, rates and intervention horizon K are assumptions."
+    )
+    if "pending_fleet_engine" in st.session_state:
+        st.session_state["page"] = PAGES[0]
+    page = st.sidebar.radio("Page", PAGES, key="page")
+    if page == PAGES[4]:
+        about_page()
         return
-    required = {
-        name
-        for group in taxonomy.feature_groups.model_dump().values()
-        for name in group["features"]
-    }
     try:
-        state = parse_state_document(upload.getvalue().decode("utf-8"), upload.name, required)
-    except (UnicodeDecodeError, ValueError) as error:
-        st.error(str(error))
-        return
-    if st.button("Evaluate state", type="primary"):
-        try:
-            engine = PrescriptXAIEngine.from_files(config_path, taxonomy_path)
-            result = engine.recommend(state)
-        except (ValueError, FileNotFoundError) as error:
-            LOGGER.exception("Recommendation request failed")
-            st.error(str(error))
+        settings = load_settings(
+            Path(os.environ.get("PRESCRIPTXAI_DASHBOARD_CONFIG", "configs/dashboard.yaml"))
+        )
+        subset = st.sidebar.selectbox("Subset", list(settings.profiles), key="subset")
+        profile = st.sidebar.selectbox(
+            "Model / protocol", list(settings.profiles[subset]), key="profile"
+        )
+        path = settings.profiles[subset][profile]
+        identity = profile_identity(path)
+        backend = Backend(path, identity, settings)
+        with st.spinner("Loading the selected trusted artifacts…"):
+            info = computation_pool().submit(backend.info).result()
+        config = load_config(path)
+        mode = cast(
+            Literal["fast", "thorough"],
+            st.sidebar.radio("Mode", ["fast", "thorough"], format_func=str.upper, key="mode"),
+        )
+        st.sidebar.caption(f"Backend: {settings.backend} · thresholds are read-only")
+        st.sidebar.write(f"Alert τ = {info['tau_danger']} · Safe τ = {info['tau_safe']}")
+        st.sidebar.write(
+            f"D_max = {info['D_max']} · k_max = {config.recourse.k_max} · "
+            f"assumed K = {config.recourse.rate_horizon_steps}"
+        )
+        st.sidebar.caption(
+            "Protocol/model selection loads prior committed settings; no tuning occurs."
+        )
+        data_identity = file_identity(settings.telemetry_path)
+        with st.spinner("Loading observed telemetry…"):
+            frame = (
+                computation_pool()
+                .submit(
+                    telemetry,
+                    str(settings.telemetry_path),
+                    subset,
+                    settings.telemetry_population,
+                    data_identity,
+                )
+                .result()
+            )
+        st.caption(
+            f"Replay source: {settings.telemetry_path.name} · {settings.telemetry_population} "
+            "observations · no new generalization claim"
+        )
+        engines = sorted(int(v) for v in frame.engine_id.unique())
+        if "pending_fleet_engine" in st.session_state:
+            st.session_state["engine"] = st.session_state.pop("pending_fleet_engine")
+        engine_id = st.sidebar.selectbox("Engine", engines, key="engine")
+        available = frame.loc[frame.engine_id == engine_id, "cycle"]
+        lo, hi = int(available.min()), int(available.max())
+        pending_cycle = st.session_state.pop("pending_fleet_cycle", None)
+        if pending_cycle is not None:
+            st.session_state["cycle"] = pending_cycle
+        if "cycle" not in st.session_state:
+            st.session_state["cycle"] = hi
+        if "cycle" in st.session_state and not lo <= st.session_state["cycle"] <= hi:
+            st.session_state["cycle"] = hi
+        cycle = st.sidebar.slider("Cycle", lo, hi, key="cycle") if lo < hi else lo
+        recompute = st.sidebar.button("Recompute", key="recompute")
+        session = cast(MutableMapping[str, Any], st.session_state)
+        select_session(
+            session,
+            (
+                identity,
+                data_identity,
+                subset,
+                profile,
+                engine_id,
+                cycle,
+                mode,
+                settings.backend,
+                settings.api_url,
+            ),
+        )
+        st.session_state["selected_observation"] = (engine_id, cycle)
+        model = {"xgboost": "xgb", "torch": "mlp", "lstm": "lstm"}[str(info["model_choice"])]
+        if page == PAGES[1]:
+            selected = fleet_page(backend, frame, cycle, info, mode)
+            if selected is not None:
+                st.session_state["pending_fleet_engine"] = selected
+                st.session_state["pending_fleet_cycle"] = cycle
+                st.session_state["pending_fleet_recommend"] = True
+                st.rerun()
             return
-        show_recommendation(result, config.model.danger_threshold, config.model.safe_threshold)
+        if page in (PAGES[2], PAGES[3]):
+            evidence_page(backend, subset, model, info, page == PAGES[2])
+            return
+        st.header(PAGES[0])
+        state, context = observed_state(frame, engine_id, cycle, info)
+        history = frame.loc[(frame.engine_id == engine_id) & (frame.cycle <= cycle)]
+        started = perf_counter()
+        excluded = operator_console(
+            backend,
+            history,
+            state,
+            context,
+            info,
+            config,
+            mode,
+            recompute or st.session_state.pop("pending_fleet_recommend", False),
+        )
+        render_ms = max(0, (perf_counter() - started - excluded) * 1000)
+        upper = config.latency_budget.dashboard_max_ms
+        st.caption(
+            f"Server UI build: {render_ms:.2f} ms · upper budget {upper:g} ms · "
+            f"{'within' if render_ms <= upper else 'over'} this call. "
+            "Excludes loading/scoring/solve/attribution, browser paint and network; "
+            "not a browser p95 certification."
+        )
+    except (OperatorError, ValueError, OSError, KeyError) as error:
+        st.error(f"Operator request unavailable: {error}")
+        st.info(
+            "No action is accepted from this failed request. Check the selected observed "
+            "history and trusted artifact/config files, or schedule maintenance review."
+        )
 
 
 main()

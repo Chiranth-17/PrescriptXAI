@@ -142,10 +142,15 @@ class Backend:
                 if (
                     result.config_hash != expected_hash
                     or result.model_version != expected.model_version
+                    or result.mode != mode.upper()
                 ):
                     raise OperatorError(
                         "API result identity differs from the requested profile/mode"
                     )
+                if isinstance(result, RecourseResult) and any(
+                    result.original_state.get(name) != value for name, value in state.items()
+                ):
+                    raise OperatorError("API candidate refers to different observed telemetry")
                 return result
             service = direct_service(str(self.path), self.identity)
             if operation == "assess":

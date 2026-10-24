@@ -1,6 +1,7 @@
 """Real fitted artifact adapters, observed-history provenance and selection lifecycle."""
 
 import json
+import shutil
 import subprocess
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -9,6 +10,7 @@ from threading import Thread
 
 import pandas as pd
 import pytest
+import yaml
 from fastapi.testclient import TestClient
 
 from integration.test_phase6_artifacts_cli import fitted_config  # noqa: F401
@@ -70,6 +72,18 @@ def test_observed_state_excludes_labels_and_preserves_actual_prefix(tmp_path: Pa
     assert state == {"a": 5.0, "b": -1.0}
     assert context.history == ((1.0, 3.0), (0.0, 4.0))
     assert context.engine_id == 2 and context.cycle == 3
+    malformed = loaded.copy()
+    malformed["a"] = malformed.a.astype(object)
+    malformed.loc[(malformed.engine_id == 2) & (malformed.cycle == 3), "a"] = True
+    with pytest.raises(OperatorError, match="Boolean telemetry"):
+        observed_state(malformed, 2, 3, info)
+    malformed.loc[(malformed.engine_id == 2) & (malformed.cycle == 3), "a"] = 5.0
+    malformed.loc[(malformed.engine_id == 2) & (malformed.cycle == 1), "a"] = True
+    with pytest.raises(OperatorError, match="Boolean history"):
+        observed_state(malformed, 2, 3, info)
+    malformed.loc[(malformed.engine_id == 2) & (malformed.cycle == 1), "a"] = float("inf")
+    with pytest.raises(OperatorError, match="finite measurements"):
+        observed_state(malformed, 2, 3, info)
     with pytest.raises(OperatorError, match="prior LSTM"):
         observed_state(loaded, 2, 2, info)
     with pytest.raises(OperatorError, match="no observed"):
@@ -127,6 +141,7 @@ def test_dashboard_sources_import_no_training_runtime() -> None:
     code = (
         "import sys,json; import prescriptxai.dashboard.backend; "
         "import prescriptxai.dashboard.data; "
+        "import prescriptxai.dashboard.operator; import prescriptxai.dashboard.pages; "
         "print(json.dumps([m for m in sys.modules if m.endswith('.train') "
         "or m.startswith('prescriptxai.evaluation.assets')]))"
     )
@@ -144,6 +159,22 @@ def test_service_environment_variables_do_not_override_scientific_config(
     monkeypatch.setenv("PRESCRIPTXAI_DASHBOARD_CONFIG", "some-dashboard.yaml")
     monkeypatch.setenv("PRESCRIPTXAI_API_KEY", "fixture-secret")
     assert load_config(Path("configs/default.yaml")) == original
+
+
+def test_mapped_artifact_bytes_invalidate_resource_identity(fitted_config: Path) -> None:  # noqa: F811
+    """Same-path changes to selected mapped artifacts cannot reuse a stale resource key."""
+    config = load_config(fitted_config)
+    mapped_path = fitted_config.parent / "mapped-model.joblib"
+    shutil.copyfile(config.artifacts.model, mapped_path)
+    config.pipeline.model_artifacts[config.model_choice] = config.artifacts.model_copy(
+        update={"model": mapped_path}
+    )
+    fitted_config.write_text(yaml.safe_dump(config.model_dump(mode="json")), encoding="utf-8")
+    before = profile_identity(fitted_config)
+    default_bytes = config.artifacts.model.read_bytes()
+    mapped_path.write_bytes(mapped_path.read_bytes() + b"\0")
+    assert profile_identity(fitted_config) != before
+    assert config.artifacts.model.read_bytes() == default_bytes
 
 
 def test_actual_http_adapter_matches_direct_and_rejects_errors(fitted_config: Path) -> None:  # noqa: F811
