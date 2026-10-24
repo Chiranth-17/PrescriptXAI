@@ -18,7 +18,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from prescriptxai.config import AppConfig, load_config
 from prescriptxai.logging_utils import bind_run_id, reset_run_id
-from prescriptxai.pipeline import InputError, PrescriptXAI, PrescriptXAIEngine
+from prescriptxai.pipeline import ArtifactError, InputError, PrescriptXAI, PrescriptXAIEngine
 from prescriptxai.schemas import Assessment, BatchRequest, RecourseRequest, RecourseResult
 
 
@@ -169,6 +169,13 @@ def create_app(
                 "mode": await response_mode(_request),
             },
             status_code=422,
+        )
+
+    @app.exception_handler(ArtifactError)
+    async def artifact_error_handler(request: Request, error: ArtifactError) -> JSONResponse:
+        return JSONResponse(
+            {"detail": str(error), "error_type": type(error).__name__,
+             "mode": await response_mode(request)}, status_code=503,
         )
 
     @app.exception_handler(ValidationError)

@@ -9,9 +9,15 @@ from fastapi.testclient import TestClient
 from fixtures.recourse_models import make_recourse_fixture
 from prescriptxai.api import create_app
 from prescriptxai.config import load_config
-from prescriptxai.constraints.taxonomy import FeatureTaxonomy
+from prescriptxai.constraints.taxonomy import FeatureTaxonomy, load_taxonomy
 from prescriptxai.models.torch_models import LSTMFailureModel
-from prescriptxai.pipeline import FeatureError, InputError, PrescriptXAI, PrescriptXAIEngine
+from prescriptxai.pipeline import (
+    ArtifactError,
+    FeatureError,
+    InputError,
+    PrescriptXAI,
+    PrescriptXAIEngine,
+)
 from prescriptxai.schemas import InputContext, RecourseResult
 from prescriptxai.validation.pipeline import fit_mahalanobis_validator
 
@@ -57,7 +63,9 @@ def test_manual_preview_rejects_noncontrols(
         preview_service.validate_controls({"actuator": -2.0, "sensor": 2.0}, controls)
 
 
-@pytest.mark.parametrize("value", [float("nan"), float("inf"), True, None, "invalid"])
+@pytest.mark.parametrize(
+    "value", [float("nan"), float("inf"), True, None, "invalid", 10**1000, 1e308]
+)
 def test_manual_preview_rejects_bad_measurements(
     preview_service: PrescriptXAI, value: object,
 ) -> None:
@@ -87,6 +95,30 @@ def test_manual_preview_partial_failure_and_no_intervention(preview_service: Pre
     assert unchanged.status == "NO_INTERVENTION" and not unchanged.delta_per_feature
     with pytest.raises(InputError, match="below the alert"):
         preview_service.validate_controls(safe_state, {"actuator": 2.1})
+
+
+@pytest.mark.parametrize("mode", [[], {"mode": "fast"}, "", True, np.asarray([1, 2])])
+def test_library_modes_reject_malformed_types(preview_service: PrescriptXAI, mode: object) -> None:
+    """Invalid direct-library modes produce typed errors rather than truth/set failures."""
+    state = {"actuator": -2.0, "sensor": 2.0}
+    for method in (preview_service.assess, preview_service.recommend):
+        with pytest.raises(InputError, match="mode"):
+            method(state, mode=mode)  # type: ignore[arg-type]
+    with pytest.raises(InputError, match="mode"):
+        preview_service.validate_controls(state, {}, mode=mode)  # type: ignore[arg-type]
+
+
+def test_missing_required_coupling_fails_closed(preview_service: PrescriptXAI) -> None:
+    """A declared learned coupling model cannot silently fall back to weaker YAML checks."""
+    preview_service.engine.taxonomy.coupling = load_taxonomy(Path("configs/features.yaml")).coupling
+    state = {"actuator": -2.0, "sensor": 2.0}
+    with pytest.raises(ArtifactError, match="coupling model is unavailable"):
+        preview_service.validate_controls(state, {"actuator": 0.5})
+    response = TestClient(create_app(preview_service)).post(
+        "/validate-controls", json={"state": state, "controls": {"actuator": 0.5}},
+    )
+    assert response.status_code == 503 and response.json()["error_type"] == "ArtifactError"
+    assert "Traceback" not in response.text
 
 
 def test_manual_api_uses_library_and_typed_errors(preview_service: PrescriptXAI) -> None:

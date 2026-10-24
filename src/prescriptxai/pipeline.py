@@ -444,7 +444,7 @@ class PrescriptXAI:
             raise InputError("boolean telemetry is not a numeric physical measurement")
         try:
             normalized = {str(name): float(value) for name, value in values.items()}
-        except (TypeError, ValueError) as error:
+        except (TypeError, ValueError, OverflowError) as error:
             raise InputError("telemetry values must be numeric in raw units") from error
         if not np.isfinite(list(normalized.values())).all():
             raise InputError("telemetry contains NaN or infinity")
@@ -459,7 +459,24 @@ class PrescriptXAI:
                 normalized[name] < 1 or normalized[name] != int(normalized[name])
             ):
                 raise InputError(f"{name} must be a positive integer")
+        self._check_numeric_range(normalized)
         return normalized, observed
+
+    def _check_numeric_range(self, state: Mapping[str, float]) -> None:
+        """Reject scaled values unrepresentable by supported float32 predictors.
+
+        This is a numeric representation check, not a replacement for configured physical
+        bounds. Ordinary out-of-bounds candidates still receive all tier diagnostics.
+        """
+        scaler = self.engine.model.scaler.scaler
+        values = np.asarray([state[name] for name in self.engine.model.feature_names])
+        try:
+            with np.errstate(over="raise", invalid="raise", divide="raise"):
+                scaled = (values - scaler.mean_) / scaler.scale_
+        except FloatingPointError as error:
+            raise InputError("measurements exceed the predictor numeric range") from error
+        if not np.isfinite(scaled).all() or (np.abs(scaled) > np.finfo(np.float32).max).any():
+            raise InputError("measurements exceed the predictor numeric range")
 
     def _bundle(self, context: InputContext) -> ModelBundle:
         if not hasattr(self.engine.model.estimator, "window"):
@@ -493,7 +510,7 @@ class PrescriptXAI:
         state, observed = self._normalize(x_raw, context, complete=False)
         with self.engine.predictor_lock:
             risk = float(self._bundle(observed).predict_risk(pd.DataFrame([state]))[0])
-        selected_mode = mode or self.config.pipeline.default_mode
+        selected_mode = mode if mode is not None else self.config.pipeline.default_mode
         if not isinstance(selected_mode, str) or selected_mode not in {"fast", "thorough"}:
             raise InputError("mode must be fast or thorough")
         return Assessment(
@@ -517,7 +534,7 @@ class PrescriptXAI:
         started = perf_counter_ns()
         state, observed = self._normalize(x_raw, context, complete=True)
         ingestion = (perf_counter_ns() - started) / 1e6
-        selected_mode = mode or self.config.pipeline.default_mode
+        selected_mode = mode if mode is not None else self.config.pipeline.default_mode
         if not isinstance(selected_mode, str) or selected_mode not in {"fast", "thorough"}:
             raise InputError("mode must be fast or thorough")
         with self.engine.predictor_lock:
@@ -620,9 +637,13 @@ class PrescriptXAI:
         state, observed = self._normalize(x_raw, context, complete=True)
         if not isinstance(controls, Mapping):
             raise InputError("controls must be named raw-unit measurements")
-        selected_mode = mode or self.config.pipeline.default_mode
-        if selected_mode not in {"fast", "thorough"}:
+        selected_mode = mode if mode is not None else self.config.pipeline.default_mode
+        if not isinstance(selected_mode, str) or selected_mode not in {"fast", "thorough"}:
             raise InputError("mode must be fast or thorough")
+        if self.engine.taxonomy.coupling is not None and self.engine.coupling is None:
+            raise ArtifactError(
+                "configured coupling model is unavailable; controls cannot be previewed"
+            )
         actions = self.engine.taxonomy.active_controllable_feature_names(
             self.engine.model.feature_names
         )
@@ -632,10 +653,11 @@ class PrescriptXAI:
             raise InputError("boolean controls are not physical measurements")
         try:
             proposed = {**state, **{name: float(value) for name, value in controls.items()}}
-        except (TypeError, ValueError) as error:
+        except (TypeError, ValueError, OverflowError) as error:
             raise InputError("controls must be finite raw-unit numbers") from error
         if not np.isfinite(list(proposed.values())).all():
             raise InputError("controls must be finite raw-unit numbers")
+        self._check_numeric_range(proposed)
         ingestion = (perf_counter_ns() - started) / 1e6
         config = self.config.model_copy(deep=True)
         config.recourse.search_mode = selected_mode
@@ -803,7 +825,7 @@ class PrescriptXAI:
         contexts: Sequence[InputContext | None] | None = None,
     ) -> list[RecourseResult]:
         """Return input-order results, optionally using isolated worker processes."""
-        selected_mode = mode or self.config.pipeline.default_mode
+        selected_mode = mode if mode is not None else self.config.pipeline.default_mode
         if not isinstance(selected_mode, str) or selected_mode not in {"fast", "thorough"}:
             raise InputError("mode must be fast or thorough")
         if not isinstance(frame, pd.DataFrame) or frame.empty or frame.columns.has_duplicates:
