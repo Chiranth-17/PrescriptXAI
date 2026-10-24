@@ -17,11 +17,13 @@
   optional interface and is disabled by default.
 - **Model validity is not physical plausibility.** Tier 1 checks the predictor's target risk. Tiers
   2–4 independently check operating-distribution distance, engineering constraints, and coupling.
-- **LSTM recourse history input.** The LSTM scores fixed within-engine histories and its gradient
-  interface treats only the latest timestep as mutable. The current snapshot recommendation request
-  does not carry that history, so LSTM bundles are for sequence scoring until that API is extended.
-- **Mahalanobis model assumptions.** A single empirical covariance is a coarse description of
-  potentially multimodal operation. A passing distance is not a physics proof.
+- **LSTM recourse history input.** LSTM recommendations require the genuine observed history
+  through the public input context. Only the latest timestep is mutable. Missing early histories
+  are counted as unavailable rather than padded with duplicated telemetry. The frozen Phase 7
+  setup did not find a model-safe LSTM intervention; this is not a global infeasibility proof.
+- **Mahalanobis model assumptions.** Training-fitted shrinkage covariances remain a coarse
+  description of an operating distribution. FD002 uses regime-specific validators with the
+  regime fixed by original operating settings. A passing distance is not a physics proof.
 - **Out-of-range starting telemetry.** A high-risk input can lie outside the train-derived actuator
   proxy bounds by more than its configured one-step rate limit. No adjustment can satisfy both
   constraints in that case; the engine returns an explicit infeasible-interval failure and the
@@ -40,9 +42,10 @@
   sensitivity, and saved JSON evidence. No synopsis pass is inferred from a subgroup result.
   These are E1 dataset/model measurements using sensor telemetry proxies; they do not establish
   actuator efficacy, physical safety, maintenance benefit, or RUL extension.
-- **Latency scope.** The evaluation measures inference, optimization, and validation in the Python
-  process. Raw telemetry ingestion and interactive dashboard render latency remain unmeasured until
-  an instrumented live-input deployment is available.
+- **Latency scope.** Phase 7 measures request normalization, inference, optimization, validation
+  and backend total in an isolated warm serial workload. Bulk telemetry download, network, cold
+  startup and dashboard rendering are outside that benchmark; its results cannot establish
+  deployment-wide latency on other machines, datasets or predictors.
 - **Operator review.** The current package is research/decision-support software, not an autonomous
   control system. Recommendations require qualified engineering review and independent safety
   controls before any deployment.
@@ -68,3 +71,20 @@ Legacy precision-only artifacts are rejected with a refit instruction. Refit on 
 training engines; do not convert an old inverse into purported new shrinkage statistics. Regime
 statistics and threshold provenance are persisted. The default validator/coupling paths now point
 to Phase 5 artifacts; run the Phase 5 preparation/evaluation command before using the dashboard.
+
+## Phase 7 measured gaps
+
+The complete frozen experiment and engine-bootstrap target/gap tables are in
+`docs/phase7_changes.md`, with raw records and complete machine-readable summaries under the
+ignored run directory. Both D_max versions and all internal, grouped OOF and official-test
+populations remain visible. Statistical plausibility, proxy coupling and true-model validity
+can disagree sharply. FD002's high model-validity rate does not imply an accepted intervention;
+distribution and coupling failures remain in all-query denominators. Its input features,
+calibration/test partitions and artifact hashes are independently audited for leakage.
+
+The LSTM findings are conditional on the frozen observed prefix, latest-state-only intervention
+and production search. Reference search covers failed paired XGBoost cases; finite-search
+absence remains unresolved and does not certify continuous or real-engine infeasibility.
+Optimization exceeds the design latency budget in both measured modes. No measured miss is
+repaired by changing historical thresholds, limits, populations or timings. Evidence remains
+at most E3 under proxy assumptions; dynamic simulator/emulator evidence is unavailable.

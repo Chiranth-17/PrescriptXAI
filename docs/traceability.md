@@ -1,28 +1,55 @@
 # Phases 5–11 requirement traceability
 
-## Phase 7 direct prompt — implementation in progress
+## Phase 8 direct prompt — queued, not started
+
+The direct dashboard prompt is preserved in `docs/prompts/phase8_operator_dashboard.md`.
+The user explicitly selected **Wait for Phase 7 gate** on 2026-10-20. All Phase 8 implementation,
+tests, real UI walkthrough, screenshots and closure checks remain pending that gate. A read-only
+interface preflight found that the existing dashboard uses the legacy engine/results and must
+adopt the frozen v2 facade; it identified no authorization to bypass the Phase 7 dependency.
+No dashboard code or public schema was changed before the Phase7 gate. Phase9/10 prompts are
+subsequently supplied and preserved; Phase11 and PartB remain unavailable.
+
+## Phase 7 direct prompt — closed with measured gaps
 
 The directly supplied Phase 7 prompt supplies this phase's requirements. The earlier missing-source
-entries below are historical; Phases 8–11 and the Part B changes table remain unavailable.
+entries below are historical; Phase11 and the PartB changes table remain unavailable.
 Study inputs were committed at `0c0b6e1` before fitting; preparation began on `4ffb038`.
+
+Measurement update (2026-10-21): all 2496 preregistered diagnostic calls completed and were
+structurally audited with zero dropped queries; the complete diagnostic snapshot reports all
+208 groups. An additional 288 FD002 numerical checks, including all H-sensitivity and full-method
+diagnostics, passed. These audit scopes overlap earlier samples. The original source `63c2ed4`
+is now running the full 171490-call quality stage. Overall Phase 7 remains Partial until quality,
+reference, serial latency, final report/audit and closure checks finish. No Phase 8 implementation
+has begun; its subsequently supplied direct prompt is preserved and queued above.
 
 | Prompt task | Implementation / evidence | Current status |
 |---|---|---|
-| 1. Pure metrics and engine bootstrap | `evaluation/metrics.py`; whole-engine conditional-ratio and hand-count tests | Implemented; full measurement pending |
-| 2. All required datasets/models, seeds, populations, resume/manifest | `evaluation/assets.py`, `study.py`, `experiments.py`, `runner.py`; 28 real bundles / 112 hashes audited | Partial: preparation verified; full run pending |
-| 3. Unconstrained, bounded, full and DiCE baselines | Actual re-optimization with original final validators; pinned DiCE installed and exercised | Partial: real paired diagnostics pending |
-| 4. Funnel, ladder, verified reference, leverage and strata | `diagnostics.py`, `study.py`, generated report; finite absence remains unresolved | Partial: saved production-failure diagnostics pending |
-| 5. One-component search ablations | `ablations.py`; actual search policies, original reporting taxonomy and runtime settings | Partial: real paired effects pending |
-| 6. One-factor sensitivity grids and assumed-K curve | Preregistered YAML grids, true H refits, fixed .20 headline; dense fallback budget disclosed | Partial: real curves / trade-off measurements pending |
-| 7. Surrogate/teacher and adversarial evidence | True singleton rescore, surrogate error / false-safe share, distance and violation metrics | Partial: measured error and margin tables pending |
-| 8. At least 1000 actual serial calls per mode | Checkpointed real-call harness, excluded warmups, stage quantiles and engine CIs | Partial: real serial benchmark pending |
-| 9. Markdown / HTML report and target gaps | Saved-result JSON/CSV/MD/HTML, seed variation, target-gap diagnoses, K plot and risk histogram | Partial: final full report pending |
-| Required software gate | Stable all-checks: Ruff clean, mypy 55 files, 276 passed, 83.350720% coverage; docs check passed | Met for framework source; post-measurement closure pending |
+| 1. Pure metrics and engine bootstrap | `evaluation/metrics.py`; whole-engine conditional-ratio and hand-count tests | Met: 26970 independent interval recomputations match |
+| 2. All required datasets/models, seeds, populations, resume/manifest | `evaluation/assets.py`, `study.py`, `experiments.py`, `runner.py`; 28 real bundles / 112 hashes audited | Met:171490 quality calls,64cohorts,all five seeds and declared populations |
+| 3. Unconstrained, bounded, full and DiCE baselines | Actual re-optimization with original final validators; pinned DiCE installed and exercised | Met: complete paired measurements, failures retained |
+| 4. Funnel, ladder, verified reference, leverage and strata | `diagnostics.py`, `study.py`, generated report; finite absence remains unresolved | Met:48leverage/40failed-state proofs, full funnels and strata |
+| 5. One-component search ablations | `ablations.py`; actual search policies, original reporting taxonomy and runtime settings | Met: paired effects saved and reported |
+| 6. One-factor sensitivity grids and assumed-K curve | Preregistered YAML grids, true H refits, fixed .20 headline; dense fallback budget disclosed | Met:2496diagnostics, complete sensitivities and K curve |
+| 7. Surrogate/teacher and adversarial evidence | True singleton rescore, surrogate error / false-safe share, distance and violation metrics | Met: error, distance, coupling-margin and unsafe-variant metrics |
+| 8. At least 1000 actual serial calls per mode | Checkpointed real-call harness, excluded warmups, stage quantiles and engine CIs | Met:1000FAST+1000THOROUGH/16engines, full workload identity independently verified |
+| 9. Markdown / HTML report and target gaps | Saved-result JSON/CSV/MD/HTML, seed variation, target-gap diagnoses, K plot and risk histogram | Met:272groups plus docs/phase7_changes.md/HTML supplement; honest target misses |
+| Required software gate | Final Ruff/mypy55 clean,276passed,83.350720%branch-inclusive coverage; docs/lock passed | Met: exact floor preserved/ratcheted with explicit precision |
 | FD003 / FD004 optional experiments | Explicitly unscheduled in preregistration | Not evaluated; not a required-subset result |
 | Simulated trajectory health | No validated emulator or simulator exists; interface remains optional | Not evaluated; E3 proxy evidence maximum, no RUL extension |
 
 No Phase 7 target is marked met from test fixtures, model preparation or historical Phase 6 results.
 All generated telemetry, model files and measurement output remain ignored by Git.
+
+Final closure evidence: `docs/phase7_changes.md`, run`phase7-20261020T102540Z`, measured source
+`63c2ed445fba16c73a2771e184f635abf76b4405`. All173986cases/records structurally audited;
+1631 numerical strata/220actualLSTM histories checked, zero discrepancies, true-risk error0,
+D_Mmax2.27e-13. All26970engineCIs/9248seedstats/1904funnelcounts match. Full serial fingerprint
+and2000orderedindices match; recorded reference proofs checked without an optimization replay.
+Finalgate276passed/70warnings/119.22s; coverage83.3507197997079%branch-inclusive,
+87.28953905603092%line. No measured source/model/constraint setting changed after outcomes.
+Target misses are rule13 evidence gaps, not omitted implementation; UI/startup unmeasured.
 
 ## Orchestration preflight — 2026-10-18
 
@@ -146,3 +173,20 @@ FAST optimization and backend-total budgets remain Not met. The interruption-aff
 retain all outliers; controlled steady-state latency remains unestablished. No frozen predictor,
 risk threshold, D_max, actuator bound, rate limit or intervention horizon changed after outcomes.
 Phase closure is recorded with tag `phase6-closed` and this target gap under rule 13.
+
+## Newly supplied Phase 9 and Phase 10 prompts — queued 2026-10-24 IST
+
+The user's explicit sequence is Phase 7, Phase 8, Phase 9, Phase 10, with full gates in between.
+The complete direct requirements are preserved; this section claims receipt, not implementation.
+
+| Scope | Preserved specification | Current status |
+|---|---|---|
+| Phase 9 tasks 1–11 and hardening gate | `docs/prompts/phase9_testing_hardening.md` | Queued after Phase 8; coverage/security/defect/performance/science/E2E/CI work not yet verified |
+| Phase 10 tasks 1–7 and packaging/demo gate | `docs/prompts/phase10_packaging_reproducibility.md` | Queued after Phase 9; clean install/Docker/reproduce/docs/demo/paper work not yet verified |
+| Phase 11 and Part B table | No source supplied | Unavailable; not invented |
+
+The Phase 7 process interruption at 18:34 UTC on October 23 and exact checkpoint resume at
+18:39:57 UTC are operational events, not replaced scientific results. Provenance compatibility
+and SQLite integrity were verified before resuming the same run; four uncommitted cases may
+be retried, while all 125,317 committed records remain protected by their identities. Frozen
+HEAD/source stays `63c2ed445fba16c73a2771e184f635abf76b4405` until measurement completion.

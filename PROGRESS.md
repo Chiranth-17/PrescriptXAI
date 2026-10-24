@@ -11,8 +11,119 @@
 | 4 — Constrained recourse engine | Closed; synopsis targets measured honestly | Constrained search, final protocol audit, grouped uncertainty, historical errata |
 | 5 — Multi-tier validation (current prompt) | Closed; measured gaps retained | Shared tiers, bounded feedback, real funnels, audits and phase5-closed |
 | 6 — Decision support pipeline, CLI and API | Closed; performance target gap retained | Public schema 2.0.0, real delivery gates, 600-result audit, phase6-closed |
-| 7 — Full experimental framework | In progress | Preregistered; 28 real model/fold/H assets prepared; evaluation gate pending |
-| 8–11 — Remaining phases | Not started | Source prompts / Part B changes table not supplied |
+| 7 — Full experimental framework | Closed; measured target gaps retained | 171490 quality + 2496 diagnostics, 48 reference cases, 2000 serial calls; independent audit and full software gate passed |
+| 8 — Streamlit operator dashboard | Queued; not started | Direct prompt supplied; user chose to wait for Phase 7 gate |
+| 9 — Systematic testing and hardening | Queued; not started | Direct prompt supplied 2026-10-24 IST; starts after Phase 8 gate |
+| 10 — Packaging, documentation and demo readiness | Queued; not started | Direct prompt supplied 2026-10-24 IST; starts after Phase 9 gate |
+| 11 — Remaining phase | Not started | Source prompt / Part B changes table not supplied |
+
+## Authorized continuation order — updated 2026-10-24 IST
+
+The user supplied full Phase 9 and Phase 10 prompts and explicitly requested the order
+**Phase 7 -> Phase 8 -> Phase 9 -> Phase 10**, with each complete gate passing before the
+next phase starts. The preserved prompts are `docs/prompts/phase8_operator_dashboard.md`,
+`docs/prompts/phase9_testing_hardening.md` and `docs/prompts/phase10_packaging_reproducibility.md`.
+The existing heartbeat `prescriptxai-phase-7-phase-8` now continues through verified Phase 10
+closure. Its ID, thread and 15-minute schedule are retained; its earlier stop-after-Phase-8
+instruction is superseded. No Phase 9/10 implementation or gate pass is claimed yet.
+
+Phase 9 includes the requested >=90% line-coverage gate, defect log, property/fuzz/fault/golden/
+science tests, cross-process determinism, security audit, profiling and 10,000-call memory check,
+full fixture-to-dashboard test and nightly CI. Phase 10 includes clean distribution installation,
+Docker verification when available, reproduction workflow, complete docs/demo/paper deliverables
+and the user's license-choice instruction (MIT offered as default). No unavailable Phase 11 or
+Part B content is invented. Current frozen measurements and schema 2.0.0 remain protected.
+
+## Phase 7 closure — 2026-10-24 IST
+
+Run `phase7-20261020T102540Z`, measured source `63c2ed445fba16c73a2771e184f635abf76b4405`,
+committed study `configs/experiments/phase7-study.yaml`. Complete measured target/gap report:
+`docs/phase7_changes.md`; full MD/HTML/CSV/JSON and the HTML supplement remain in the ignored run directory.
+
+- Done: 171490 quality calls, 2496 diagnostics, 48 reference/leverage cases and 1000 actual serial
+  calls per mode; 272 report groups, both protocols, all required populations and five solver seeds.
+- Independent audit: all 173986 records/cases, 112 artifact hashes, 44 validator hashes and 64 cohort
+  populations match. All 26970 engine intervals, 9248 seed statistics and 1904 funnel counts match.
+  Numerical sample1631 strata/220 genuine LSTM histories: zero discrepancies, true-risk error0,
+  maximum D_M error2.27e-13. Numerical sampling is not a claim to have rerun every recommendation.
+- All40 failed-state reference proofs retain unresolved finite-search absence. The complete latency
+  identity and2000 ordered sample indices match reconstruction from3145 validation rows/376 alerts.
+  FD002 high Tier1 passed feature/partition leakage checks; low Tier2/joint remain visible.
+- Final software gate: Ruff clean, strict mypy55 clean,276passed/70warnings/119.22s, docs and lock
+  checks passed. Coverage83.3507197997079% branch-inclusive/87.28953905603092% line, unchanged
+  from preparation. The exact floor is ratcheted; precision12 fixes integer-rounding comparison
+  without lowering it. Evidence: artifacts/phase7-final-gate-precise.log and phase7-final-audit/.
+- Gaps/decisions: all frozen predictor/threshold/bound/rate/D_max/solver/population settings retained.
+  FAST optimization/total p95=2339.07/2348.23ms; THOROUGH=2080.23/2089.85ms,1000calls/16engines
+  per mode. Both optimization budgets and FAST total miss; THOROUGH total passes. UI/startup
+  unmeasured. LSTM frozen-prefix/latest-state validity0% is not global infeasibility. Full CIs,
+  both Tier2 denominators, side-by-side test populations and all target gaps are in the report.
+- Assumptions/open evidence: sensor proxies, empirical limits and K remain assumptions; at most E3,
+  no simulator/emulator or RUL-extension claim. Original interruption/exact resume and all timing
+  outliers are retained. Scientific/performance target misses are honest gaps, not omitted work.
+- How to run: `uv run python scripts/diagnostics/phase7_experiments.py --run-id phase7-20261020T102540Z --stage report`
+  regenerates saved evidence; `mingw32-make all-checks` runs the software gate. New experiments
+  require new run IDs and committed protocols. Start Phase8 immediately after closure commit/tag,
+  then9->10after their full gates. Historical measurements and schema2.0.0 remain immutable.
+
+### Exact checkpoint resume — 2026-10-24 IST
+
+The original process stopped at 2026-10-23 18:34 UTC (00:04 IST on October 24), after
+122,821/171,490 quality calls. The execution log has no terminal traceback; the old tool session
+is unavailable, and no relevant application/system failure was found in the inspected short
+window. The termination cause is **unknown**. This is not a completed-stage or model-failure claim.
+
+Read-only SQLite `quick_check` returned `ok`: 125,317 committed records (2,496 diagnostics
+plus 122,821 quality), 125,321 registered cases and exactly four uncommitted in-flight cases.
+Independent verification matched source HEAD, runtime/package fingerprint, study/frozen solver/
+protocol/taxonomy/cohort configs, raw archive, 112 fitted-artifact hash references and 44
+diagnostic-validator paths. No experiment process remained before the exact resume.
+
+At 18:39:57 UTC (00:09 IST), the same run ID `phase7-20261020T102540Z` resumed on unchanged
+source `63c2ed445fba16c73a2771e184f635abf76b4405`, appending to the original log. Sealed assets
+are reused; completed IDs are skipped; only unfinished registered/pending cases are run. A hidden
+operational launcher records the execution segment in ignored `artifacts/phase7-active-run.json`
+and `artifacts/phase7-resume-status.json`. Discover current PIDs there; original PID 47224 is
+obsolete. The unchanged AC-only helper now follows the resumed process handle. No power plan,
+threshold, bound, rate, model, worker count or declared population changed. Preserve every saved
+result/timing and disclose this resumed segment in the final report. Log `new=` counts reset
+within each execution segment; SQLite counts are authoritative. Do not commit administrative
+queue notes/prompts while the measured source must remain at this HEAD. Full Phase 7 gate is pending.
+
+At 19:00 UTC (00:30 IST), the resumed quality stage had committed 1,127 new results:
+123,948/171,490 quality calls total, 47,542 remaining. Both resumed manifest checks completed;
+four quality workers (24848, 27184, 27640, 29024) are active under main PID 37592. The helper
+reports AC/system/display requests active. This verifies resumed checkpoint progress, not phase
+closure. All original records remain present; completed stages beyond diagnostics are pending.
+
+### Quality stage complete — 2026-10-24 08:45 IST
+
+At 03:15 UTC, the saved stage marker confirms all **171,490/171,490 quality calls** on
+frozen source `63c2ed445fba16c73a2771e184f635abf76b4405`. Together with 2,496 completed
+diagnostics, SQLite contains 173,986 committed records. The original 122,821 quality records
+were retained and the resumed execution segment added the remaining 48,669. The four quality
+workers have exited normally into the next serial stage; the same main process is running
+reference search and writing its checkpoints. The helper reports AC/system/display requests
+active, measured source/config/protocol diff remains empty, and no duplicate was started.
+
+This is a stage milestone, not Phase 7 closure or an audited performance headline. Reference
+completion, 1,000 serial latency calls per mode, complete record/provenance audits, engine
+bootstrap report/target gaps, traceability and the final quality/coverage gate remain required.
+Do not run competing tests, training, quality jobs or heavy audits once serial latency starts.
+Phases 8–10 remain queued until their preceding full gates pass; no source commit yet.
+
+### Reference complete; serial latency active — 2026-10-24 09:15 IST
+
+At 03:45 UTC, the reference stage marker confirms all 48 declared cases on source `63c2ed4`.
+The saved reference file contains 48 leverage checkpoints and 40 failed-state oracle checkpoints;
+all 40 record production reproduction and verified finite search-superset flags. These records
+still require the independent final audit. Finite-search absence is not continuous infeasibility.
+
+The same main process has begun the prescribed isolated serial latency stage. The read-only
+checkpoint contained 176/1,000 FAST samples (indices 0–175); THOROUGH had not begun. Ten warmups
+per mode are excluded by the frozen protocol. No tests, training, quality jobs or heavy audits
+are to run concurrently. Preserve every timing, keep source/config/models/populations unchanged,
+and wait for both modes and the report before the full closure audit/checks. Phase 7 remains open.
 
 ## Phase 7 — framework implementation and preparation (2026-10-20)
 
@@ -55,6 +166,217 @@ Pending: full real diagnostics/quality run for both subsets and all required mod
 reference diagnostics, 1000 serial latency calls per mode after warmup, generated target/gap tables,
 final independent result audit, closure gate and `phase7-closed` tag. Phase 7 remains in progress.
 
+Real execution started as `phase7-20261020T102540Z` on committed source
+`63c2ed445fba16c73a2771e184f635abf76b4405`. The completed asset seal was created before cohort
+selection. Execution order is diagnostics, full quality, reference, serial latency, then report;
+each query is checkpointed. Live log: `artifacts/phase7-execution.log`. No completed-study claim
+is made while these required stages are running.
+
+The independent manifest audit verified 64 cohorts, all 112 asset hashes and 57 unique input /
+validator paths. Expected quality calls are 5 solver seeds × (32,596 FAST + 1,702 THOROUGH) =
+171,490; paired diagnostics contain 2,496 calls. These counts include both protocols and the
+declared development population. No reported FAST test alerts were capped. LSTM insufficient
+history is counted explicitly (135 internal, 900 OOF and 900 official rows per protocol).
+
+An interim report generated from real checkpoints is explicitly PARTIAL at
+`artifacts/experiments/phase7-20261020T102540Z/report.html`. Its first completed full-search
+diagnostic group uses `configs/experiments/phase7-FD001-xgb-v1.yaml`, runtime config hash
+`47254ac5ea494ee5e333a754252edca0b9024d9ed5b792f3d0f561b5b0cb2271`, source `63c2ed4`,
+protocol/D_max version v1 (D_max=5), FAST, k_max=3, assumed K=1, solver seed 1729, population
+`paired_internal_diagnostic`. Across 12 states / 10 engines: model validity 4/12 (engine-bootstrap
+CI [0.08333, 0.60000], 10 engines); Tier 2 over all queries and returned candidates 6/12
+([0.23077, 0.80000], 10 engines); Tier 3 12/12 ([1.00000, 1.00000], 10 engines); Tier 4
+11/12 ([0.76923, 1.00000], 10 engines); joint 4/12 ([0.08333, 0.60000], 10 engines).
+All intervals use 2,000 whole-engine bootstrap replicates. These are small paired diagnostics,
+not full-population headlines. Evidence is at most E3 under proxy assumptions; no RUL extension
+or simulator result is claimed. No setting is changed in response to these outcomes.
+
+Independent early-result audit: 161 saved diagnostic observations across 14 variants, including
+26 RECOVERABLE results. Zero acceptance, true-risk, tier, bound, immutable-count or sparsity
+discrepancies were found. Maximum true-risk error was 0, independent Cholesky D_M error
+3.55e-15, and coupling-margin error 0. All accepted actions satisfied their actual target and
+original constraints. This is an audited partial snapshot, not the completed Phase 7 gate.
+
+### Partial diagnostic update — 2026-10-21
+
+The report was regenerated successfully from 1,541 saved observations in 129 groups. It remains
+explicitly PARTIAL. An independent read-only audit then verified all 1,596 records in its newer
+snapshot against their registered cases/config hashes/labels, with SQLite integrity passing.
+It numerically recomputed 327 stratified results across 134 available strata, including all 72
+available H-sensitivity results, with zero discrepancies (maximum independent D_M error
+2.27e-13). Its separate complete FD002 diagnostic-group check overlaps that sample and is not
+added to the numerical-audit count. These findings do not close the full experiment gate.
+
+Run `phase7-20261020T102540Z`, source `63c2ed445fba16c73a2771e184f635abf76b4405`, committed
+config `configs/experiments/phase7-FD002-xgb-v1.yaml`, runtime hash
+`b94e70437c22a5becc67c458f30b83a91577c8ab6db7ac857ef67a5cb3257264`, protocol/D_max version
+v1 (D_max=5), k_max=3, assumed K=1, FAST, seed 1729, population `paired_internal_diagnostic`:
+12 queries / 10 held-out engines yielded Tier 1 12/12, Tier 2 0/12 (both returned/all), Tier 3
+12/12, Tier 4 3/12 and joint 0/12. Whole-engine bootstrap CIs (2,000 replicates) are [1,1]
+for Tier 1/Tier 3, [0,0] for Tier 2/joint, and [0,0.54545] for Tier 4; every interval has
+10 engines. All 12 outcomes are ESCALATE / E1, not accepted actions. Independent checks
+confirmed frozen-regime selection, unchanged artifact hashes and disjoint 181 fit / 40
+calibration / 39 holdout engines. Model features exclude RUL, labels, cycle and engine ID.
+
+The model-risk improvement does not establish plausible recourse: final D_M ranges from
+12.52858 to 307.44732 against the unchanged cutoff 5; median 83.26772, p95 221.21733. The
+minimum coupling margin is -0.31064. All 12 failures report `validation_feedback_exhausted`.
+These distance/margin measurements diagnose the gap; no threshold, rate, bound or solver
+setting is changed. The full population, remaining diagnostics, reference search and serial
+latency are still pending. Phase 8 remains queued until the full Phase 7 gate passes.
+
+### Diagnostic stage complete; full quality stage started — 2026-10-21
+
+All 2,496 diagnostic calls finished at 04:20:14 UTC (09:50 IST). The persisted completion
+marker records source `63c2ed445fba16c73a2771e184f635abf76b4405` and exactly 2,496 results.
+The report was regenerated successfully from that complete diagnostic snapshot: 208 groups,
+52 variants × 12 paired states × four dataset/protocol cohorts. It remains PARTIAL because
+quality, reference and latency stages are unfinished. Both protocol versions are retained.
+
+The independent diagnostic-stage audit checked every identity/config hash, paired population,
+OFAT scope, policy, effective k/K, all 48 reference-production case IDs, stage marker and
+SQLite integrity: zero dropped queries or discrepancies. Its additional numerical check
+covered 288 stratified FD002 results across all 104 FD002 variant/protocol strata, including
+all 72 H-sensitivity and all 24 full-method results. True/surrogate risk and coupling-margin
+errors were zero; maximum independent Cholesky D_M error was 2.27e-13. The numerical scope
+overlaps earlier audits and is not summed as independent new queries.
+
+The original process then began the full quality stage successfully; 64/171,490 quality calls
+were saved at 04:37:16 UTC (10:07 IST). Main PID remains 47224, with the next four-worker
+pool. Source/config/protocol diff against the measured commit is empty. No duplicate job,
+new predictor fit, threshold adjustment or solver change was made. The full Phase 7 gate,
+including reference diagnostics, 1000 serial calls per mode, final audit/report and software
+closure checks, is still pending; Phase 8 has not started.
+
+### Early quality checkpoint audit — 2026-10-21
+
+An independent read-only audit captured 2,036 quality records from the original active run
+`phase7-20261020T102540Z`, source `63c2ed445fba16c73a2771e184f635abf76b4405`. Available
+records at that snapshot were FD001/XGBoost, protocol/D_max v1 (5), k_max=3, assumed K=1,
+config `configs/experiments/phase7-FD001-xgb-v1.yaml`, runtime config hash
+`47254ac5ea494ee5e333a754252edca0b9024d9ed5b792f3d0f561b5b0cb2271`: internal FAST
+(378 queries × five solver seeds), internal THOROUGH first alerts (15 × five seeds), and
+71 partial official FAST queries with seed 1729. These are audit scopes, not pooled estimates.
+All canonical identities, input/config hashes, population/seed labels, frozen settings and
+engine partitions passed; SQLite integrity passed. A stratified numerical sample of 100
+records across 22 available population/mode/seed/status strata contained 48 RECOVERABLE,
+24 PARTIAL and 28 ESCALATE results. There were zero true-risk, tier or accepted-constraint
+discrepancies: maximum true-risk error 0, independently solved D_M error 8.88e-16, and
+coupling-margin error 0. No tests, training, candidate replay or source edits were performed.
+The full 171,490-call quality population, reference and serial latency gates remain pending;
+the partial official population is not a headline result. Phase 8 remains queued.
+
+### Continued execution — 2026-10-22
+
+The original main process (PID 47224) and its four quality workers are advancing again on
+the unchanged measured source. At 02:47:58 UTC (08:17 IST), the saved quality count was
+7,752/171,490; diagnostics remain 2,496/2,496. The log contains gaps from 2026-10-21
+07:42:33 to 08:41:47 UTC, and from 08:41:51 UTC to 2026-10-22 02:47:18 UTC. Their cause
+is not asserted. All recorded timings and interruption-related outliers are retained. Serial
+latency has not begun, no process was restarted, and no population, threshold, bound, rate,
+configuration or measured source changed. Phase 7 remains open and Phase 8 remains queued.
+
+### Delay diagnosis and operational fix — 2026-10-22
+
+Windows Power-Troubleshooter events now confirm that the overnight logging gaps correspond
+to low-power states: sleep/wake 2026-10-20 12:04:07 -> 2026-10-21 03:44:02 UTC and
+2026-10-21 08:41:39 -> 2026-10-22 02:47:20 UTC. This evidence supersedes the earlier
+unknown-cause note. No recorded timing sample is removed or adjusted.
+
+At 05:39:06 UTC (11:09 IST), an ignored operational helper, `artifacts/phase7-keep-awake.py`,
+successfully requested Windows idle-sleep prevention while AC power is connected. Its status
+is `artifacts/phase7-keep-awake-status.json`; its launcher PID is 47944 and worker PID 18544.
+It holds a handle to the original experiment process (47224), releases the request on battery,
+and exits when that process ends. It does not change the power scheme, display policy,
+experiment configuration, measured source or fitted models. The API call returned success;
+the separate `powercfg /requests` inspection requires administrator privileges and was not
+available. Explicit sleep, lid/critical-battery behavior and shutdown are outside this idle
+request. The original quality process continued checkpointing without a restart.
+
+The independent runtime audit found the four registered workers already in flight and
+optimization dominant in its bounded snapshot. Changing worker counts, predictors, solver
+settings, GPU use or evaluation populations would change the registered run. The compatible
+delay reduction is maintaining uninterrupted operation and avoiding competing work. Full
+quality/reference/serial latency/report/audit/software gates remain required for closure.
+
+A further independent quality audit verified 15,163 registered result identities, provenance
+and engine partitions in one consistent read-only snapshot. Its numerical sample covered
+75 new-stratum records from official/development populations and OOF folds 1–5, with both
+modes where available and all five solver seeds. Scope is FD001/XGBoost/v1 only, assumed
+K=1, k_max=3, D_max=5, run/source as above; each record's committed config path/runtime hash
+and six corresponding artifact bundles were checked against the manifest. The sample had
+45 RECOVERABLE, 22 ESCALATE and 8 PARTIAL records; these are audit counts, not a pooled
+performance estimate. Zero true-risk, tier, accepted-constraint, immutable, bound, rate,
+sparsity or joint discrepancies occurred. Maximum true-risk error was 0, independent D_M
+error 8.88e-16 and coupling-margin error 0. Surrogate singleton versus two-row public scoring
+differed by at most 1.79e-7 (float32); true singleton risk remains authoritative. Development
+THOROUGH correctly includes first alerts from all validation engines before the capped FAST
+sample, as preregistered. No solver call was replayed or modified. The full study is unfinished.
+
+### Power-state follow-up — 2026-10-22
+
+Quality checkpoints paused between 10:30:08 and 10:55:28 UTC. Windows Kernel-Power events
+506/507 identify Modern Standby, including an `Austerity Battery Drain Budget Exceeded`
+transition at 10:30 UTC. On resumption, the helper reported AC power false and released its
+request. Its earlier AC=true status file was a historical snapshot while the process was
+suspended, not evidence that AC remained connected throughout the gap. Retain all timings.
+
+The ignored helper was revised to request both system and display activity on AC (Win32
+`ES_CONTINUOUS | ES_SYSTEM_REQUIRED | ES_DISPLAY_REQUIRED`), with a fresh status heartbeat.
+Microsoft documents the [execution-state flags](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-setthreadexecutionstate)
+and [Modern Standby power-request limits](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-powersetrequest).
+Only the old helper was stopped; original experiment PID 47224 was preserved. Helper v2
+started at 10:57:49 UTC (16:27 IST), launcher PID 49668 / worker PID 39648. Its current
+status is AC=false, so both requests are inactive until power is connected. No permanent
+power-plan or display-policy setting changed. An active display request will keep the display
+on while plugged in; explicit sleep/lid/critical battery actions are still outside its scope.
+Effectiveness across a subsequent powered idle period is not yet established. V1 was preserved
+as `artifacts/phase7-keep-awake-v1.py`; v2 SHA-256 is
+`36a585503909c180acb41bcf4576f8322c52635a87a592a45bda9bf6b899f237`.
+At 10:58:09 UTC, 34,259 quality calls were saved; serial latency remains unstarted. No measured
+source, fitted model, population, threshold, bound, rate or solver setting changed.
+
+Power was connected at 12:22:15 UTC (17:52 IST). Helper v2's fresh 12:25:45 UTC status
+reports AC=true, system/display requests active and previous/requested execution state
+`0x80000003`; the Windows call returned success. A full subsequent idle interval has not yet
+been observed. At the next read-only checkpoint, 38,840 quality records were saved; the original
+process and four workers remained healthy, with only diagnostics marked complete.
+
+### Further power interruption and safe continuation — 2026-10-23
+
+The original run `phase7-20261020T102540Z` remains on measured source
+`63c2ed445fba16c73a2771e184f635abf76b4405`, with main PID 47224 and the same four
+quality workers. At 02:02 UTC (07:32 IST), 68,710/171,490 quality calls were saved;
+all 2,496 diagnostics remain complete. Current rows are FD001/LSTM/v1 grouped OOF
+FAST calls. Reference, serial latency, final report/audit and closure gate remain pending.
+
+Windows Power-Troubleshooter event 1 records sleep/hibernate from
+2026-10-22 22:55:02 UTC to 2026-10-23 02:01:21 UTC (04:25–07:31 IST). Additional
+observed log gaps are 18:21:56–21:30:03, 21:31:18–21:52:44 and 21:52:55–22:55:02 UTC
+on October 22; their causes are not inferred from missing log output alone. The operational
+helper recorded AC=false at 22:55:07 UTC, then AC=true and system/display requests active
+again at 02:01:45 UTC. Its fresh 02:02:15 UTC status confirms the requests remain active.
+Explicit sleep, lid actions and battery protection cannot be overridden by this helper.
+
+The existing process resumed and saved new checkpoints; it was not restarted or duplicated.
+Every timing sample and interruption outlier is retained. No source/config/model/threshold,
+bound, rate, population, worker or power-plan setting changed. Phase 7 is still open and
+Phase 8 remains queued until its complete gate passes.
+
+At 08:03 UTC (13:33 IST), the same run reached FD002/XGBoost/v1 internal FAST evaluation,
+with 95,084/171,490 quality calls saved. Windows event 1 records a further hibernate interval
+from 07:47:11 to 08:01:28 UTC (13:17–13:31 IST). Helper v2 recorded AC=false at 06:43:34
+UTC and AC=true with system/display requests active at 08:03:06 UTC. These observations do
+not prove the cause of earlier log gaps or uninterrupted operation while requests are active.
+The original experiment and workers resumed without replacement. All timings are retained;
+reference and serial latency have not begun, and no measured-source/config change was made.
+
+At 12:42 UTC (18:12 IST), 100,645/171,490 quality calls were saved, now FD002/XGBoost/v1
+official-test FAST evaluation. Windows event 1 confirms another hibernate interval from
+11:03:17 to 12:41:31 UTC (16:33–18:11 IST); helper v2 reports AC/system/display requests
+active again from 12:41:31 UTC. The same experiment and worker PIDs remain alive and
+advancing. Preserve all timing outliers; no measured source, config or population changed.
+
 ### How to run Phase 7
 
 ```powershell
@@ -69,6 +391,15 @@ See `docs/experimental_framework.md` for stage order, provenance, uncertainty an
 ## Decisions
 
 - Preserve the user-provided synopsis as the source of truth; its numeric case study is illustrative.
+- The Phase 8 direct prompt is preserved in `docs/prompts/phase8_operator_dashboard.md`.
+  The user explicitly chose to wait for the Phase 7 gate before dashboard implementation.
+  At the 2026-10-20 11:09:12 UTC checkpoint, Phase 7 had saved 374/2496 diagnostic calls,
+  0/171490 quality calls and no completed stages. The original measured source remains
+  `63c2ed445fba16c73a2771e184f635abf76b4405`; dashboard and public schemas are unchanged.
+- The user authorized starting Phase 8 immediately after verified Phase 7 closure without
+  another confirmation. An active follow-up in this chat (`prescriptxai-phase-7-phase-8`)
+  checks every 15 minutes, preserves the current run and verifies the full Phase 7 gate before
+  beginning the queued dashboard prompt in the same continuation. It ends after Phase 8 closes.
 - Keep model validity and physical plausibility as separate outcomes.
 - Keep every threshold, budget, path, and algorithm parameter in validated YAML.
 - Use the PRESCRIPTXAI_ environment variable prefix for runtime overrides; double underscores
