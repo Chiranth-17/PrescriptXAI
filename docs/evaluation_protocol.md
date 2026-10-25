@@ -306,3 +306,29 @@ Python bytes and psutil process RSS. Predeclared final-growth software regressio
 guarantee; platform allocators and native allocations are disclosed. Never infer physics, real
 actuator response or RUL extension from this fixture. No competing tests/training/quality workload
 runs during timing or memory stages. The full repository must be clean before each stage.
+# Phase 10 reproducibility workflow preregistration
+
+The install/demo workflow uses `configs/experiments/phase10-reproduce-v1.yaml`,
+packaged byte-for-byte as the initialization template. It is a separately labeled
+**reused-engine reproducibility demonstration**, not fresh generalization or a
+replacement for Phase 7. FD001, seed1729, engine split70/15/15, XGBoost predictive
+selection, validation-engine sigmoid calibration, training-only scaling/covariance/
+coupling fitting and validation-only coupling calibration remain unchanged.
+
+Evaluation uses the existing runner's seeded uniform sample of at most20 high-risk
+states with feasible actuator intervals from the internal held-out engines. Report
+the realized query and engine counts, all failures, and whole-engine bootstrap intervals
+(2000 replicates,seed1729). Disclose the complete high-risk count and number excluded by
+the interval pre-screen; sampled query rates are not rates over all alert states.
+This small demo population does not alter any prior declared
+population. Protocolv1, D_max fixed5, K1, k_max3, tau_danger.8/tau_safe.2; all other
+scientific settings match the default configuration. No solver tuning or outcome-based
+model selection occurs. The reproduction manifest records effective settings, hashes,
+engine partitions, package/build identity and stage durations. Timings are workflow
+runtime observations, not a new serial latency-budget experiment.
+
+Prepare, train/calibrate, fit learned coupling and covariance, evaluate and write the
+report in order. Existing output directories are refused, including incomplete runs;
+retain failures and their stage manifest. Individual demo engine/cycle choices can be
+selected from completed outputs and are explicitly illustrative examples, not rate
+estimates. Neither this protocol nor the outputs imply physical safety or RUL extension.

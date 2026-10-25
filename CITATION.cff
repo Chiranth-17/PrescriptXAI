@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "Please cite this software and identify the exact release, run ID and configuration used."
+title: "PrescriptXAI: constraint-aware recourse for maintenance telemetry proxies"
+type: software
+authors:
+  - name: "PrescriptXAI contributors"
+version: 0.2.0
+license: MIT
+abstract: >-
+  Research software for model-based maintenance recourse with separate statistical
+  plausibility and proxy engineering checks. Static C-MAPSS experiments do not
+  establish real actuator efficacy, physical safety or remaining-useful-life extension.

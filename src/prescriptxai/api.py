@@ -17,6 +17,7 @@ from pydantic import ValidationError, field_validator
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from prescriptxai import __version__
 from prescriptxai.config import AppConfig, load_config
 from prescriptxai.logging_utils import bind_run_id, reset_run_id
 from prescriptxai.pipeline import ArtifactError, InputError, PrescriptXAI, PrescriptXAIEngine
@@ -242,7 +243,7 @@ def create_app(
     @app.get("/version")
     def version() -> dict[str, str]:
         return {
-            "service_version": "0.1.0",
+            "service_version": __version__,
             "schema_version": "2.0.0",
             "mode": settings.pipeline.default_mode.upper(),
         }

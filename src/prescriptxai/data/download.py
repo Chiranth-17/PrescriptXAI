@@ -10,6 +10,8 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from prescriptxai import __version__
+
 LOGGER = logging.getLogger(__name__)
 _CHUNK_SIZE = 1024 * 1024
 
@@ -75,7 +77,7 @@ def download_archive(
         raise ValueError("timeout_seconds must be positive")
     destination.parent.mkdir(parents=True, exist_ok=True)
     partial = destination.with_suffix(destination.suffix + ".part")
-    request = Request(url, headers={"User-Agent": "prescriptxai/0.1.0"})
+    request = Request(url, headers={"User-Agent": f"prescriptxai/{__version__}"})
     try:
         with urlopen(request, timeout=timeout_seconds) as response, partial.open("wb") as output:
             while chunk := response.read(_CHUNK_SIZE):

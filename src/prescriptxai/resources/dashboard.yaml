@@ -1,0 +1,7 @@
+backend: direct
+telemetry_path: data/raw/CMAPSSData.zip
+telemetry_population: test
+report_directory: artifacts/reproduction
+profiles:
+  FD001:
+    XGBoost / reproduction v1: configs/default.yaml

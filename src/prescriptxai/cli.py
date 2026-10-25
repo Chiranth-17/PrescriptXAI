@@ -68,6 +68,43 @@ def initialize_cli_logging() -> None:
     configure_logging()
 
 
+@app.command("init")
+@_operator_errors
+def initialize_workspace_command(
+    directory: Path = typer.Argument(Path(".")),
+) -> None:
+    """Create portable default, taxonomy and dashboard YAMLs; refuse existing configs."""
+    from prescriptxai.workspace import initialize_workspace
+
+    for path in initialize_workspace(directory):
+        typer.echo(f"Created {path}")
+    typer.echo(f"Run subsequent commands from {directory.resolve()}")
+
+
+@app.command("dashboard")
+@_operator_errors
+def dashboard_command(
+    settings: Path = typer.Option(Path("configs/dashboard.yaml"), "--settings"),
+    host: str = typer.Option("127.0.0.1", "--host"),
+    port: int = typer.Option(8501, "--port"),
+) -> None:
+    """Launch the installed dashboard using local trusted artifacts and settings."""
+    from prescriptxai.workspace import launch_dashboard
+
+    raise typer.Exit(launch_dashboard(settings, host, port))
+
+
+@app.command("reproduce")
+@_operator_errors
+def reproduce_command(
+    config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
+) -> None:
+    """Run the registered data-to-report workflow once into a fresh artifact directory."""
+    from prescriptxai.reproduce import reproduce
+
+    typer.echo(f"Completed reproduction: {reproduce(config_path, typer.echo)}")
+
+
 def _read_state(path: Path) -> dict[str, float]:
     """Read one JSON object containing a raw-unit state."""
     raw: Any = json.loads(path.read_text(encoding="utf-8"))

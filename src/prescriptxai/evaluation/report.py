@@ -6,7 +6,6 @@ import hashlib
 import importlib.metadata
 import json
 import platform
-import subprocess
 from collections import Counter, defaultdict
 from collections.abc import Mapping
 from pathlib import Path
@@ -23,6 +22,7 @@ from prescriptxai.evaluation.runner import (
     fitted_engine_provenance,
 )
 from prescriptxai.pipeline import PrescriptXAIEngine
+from prescriptxai.provenance import source_identity
 
 
 def sensitivity_comparison_variant(variant: str) -> str:
@@ -504,22 +504,9 @@ def build_evaluation_provenance(
     config = engine.config.model_dump(mode="json")
     taxonomy = engine.taxonomy.model_dump(mode="json")
     config_json = json.dumps(config, sort_keys=True, allow_nan=False)
-    source_commit: str | None = None
-    source_dirty: bool | None = None
-    try:
-        revision = subprocess.run(
-            ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
-        )
-        source_commit = revision.stdout.strip()
-        dirty = subprocess.run(
-            ["git", "status", "--porcelain", "--untracked-files=no"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        source_dirty = bool(dirty.stdout.strip())
-    except (OSError, subprocess.CalledProcessError):
-        pass
+    identity = source_identity()
+    source_commit = identity.get("git_commit")
+    source_dirty = identity.get("tracked_source_dirty")
     fingerprints = {}
     for name, path in sorted((artifact_paths or {}).items()):
         with path.open("rb") as stream:
@@ -557,6 +544,7 @@ def build_evaluation_provenance(
         "model_training_configuration_sha256": engine.model.config_hash,
         "model_training_git_commit": engine.model.git_commit,
         "evaluation_git_commit": source_commit,
+        "evaluation_source_identity": identity,
         "evaluation_tracked_source_dirty": source_dirty,
         "resolved_mahalanobis_max_distance": engine.mahalanobis.max_distance,
         "mahalanobis_threshold_method": engine.mahalanobis.threshold_method,

@@ -1,5 +1,25 @@
 # PrescriptXAI Progress
 
+## Phase 10 packaging/reproduction checkpoint — not closure
+
+Release0.2.0 runtime metadata/extras, MIT license (human delegated choice), citation/changelog,
+portable init/dashboard entrypoints and source-owned build provenance are implemented.
+The sdist and wheel build and a clean Python3.13 environment outside the checkout installs
+65 distributions; library import, CLI help and three configuration templates succeed.
+This preliminary wheel predates reproduce and is not the final release proof. Seven packaging
+tests plus three actual reproduction/negative tests pass (10total,16.10s); strict mypy65clean.
+Root implemented the independent auditor's concrete missing-dependency and wrong-CWD-commit
+findings; P10-001/002 logged separately from the42closed Phase9 defects.
+
+The new reproduce command uses existing preparation, predictor/calibration, learned coupling,
+covariance and evaluation/report routines; manifest retains stages, source/config/input/output
+hashes, IDs and durations. Failed/existing outputs are refused, never replaced. Its committed
+Phase10 profile declares a separate seeded sample of at most20 feasible internal-holdout alerts,
+with interval exclusions disclosed; it does not modify the frozen Phase7 populations/results.
+The real NASA workflow has not run yet. Dockerfile/compose are implemented but not yet built or
+verified. Remaining: real clean installed reproduction, Docker/API/dashboard/demo, full buildable
+docs/math/QAs/figures/paper, independent audits and complete Phase10 software/coverage gate.
+
 ## Phase status table
 
 | Phase | Status | Notes |

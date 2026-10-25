@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import subprocess
 from dataclasses import dataclass
 from typing import TypedDict
 
@@ -167,15 +166,11 @@ def _partition_arrays(
 
 
 def _git_commit() -> str | None:
-    """Read the checked-out commit when git metadata is available."""
-    try:
-        completed = subprocess.run(
-            ["git", "rev-parse", "HEAD"], check=True, capture_output=True, text=True, timeout=5
-        )
-    except (OSError, subprocess.SubprocessError):
-        return None
-    commit = completed.stdout.strip()
-    return commit or None
+    """Read the package's build/checkout commit independently of the working directory."""
+    from prescriptxai.provenance import source_identity
+
+    commit = source_identity().get("git_commit")
+    return str(commit) if commit else None
 
 
 def _configuration_hash(config: AppConfig, selected_model: str) -> str:
