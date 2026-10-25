@@ -14,7 +14,7 @@
 | 7 — Full experimental framework | Closed; measured target gaps retained | 171490 quality + 2496 diagnostics, 48 reference cases, 2000 serial calls; independent audit and full software gate passed |
 | 8 — Streamlit operator dashboard | Closed at1608d6d / phase8-closed | Five pages, live shared validation, real walkthrough,321 tests and independently audited32-callback UI timing |
 | 9 — Systematic testing and hardening | Closed; full gate passed | 513tests,90.5843% scoped line coverage,42fixed defects, audited profiling and10000-call memory check; phase9-closed |
-| 10 — Packaging, documentation and demo readiness | Queued; not started | Direct prompt supplied 2026-10-24 IST; starts after Phase 9 gate |
+| 10 — Packaging, documentation and demo readiness | In progress | Phase9-closed verified at0f33c0f; packaging/repro/docs/demo plans active; user delegated license choice, MIT selected |
 | 11 — Remaining phase | Not started | Source prompt / Part B changes table not supplied |
 
 ## Authorized continuation order — updated 2026-10-24 IST
@@ -25,7 +25,7 @@ next phase starts. The preserved prompts are `docs/prompts/phase8_operator_dashb
 `docs/prompts/phase9_testing_hardening.md` and `docs/prompts/phase10_packaging_reproducibility.md`.
 The existing heartbeat `prescriptxai-phase-7-phase-8` now continues through verified Phase 10
 closure. Its ID, thread and 15-minute schedule are retained; its earlier stop-after-Phase-8
-instruction is superseded. No Phase 9/10 implementation or gate pass is claimed yet.
+instruction is superseded. Phase9 is closed; Phase10 implementation is active and its gate is pending.
 
 Phase 9 includes the requested >=90% line-coverage gate, defect log, property/fuzz/fault/golden/
 science tests, cross-process determinism, security audit, profiling and 10,000-call memory check,

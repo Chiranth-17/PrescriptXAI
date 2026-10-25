@@ -1,15 +1,44 @@
 ---
-phase: 9
-status: complete_gate_passed_pending_closure_commit_tag
+phase: 10
+status: in_progress
 ---
 
-# Current state: verify closure commit/tag, then immediately Phase10
+# Current state: Phase10 plans committed next, then implement packaging
 
 Workspace C:/Users/chira/OneDrive/Desktop/5thsemEL. Human authorized7->8->9->10 withoutconfirmations,
 fullgate before nextphase. Latesthumancontinue. Do notstop atthischeckpoint. Onlyrootimplements;
 subagents read-only audits. No activegoal. Existingheartbeatprescriptxai-phase-7-phase-8 stopsafter10.
 
 ## Immediate next
+
+UPDATE: Phase9closurecommit0f33c0f0b8e9d0f501e483fb1f3ca320183cbd83 andannotatedphase9-closed
+VERIFIED. Phase10hasSTARTED. Readfullprompt/AGENTS/PROGRESS/repo inspected. Fourplans written
+.gsd/phases/10/01..04-PLAN.md, committhese+thisstate/progress beforeimplementation.
+Licensequestionansweredbyhuman 'which is best suited use that': chooseMIT, announcedwithofficial
+OSIreference. No morelicenseapproval needed. Runtimeproject0.1.0 vsrootVERSION1.6.0currently
+mismatched; release0.2.0 planned, keepRecourseResult/ValidationReport2.0.0 unchanged.
+DockerISAVAILABLE: Desktop4.70.0/Engine29.4.0 Linuxamd64 healthy. MUSTactualbuild/runbothservices;
+don'tmarkunverified. CurrentuvlockLinuxTorchpullsNvidia; DockerCPUwheel2.14.1+cpuofficialindex
+confirmedexists, installCPUtorch--no-depsfirst thenprojectextras soPEP440satisfies==2.14.1.
+Docs/newbuildversionsfromofficialPyPI:build1.6.1,mkdocs-material9.8.0,mkdocstrings1.0.8,
+mkdocstrings-python2.0.10,matplotlib3.11.2; allsupport>=3.11. Addproperprojectruntime/extras
+(currentlydependencies=[]),buildsdist/wheel,cleanvenvoutsidecheckoutCLI/import/initproof.
+NoGitremoteURL configured; don'tinventrepository/PyPIpublicationclaims. MITcopyrightholdercan
+bePrescriptXAIcontributors,CITATIONorganizationauthor, no guessedpersonalnames/DOI.
+Sourcepackageconfigs+dashboardapp resourcesneedportableinit/dashboardCLI. Preserveoldroot
+experimentconfigs/fittedartifacts. Freshreproduceprofilemustbecommittedbeforeactualrun; use
+existingprepare/train/calibrate/fitcoupling/cov/evaluate/report, fixedsplits/seeds andmanifest,
+freshoutputrefusereplacement; noPhase7rerun/caps/relabeling. ReadREADMEalone5commandsverify.
+Rootarchive data/raw/CMAPSSData.zip12429152bytesavailable. Legacydashboardconfigs references
+ignoredPhase7models; cleaninstallmustgetfreshreproductionprofile ratherthanassumeignoredfiles.
+CurrentDockercompose/imagefilesnone,paper/directorynone. SynopsisSection2andQ&Aread;2original
+QAsreal-worldvalidityandRULextensionmustretainhonestE1-E3limits. Architecture/READMEcurrently
+stale(saysLSTMhistoryunsupported/sharedoldengine,twoAPIroutes); updatefromactualcode.
+NeedfullPhase10actualdocsbuild/APIautodocs,READMEresultsfromsavedrun,fullmath/extensions,
+>=15newQAs+2synopsisones,SDG9.1/9.4honest,real-demoIDs/export/screenshots,slideoutline,
+figures/paperauto-filledtablesallcitationsTODO-VERIFY. Don'tinventnumbers/references.
+
+Historical oldPhase9next-list below isDONE, retainedonlyasproofcontext:
 
 1. Finalclosuremetadata andratchetedcoverage are edited, NOT YET committed/tagged atthissnapshot.
 RunRuff/checkdocs/uvlockcheck/diffcheck, sourcefulltests alreadyPASS on583b2fc andonlymetadata/
