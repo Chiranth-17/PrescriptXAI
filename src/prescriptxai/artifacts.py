@@ -13,10 +13,36 @@ import pickle
 from pathlib import Path
 
 import joblib
+import numpy as np
 
 
 class ArtifactLoadError(ValueError):
     """A trusted local artifact cannot be decoded or violates its declared identity."""
+
+
+def validate_engine_ids(
+    value: object,
+    subject: str = "artifact engine provenance",
+) -> tuple[int, ...]:
+    """Decode explicit fitting identities without lossy casts, booleans or duplicate IDs."""
+    if not isinstance(value, (tuple, list)) or not value:
+        raise ArtifactLoadError(f"{subject} contains invalid engine IDs")
+    try:
+        if any(
+            isinstance(item, (bool, np.bool_))
+            or not isinstance(item, (int, float, np.integer, np.floating))
+            or not np.isfinite(item)
+            or item < 1
+            or item != int(item)
+            for item in value
+        ):
+            raise ValueError("IDs must be finite positive integers")
+        decoded = tuple(sorted(int(item) for item in value))
+        if len(set(decoded)) != len(decoded):
+            raise ValueError("IDs must be unique")
+    except (TypeError, ValueError, OverflowError) as error:
+        raise ArtifactLoadError(f"{subject} contains invalid engine IDs") from error
+    return decoded
 
 
 def trusted_artifact_bytes(path: Path, expected_sha256: str | None = None) -> bytes:

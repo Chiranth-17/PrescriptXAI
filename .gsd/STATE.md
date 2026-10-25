@@ -11,7 +11,7 @@ Latest human continue; do not stop at this checkpoint. Full queued prompts docs/
 No Phase11/PartB invention. Heartbeat prescriptxai-phase-7-phase-8 remains useful until10closed.
 Only root implements; subagents are independent read-only auditors. No active goal created.
 
-## Phase9 profiling checkpoint; next commit optimization then after/memory
+## Phase9 measurement complete; next final candidate commit and full gate
 
 Completed commits: plan7c7966c, boundary ebc9570a28be6fb3e4904f4172c4a37d78b80b93,
 runtime42c7800, science/provenance/CI+profilingpreregistration bf50dff.
@@ -23,8 +23,19 @@ Nextcommit optimization avoids redundant pandas selection and applies exactlySta
 dense float64 subtract/divide after existing finite/order/fitted-width checks. Ninebitwise
 scalerparitycases and18combinedscaler/property/golden/restart/tempE2Etests pass34.75s;
 Ruffclean,mypy62clean. Inputs/settings/artifacts/goldens unchanged. Noafterimprovementclaimyet.
+Optimization committed2fd1055ad3bf31a313887f7aca134c77b84132d9. After/memory both exit0:
+after120calls/2engines,p50=12.626,p95=23.85524,p99=26.482568ms;engine95%CI[23.80822,23.85524].
+Independent auditzero discrepancies:120pairedfull decisions/5160numericfields exactlymatch,
+160correspondingtimecasesmatchstoredgoldens;allconfig/6inputs/7helper-lock-goldenhashesagree.
+Memory10000attempts/results,0errors,5000perengine,allNO_INTERVENTION;11persistedcheckpoints.
+Pythonlivegrowth98686bytes,RSSgrowth737280bytes,peakPython674441bytes;5MiB/50MiBbudgetsPASS.
+Two memoryrows haveidenticalsafevectors;scopeexcludesoptimizerstress. FourPIDs, nolockfile.
+Do NOT rerun/overwrite prepare/before/after/memory stages. HistoricalPhase7timingsunchanged.
+Finalaudit addsP9-042 matchinginvalidIDsetsloadedbeforeevaluationguard. SharedtypedIDdecoder
+nowusedbyreadiness/evaluation;27fittingidentitytests pass. CLIotherfiveoperatorcommands now
+friendlyerrors too. Credentialscan327currentfiles/747historicalblobs,0matches(disclosedpatterns).
 AllownedStreamlit/pytest/performance processes absent atlastinventory; no competingqualityjob.
-41reproduced defects logged docs/defects.md. Public RecourseResult/ValidationReport2.0.0 unchanged.
+42reproduced defects logged docs/defects.md. Public RecourseResult/ValidationReport2.0.0 unchanged.
 All11science error classes have explicit tests; actual raw archive->train->calibrate->coupling/
 covariance->recommend->validate->HTTP->AppTest passes. Genuine CLI train/evaluate/report passes.
 Four actual fitted triage goldens tests/golden/operator-v1.json, guarded --update-golden, repeated
@@ -46,6 +57,15 @@ coverage_gate.py checksall62sourcefiles, explicitapp.pyexclusion andfullPhase8fl
 CIuploadsJSON/XML/gate, dependencyadvisorylane, nightlyslow/e2e/gpumarkers; hostedruns unverified.
 
 Next immediate:
+ALL PERFORMANCE STAGES COMPLETE. The old profiling command list below is preserved context only;
+DO NOT run them again. Commit currentfinal-readiness/CLI/security/report/traceability changes,
+then fullRuff/mypy/pytestcoverage+explicitgate,nightlyselection, freshpip-audit/secret scan. No
+phase9closureclaimuntilallpass. Finalreport docs/phase9_changes.md anddefects42 nowmapped.
+Onfullpass: updatefinalcounts/allfixeddefectstatuses/PROGRESS/traceability/plansummaries,
+conventionalclosurecommit/tagphase9-closed; immediatelyfullPhase10withoutconfirmation.
+Phase10licenseaskMITdefault; completequeuedprompt,cleaninstall/docs/demo/Dockerifavailable.
+
+Historical previous next-list (alreadyexecuted through3;4remains):
 1. Commit current optimization/test/PROGRESS/STATE conventionally, separate gitadd/commit/log.
 Must be clean for helper. Baseline/preparation alreadycomplete; NEVER rerun/overwritethem.
 2. Before after/memory inspect processinventory; temporarily stop

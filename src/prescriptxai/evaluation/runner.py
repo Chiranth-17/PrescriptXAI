@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 import torch
 
+from prescriptxai.artifacts import validate_engine_ids
 from prescriptxai.config import AppConfig
 from prescriptxai.constraints.bounds import (
     allowed_interval,
@@ -710,22 +711,7 @@ def _engine_ids(value: object) -> tuple[int, ...] | None:
     """Decode persisted IDs without treating missing or empty provenance as verified."""
     if not isinstance(value, (list, tuple)) or not value:
         return None
-    try:
-        if any(
-            isinstance(item, (bool, np.bool_))
-            or not isinstance(item, (int, float, np.integer, np.floating))
-            or not np.isfinite(item)
-            or item < 1
-            or item != int(item)
-            for item in value
-        ):
-            raise ValueError("IDs must be finite positive integers")
-        decoded = tuple(sorted(int(item) for item in value))
-        if len(set(decoded)) != len(decoded):
-            raise ValueError("engine IDs must be unique")
-        return decoded
-    except (TypeError, ValueError, OverflowError) as exc:
-        raise ValueError("artifact engine provenance contains invalid engine IDs") from exc
+    return validate_engine_ids(value)
 
 
 def validate_evaluation_provenance(engine: PrescriptXAIEngine, held_out_rows: pd.DataFrame) -> None:

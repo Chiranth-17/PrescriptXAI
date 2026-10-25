@@ -22,7 +22,7 @@ from sklearn.model_selection import GroupKFold
 from sklearn.neural_network import MLPRegressor
 from torch import Tensor, nn
 
-from prescriptxai.artifacts import ArtifactLoadError, load_trusted_joblib
+from prescriptxai.artifacts import ArtifactLoadError, load_trusted_joblib, validate_engine_ids
 from prescriptxai.constraints.taxonomy import CouplingRule, FeatureTaxonomy, load_taxonomy
 from prescriptxai.data.preprocess import FittedFeatureScaler
 
@@ -122,6 +122,10 @@ class SensorCouplingModel:
             )
         if not getattr(loaded, "fit_engine_ids", ()):
             loaded.fit_engine_ids = ()
+        for field in ("training_engine_ids", "fit_engine_ids", "calibration_engine_ids"):
+            ids = getattr(loaded, field, ())
+            if ids:
+                validate_engine_ids(ids, f"coupling {field} provenance")
         return loaded
 
     @classmethod

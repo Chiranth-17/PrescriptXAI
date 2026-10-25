@@ -13,7 +13,7 @@ import pandas as pd
 import torch
 from numpy.typing import NDArray
 
-from prescriptxai.artifacts import ArtifactLoadError, load_trusted_joblib
+from prescriptxai.artifacts import ArtifactLoadError, load_trusted_joblib, validate_engine_ids
 from prescriptxai.config import AppConfig
 from prescriptxai.constraints.coupling import SensorCouplingModel
 from prescriptxai.constraints.taxonomy import FeatureTaxonomy
@@ -61,6 +61,7 @@ def load_mahalanobis_validator(
     if not hasattr(loaded, "covariance_cholesky"):
         raise ValueError("legacy precision-only validator: refit on training engines for Phase 5")
     try:
+        validate_engine_ids(loaded.training_engine_ids, "Mahalanobis fitting provenance")
         width = len(loaded.feature_names)
         if not width or width != len(set(loaded.feature_names)) or not loaded.regime_statistics:
             raise ArtifactLoadError("Mahalanobis artifact has invalid features/regimes")

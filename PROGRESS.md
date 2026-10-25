@@ -115,6 +115,26 @@ constant and disparate-scale features. Eighteen scaling/property/golden/restart/
 pass after optimization; Ruff/mypy62clean. No settings, artifacts or golden files changed.
 After timing and10000-call memory check remain next; no performance improvement is claimed yet.
 
+### Phase 9 independent measured audit — complete, final gate next
+
+After source2fd1055 completes120/120calls over2synthetic engines: p50=12.626ms,p95=23.85524ms,
+p99=26.482568ms; engine95%p95CI[23.80822,23.85524]ms,2000drawsseed17. Fixture p95 decreases36.25%.
+Independent audit recomputes bothsegments with zero differences:120paired decisions/5160numeric
+fields match exactly,160matching timed cases equal stored goldens, allfixedinputs/config/helper/
+lock identities agree. FourdistinctPIDs; no replacements/errors/discarded samples or competing
+quality workloads. Actualrawfiles and11memorycheckpoints retained under artifacts/phase9/performance-v1.
+
+All10000memory calls pass full-output checks,10000attempts/results,5000perengine, no errors.
+Pythonlivegrowth98686bytes,RSSgrowth737280bytes,peakPython674441bytes;5MiB/50MiBregressionbudgets
+pass. This is the declared already-safe path with identical measurement vectors, not optimizer
+stress or a deployment bound. Historical Phase7 performance gaps remain unchanged.
+
+Final artifact audit adds defect42: matching invalid fitting-ID sets previously loaded; shared
+strict IDs now validate model/scaler/calibration/covariance/coupling before readiness.27focused
+cases pass. AlloperatorCLI commands now use friendly anticipated-error handling. Current/history
+credential-pattern scan:327files/747blobs,zero matches (disclosed heuristic scope). Fullfinalgate,
+freshdependency audit/nightlyselection/progress/traceability/tag remain next; Phase9stillopen.
+
 ## Phase 9 boundary checkpoint — not phase closure
 
 - Twenty-five reproduced defects and fixes are logged in docs/defects.md: trusted local Python-

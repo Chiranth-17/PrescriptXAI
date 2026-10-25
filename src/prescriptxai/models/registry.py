@@ -13,7 +13,7 @@ import pandas as pd
 import torch
 from numpy.typing import NDArray
 
-from prescriptxai.artifacts import ArtifactLoadError, load_trusted_joblib
+from prescriptxai.artifacts import ArtifactLoadError, load_trusted_joblib, validate_engine_ids
 from prescriptxai.data.preprocess import FittedFeatureScaler
 from prescriptxai.models.base import FailureModel
 from prescriptxai.models.calibration import ProbabilityCalibrator
@@ -204,8 +204,15 @@ def _verify_model_structure(bundle: ModelBundle, require_calibrated: bool) -> No
         for name, limit in bundle.resolved_rate_limits.items()
     ):
         raise ArtifactLoadError("artifact contains invalid resolved actuator rate limits")
-    if set(bundle.training_engine_ids) != set(bundle.scaler.training_engine_ids):
+    model_ids = validate_engine_ids(bundle.training_engine_ids, "model fitting provenance")
+    scaler_ids = validate_engine_ids(bundle.scaler.training_engine_ids, "scaler fitting provenance")
+    if model_ids != scaler_ids:
         raise ArtifactLoadError("model and scaler training-engine provenance differs")
+    calibration_metadata = (bundle.metrics or {}).get("calibration")
+    if isinstance(calibration_metadata, dict) and calibration_metadata.get("fit_engine_ids"):
+        validate_engine_ids(
+            calibration_metadata["fit_engine_ids"], "calibration fitting provenance"
+        )
     scale = np.asarray(bundle.scaler.scaler.scale_, dtype=float)
     mean = np.asarray(bundle.scaler.scaler.mean_, dtype=float)
     if (

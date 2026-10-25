@@ -82,6 +82,7 @@ def _read_state(path: Path) -> dict[str, float]:
 
 
 @app.command("download")
+@_operator_errors
 def download_data(
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
 ) -> None:
@@ -126,6 +127,7 @@ def _download_subset_archive(config: AppConfig, subset: CmapssSubset) -> Path:
 
 
 @data_app.command("download")
+@_operator_errors
 def download_cmapss_data(
     subset: CmapssSubset = typer.Option("FD001", "--subset"),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
@@ -135,6 +137,7 @@ def download_cmapss_data(
 
 
 @data_app.command("prepare")
+@_operator_errors
 def prepare_cmapss_data(
     subset: CmapssSubset = typer.Option("FD001", "--subset"),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
@@ -195,6 +198,7 @@ def prepare_cmapss_data(
 
 
 @constraints_app.command("fit-coupling")
+@_operator_errors
 def fit_coupling_model(
     subset: CmapssSubset = typer.Option("FD001", "--subset"),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
@@ -619,6 +623,7 @@ def evaluate_model(
 
 
 @app.command("serve")
+@_operator_errors
 def serve_api(
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
     taxonomy_path: Path | None = typer.Option(None, "--features"),

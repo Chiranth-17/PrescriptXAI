@@ -21,6 +21,26 @@ from prescriptxai.schemas import InputContext
 
 
 @pytest.mark.parametrize(
+    "command",
+    [
+        ["download"],
+        ["data", "download"],
+        ["data", "prepare"],
+        ["constraints", "fit-coupling"],
+        ["serve"],
+    ],
+)
+def test_every_operator_command_rejects_missing_configuration_without_a_stack(
+    tmp_path: Path,
+    command: list[str],
+) -> None:
+    """The same anticipated-error contract covers preparation, fitting and server startup."""
+    response = CliRunner().invoke(app, [*command, "--config", str(tmp_path / "missing.yaml")])
+    assert response.exit_code == 2
+    assert "missing.yaml" in response.output and "Traceback" not in response.output
+
+
+@pytest.mark.parametrize(
     "method,path,content",
     [
         ("post", "/assess", b'{"state":{"\xff":0}}'),

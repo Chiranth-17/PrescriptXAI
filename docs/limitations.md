@@ -88,3 +88,18 @@ absence remains unresolved and does not certify continuous or real-engine infeas
 Optimization exceeds the design latency budget in both measured modes. No measured miss is
 repaired by changing historical thresholds, limits, populations or timings. Evidence remains
 at most E3 under proxy assumptions; dynamic simulator/emulator evidence is unavailable.
+
+## Phase 9 software assurance scope
+
+The fixture profiling/memory study in `phase9_changes.md` uses two synthetic engines and a small
+MLP. Its warm-call improvement does not change historical C-MAPSS latency verdicts. Two engine
+clusters limit bootstrap resolution. The10000-call memory population covers two identical safe
+measurement vectors, so optimizer memory stress and unbounded service uptime are not established.
+Explicit5MiB Python/50MiB RSS final-growth budgets are software regression assumptions.
+
+Retained legacy pickle/joblib objects are restricted to resolved, operator-controlled roots with
+byte-identity checks. This does not make downloaded objects safe or provide a pickle sandbox;
+no API/upload can grant trust. Dependency audits cover known public advisories, while the local
+project is checked by source/regression tests. Credential scans use disclosed high-confidence
+patterns and do not claim to recognize every possible credential format. See `artifact_security.md`.
+Hosted CI/GPU execution is separate from the local CPU gate; unavailable GPU results are not passes.
