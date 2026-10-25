@@ -76,7 +76,16 @@ class FittedFeatureScaler:
         values = frame.to_numpy(dtype=float)
         if not np.isfinite(values).all():
             raise ValueError("features must be finite")
-        return cast(np.ndarray, self.scaler.transform(values))
+        if getattr(self.scaler, "n_features_in_", None) != len(self.feature_names):
+            raise ValueError("scaler has not been fitted for the configured feature width")
+        # Same dense float64 operations/order as StandardScaler.transform. The named-frame
+        # and finite-value checks above already cover its repeated array validation.
+        scaled = values.copy()
+        if self.scaler.with_mean:
+            scaled -= self.scaler.mean_
+        if self.scaler.with_std:
+            scaled /= self.scaler.scale_
+        return scaled
 
 
 def fit_feature_scaler(

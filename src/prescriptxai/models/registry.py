@@ -60,7 +60,10 @@ class ModelBundle:
         missing = set(self.feature_names) - set(frame.columns)
         if missing:
             raise ValueError(f"input is missing model features: {sorted(missing)}")
-        matrix = self.scaler.transform(frame[list(self.feature_names)])
+        ordered = (
+            frame if tuple(frame.columns) == self.feature_names else frame[list(self.feature_names)]
+        )
+        matrix = self.scaler.transform(ordered)
         probabilities = np.asarray(self.estimator.predict_proba(matrix), dtype=np.float64)
         if probabilities.ndim == 1:
             risk = probabilities

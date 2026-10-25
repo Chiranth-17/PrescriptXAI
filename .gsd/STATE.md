@@ -11,11 +11,19 @@ Latest human continue; do not stop at this checkpoint. Full queued prompts docs/
 No Phase11/PartB invention. Heartbeat prescriptxai-phase-7-phase-8 remains useful until10closed.
 Only root implements; subagents are independent read-only auditors. No active goal created.
 
-## Phase9 current checkpoint before profiling preregistration commit
+## Phase9 profiling checkpoint; next commit optimization then after/memory
 
 Completed commits: plan7c7966c, boundary ebc9570a28be6fb3e4904f4172c4a37d78b80b93,
-runtime42c7800. Current next commit contains science/golden/E2E/CLI/API/provenance/resource
-fixes plus CIcoverage/nightly and the fully preregistered performance helper/config/protocol.
+runtime42c7800, science/provenance/CI+profilingpreregistration bf50dff.
+Preparation and before stage both exit0.120/120calls retained over2syntheticengines:
+p50=18.5547,p95=37.418115,p99=46.227248ms,wholeengine95%p95CI[37.03677,39.071975],
+2engines/2000repseed17. Allstoredgoldensmatch. Evidence artifacts/phase9/performance-v1/.
+cProfile12calls0.329s identifies48predict_risk/96scalertransforms, scaler0.063scumulative.
+Nextcommit optimization avoids redundant pandas selection and applies exactlyStandardScaler's
+dense float64 subtract/divide after existing finite/order/fitted-width checks. Ninebitwise
+scalerparitycases and18combinedscaler/property/golden/restart/tempE2Etests pass34.75s;
+Ruffclean,mypy62clean. Inputs/settings/artifacts/goldens unchanged. Noafterimprovementclaimyet.
+AllownedStreamlit/pytest/performance processes absent atlastinventory; no competingqualityjob.
 41reproduced defects logged docs/defects.md. Public RecourseResult/ValidationReport2.0.0 unchanged.
 All11science error classes have explicit tests; actual raw archive->train->calibrate->coupling/
 covariance->recommend->validate->HTTP->AppTest passes. Genuine CLI train/evaluate/report passes.
@@ -38,13 +46,13 @@ coverage_gate.py checksall62sourcefiles, explicitapp.pyexclusion andfullPhase8fl
 CIuploadsJSON/XML/gate, dependencyadvisorylane, nightlyslow/e2e/gpumarkers; hostedruns unverified.
 
 Next immediate:
-1. Commit ALLcurrentchanges conventionally, separate gitadd/commit/log. Must be clean for helper.
-2. No Phase9perf/preparation run yet. Beforetiming inspect processinventory; temporarily stop
+1. Commit current optimization/test/PROGRESS/STATE conventionally, separate gitadd/commit/log.
+Must be clean for helper. Baseline/preparation alreadycomplete; NEVER rerun/overwritethem.
+2. Before after/memory inspect processinventory; temporarily stop
 only OWNEDStreamlitservers after verifying PID+cmd, no tests/training/quality concurrency.
-3. uv run python scripts/diagnostics/phase9_performance.py --stage prepare then --stage before.
+3. uv run python scripts/diagnostics/phase9_performance.py --stage after then --stage memory.
 Defaultdirectory artifacts/phase9/performance-v1; do not duplicate/overwrite anycompletedstage.
-Read actual profile, optimize measured hotspot without changing any settings/results; goldens
-mustpass, commit optimization; run --stage after and --stage memory serially, exactly10000calls.
+Measuredhotspotoptimization alreadyimplemented/paritychecked; commit thenafter/memoryserially.
 Config configs/experiments/phase9-performance.yaml + docs/evaluation_protocol.md freeze120calls
 (6observedrows x20),2syntheticengines7/8;6warmups,12profilecalls;singleCPUthread;wholeengine
 p95CI2000seed17;fitseed17,solver/covconfigseed1729;k3/K1/Dmax5/.8/.2. Syntheticsoftwarestudy,

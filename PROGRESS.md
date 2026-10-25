@@ -98,6 +98,23 @@ are required. No Phase9 timing or10000-call memory stage has run yet. Commit pre
 then run serial baseline/profile, optimize only measured hotspots with unchanged goldens, run
 after/memory, independently audit, finish complete Phase9 gate/tag, and proceed directly to10.
 
+### Phase 9 profiling checkpoint — measurements in progress
+
+Preregistration and baseline source bf50dff. Fixture preparation and serial before stage exit0;
+120/120 timed calls retained over2synthetic engines. p50=18.5547ms,p95=37.418115ms,
+p99=46.227248ms; whole-engine95%p95CI[37.03677,39.071975]ms,2engines,2000replicates/seed17.
+All measured outputs match the stored goldens. This synthetic development microbenchmark is
+separate from the historical C-MAPSS budgets/results and excludes artifact loading/startup.
+
+cProfile identifies repeated pandas feature selection and StandardScaler validation as hot paths:
+48predict_risk calls/96scaler transformations in12profile calls; scaler path cumulative0.063s
+of0.329sprofile time. The proposed optimization reuses already ordered frames and applies the
+same dense float64 centering/division after existing finite/order/fitted-width checks. Nine
+scaling cases match installed StandardScaler bit-for-bit across mean/std flags, float32/64 input,
+constant and disparate-scale features. Eighteen scaling/property/golden/restart/tempE2E tests
+pass after optimization; Ruff/mypy62clean. No settings, artifacts or golden files changed.
+After timing and10000-call memory check remain next; no performance improvement is claimed yet.
+
 ## Phase 9 boundary checkpoint — not phase closure
 
 - Twenty-five reproduced defects and fixes are logged in docs/defects.md: trusted local Python-
