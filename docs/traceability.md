@@ -220,17 +220,21 @@ audit40checks passes; zero discards/operator failures. Browser/network/startup u
 Sixteen defects are fixed with regression references in docs/defects.md. Closure tagphase8-closed
 follows the verified gate and audits; complete Phase9 starts immediately afterward.
 
-## Phase 9 hardening — final gate pending
+## Phase 9 hardening — complete local gate
 
 All11task areas, real regression evidence and source/configuration identities are mapped in
 `docs/phase9_changes.md`. Forty-two reproduced defects have fixes and regression references in
-`docs/defects.md`; public schemas2.0.0 and historical measurements are unchanged. Explicit scoped
-coverage reaches90.36471168063085% in wave3 while preserving both full-package Phase8 floors;
-the sole old test expectation was repaired, and the final zero-failure gate remains pending.
+`docs/defects.md`; public schemas2.0.0 and historical measurements are unchanged. Final source
+583b2fc passes513tests/66test-only fit warnings/246.93s; Ruffclean,mypy62clean. Scoped line
+7379/8146=90.58433587036582%,full line89.56184002912975%,combined86.07837763770897%.
+Allthree gates pass and full-package floors are ratcheted upward for subsequent work.
 
 Preregistered fixture performance bf50dff->2fd1055 retains120calls/2synthetic engines persegment;
 p95=37.418115->23.855240ms with independent whole-engine bootstrap recomputation. All120paired
 decisions match exactly/5160numeric fields. The10000safe-call memory study completes with
 98686bytes Python live growth and737280bytes RSS growth. Independent audit finds zero differences
 in records, quantiles, CIs, identities and11checkpoints. This is software fixture evidence,
-not new C-MAPSS generalization or a replacement for Phase7 latency. Full gate/tag still required.
+not new C-MAPSS generalization or a replacement for Phase7 latency. Fresh dependency audit0known/
+109distributions plus explicit local-project exclusion; current/history credential scan0matches.
+Nightlyselection3pass/510deselected,docscheckpass. No known open critical software defect;
+hostedCI/GPU execution remains unclaimed. Closure phase9-closed follows this verified gate.

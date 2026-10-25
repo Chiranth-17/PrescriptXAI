@@ -13,7 +13,7 @@
 | 6 — Decision support pipeline, CLI and API | Closed; performance target gap retained | Public schema 2.0.0, real delivery gates, 600-result audit, phase6-closed |
 | 7 — Full experimental framework | Closed; measured target gaps retained | 171490 quality + 2496 diagnostics, 48 reference cases, 2000 serial calls; independent audit and full software gate passed |
 | 8 — Streamlit operator dashboard | Closed at1608d6d / phase8-closed | Five pages, live shared validation, real walkthrough,321 tests and independently audited32-callback UI timing |
-| 9 — Systematic testing and hardening | In progress | Phase8 closure verified; adversarial input/artifact/science audits and regression work started |
+| 9 — Systematic testing and hardening | Closed; full gate passed | 513tests,90.5843% scoped line coverage,42fixed defects, audited profiling and10000-call memory check; phase9-closed |
 | 10 — Packaging, documentation and demo readiness | Queued; not started | Direct prompt supplied 2026-10-24 IST; starts after Phase 9 gate |
 | 11 — Remaining phase | Not started | Source prompt / Part B changes table not supplied |
 
@@ -1052,3 +1052,22 @@ mingw32-make all-checks
 - Performance target gaps remain open under rule 13; no threshold or metric definition was relaxed. Controlled latency and future optimization work need a separately frozen development/evaluation plan.
 - Bounds, rate limits, sensor proxies and K are assumptions. Coupling fit limitations from Phase 5 remain. Current evidence cannot establish real actuator efficacy or dynamic safety.
 - Phases 7–11 and the Part B change table are still missing their actual source prompts; they have not been invented or started.
+
+## Phase 9 closed — 2026-10-25 IST
+
+Full final runtime source583b2fce27d0803590caad5711d1bf518aaf30ba:513tests passed,66warnings from
+short test-only fits,246.93s; Ruffclean,strictmypy62clean. Scoped line7379/8146=90.58433587036582%,
+full line7379/8239=89.56184002912975%,combined9423/10947=86.07837763770897%. Allgates pass;
+full-package floors nowratcheted to these values and rechecked against saved exact coverage.
+All42reproduced defects fixed; frozen2.0.0schemas unchanged; no known open critical software bug.
+Nightlyselection3pass/510deselected/35.43s; docscheck passes. Freshpip-audit0known/109audited plus
+explicit localprojectexclusion; credentialscan0matches in current/historyscope. HostedCI/GPU
+results remainunclaimed. Independaudit verifies120before+120after calls/2syntheticengines,
+5160pairednumericfields,maxdifference0; p95improves37.418115->23.85524ms in this fixture only.
+10000safe memorycalls complete,Python+98686bytes,RSS+737280bytes; scope/budgets disclosed.
+
+Detailed evidence/commands: docs/phase9_changes.md; defects:docs/defects.md; ignoredrawproofs:
+artifacts/phase9/final-*,nightly-selection.*,performance-v1/. Implementation checkpoints ebc9570,
+42c7800,bf50dff,2fd1055,583b2fc; closuretagphase9-closed follows verified fullgate. Generateddata/
+fittedartifacts remainignored. Phase7/8 historicaltargets/records untouched. CompletePhase10
+starts immediately after tagverification, without a confirmation; no Phase11/PartB invented.

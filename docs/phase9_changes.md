@@ -1,6 +1,7 @@
 # Phase 9 — systematic testing and hardening
 
-Status: final gate pending. Historical Phase7/8 runs and schemas2.0.0 remain unchanged.
+Status: complete local gate on `583b2fc`,2026-10-25 IST. Historical Phase7/8 runs and schemas2.0.0
+remain unchanged. Closure metadata ratchets coverage floors upward; it does not change runtime.
 QA configuration: `configs/experiments/phase9-hardening.yaml`, first committed in `ebc9570`.
 Science/golden/E2E and profiling preregistration: `bf50dff`; measured optimization: `2fd1055`.
 
@@ -93,11 +94,25 @@ No test, training or other quality workload ran during either timing segment or 
 Intermediate fullwave3:466passed/1oldCLI-expectationfailure/70warnings/400.89s. The old test expected
 a raw ValueError; it now requires a friendly exit2 with the same precise engine-provenance error.
 Its focused repair passes. SQLite audit connection lifetime was subsequently fixed with an actual
-closed-handle regression. Full final checks are still required before closure.
+closed-handle regression. The final suite subsequently passes513tests/66warnings in246.93s.
+The warnings are the deliberately short test-only nonlinear coupling fits; no failure is skipped.
 
 Wave3 coverage: scoped7334/8116=90.36471168063085%; full7334/8209=89.34096723108783%line;
 branch-inclusive85.85710354948179%. Both full-package Phase8 floors are retained. Complete output,
 not the rounded console percentage, feeds the explicit gate. No extra source files are excluded.
+
+Final source `583b2fce27d0803590caad5711d1bf518aaf30ba`:513passed; Ruff clean; strict mypy clean
+for62files. Scoped7379/8146=90.58433587036582%; full7379/8239=89.56184002912975%line;
+branch-inclusive9423/10947=86.07837763770897%. Allthree gates pass; full-package floors are now
+ratcheted to those observed Phase9 values for subsequent phases. The explicit source inventory
+still includes every62module, including pure rendering/data/state/chart helpers.
+
+Nightly selection:3passed/510deselected in35.43s; actual GPU evidence remains unavailable on the
+CPU host. Existing docs presence check passes. Fresh pip-audit2.10.1 reports0known vulnerabilities
+over109audited distributions, with the one local unpublished project explicitly excluded from
+PyPI advisory lookup. Current/history credential scan checks327files/765blobs with0matches.
+All42reproduced defects have fixes and regression evidence; no known open critical software bug
+remains. Hosted CI execution is not claimed. Evidence: `artifacts/phase9/final-*` and nightly logs.
 
 ```powershell
 mingw32-make all-checks

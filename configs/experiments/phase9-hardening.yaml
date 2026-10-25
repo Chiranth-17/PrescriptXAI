@@ -26,8 +26,8 @@ coverage:
   rendering_exclusions:
     - src/prescriptxai/dashboard/app.py
   exclusion_reason: actual entrypoint runs through AppTest; runtime data/backend/state and pure charts remain included
-  full_package_line_floor: 87.32997481108312
-  full_package_branch_inclusive_floor: 83.66412213740458
+  full_package_line_floor: 89.56184002912975
+  full_package_branch_inclusive_floor: 86.07837763770897
 properties:
   examples_per_property: 20
   derandomize: true
