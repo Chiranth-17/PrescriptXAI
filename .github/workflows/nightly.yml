@@ -1,0 +1,36 @@
+name: Nightly hardening
+
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  slow-system-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --all-groups --locked
+      - name: Disclose actual hardware availability
+        run: |
+          uv run python -c "import torch; print({'cuda_available': torch.cuda.is_available(), 'gpu_devices': torch.cuda.device_count()})" >> "$GITHUB_STEP_SUMMARY"
+          echo 'CPU runner: optional GPU-specific evidence remains unavailable without GPU hardware.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Slow, end-to-end and applicable GPU checks
+        run: uv run pytest -m 'slow or e2e or gpu' --junitxml=nightly-tests.xml -ra
+      - name: Upload actual nightly test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-tests
+          path: nightly-tests.xml
+          if-no-files-found: error

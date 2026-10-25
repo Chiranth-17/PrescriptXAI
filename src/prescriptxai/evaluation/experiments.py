@@ -10,6 +10,7 @@ import platform
 import sqlite3
 import subprocess
 from collections.abc import Mapping
+from contextlib import closing
 from pathlib import Path
 from typing import Any, Literal
 
@@ -178,7 +179,7 @@ def audit_stage_completion(
     path = directory / "stages.json"
     flags = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     expected = manifest.get("expected_queries", {})
-    with sqlite3.connect(directory / "records.sqlite3") as connection:
+    with closing(sqlite3.connect(directory / "records.sqlite3")) as connection:
         paired = "json_extract(payload,'$.population')='paired_internal_diagnostic'"
         diagnostic_count = connection.execute(
             "SELECT COUNT(*) FROM records WHERE " + paired
@@ -225,7 +226,7 @@ def audit_stage_completion(
     status["latency"] = False
     if latency_path.exists() and latency_database.exists():
         latency = json.loads(latency_path.read_text(encoding="utf-8"))
-        with sqlite3.connect(latency_database) as connection:
+        with closing(sqlite3.connect(latency_database)) as connection:
             samples = dict(connection.execute("SELECT mode,COUNT(*) FROM samples GROUP BY mode"))
         status["latency"] = bool(
             flags.get("latency", {}).get("complete", False)

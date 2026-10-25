@@ -13,7 +13,8 @@ test:
 	uv run pytest
 
 cov:
-	uv run pytest --cov=prescriptxai --cov-report=term-missing
+	uv run pytest --cov=prescriptxai --cov-report=term-missing --cov-report=json --cov-report=xml
+	uv run python scripts/quality/coverage_gate.py
 
 data:
 	uv run prescriptxai data prepare --subset FD001

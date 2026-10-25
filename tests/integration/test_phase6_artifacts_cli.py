@@ -119,7 +119,8 @@ def test_cli_assess_recommend_batch_info_and_benchmark(fitted_config: Path, tmp_
     assert json.loads(output.read_text(encoding="utf-8"))[0]["mode"] == "THOROUGH"
     # Benchmark requires genuine engine provenance; lack of it is a precise failure.
     bench = runner.invoke(app, ["latency-bench", str(csv), "--config", str(fitted_config)])
-    assert bench.exit_code != 0 and isinstance(bench.exception, ValueError)
+    assert bench.exit_code == 2 and "engine" in bench.output.lower()
+    assert "Traceback" not in bench.output
     malformed = tmp_path / "bad.json"
     malformed.write_text('{"actuator": 0}', encoding="utf-8")
     bad = runner.invoke(app, ["recommend", str(malformed), "--config", str(fitted_config)])

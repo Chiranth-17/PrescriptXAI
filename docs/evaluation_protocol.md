@@ -274,3 +274,35 @@ Compare p95 with the profile's UI upper budget (faster is a pass). The interval 
 bootstrap over whole engines, retaining all four repeats within each draw:2000 replicates,
 seed1729,95% confidence; report32 observations and8 engines. Missing callbacks are a software
 failure, not passing zero latency. Do not replace a failure or discard a slow callback.
+
+## Phase 9 fixture performance and memory protocol — before baseline
+
+Configuration `configs/experiments/phase9-performance.yaml` and helper
+`scripts/diagnostics/phase9_performance.py` must be committed before preparation or measurement.
+This is a development software microbenchmark, not a new C-MAPSS efficacy estimate or a
+replacement for Phase7 timings. The actual synthetic fixture fits predictor/scaler/covariance
+on engines1–4 and calibrates on5–6; observed engines7–8 each have three saved cycles.
+Predictor fit and bootstrap use seed17; covariance and solver configuration retain seed1729.
+Protocol fixture-only-v1 uses configured k_max3,K1,D_max5,tau_danger.80,tau_safe.20, unchanged.
+
+Each before/after segment runs in a fresh process with one native CPU thread, six warmup calls,
+twelve separate cProfile calls, then twenty repeats of all six observations in saved order:
+120 complete public recommend calls per segment. Loaded-artifact inference, gating, optimization,
+validation and result construction are timed; fitting/loading, warmups, profiling and recording
+are outside timed samples. Retain every duration, decision, error and outlier. Attempt/result
+records flush as execution proceeds; incomplete segments stay incomplete and cannot be overwritten.
+The summary shows p50/p95/p99 and a95% whole-engine bootstrap p95 interval,2000 draws, seed17,
+two synthetic engines with all cycles/repeats retained. Two clusters give limited resolution.
+Compare every after decision and the independent stored goldens using the documented tolerances.
+Only implementation may change between segments; all settings, inputs, goldens, helpers and
+dependency lock bytes are checked against preparation and baseline, and again at segment end.
+
+The memory population is explicitly engines7/cycle3 and8/cycle1, both already-safe synthetic
+observations. After100 warmups, alternate them for exactly10000 complete public recommend calls.
+This checks the no-intervention path, not optimizer memory stress. Record every attempted/result
+call, initial manifest and post-GC baseline/1000-call checkpoints; measure tracemalloc live/peak
+Python bytes and psutil process RSS. Predeclared final-growth software regression budgets are
+5MiB Python live allocations and50MiB RSS. These are regression limits, not a deployment memory
+guarantee; platform allocators and native allocations are disclosed. Never infer physics, real
+actuator response or RUL extension from this fixture. No competing tests/training/quality workload
+runs during timing or memory stages. The full repository must be clean before each stage.

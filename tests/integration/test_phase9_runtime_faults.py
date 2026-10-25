@@ -13,7 +13,7 @@ from integration.test_phase8_backend import preview_service  # noqa: F401
 from prescriptxai.api import create_app
 from prescriptxai.config import load_config
 from prescriptxai.models.registry import load_model_bundle
-from prescriptxai.pipeline import ArtifactError, InputError, PrescriptXAI
+from prescriptxai.pipeline import ArtifactError, InputError, PrescriptXAI, PrescriptXAIEngine
 from prescriptxai.validation.pipeline import fit_mahalanobis_validator
 
 
@@ -60,6 +60,26 @@ def test_validator_cannot_relabel_evaluation_engines_as_fitting_engines() -> Non
         fit_mahalanobis_validator(
             wrong_partition, bundle, (7,), load_config(Path("configs/default.yaml"))
         )
+
+
+@pytest.mark.parametrize("field,value", [("model_choice", "lstm"), ("horizon_H", 20)])
+def test_legacy_factory_must_enforce_the_same_fitted_contract(
+    fitted_config: Path,  # noqa: F811
+    field: str,
+    value: object,
+) -> None:
+    """CLI evaluation's compatibility factory cannot bypass facade artifact checks."""
+    import yaml
+
+    settings = yaml.safe_load(fitted_config.read_text(encoding="utf-8"))
+    settings[field] = value
+    if field == "model_choice":
+        settings["model"]["risk_estimator"] = value
+    else:
+        settings["data"]["failure_horizon"] = value
+    fitted_config.write_text(yaml.safe_dump(settings), encoding="utf-8")
+    with pytest.raises(ArtifactError, match="configured|horizon_H"):
+        PrescriptXAIEngine.from_files(fitted_config, fitted_config.parent / "features.yaml")
 
 
 @pytest.mark.parametrize("workers", [True, 1.5, float("nan"), "1"])

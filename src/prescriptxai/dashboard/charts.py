@@ -44,5 +44,10 @@ def delta_chart(result: RecommendationResult) -> go.Figure | None:
             )
         ]
     )
-    figure.update_layout(title="Prescribed changes in raw physical units", yaxis_title="Raw delta")
+    title = (
+        "Prescribed changes in raw proxy units"
+        if result.outcome.success
+        else "Diagnostic candidate changes in raw proxy units — not an accepted action"
+    )
+    figure.update_layout(title=title, yaxis_title="Raw delta")
     return figure

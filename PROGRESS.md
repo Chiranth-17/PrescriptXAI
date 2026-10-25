@@ -71,6 +71,33 @@ regressions are next; no Phase9 completion or coverage/security/performance resu
 The >=90% line target will be measured with explicit rendering exclusions and full-package
 coverage retained alongside it. Historical Phase7/8 measurements and frozen2.0.0schemas remain.
 
+### Phase 9 science/golden/E2E checkpoint — 2026-10-25 IST; not closure
+
+Runtime boundary commit42c7800 follows ebc9570. All11 requested scientific error classes now
+have explicit regressions, including holdout perturbation invariance, declared solver-tuning
+leakage, true-versus-surrogate authority, exactly-once calibration and frozen-regime selection
+through the full validator. Genuine temp raw archive->training->calibration->coupling/covariance->
+recommend->validate->HTTP->AppTest succeeds. A separate real CLI train/evaluate/report workflow
+exposed and fixed an explicit coupling filename provenance bug. Fixed-seed stored four-triage
+goldens and two independent fresh-process outputs match; float32/64 decision comparisons pass.
+Concurrent HTTP IDs/results, Unicode, malformed types, oversized/empty batches and input limits
+are exercised. Forty-one reproduced defects are logged; root implemented every fix.
+
+Fullwave3:466passed/1failed/70warnings,400.89s. Scoped line7334/8116=90.36471168063085%, excluding
+only AppTest entrypoint app.py; full line7334/8209=89.34096723108783%, branch-inclusive
+85.85710354948179%. Explicit coverage gate passes allthree thresholds; no coverage floor lowered.
+The sole old test expected a raw CLI ValueError and now correctly requires exit2 plus a friendly
+engine-provenance message; its focused repair and coverage-gate test pass. SQLite audit-handle
+closure regression was then reproduced and fixed; full final gate remains pending.
+
+CI now enforces scoped/full coverage, uploads JSON/XML/gate evidence and audits dependencies;
+nightly slow/e2e/gpu marker selection is configured with honest CPU/GPU availability reporting.
+Hosted workflow execution is not claimed from local checks. Performance protocol/helper received
+independent read-only preflight; complete repository/helper/golden/lock freeze and failure records
+are required. No Phase9 timing or10000-call memory stage has run yet. Commit preregistration,
+then run serial baseline/profile, optimize only measured hotspots with unchanged goldens, run
+after/memory, independently audit, finish complete Phase9 gate/tag, and proceed directly to10.
+
 ## Phase 9 boundary checkpoint — not phase closure
 
 - Twenty-five reproduced defects and fixes are logged in docs/defects.md: trusted local Python-

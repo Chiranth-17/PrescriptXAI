@@ -1,0 +1,54 @@
+schema_version: 1
+run_id: phase9-fixture-performance-v1
+purpose: development_microbenchmark_and_memory_regression
+scientific_efficacy_claims: false
+fixture: tests/fixtures/operator_artifacts.py
+seed: 17
+seeds:
+  predictor_fit: 17
+  covariance_fit_and_solver_configuration: 1729
+  bootstrap: 17
+protocol: fixture-only-v1
+k_max: 3
+K: 1
+D_max: 5.0
+training_engines: [1, 2, 3, 4]
+calibration_engines: [5, 6]
+evaluation_engines: [7, 8]
+observations: all six saved observed.csv rows, three cycles per synthetic engine
+mode: fast
+measurement:
+  warmup_calls: 6
+  profile_calls: 12
+  repeats_per_observation: 20
+  total_timed_calls_per_segment: 120
+  sample_retention: all, including failures and outliers
+  cpu_native_threads: 1
+  scope: complete public recommend call on already loaded fixed artifacts
+  exclusions: artifact loading, fitting, warmups and separate cProfile calls
+  bootstrap_unit: whole synthetic engine, preserving all repeats and cycles
+  bootstrap_replicates: 2000
+  confidence: 0.95
+memory:
+  warmup_calls: 100
+  calls: 10000
+  population: two declared already-safe observed rows, alternated in this order
+  cases:
+    - {engine_id: 7, cycle: 3}
+    - {engine_id: 8, cycle: 1}
+  checkpoint_every: 1000
+  measure: tracemalloc live/peak Python allocations and psutil process RSS
+  collect_garbage_at_baseline_and_checkpoints: true
+  maximum_final_python_growth_bytes: 5242880
+  maximum_final_rss_growth_bytes: 52428800
+  limit_interpretation: predeclared software regression budgets, not an embedded deployment guarantee
+historical_measurements_replaced: false
+rules:
+  - Commit this configuration and the complete measurement helper before the baseline.
+  - Each stage runs once in a fresh process and refuses existing outputs or an active lock.
+  - Before/after segments use identical artifact bytes, observations, mode and effective settings.
+  - Compare every timed output and the independent stored golden with documented tolerances.
+  - Optimizations may change implementation only, never thresholds, search settings or outcomes.
+  - Two synthetic engines give limited bootstrap resolution; no generalization claim.
+  - Memory calls exercise the complete already-safe path, not optimizer allocation stress.
+  - No tests, fitting, training or other quality workloads run during timing or memory stages.

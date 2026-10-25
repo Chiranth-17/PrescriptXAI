@@ -70,6 +70,11 @@ packages = ["src/prescriptxai"]
 testpaths = ["tests"]
 pythonpath = ["tests"]
 addopts = "-ra --strict-config --strict-markers"
+markers = [
+  "slow: longer profiling, process, or stress verification",
+  "e2e: complete temporary-directory system workflow",
+  "gpu: optional GPU-specific verification when GPU hardware is present",
+]
 
 [tool.coverage.run]
 branch = true

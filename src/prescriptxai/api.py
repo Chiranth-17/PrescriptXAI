@@ -14,6 +14,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError, field_validator
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from prescriptxai.config import AppConfig, load_config
@@ -26,6 +27,22 @@ from prescriptxai.schemas import (
     RecourseResult,
     _reject_nonreal_measurement,
 )
+
+
+def _validation_details(error: ValidationError | RequestValidationError) -> dict[str, object]:
+    """Expose field locations and reasons without input values, exception context or frames."""
+    entries = [
+        {"type": item["type"], "loc": list(item["loc"]), "msg": item["msg"]}
+        for item in error.errors()
+    ]
+    return {
+        "detail": "; ".join(
+            f"{'.'.join(str(part) for part in item['loc'])}: {item['msg']}"
+            for item in error.errors()
+        ),
+        "errors": entries,
+        "error_type": "RequestValidationError",
+    }
 
 
 class ControlPreviewRequest(RecourseRequest):
@@ -160,8 +177,8 @@ def create_app(
         except (ValueError, RuntimeError):
             return settings.pipeline.default_mode.upper()
 
-    @app.exception_handler(HTTPException)
-    async def http_error_handler(request: Request, error: HTTPException) -> JSONResponse:
+    @app.exception_handler(StarletteHTTPException)
+    async def http_error_handler(request: Request, error: StarletteHTTPException) -> JSONResponse:
         return JSONResponse(
             {"detail": error.detail, "mode": await response_mode(request)},
             status_code=error.status_code,
@@ -181,14 +198,18 @@ def create_app(
     @app.exception_handler(ArtifactError)
     async def artifact_error_handler(request: Request, error: ArtifactError) -> JSONResponse:
         return JSONResponse(
-            {"detail": str(error), "error_type": type(error).__name__,
-             "mode": await response_mode(request)}, status_code=503,
+            {
+                "detail": str(error),
+                "error_type": type(error).__name__,
+                "mode": await response_mode(request),
+            },
+            status_code=503,
         )
 
     @app.exception_handler(ValidationError)
     async def validation_error_handler(_request: Request, error: ValidationError) -> JSONResponse:
         return JSONResponse(
-            {"detail": str(error), "mode": await response_mode(_request)}, status_code=422
+            {**_validation_details(error), "mode": await response_mode(_request)}, status_code=422
         )
 
     @app.exception_handler(RequestValidationError)
@@ -196,7 +217,7 @@ def create_app(
         _request: Request, error: RequestValidationError
     ) -> JSONResponse:
         return JSONResponse(
-            {"detail": str(error), "mode": await response_mode(_request)}, status_code=422
+            {**_validation_details(error), "mode": await response_mode(_request)}, status_code=422
         )
 
     @app.get("/health")

@@ -677,9 +677,9 @@ def fitted_engine_provenance(
 ) -> dict[str, tuple[int, ...] | None]:
     """Return fitted engine IDs, preserving unavailable legacy provenance as unknown."""
     provenance: dict[str, tuple[int, ...] | None] = {
-        "model_training": tuple(engine.model.training_engine_ids),
-        "scaler_training": tuple(engine.model.scaler.training_engine_ids),
-        "mahalanobis_training": tuple(engine.mahalanobis.training_engine_ids),
+        "model_training": _engine_ids(engine.model.training_engine_ids),
+        "scaler_training": _engine_ids(engine.model.scaler.training_engine_ids),
+        "mahalanobis_training": _engine_ids(engine.mahalanobis.training_engine_ids),
     }
     metrics = engine.model.metrics or {}
     partitions = metrics.get("split_engines")
@@ -696,6 +696,13 @@ def fitted_engine_provenance(
         provenance["coupling_training"] = _engine_ids(
             getattr(engine.coupling, "training_engine_ids", None)
         )
+        provenance["coupling_fit"] = _engine_ids(engine.coupling.fit_engine_ids)
+        provenance["coupling_calibration"] = _engine_ids(engine.coupling.calibration_engine_ids)
+    tuning = metrics.get("solver_tuning")
+    if tuning is not None:
+        if not isinstance(tuning, dict):
+            raise ValueError("solver_tuning provenance must declare fit_engine_ids")
+        provenance["solver_tuning"] = _engine_ids(tuning.get("fit_engine_ids"))
     return provenance
 
 
@@ -704,8 +711,20 @@ def _engine_ids(value: object) -> tuple[int, ...] | None:
     if not isinstance(value, (list, tuple)) or not value:
         return None
     try:
-        return tuple(sorted({int(item) for item in value}))
-    except (TypeError, ValueError) as exc:
+        if any(
+            isinstance(item, (bool, np.bool_))
+            or not isinstance(item, (int, float, np.integer, np.floating))
+            or not np.isfinite(item)
+            or item < 1
+            or item != int(item)
+            for item in value
+        ):
+            raise ValueError("IDs must be finite positive integers")
+        decoded = tuple(sorted(int(item) for item in value))
+        if len(set(decoded)) != len(decoded):
+            raise ValueError("engine IDs must be unique")
+        return decoded
+    except (TypeError, ValueError, OverflowError) as exc:
         raise ValueError("artifact engine provenance contains invalid engine IDs") from exc
 
 

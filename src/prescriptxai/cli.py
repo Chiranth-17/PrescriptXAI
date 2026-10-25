@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Callable
+from functools import wraps
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, ParamSpec, TypeVar
 
 import pandas as pd
 import typer
@@ -31,7 +33,7 @@ from prescriptxai.logging_utils import configure_logging
 from prescriptxai.models.registry import save_model_bundle
 from prescriptxai.models.train import train_risk_model
 from prescriptxai.pipeline import PrescriptXAI, PrescriptXAIEngine
-from prescriptxai.schemas import InputContext
+from prescriptxai.schemas import InputContext, _reject_nonreal_measurement
 from prescriptxai.validation.pipeline import (
     fit_mahalanobis_validator,
     save_mahalanobis_validator,
@@ -43,6 +45,21 @@ constraints_app = typer.Typer(no_args_is_help=True, help="Feature taxonomy and c
 app.add_typer(data_app, name="data")
 app.add_typer(constraints_app, name="constraints")
 LOGGER = logging.getLogger(__name__)
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
+
+
+def _operator_errors(command: Callable[_P, _R]) -> Callable[_P, _R]:
+    """Render anticipated configuration, artifact and I/O failures without an operator stack."""
+
+    @wraps(command)
+    def guarded(*args: _P.args, **kwargs: _P.kwargs) -> _R:
+        try:
+            return command(*args, **kwargs)
+        except (ValueError, OSError, RuntimeError) as error:
+            raise typer.BadParameter(str(error)) from error
+
+    return guarded
 
 
 @app.callback()
@@ -57,9 +74,11 @@ def _read_state(path: Path) -> dict[str, float]:
     if not isinstance(raw, dict):
         raise ValueError("state JSON root must be an object")
     try:
+        for value in raw.values():
+            _reject_nonreal_measurement(value, "state JSON")
         return {str(name): float(value) for name, value in raw.items()}
     except (TypeError, ValueError) as error:
-        raise ValueError("state JSON values must be numeric") from error
+        raise ValueError(f"state JSON values must be real numeric measurements: {error}") from error
 
 
 @app.command("download")
@@ -253,6 +272,7 @@ def fit_coupling_model(
 
 
 @app.command("train")
+@_operator_errors
 def train_model(
     subset: CmapssSubset = typer.Option("FD001", "--subset"),
     model_name: Literal["xgb", "mlp", "lstm"] = typer.Option("xgb", "--model"),
@@ -391,6 +411,7 @@ def _select_context(
 
 
 @app.command("recommend")
+@_operator_errors
 def recommend_state(
     state_path: Path | None = typer.Argument(None, exists=True, readable=True),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
@@ -417,6 +438,7 @@ def recommend_state(
 
 
 @app.command("assess")
+@_operator_errors
 def assess_state(
     state_path: Path | None = typer.Argument(None, exists=True, readable=True),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
@@ -438,6 +460,7 @@ def assess_state(
 
 
 @app.command("batch")
+@_operator_errors
 def batch_states(
     csv_path: Path = typer.Argument(..., exists=True),
     output: Path = typer.Option(..., "--output"),
@@ -479,6 +502,7 @@ def batch_states(
 
 
 @app.command("info")
+@_operator_errors
 def pipeline_info(
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
 ) -> None:
@@ -487,6 +511,7 @@ def pipeline_info(
 
 
 @app.command("latency-bench")
+@_operator_errors
 def latency_bench(
     csv_path: Path = typer.Argument(..., exists=True),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
@@ -504,14 +529,15 @@ def latency_bench(
 
 
 @app.command("evaluate")
+@_operator_errors
 def evaluate_model(
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
     taxonomy_path: Path = typer.Option(Path("configs/features.yaml"), "--features"),
     queries: int | None = typer.Option(None, "--queries", min=1),
 ) -> None:
     """Evaluate high-risk states from the engine-held-out split and write reports."""
-    config = load_config(config_path)
     engine = PrescriptXAIEngine.from_files(config_path, taxonomy_path)
+    config = engine.config
     if queries is not None:
         config.evaluation.max_queries = queries
         engine.config.evaluation.max_queries = queries
@@ -539,10 +565,8 @@ def evaluate_model(
         "mahalanobis": config.artifacts.mahalanobis,
         "dataset_archive": archive_path,
     }
-    if engine.coupling is not None and engine.taxonomy.coupling is not None:
-        source_paths["coupling"] = config.artifacts.model.parent / (
-            engine.taxonomy.coupling.artifact_name.format(subset=config.data.dataset)
-        )
+    if engine.coupling is not None and config.artifacts.coupling is not None:
+        source_paths["coupling"] = config.artifacts.coupling
     provenance = build_evaluation_provenance(engine, splits.test, source_paths)
     markdown_path = config.artifacts.evaluation_report.with_suffix(".md")
     write_evaluation_report(

@@ -1,0 +1,972 @@
+{
+  "escalate": {
+    "action_feasible": false,
+    "action_features": [
+      "actuator"
+    ],
+    "actuator_constraints_feasible": false,
+    "alert": true,
+    "assumptions": [
+      "C-MAPSS controllables and their bounds/rate limits are documented telemetry proxies.",
+      "The intervention horizon K is an assumption, not validated actuator dynamics."
+    ],
+    "constraints_ok": false,
+    "delta_min": 0.3,
+    "delta_per_feature": {
+      "actuator": {
+        "percent_change": 5100.0,
+        "percent_of_range": 2550.0,
+        "raw_delta": 102.0,
+        "role": "action",
+        "scaled_delta": 81.70219164931105
+      }
+    },
+    "evidence_level": "E1",
+    "failure": {
+      "closest_candidate": {
+        "actuator": 100.0,
+        "sensor": 2.0
+      },
+      "failing_tiers": [
+        "tier2_plausibility",
+        "tier3_engineering",
+        "tier4_coupling"
+      ],
+      "message": "Manual control preview; no optimization performed.",
+      "reason": "manual_validation_failed",
+      "risk_reached": 0.0001727059466642149,
+      "suggested_escalation": "Schedule maintenance and obtain domain review before intervention."
+    },
+    "joint": false,
+    "mode": "FAST",
+    "new_state": {
+      "actuator": 100.0,
+      "sensor": 2.0
+    },
+    "original_state": {
+      "actuator": -2.0,
+      "sensor": 2.0
+    },
+    "outcome": {
+      "deltas": [
+        {
+          "feature": "actuator",
+          "percent_of_current": 5100.0,
+          "percent_of_range": 2550.0,
+          "raw_delta": 102.0,
+          "scaled_delta": 81.70219164931105
+        }
+      ],
+      "final_risk": 0.0001727059466642149,
+      "initial_risk": 1.0,
+      "model_valid": true,
+      "recourse_feasible": false,
+      "success": false,
+      "tier2_plausible": false,
+      "tier3_engineering_valid": false,
+      "tier4_coupling_valid": false
+    },
+    "plausible": false,
+    "proxy_assumptions": true,
+    "risk_after": 0.0001727059466642149,
+    "risk_before": 1.0,
+    "schema_version": "2.0.0",
+    "seed": 1729,
+    "solver_settings": {
+      "manual_preview": true,
+      "mode": "fast"
+    },
+    "status": "ESCALATE",
+    "surrogate_risk_after": null,
+    "surrogate_risk_before": null,
+    "tau_danger": 0.8,
+    "tau_safe": 0.2,
+    "tiers": {
+      "simulator": {
+        "checks": [],
+        "diagnostics": [
+          "skipped: no simulator"
+        ],
+        "evidence_level": "none",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "status": "skipped",
+        "valid": false,
+        "warnings": []
+      },
+      "tier1_model": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E1",
+        "limit": 0.2,
+        "margin": 0.1998272940533358,
+        "measurement": 0.0001727059466642149,
+        "status": "pass",
+        "valid": true,
+        "warnings": []
+      },
+      "tier2_plausibility": {
+        "checks": [],
+        "diagnostics": [
+          "Mahalanobis distance 85.6114 exceeds 5"
+        ],
+        "evidence_level": "E2",
+        "limit": 5.0,
+        "margin": -80.61137385689028,
+        "measurement": 85.61137385689028,
+        "status": "fail",
+        "valid": false,
+        "warnings": []
+      },
+      "tier3_engineering": {
+        "checks": [
+          {
+            "explanation": "actuator: above physical maximum (2 -)",
+            "feature": "actuator",
+            "margin": -98.0,
+            "name": "bounds_actuator",
+            "passed": false
+          },
+          {
+            "explanation": "actuator: change 102 exceeds limit 4 over 1 step(s)",
+            "feature": "actuator",
+            "margin": -98.0,
+            "name": "rate_actuator",
+            "passed": false
+          },
+          {
+            "explanation": "actuator: outside feasible interval [-2, 2]",
+            "feature": "actuator",
+            "margin": -102.0,
+            "name": "rate_actuator",
+            "passed": false
+          }
+        ],
+        "diagnostics": [
+          "actuator: above physical maximum (2 -)",
+          "actuator: change 102 exceeds limit 4 over 1 step(s)",
+          "actuator: outside feasible interval [-2, 2]"
+        ],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": -102.0,
+        "measurement": null,
+        "status": "fail",
+        "valid": false,
+        "warnings": []
+      },
+      "tier4_coupling": {
+        "checks": [
+          {
+            "explanation": "actuator (100) must be <= sensor (2) + tolerance 0; margin -98",
+            "feature": null,
+            "margin": -98.0,
+            "name": "actuator_below_sensor",
+            "passed": false
+          }
+        ],
+        "diagnostics": [
+          "actuator_below_sensor: actuator (100) must be <= sensor (2) + tolerance 0; margin -98 (margin=-98)"
+        ],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": -98.0,
+        "measurement": null,
+        "status": "fail",
+        "valid": false,
+        "warnings": []
+      }
+    },
+    "triage": "ESCALATE",
+    "validation_report": {
+      "assumptions": [
+        "C-MAPSS controllables and their bounds/rate limits are documented telemetry proxies.",
+        "The intervention horizon K is an assumption, not validated actuator dynamics."
+      ],
+      "constraints_ok": false,
+      "evidence_level": "E1",
+      "failing_tiers": [
+        "tier2_distributional",
+        "tier3_engineering",
+        "tier4_sensor_coupling"
+      ],
+      "joint": false,
+      "model_valid": true,
+      "plausible": false,
+      "schema_version": "2.0.0",
+      "simulator": {
+        "checks": [],
+        "diagnostics": [
+          "skipped: no simulator"
+        ],
+        "evidence_level": "none",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "passed": false,
+        "status": "skipped",
+        "warnings": []
+      },
+      "tier1_model_safety": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E1",
+        "limit": 0.2,
+        "margin": 0.1998272940533358,
+        "measurement": 0.0001727059466642149,
+        "passed": true,
+        "status": "pass",
+        "warnings": []
+      },
+      "tier2_distributional": {
+        "checks": [],
+        "diagnostics": [
+          "Mahalanobis distance 85.6114 exceeds 5"
+        ],
+        "evidence_level": "E2",
+        "limit": 5.0,
+        "margin": -80.61137385689028,
+        "measurement": 85.61137385689028,
+        "passed": false,
+        "status": "fail",
+        "warnings": []
+      },
+      "tier3_engineering": {
+        "checks": [
+          {
+            "explanation": "actuator: above physical maximum (2 -)",
+            "feature": "actuator",
+            "margin": -98.0,
+            "name": "bounds_actuator",
+            "passed": false
+          },
+          {
+            "explanation": "actuator: change 102 exceeds limit 4 over 1 step(s)",
+            "feature": "actuator",
+            "margin": -98.0,
+            "name": "rate_actuator",
+            "passed": false
+          },
+          {
+            "explanation": "actuator: outside feasible interval [-2, 2]",
+            "feature": "actuator",
+            "margin": -102.0,
+            "name": "rate_actuator",
+            "passed": false
+          }
+        ],
+        "diagnostics": [
+          "actuator: above physical maximum (2 -)",
+          "actuator: change 102 exceeds limit 4 over 1 step(s)",
+          "actuator: outside feasible interval [-2, 2]"
+        ],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": -102.0,
+        "measurement": null,
+        "passed": false,
+        "status": "fail",
+        "warnings": []
+      },
+      "tier4_sensor_coupling": {
+        "checks": [
+          {
+            "explanation": "actuator (100) must be <= sensor (2) + tolerance 0; margin -98",
+            "feature": null,
+            "margin": -98.0,
+            "name": "actuator_below_sensor",
+            "passed": false
+          }
+        ],
+        "diagnostics": [
+          "actuator_below_sensor: actuator (100) must be <= sensor (2) + tolerance 0; margin -98 (margin=-98)"
+        ],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": -98.0,
+        "measurement": null,
+        "passed": false,
+        "status": "fail",
+        "warnings": []
+      }
+    },
+    "warnings": [
+      "Manual control preview; no optimization performed."
+    ]
+  },
+  "partial": {
+    "action_feasible": true,
+    "action_features": [
+      "actuator"
+    ],
+    "actuator_constraints_feasible": true,
+    "alert": true,
+    "assumptions": [
+      "C-MAPSS controllables and their bounds/rate limits are documented telemetry proxies.",
+      "The intervention horizon K is an assumption, not validated actuator dynamics."
+    ],
+    "constraints_ok": true,
+    "delta_min": 0.3,
+    "delta_per_feature": {
+      "actuator": {
+        "percent_change": 87.31337566557897,
+        "percent_of_range": 43.65668783278949,
+        "raw_delta": 1.7462675133115795,
+        "role": "action",
+        "scaled_delta": 1.3987635592504755
+      }
+    },
+    "evidence_level": "none",
+    "failure": {
+      "closest_candidate": {
+        "actuator": -0.2537324866884205,
+        "sensor": 2.0
+      },
+      "failing_tiers": [
+        "tier1_model"
+      ],
+      "message": "Manual control preview; no optimization performed.",
+      "reason": "manual_validation_failed",
+      "risk_reached": 0.4000001153905462,
+      "suggested_escalation": "Schedule maintenance and obtain domain review before intervention."
+    },
+    "joint": false,
+    "mode": "FAST",
+    "new_state": {
+      "actuator": -0.2537324866884205,
+      "sensor": 2.0
+    },
+    "original_state": {
+      "actuator": -2.0,
+      "sensor": 2.0
+    },
+    "outcome": {
+      "deltas": [
+        {
+          "feature": "actuator",
+          "percent_of_current": 87.31337566557897,
+          "percent_of_range": 43.65668783278949,
+          "raw_delta": 1.7462675133115795,
+          "scaled_delta": 1.3987635592504755
+        }
+      ],
+      "final_risk": 0.4000001153905462,
+      "initial_risk": 1.0,
+      "model_valid": false,
+      "recourse_feasible": true,
+      "success": false,
+      "tier2_plausible": true,
+      "tier3_engineering_valid": true,
+      "tier4_coupling_valid": true
+    },
+    "plausible": true,
+    "proxy_assumptions": true,
+    "risk_after": 0.4000001153905462,
+    "risk_before": 1.0,
+    "schema_version": "2.0.0",
+    "seed": 1729,
+    "solver_settings": {
+      "manual_preview": true,
+      "mode": "fast"
+    },
+    "status": "PARTIAL",
+    "surrogate_risk_after": null,
+    "surrogate_risk_before": null,
+    "tau_danger": 0.8,
+    "tau_safe": 0.2,
+    "tiers": {
+      "simulator": {
+        "checks": [],
+        "diagnostics": [
+          "skipped: no simulator"
+        ],
+        "evidence_level": "none",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "status": "skipped",
+        "valid": false,
+        "warnings": []
+      },
+      "tier1_model": {
+        "checks": [],
+        "diagnostics": [
+          "predicted risk 0.4 exceeds safe threshold"
+        ],
+        "evidence_level": "E1",
+        "limit": 0.2,
+        "margin": -0.20000011539054618,
+        "measurement": 0.4000001153905462,
+        "status": "fail",
+        "valid": false,
+        "warnings": []
+      },
+      "tier2_plausibility": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E2",
+        "limit": 5.0,
+        "margin": 4.621545203499685,
+        "measurement": 0.3784547965003154,
+        "status": "pass",
+        "valid": true,
+        "warnings": []
+      },
+      "tier3_engineering": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "status": "pass",
+        "valid": true,
+        "warnings": []
+      },
+      "tier4_coupling": {
+        "checks": [
+          {
+            "explanation": "actuator (-0.253732) must be <= sensor (2) + tolerance 0; margin 2.25373",
+            "feature": null,
+            "margin": 2.2537324866884205,
+            "name": "actuator_below_sensor",
+            "passed": true
+          }
+        ],
+        "diagnostics": [],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": 2.2537324866884205,
+        "measurement": null,
+        "status": "pass",
+        "valid": true,
+        "warnings": []
+      }
+    },
+    "triage": "PARTIAL",
+    "validation_report": {
+      "assumptions": [
+        "C-MAPSS controllables and their bounds/rate limits are documented telemetry proxies.",
+        "The intervention horizon K is an assumption, not validated actuator dynamics."
+      ],
+      "constraints_ok": true,
+      "evidence_level": "none",
+      "failing_tiers": [
+        "tier1_model_safety"
+      ],
+      "joint": false,
+      "model_valid": false,
+      "plausible": true,
+      "schema_version": "2.0.0",
+      "simulator": {
+        "checks": [],
+        "diagnostics": [
+          "skipped: no simulator"
+        ],
+        "evidence_level": "none",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "passed": false,
+        "status": "skipped",
+        "warnings": []
+      },
+      "tier1_model_safety": {
+        "checks": [],
+        "diagnostics": [
+          "predicted risk 0.4 exceeds safe threshold"
+        ],
+        "evidence_level": "E1",
+        "limit": 0.2,
+        "margin": -0.20000011539054618,
+        "measurement": 0.4000001153905462,
+        "passed": false,
+        "status": "fail",
+        "warnings": []
+      },
+      "tier2_distributional": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E2",
+        "limit": 5.0,
+        "margin": 4.621545203499685,
+        "measurement": 0.3784547965003154,
+        "passed": true,
+        "status": "pass",
+        "warnings": []
+      },
+      "tier3_engineering": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "passed": true,
+        "status": "pass",
+        "warnings": []
+      },
+      "tier4_sensor_coupling": {
+        "checks": [
+          {
+            "explanation": "actuator (-0.253732) must be <= sensor (2) + tolerance 0; margin 2.25373",
+            "feature": null,
+            "margin": 2.2537324866884205,
+            "name": "actuator_below_sensor",
+            "passed": true
+          }
+        ],
+        "diagnostics": [],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": 2.2537324866884205,
+        "measurement": null,
+        "passed": true,
+        "status": "pass",
+        "warnings": []
+      }
+    },
+    "warnings": [
+      "Manual control preview; no optimization performed."
+    ]
+  },
+  "recoverable": {
+    "action_feasible": true,
+    "action_features": [
+      "actuator"
+    ],
+    "actuator_constraints_feasible": true,
+    "alert": true,
+    "assumptions": [
+      "C-MAPSS controllables and their bounds/rate limits are documented telemetry proxies.",
+      "The intervention horizon K is an assumption, not validated actuator dynamics."
+    ],
+    "constraints_ok": true,
+    "delta_min": 0.3,
+    "delta_per_feature": {
+      "actuator": {
+        "percent_change": 100.0,
+        "percent_of_range": 50.0,
+        "raw_delta": 2.0,
+        "role": "action",
+        "scaled_delta": 1.6020037578296284
+      }
+    },
+    "evidence_level": "E3",
+    "failure": null,
+    "joint": true,
+    "mode": "FAST",
+    "new_state": {
+      "actuator": 0.0,
+      "sensor": 2.0
+    },
+    "original_state": {
+      "actuator": -2.0,
+      "sensor": 2.0
+    },
+    "outcome": {
+      "deltas": [
+        {
+          "feature": "actuator",
+          "percent_of_current": 100.0,
+          "percent_of_range": 50.0,
+          "raw_delta": 2.0,
+          "scaled_delta": 1.6020037578296284
+        }
+      ],
+      "final_risk": 1.3055955368383647e-05,
+      "initial_risk": 1.0,
+      "model_valid": true,
+      "recourse_feasible": true,
+      "success": true,
+      "tier2_plausible": true,
+      "tier3_engineering_valid": true,
+      "tier4_coupling_valid": true
+    },
+    "plausible": true,
+    "proxy_assumptions": true,
+    "risk_after": 1.3055955368383647e-05,
+    "risk_before": 1.0,
+    "schema_version": "2.0.0",
+    "seed": 1729,
+    "solver_settings": {
+      "alpha_steps": 1,
+      "check_coupling": true,
+      "check_distribution": true,
+      "effective_coupling_filter": true,
+      "effective_distribution_filter": true,
+      "feedback_final_weight": 10.0,
+      "feedback_max_refinements": 2,
+      "feedback_refinements_executed": 0,
+      "grid_candidates_generated": 4,
+      "grid_candidates_scored": 4,
+      "grid_k_limit_honored": true,
+      "grid_max_changed_features": 1,
+      "grid_max_scaled_distance": 3.204007515659257,
+      "grid_ran": true,
+      "grid_scaled_distance_honored": true,
+      "grid_support_cap": null,
+      "k_max": 3,
+      "max_iter": 15,
+      "max_scaled_distance": 4.0,
+      "propagate_dependents": true,
+      "restarts": 1,
+      "search_mode": "fast",
+      "selected_alpha": 10.0,
+      "selected_l1_weight": 1.0,
+      "solver_calls": 1,
+      "support_search_limit": 1,
+      "true_model_evaluations": 4,
+      "true_model_grid_points": 5,
+      "validate_plausibility": true
+    },
+    "status": "RECOVERABLE",
+    "surrogate_risk_after": 1.3055955368383647e-05,
+    "surrogate_risk_before": 1.0,
+    "tau_danger": 0.8,
+    "tau_safe": 0.2,
+    "tiers": {
+      "simulator": {
+        "checks": [],
+        "diagnostics": [
+          "skipped: no simulator"
+        ],
+        "evidence_level": "none",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "status": "skipped",
+        "valid": false,
+        "warnings": []
+      },
+      "tier1_model": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E1",
+        "limit": 0.2,
+        "margin": 0.19998694404463163,
+        "measurement": 1.3055955368383647e-05,
+        "status": "pass",
+        "valid": true,
+        "warnings": []
+      },
+      "tier2_plausibility": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E2",
+        "limit": 5.0,
+        "margin": 4.839177131139217,
+        "measurement": 0.1608228688607832,
+        "status": "pass",
+        "valid": true,
+        "warnings": []
+      },
+      "tier3_engineering": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "status": "pass",
+        "valid": true,
+        "warnings": []
+      },
+      "tier4_coupling": {
+        "checks": [
+          {
+            "explanation": "actuator (0) must be <= sensor (2) + tolerance 0; margin 2",
+            "feature": null,
+            "margin": 2.0,
+            "name": "actuator_below_sensor",
+            "passed": true
+          }
+        ],
+        "diagnostics": [],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": 2.0,
+        "measurement": null,
+        "status": "pass",
+        "valid": true,
+        "warnings": []
+      }
+    },
+    "triage": "RECOVERABLE",
+    "validation_report": {
+      "assumptions": [
+        "C-MAPSS controllables and their bounds/rate limits are documented telemetry proxies.",
+        "The intervention horizon K is an assumption, not validated actuator dynamics."
+      ],
+      "constraints_ok": true,
+      "evidence_level": "E3",
+      "failing_tiers": [],
+      "joint": true,
+      "model_valid": true,
+      "plausible": true,
+      "schema_version": "2.0.0",
+      "simulator": {
+        "checks": [],
+        "diagnostics": [
+          "skipped: no simulator"
+        ],
+        "evidence_level": "none",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "passed": false,
+        "status": "skipped",
+        "warnings": []
+      },
+      "tier1_model_safety": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E1",
+        "limit": 0.2,
+        "margin": 0.19998694404463163,
+        "measurement": 1.3055955368383647e-05,
+        "passed": true,
+        "status": "pass",
+        "warnings": []
+      },
+      "tier2_distributional": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E2",
+        "limit": 5.0,
+        "margin": 4.839177131139217,
+        "measurement": 0.1608228688607832,
+        "passed": true,
+        "status": "pass",
+        "warnings": []
+      },
+      "tier3_engineering": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "passed": true,
+        "status": "pass",
+        "warnings": []
+      },
+      "tier4_sensor_coupling": {
+        "checks": [
+          {
+            "explanation": "actuator (0) must be <= sensor (2) + tolerance 0; margin 2",
+            "feature": null,
+            "margin": 2.0,
+            "name": "actuator_below_sensor",
+            "passed": true
+          }
+        ],
+        "diagnostics": [],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": 2.0,
+        "measurement": null,
+        "passed": true,
+        "status": "pass",
+        "warnings": []
+      }
+    },
+    "warnings": []
+  },
+  "safe": {
+    "action_feasible": true,
+    "action_features": [],
+    "actuator_constraints_feasible": true,
+    "alert": false,
+    "assumptions": [
+      "C-MAPSS controllables and their bounds/rate limits are documented telemetry proxies.",
+      "The intervention horizon K is an assumption, not validated actuator dynamics."
+    ],
+    "constraints_ok": true,
+    "delta_min": 0.3,
+    "delta_per_feature": {},
+    "evidence_level": "E3",
+    "failure": null,
+    "joint": true,
+    "mode": "FAST",
+    "new_state": {
+      "actuator": 2.0,
+      "sensor": 2.0
+    },
+    "original_state": {
+      "actuator": 2.0,
+      "sensor": 2.0
+    },
+    "outcome": {
+      "deltas": [],
+      "final_risk": 3.500573391629813e-06,
+      "initial_risk": 3.500573391629813e-06,
+      "model_valid": true,
+      "recourse_feasible": true,
+      "success": true,
+      "tier2_plausible": true,
+      "tier3_engineering_valid": true,
+      "tier4_coupling_valid": true
+    },
+    "plausible": true,
+    "proxy_assumptions": true,
+    "risk_after": 3.500573391629813e-06,
+    "risk_before": 3.500573391629813e-06,
+    "schema_version": "2.0.0",
+    "seed": 1729,
+    "solver_settings": {},
+    "status": "NO_INTERVENTION",
+    "surrogate_risk_after": 3.500573391629813e-06,
+    "surrogate_risk_before": 3.500573391629813e-06,
+    "tau_danger": 0.8,
+    "tau_safe": 0.2,
+    "tiers": {
+      "simulator": {
+        "checks": [],
+        "diagnostics": [
+          "skipped: no simulator"
+        ],
+        "evidence_level": "none",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "status": "skipped",
+        "valid": false,
+        "warnings": []
+      },
+      "tier1_model": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E1",
+        "limit": 0.2,
+        "margin": 0.19999649942660838,
+        "measurement": 3.500573391629813e-06,
+        "status": "pass",
+        "valid": true,
+        "warnings": []
+      },
+      "tier2_plausibility": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E2",
+        "limit": 5.0,
+        "margin": 3.445378934345762,
+        "measurement": 1.554621065654238,
+        "status": "pass",
+        "valid": true,
+        "warnings": []
+      },
+      "tier3_engineering": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "status": "pass",
+        "valid": true,
+        "warnings": []
+      },
+      "tier4_coupling": {
+        "checks": [
+          {
+            "explanation": "actuator (2) must be <= sensor (2) + tolerance 0; margin 0",
+            "feature": null,
+            "margin": 0.0,
+            "name": "actuator_below_sensor",
+            "passed": true
+          }
+        ],
+        "diagnostics": [],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": 0.0,
+        "measurement": null,
+        "status": "pass",
+        "valid": true,
+        "warnings": []
+      }
+    },
+    "triage": null,
+    "validation_report": {
+      "assumptions": [
+        "C-MAPSS controllables and their bounds/rate limits are documented telemetry proxies.",
+        "The intervention horizon K is an assumption, not validated actuator dynamics."
+      ],
+      "constraints_ok": true,
+      "evidence_level": "E3",
+      "failing_tiers": [],
+      "joint": true,
+      "model_valid": true,
+      "plausible": true,
+      "schema_version": "2.0.0",
+      "simulator": {
+        "checks": [],
+        "diagnostics": [
+          "skipped: no simulator"
+        ],
+        "evidence_level": "none",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "passed": false,
+        "status": "skipped",
+        "warnings": []
+      },
+      "tier1_model_safety": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E1",
+        "limit": 0.2,
+        "margin": 0.19999649942660838,
+        "measurement": 3.500573391629813e-06,
+        "passed": true,
+        "status": "pass",
+        "warnings": []
+      },
+      "tier2_distributional": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E2",
+        "limit": 5.0,
+        "margin": 3.445378934345762,
+        "measurement": 1.554621065654238,
+        "passed": true,
+        "status": "pass",
+        "warnings": []
+      },
+      "tier3_engineering": {
+        "checks": [],
+        "diagnostics": [],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": null,
+        "measurement": null,
+        "passed": true,
+        "status": "pass",
+        "warnings": []
+      },
+      "tier4_sensor_coupling": {
+        "checks": [
+          {
+            "explanation": "actuator (2) must be <= sensor (2) + tolerance 0; margin 0",
+            "feature": null,
+            "margin": 0.0,
+            "name": "actuator_below_sensor",
+            "passed": true
+          }
+        ],
+        "diagnostics": [],
+        "evidence_level": "E3",
+        "limit": null,
+        "margin": 0.0,
+        "measurement": null,
+        "passed": true,
+        "status": "pass",
+        "warnings": []
+      }
+    },
+    "warnings": []
+  }
+}

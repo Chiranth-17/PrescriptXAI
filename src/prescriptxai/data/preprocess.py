@@ -9,6 +9,7 @@ from typing import cast
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
@@ -287,7 +288,19 @@ class RegimeAwarePreprocessor:
         missing = set(scaled_names) - set(transformed_frame.columns)
         if missing:
             raise ValueError(f"transformed dataframe is missing scaled sensors: {sorted(missing)}")
-        regimes = transformed_frame["operating_regime"].to_numpy(dtype=int)
+        raw_regimes = transformed_frame["operating_regime"].to_numpy()
+        if any(
+            isinstance(value, (bool, np.bool_))
+            or not isinstance(value, (int, float, np.integer, np.floating))
+            or not np.isfinite(value)
+            or value < 0
+            or value != int(value)
+            for value in raw_regimes
+        ):
+            raise ValueError("operating_regime values must be finite nonnegative integers")
+        if any(int(value) not in self.regime_means for value in raw_regimes):
+            raise ValueError("no training statistics were fitted for an operating_regime")
+        regimes: NDArray[np.int64] = np.asarray(raw_regimes, dtype=np.int64)
         output = transformed_frame.copy()
         for regime in np.unique(regimes):
             regime_int = int(regime)

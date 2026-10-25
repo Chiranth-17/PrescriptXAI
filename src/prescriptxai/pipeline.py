@@ -43,7 +43,6 @@ from prescriptxai.schemas import (
 from prescriptxai.validation.pipeline import (
     ValidationReport,
     load_mahalanobis_validator,
-    try_load_coupling_model,
     validate_candidate,
     verify_validator_compatibility,
 )
@@ -93,48 +92,29 @@ class PrescriptXAIEngine:
         mahalanobis_path: Path | None = None,
         coupling_path: Path | None = None,
     ) -> PrescriptXAIEngine:
-        """Load an engine from configured YAML and fitted artifacts."""
+        """Load through the same verified artifact assembly used by the public facade."""
         config = load_config(config_path)
-        taxonomy = load_taxonomy(taxonomy_path)
-        model = load_model_bundle(model_path or config.artifacts.model, require_calibrated=True)
-        resolved_bounds = getattr(model, "resolved_bounds", None)
-        if resolved_bounds:
-            taxonomy = taxonomy.with_resolved_bounds(
-                resolved_bounds, getattr(model, "resolved_rate_limits", None)
-            )
-        mahalanobis = load_mahalanobis_validator(mahalanobis_path or config.artifacts.mahalanobis)
-        verify_validator_compatibility(mahalanobis, model, config)
-        if not taxonomy.active_controllable_feature_names(model.feature_names):
-            raise ValueError("at least one configured controllable proxy must be a model feature")
-        resolved_coupling_path = (
+        selected = config.pipeline.model_artifacts.get(config.model_choice)
+        if selected is not None:
+            config.artifacts = selected.model_copy(deep=True)
+        # Explicit legacy arguments override a selected profile, but never its verification.
+        config.pipeline.model_artifacts = {}
+        config.pipeline.taxonomy_path = taxonomy_path
+        config.artifacts.model = config.paths.model = model_path or config.artifacts.model
+        config.artifacts.mahalanobis = config.paths.mahalanobis = (
+            mahalanobis_path or config.artifacts.mahalanobis
+        )
+        config.paths.evaluation_report = config.artifacts.evaluation_report
+        fallback = _default_coupling_path(
+            load_taxonomy(taxonomy_path), config.data.dataset, config.artifacts.model.parent
+        )
+        config.artifacts.coupling = (
             coupling_path
             or config.artifacts.coupling
-            or _default_coupling_path(
-                taxonomy, config.data.dataset, (model_path or config.artifacts.model).parent
-            )
+            or (fallback if fallback is not None and fallback.is_file() else None)
         )
-        coupling = (
-            try_load_coupling_model(resolved_coupling_path)
-            if resolved_coupling_path is not None
-            else None
-        )
-        if not getattr(model, "resolved_bounds", None) and coupling is not None:
-            taxonomy = taxonomy.with_resolved_bounds(
-                coupling.resolved_bounds, getattr(coupling, "resolved_rate_limits", None)
-            )
-        taxonomy.validate_model_feature_coverage(model.feature_names)
-        missing_bounds = [
-            name
-            for name, spec in taxonomy.feature_by_name().items()
-            if name in model.feature_names
-            and (spec.bounds.minimum is None or spec.bounds.maximum is None)
-        ]
-        if missing_bounds:
-            raise ValueError(
-                "model artifact has no training-derived physical bounds for "
-                f"{sorted(missing_bounds)}; retrain or fit the coupling artifact"
-            )
-        return cls(config, taxonomy, model, mahalanobis, coupling)
+        service = PrescriptXAI.from_config(config)
+        return replace(service.engine, config=service.config)
 
     def recommend(self, state: Mapping[str, float]) -> RecommendationResult:
         """Generate an actuator-only candidate and run all configured validation tiers."""
@@ -439,10 +419,10 @@ class PrescriptXAI:
         if context is not None and not isinstance(context, (InputContext, Mapping)):
             raise InputError("context must be InputContext, a mapping or None")
         try:
-            observed = (
-                context
+            observed = InputContext.model_validate(
+                context.model_dump(mode="python")
                 if isinstance(context, InputContext)
-                else InputContext.model_validate({} if context is None else context)
+                else ({} if context is None else context)
             )
         except ValidationError as error:
             raise (

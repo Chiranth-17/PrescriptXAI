@@ -29,3 +29,6 @@ diagnostic_bundle.zip
 .agents/
 bundle_prompt.txt
 coverage.json
+coverage.xml
+coverage-gate.json
+dependency-audit.json
