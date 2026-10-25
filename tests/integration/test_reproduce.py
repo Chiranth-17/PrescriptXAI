@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import hashlib
+import importlib
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 import yaml
@@ -34,7 +36,7 @@ def _profile(directory: Path) -> Path:
     config.artifacts.evaluation_report = config.paths.evaluation_report = output / "evaluation.json"
     config.data.processed_root = config.paths.processed_data = output / "processed"
     config.evaluation.max_queries = 2
-    config.evaluation.bootstrap_replicates = 20
+    config.evaluation.bootstrap_replicates = 100
     config.pipeline.taxonomy_path = directory / "features.yaml"
     config.pipeline.taxonomy_path.write_text(
         yaml.safe_dump(taxonomy.model_dump(mode="json")), encoding="utf-8"
@@ -74,6 +76,11 @@ def test_real_reproduce_command_writes_loadable_hashed_artifacts(tmp_path: Path)
     response = TestClient(create_app(service)).get("/health")
     assert response.status_code == 200
     report = json.loads((root / "evaluation.json").read_text())
+    measured = json.loads((root / "measured_metrics.json").read_text())
+    assert set(measured["metrics"]) >= {"validity", "plausibility_all", "plausibility_returned"}
+    assert measured["metrics"]["validity"]["observation_count"] == len(report["records"])
+    saved = [json.loads(line) for line in (root / "query_results.jsonl").read_text().splitlines()]
+    assert saved == report["records"]
     assert report["provenance"]["reproduction_run_id"] == manifest["run_id"]
     snapshot = (root / "manifest.json").read_bytes()
     with pytest.raises(ValueError, match="refusing to replace"):
@@ -112,3 +119,33 @@ def test_failed_reproduction_keeps_stage_evidence_and_cannot_replace_it(tmp_path
     assert manifest["status"] == "failed"
     assert manifest["failed_stage"] == "data_prepare"
     assert manifest["stages"][0]["error_type"] == "DatasetDownloadError"
+
+
+def test_evaluation_fault_retains_selected_population_and_completed_query(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Inject a crash after a real fitted-model query, preserving its completed record."""
+    module = importlib.import_module("prescriptxai.reproduce")
+    original = module.evaluate_states
+
+    def interrupted(*args: object, **kwargs: Any) -> object:  # noqa: ANN401
+        save_record = kwargs["on_record"]
+
+        def save_then_crash(record: object) -> None:
+            save_record(record)
+            raise RuntimeError("injected interruption after the durable record")
+
+        kwargs["on_record"] = save_then_crash
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(module, "evaluate_states", interrupted)
+    profile = _profile(tmp_path)
+    with pytest.raises(RuntimeError, match="stage evaluate failed"):
+        reproduce(profile)
+    root = tmp_path / "artifacts/reproduction"
+    manifest = json.loads((root / "manifest.json").read_text())
+    assert manifest["status"] == "failed" and manifest["failed_stage"] == "evaluate"
+    assert manifest["evaluation_counts"]["selected_queries"] == 2
+    assert manifest["evaluation_counts"]["completed_queries"] == 1
+    assert len((root / "query_results.jsonl").read_text().splitlines()) == 1
+    assert (root / "selected_queries.csv").is_file()

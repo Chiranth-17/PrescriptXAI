@@ -38,6 +38,12 @@ class CustomBuildHook(BuildHookInterface):
             for path in sorted(package.rglob("*"))
             if path.is_file() and path.suffix in {".py", ".yaml"}
         }
+        if embedded.is_file() and identity.get("source_file_hashes") != hashes:
+            identity["parent_source_identity"] = {
+                key: value for key, value in identity.items() if key != "parent_source_identity"
+            }
+            identity["tracked_source_dirty"] = True
+            identity["origin"] = "modified_source_archive"
         identity["source_file_hashes"] = hashes
         identity["source_tree_sha256"] = hashlib.sha256(
             json.dumps(hashes, sort_keys=True).encode()

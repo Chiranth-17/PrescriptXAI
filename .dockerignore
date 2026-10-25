@@ -4,7 +4,6 @@
 artifacts
 data
 build
-dist
 htmlcov
 site
 __pycache__

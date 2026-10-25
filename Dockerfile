@@ -3,10 +3,10 @@ ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN python -m venv /opt/venv
 WORKDIR /build
-COPY . .
+COPY dist/*.whl ./
 # The CPU local version satisfies the pinned torch public version without CUDA packages.
 RUN pip install --no-cache-dir --no-deps --index-url https://download.pytorch.org/whl/cpu torch==2.14.1 \
-    && pip install --no-cache-dir ".[api,dashboard]"
+    && pip install --no-cache-dir "$(find /build -maxdepth 1 -name '*.whl')[api,dashboard]"
 
 FROM python:3.12-slim AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \

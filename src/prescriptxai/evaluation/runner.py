@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from concurrent.futures import FIRST_COMPLETED, Future, ProcessPoolExecutor, wait
 from dataclasses import dataclass, field
 from importlib import import_module
@@ -500,6 +500,9 @@ def evaluate_states(
     engine: PrescriptXAIEngine,
     held_out_rows: pd.DataFrame,
     ingestion_ms: float | None = None,
+    *,
+    on_selection: Callable[[pd.DataFrame, dict[str, int]], None] | None = None,
+    on_record: Callable[[EvaluationRecord], None] | None = None,
 ) -> EvaluationRun:
     """Sample high-risk held-out states reproducibly and run full recommendation validation."""
     if held_out_rows.empty:
@@ -537,6 +540,11 @@ def evaluate_states(
             )
         )
     feature_groups = engine.taxonomy.feature_groups.model_dump()
+    if on_selection is not None:
+        on_selection(
+            held_out_rows.iloc[selected].copy(),
+            {"eligible_alerts": eligible_count, "interval_prescreen_exclusions": infeasible_count},
+        )
     state_features = tuple(
         dict.fromkeys(name for group in feature_groups.values() for name in group["features"])
     )
@@ -639,6 +647,8 @@ def evaluate_states(
                 searched_candidate_states=(result.optimization.search_candidate_states),
             )
         )
+        if on_record is not None:
+            on_record(records[-1])
     inference_per_row = float(np.mean(inference_samples_ms)) if inference_samples_ms else None
     record_tuple = tuple(records)
     summary = calculate_metrics(

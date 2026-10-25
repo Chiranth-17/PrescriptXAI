@@ -332,3 +332,12 @@ report in order. Existing output directories are refused, including incomplete r
 retain failures and their stage manifest. Individual demo engine/cycle choices can be
 selected from completed outputs and are explicitly illustrative examples, not rate
 estimates. Neither this protocol nor the outputs imply physical safety or RUL extension.
+
+Implementation clarification before the first real run: the registered evaluation mode
+is THOROUGH (`recourse.search_mode`); UI/API defaults are FAST and are separate demo calls.
+`measured_metrics.json` is the authoritative Phase10 metric table. Its returned denominator
+requires a nonzero retained-model-feature change and a bounded, rate-compliant, frozen-feature-
+preserving action with proxy sparsity <=k_max, independent of the model-safety verdict.
+Whole-engine ratios use the existing clustered bootstrap with2000 draws/seed1729 and95% CIs;
+zero-returned replicates/counts remain explicit. Selected query rows and each completed record
+are persisted before subsequent work. A failed workflow is incomplete, never a new pass.
