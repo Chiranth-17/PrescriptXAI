@@ -1,0 +1,50 @@
+site_name: PrescriptXAI
+site_description: Sparse proxy recourse with explicit evidence limits
+docs_dir: docs
+site_dir: site
+theme:
+  name: material
+  features: [navigation.sections, content.code.copy]
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: true
+            show_signature_annotations: true
+            members_order: source
+markdown_extensions:
+  - admonition
+  - tables
+  - attr_list
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+nav:
+  - Start: index.md
+  - Reproduction and deployment: reproducibility.md
+  - Architecture: architecture.md
+  - Mathematics: math.md
+  - Evidence:
+      - Results: results.md
+      - Levels: evidence_levels.md
+      - Assumptions: assumptions.md
+      - Limitations: limitations.md
+      - Evaluation protocol: evaluation_protocol.md
+  - Operator demo: demo_script.md
+  - Defense questions: defense_qa.md
+  - SDG 9: sdg9.md
+  - API reference: api_reference.md
+  - Phase reports:
+      - Phase 7: phase7_changes.md
+      - Phase 8: phase8_changes.md
+      - Phase 9: phase9_changes.md
+      - Phase 10: phase10_changes.md

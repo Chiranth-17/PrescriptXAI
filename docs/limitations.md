@@ -69,8 +69,9 @@ success is stricter and is never compared with the Tier 2 90% target.
 
 Legacy precision-only artifacts are rejected with a refit instruction. Refit on the original
 training engines; do not convert an old inverse into purported new shrinkage statistics. Regime
-statistics and threshold provenance are persisted. The default validator/coupling paths now point
-to Phase 5 artifacts; run the Phase 5 preparation/evaluation command before using the dashboard.
+statistics and threshold provenance are persisted. Historical experiment profiles retain their original artifact paths. A fresh installation uses
+`prescriptxai init` and `prescriptxai reproduce` to create its own compatible artifacts; it must
+not assume ignored historical files are present.
 
 ## Phase 7 measured gaps
 
@@ -103,3 +104,12 @@ no API/upload can grant trust. Dependency audits cover known public advisories, 
 project is checked by source/regression tests. Credential scans use disclosed high-confidence
 patterns and do not claim to recognize every possible credential format. See `artifact_security.md`.
 Hosted CI/GPU execution is separate from the local CPU gate; unavailable GPU results are not passes.
+
+## Surrogate fidelity and incomplete search
+
+The global distilled gradient surrogate approximates the original calibrated predictor. Its
+errors can direct search away from feasible recourse or toward candidates that fail true-model
+rescoring. Final acceptance always uses the original calibrated model, preventing surrogate-only
+acceptance; this does not certify that search found every feasible candidate. See surrogate
+error and false-safe metrics in the [Phase 7 report](phase7_changes.md). Finite reference
+searches remain unresolved unless the required production-superset test is met.

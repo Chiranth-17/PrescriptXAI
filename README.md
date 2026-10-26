@@ -1,125 +1,142 @@
 # PrescriptXAI
 
-PrescriptXAI is a research library and decision-support prototype for actuator-only algorithmic
-recourse. It searches for sparse, bounded state changes and checks model safety separately from
-three empirical/engineering plausibility tiers. The authoritative project synopsis is preserved at
-[docs/synopsis.pdf](docs/synopsis.pdf).
+PrescriptXAI is a research library and operator dashboard for sparse algorithmic recourse on
+NASA C-MAPSS. Predictive maintenance estimates **when failure is likely**; diagnostic methods
+explain **why a model predicts it**; unconstrained recourse searches for **a prediction change**.
+PrescriptXAI restricts changes to configured proxies and checks true calibrated model risk,
+statistical plausibility, engineering constraints and learned sensor coupling separately.
 
-> **Scope:** NASA C-MAPSS is static run-to-failure data. It cannot establish that a proposed
-> intervention extends RUL or is safe on a real engine. The default feature map exposes seven
-> measured channels as configurable controllable proxies, not direct actuator commands. Learned
-> sensor coupling captures observed co-variation, not causal physics. Recommendations remain
-> research outputs pending domain review. Dynamic simulator support is an optional interface,
-> disabled by default.
+**Evidence is at most E3:** C-MAPSS sensor channels are controllable proxies under documented
+assumptions, not real actuator commands. Static data cannot establish RUL extension, causal
+machine response or deployment safety. Learned coupling is not a physics simulator.
 
-## Install
+## Quickstart in five commands
 
-Python 3.11 or newer and [uv](https://docs.astral.sh/uv/) are required. Dependencies are pinned in
-`uv.lock`.
+Prerequisites: Python 3.11–3.13, internet access for dependencies/NASA data, a trusted local
+checkout of this project, and an **empty operator directory** as your current directory.
+In command 2 replace the absolute checkout path if yours differs. No PyPI publication is assumed.
+These PowerShell commands do not require environment activation:
+
+```powershell
+python -m venv .venv
+.venv/Scripts/python -m pip install 'C:/Users/chira/OneDrive/Desktop/5thsemEL[api,dashboard]'
+.venv/Scripts/prescriptxai init
+.venv/Scripts/prescriptxai reproduce
+.venv/Scripts/prescriptxai dashboard
+```
+
+On Linux/macOS use `.venv/bin/python` and `.venv/bin/prescriptxai`, with your absolute checkout
+path in command 2. Open http://localhost:8501. The registered FD001 XGBoost workflow downloads
+and verifies data, fits/calibrates the predictor, fits validators, evaluates up to 20 registered
+sampled alerts and writes all records plus a manifest. It refuses to replace existing outputs.
+Expect about 10–20 minutes after installation on comparable CPU hardware; the verified run took
+616.71 s. This is a reproduction demonstration on reused engines, not a new generalization claim.
+
+Choose **THOROUGH** for the [exact demo cases](docs/demo_script.md). For the API, run
+`.venv/Scripts/prescriptxai serve` in a second terminal in this same directory; interactive
+HTTP documentation is at http://localhost:8000/docs. Python usage:
+
+```python
+from prescriptxai import PrescriptXAI
+service = PrescriptXAI.from_config('configs/default.yaml')
+print(service.info())
+```
+
+See [reproduction and Docker instructions](docs/reproducibility.md), including manifest fields,
+interruption handling, actual split counts, hardware and build provenance. Only load trusted
+artifacts. API authentication and deployment boundaries are described in the
+[decision pipeline guide](docs/decision_pipeline.md).
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A[Observed raw telemetry] --> B[Engine-disjoint preparation]
+    B --> C[Train predictor and calibrate]
+    C --> D[Risk gate]
+    D --> E[Distilled gradient surrogate and sparse bounded search]
+    E --> F[True calibrated risk: Tier 1]
+    F --> G[Statistical plausibility: Tier 2]
+    G --> H[Proxy bounds and rates: Tier 3]
+    H --> I[Learned coupling: Tier 4]
+    I --> J[RECOVERABLE / PARTIAL / ESCALATE]
+    J --> K[CLI / API / operator dashboard]
+```
+
+The scaler, covariance validator and coupling model fit training engines only; calibration uses
+separate validation engines. The original calibrated predictor, not its distilled surrogate,
+determines Tier 1. Full details: [architecture](docs/architecture.md), [math](docs/math.md),
+[assumptions](docs/assumptions.md) and [evidence levels](docs/evidence_levels.md).
+
+## Real operator interface
+
+![Real historical RECOVERABLE case](docs/screenshots/phase8-recoverable.jpg)
+
+Historical Phase 8 screenshot, with its source, engine/cycle, risks and checks recorded in
+[the walkthrough report](docs/phase8_changes.md). The new reproduction has its own model and
+[demo instructions](docs/demo_script.md); historical screenshots are not relabeled as new runs.
+
+## Measured results
+
+<!-- measured-table:start -->
+Run `phase7-20261020T102540Z`; measured source `63c2ed445fba16c73a2771e184f635abf76b4405`.
+
+Study `configs\experiments\phase7-study.yaml`, SHA256 `67094790e414a57b3d6a403f3682bd3ebb1914be74584379c482ddfad1d48c5a`; saved summary SHA256 `e0de87c06b418be761142d259ccad8870b81232217b6d75303ee7a91957082fe`.
+
+FAST/full/all-alert populations; k_max=3, assumed K=1, D_max v1=5 and v2=8. Values are percentages with95% whole-engine bootstrap CIs (2000 draws, seed1729); the engine count beside each row applies to every interval. Five solver seeds repeat fixed predictors, not independent engines. E3 is the maximum available proxy evidence. All outcomes, including failures, remain in all-query denominators. T2 returned has its own denominator in the source data. Config-set identifiers below resolve to every exact committed config path/runtime hash in [results_provenance.json](docs/results_provenance.json).
+
+| Model / protocol / population | Queries / seed observations / engines | Validity | T2 all | T2 returned | T3 | T4 | Joint | Config set |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| FD001 xgb v1 internal_heldout | 378/1890/15 | 55.82 [49.00, 62.50] | 51.32 [44.39, 57.53] | 51.32 [44.39, 57.53] | 100.00 [100.00, 100.00] | 94.44 [92.02, 96.74] | 42.06 [37.92, 46.15] | f24c40c738be |
+| FD001 xgb v1 grouped_oof | 2378/11890/100 | 52.52 [49.30, 55.64] | 48.70 [44.59, 52.61] | 51.04 [47.46, 54.46] | 95.12 [92.01, 97.83] | 91.67 [89.45, 93.62] | 39.91 [36.73, 42.91] | a3483e883531 |
+| FD001 xgb v1 official_test | 159/795/19 | 89.31 [83.57, 94.36] | 77.99 [70.42, 84.38] | 77.99 [70.42, 84.38] | 100.00 [100.00, 100.00] | 98.74 [96.57, 100.00] | 76.73 [68.75, 83.66] | 0ad569564fa6 |
+| FD001 xgb v2 internal_heldout | 378/1890/15 | 55.82 [49.00, 62.50] | 98.94 [98.09, 99.74] | 98.94 [98.09, 99.74] | 100.00 [100.00, 100.00] | 94.44 [92.02, 96.74] | 52.91 [46.13, 59.61] | dace208feedc |
+| FD001 xgb v2 grouped_oof | 2378/11890/100 | 52.52 [49.30, 55.64] | 98.07 [97.00, 98.92] | 98.98 [98.45, 99.42] | 95.12 [92.01, 97.83] | 91.67 [89.45, 93.62] | 50.42 [47.29, 53.48] | 432c17f956cc |
+| FD001 xgb v2 official_test | 159/795/19 | 89.31 [83.57, 94.36] | 100.00 [100.00, 100.00] | 100.00 [100.00, 100.00] | 100.00 [100.00, 100.00] | 98.74 [96.57, 100.00] | 88.05 [82.03, 93.20] | bf715a849ba3 |
+<!-- measured-table:end -->
+
+The complete [results and latency gap tables](docs/results.md) also include MLP, LSTM and FD002,
+with exact config identities. Tier 2 is plausibility alone; joint success is stricter and never
+compared with the 90% plausibility target. The [Phase 7 report](docs/phase7_changes.md) preserves
+failures, constraint ladders, assumed-K curves, unresolved finite reference searches and target
+gap diagnoses. Optimization latency misses remain visible; no threshold was relaxed to pass.
+
+![Rates with engine-bootstrap intervals](docs/figures/phase7-rates.png)
+
+## Limits and intended use
+
+This prototype supports research and examiner review. Bounds, rates, proxy control mapping and
+intervention horizon K are assumptions. Model validity can be misleading without plausibility
+and coupling evidence. No validated emulator or physics simulator is available; the optional
+simulator interface is off by default. See [limitations](docs/limitations.md),
+[defense questions](docs/defense_qa.md) and the conditional [SDG 9 connection](docs/sdg9.md).
+
+## Development, docs and release artifacts
 
 ```powershell
 uv sync --all-groups --locked
+mingw32-make all-checks
+uv run mkdocs build --strict
+uv run python -m build
 ```
 
-Dependencies are exact-pinned in the `core`, `dev`, `dashboard`, and `api` groups. Select only the
-groups needed for a deployment. For the library and HTTP service only, run
-`uv sync --no-default-groups --group core --group api --locked`. Dataset and fitted artifacts are
-ignored by Git.
+Use `make` on Unix. The gate runs Ruff, strict mypy, tests with coverage ratchets and the actual
+Material/docstring documentation build. Source distribution and wheel land in ignored `dist/`;
+HTML docs in ignored `site/`. [CI](.github/workflows/ci.yml) is configured for Python 3.11/3.12;
+hosted execution is not implied by local verification. Public result schemas remain **2.0.0**,
+independent of package **0.2.0**. See [CHANGELOG](CHANGELOG.md), [PROGRESS](PROGRESS.md),
+[demo and slide outline](docs/demo_script.md), and [paper skeleton](paper/README.md).
 
-## Run
+## License and citation
 
-The configured NASA archive is stored at `data/raw/CMAPSSData.zip`. Preparation reports sensor
-filtering, creates engine-disjoint partitions, and persists train-only regime/scaling statistics:
+Project code uses the [MIT license](LICENSE); data and dependencies retain their own terms.
+Cite the software using [CITATION.cff](CITATION.cff). No DOI or publication is asserted.
 
-```powershell
-uv run prescriptxai data download --subset FD001
-uv run prescriptxai data prepare --subset FD001
-uv run prescriptxai train --subset FD001 --model xgb
-uv run prescriptxai train --subset FD001 --model mlp
-uv run prescriptxai train --subset FD001 --model lstm
+```bibtex
+@software{prescriptxai_2026,
+  author = {{PrescriptXAI contributors}},
+  title = {PrescriptXAI},
+  version = {0.2.0},
+  year = {2026}
+}
 ```
-
-See [C-MAPSS ingestion and preprocessing](docs/data_pipeline.md) for the canonical schema, RUL
-label semantics, optional cap, data-quality report, and manual download recovery steps.
-See [predictive models](docs/predictive_models.md) for engine-disjoint fitting, validation-only
-calibration, held-out metrics, sequence window semantics, and artifact outputs.
-
-To score a raw-unit machine-state JSON file, provide the declared telemetry and context.
-The public pipeline checks names, units, finite values and artifact compatibility. Actual omitted
-telemetry and observed LSTM history can be supplied as context; missing measurements are errors.
-With the existing fitted Phase 5 artifacts:
-
-```powershell
-uv run prescriptxai info --config configs/experiments/phase6-pipeline-v1.yaml
-uv run prescriptxai assess --engine-id 1 --cycle 1 --config configs/experiments/phase6-pipeline-v1.yaml
-uv run prescriptxai recommend .\state.json --mode fast --config configs/experiments/phase6-pipeline-v1.yaml
-uv run prescriptxai batch telemetry.csv --output decisions.json --config configs/experiments/phase6-pipeline-v1.yaml
-uv run prescriptxai latency-bench telemetry.csv --output latency.json --config configs/experiments/phase6-pipeline-v1.yaml
-```
-
-The library exports `PrescriptXAI.from_config(...)`, `assess`, `recommend`, `recommend_batch` and
-`explain_result`. CLI and HTTP use the same versioned result with independent tier verdicts,
-RECOVERABLE/PARTIAL/ESCALATE triage, raw/scaled changes, metadata and measured timings.
-Below the alert threshold, the state is unchanged and status is NO_INTERVENTION.
-FAST and THOROUGH modes are explicit; FAST's name does not certify its latency budget.
-See [decision pipeline and HTTP usage](docs/decision_pipeline.md),
-[schema migration](docs/schema_changelog.md) and [Phase 6 measurements](docs/phase6_changes.md).
-
-Run deterministic held-out evaluation, producing JSON and Markdown reports under `artifacts/`:
-
-```powershell
-uv run prescriptxai evaluate
-```
-
-Launch the local dashboard or optional HTTP service:
-
-```powershell
-uv run streamlit run src/prescriptxai/dashboard/app.py
-uv run prescriptxai serve
-```
-
-Thresholds, feature groups, model parameters, bounds, rate limits, coupling rules, recourse limits,
-and evaluation targets live in [`configs/default.yaml`](configs/default.yaml) and
-[`configs/features.yaml`](configs/features.yaml). The C-MAPSS proxy choices are configurable and
-must not be interpreted as verified actuator commands. A domain review must establish the
-telemetry-to-control mapping and safe operating envelope before operational use.
-
-## Evaluation status
-
-The latest measured predictor and coupling metrics, including below-floor coupling relations, are
-recorded in [`PROGRESS.md`](PROGRESS.md) and the generated `artifacts/` reports. Those measurements
-do not establish that the proxy adjustments are physically realizable or safe on a real engine.
-Evaluation target statuses use measured run outputs; synopsis case-study values are illustrative.
-
-## Multi-tier validation
-
-Validation reports true-model validity (Tier 1), distributional plausibility (Tier 2), proxy
-engineering/coupling constraints (Tiers 3–4), and their joint verdict separately. Each tier includes
-status, evidence and signed margins. Unavailable dynamics report **skipped**, never pass; the
-highest available static evidence is E3, conditional on C-MAPSS sensor-proxy assumptions.
-
-Phase 5 covariance artifacts use training-only Ledoit–Wolf shrinkage with Cholesky solves.
-Precision-only older artifacts require refitting. Learned residual thresholds must be calibrated
-on disjoint validation engines before Tier 4 can pass; `calibrate_coupling_thresholds` is the
-library preparation function. The existing frozen Phase 4 artifact/state comparison is run with:
-
-```powershell
-uv run python scripts/diagnostics/phase5_validate.py
-```
-
-It uses committed configs under `configs/experiments/`, preserves both D_max protocols and all
-query denominators, and writes fitted validation artifacts plus engine-bootstrap funnels.
-See [the evaluation protocol](docs/evaluation_protocol.md), [Phase 5 changes](docs/phase5_changes.md),
-and [assumptions](docs/assumptions.md). Replay of existing states is not fresh generalization
-or validated real-engine intervention evidence.
-
-## Verify changes
-
-```powershell
-uv run ruff check .
-uv run mypy src
-uv run pytest --cov=prescriptxai
-```
-
-Technical details: [architecture](docs/architecture.md), [math and units](docs/math.md),
-[limitations](docs/limitations.md), and [defense Q&A](docs/defense_qa.md).

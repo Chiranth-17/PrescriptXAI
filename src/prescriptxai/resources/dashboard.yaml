@@ -1,6 +1,6 @@
 backend: direct
 telemetry_path: data/raw/CMAPSSData.zip
-telemetry_population: test
+telemetry_population: train
 report_directory: artifacts/reproduction
 profiles:
   FD001:

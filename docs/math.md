@@ -110,14 +110,16 @@ reported separately from Tier 1. A physically valid candidate is not accepted as
 without the independent true-predictor score.
 
 The candidate is accepted as model-valid only when the final calibrated predictor returns
-\(f(x')\le\tau_{safe}\). Tiers 2–4 are a separate physical-plausibility pipeline and can still
-reject a model-valid candidate.
+\(f(x')\le\tau_{safe}\). Tier 2 is statistical plausibility; Tiers 3–4 are separate proxy
+engineering/coupling constraints and can still reject a model-valid candidate.
 
 The reported true-risk check is kept separate from optimizer feasibility. A diagnostic closest
 candidate can happen to score below \(\tau_{safe}\) even when the sparse-support search failed or
 the diagnostic action exceeds \(k_{max}\). In that case `model_valid` remains true for the
-measured risk, `recourse_feasible` is false, and joint `success` is false. The sparsity target is
-computed only over joint successes; failure diagnostics are counted separately.
+measured risk, `recourse_feasible` is false, and joint `success` is false. The legacy Phase 4 sparsity headline uses joint successes. Phase 7 reports all-query,
+returned-candidate and joint-success support sizes separately, and its design-target/gap table
+uses `sparsity_all`. The short reproduction additionally reports successful-query sparsity.
+Failure diagnostics are counted separately.
 
 ## Unit mapping
 
@@ -126,8 +128,8 @@ computed only over joint successes; failure diagnostics are counted separately.
   \(\Delta z_j=\Delta x_j/s_j\).
 - Optimization distance and the per-feature movement trust bound use scaled units.
 - Physical actuator bounds, direction restrictions, and rate limits use raw units.
-- The coupling model receives scaled features and writes its propagated dependent outputs in the
-  same scaled feature space used by the predictor.
+- Ordinary coupling estimators receive and return raw units. The differentiable scaled wrapper
+  unscales inputs, propagates in raw units, then rescales for the predictor.
 - Tier 2 Mahalanobis distance uses standardized model features and covariance fitted on training
   engines only.
 
@@ -173,3 +175,123 @@ constraints and all-four joint are separate boolean verdicts.
 Tier 3 domain checks apply cycle bounds as well as physical control bounds. Engine identifiers
 are frozen nominal labels, not physical quantities; official-test namespaces must not be rejected
 against an arbitrary identifier display range. This changes no actuator or cycle bound.
+
+## Complete action-space formulation
+
+Write raw telemetry as controls c, dependents d, and frozen context s. The learned coupling g is
+fitted on training engines. It preserves the original residual rather than resetting d to a mean:
+
+\[
+d' = d + g(c',s)-g(c,s),\qquad s'=s,\qquad z_j=(x_j-\mu_j)/\sigma_j.
+\]
+
+For a fixed original operating regime r(s), an ideal feasible recourse problem is
+
+\[
+\begin{aligned}
+\min_{\Delta z_A}\quad&\lambda_1\|\Delta z_A\|_1\\
+\text{s.t.}\quad& f_{\mathrm{cal}}(x')\le\tau_{\mathrm{safe}},\quad
+D_{M,r(s)}(z')\le D_{\max,r(s)},\\
+&\ell_j\le c'_j\le u_j,\quad |c'_j-c_j|\le K v_j,\quad
+|\Delta z_j|\le R,\quad\|\Delta z_A\|_0\le k_{\max},\\
+&s'=s,\quad d'=d+g(c',s)-g(c,s),\quad h_q(x')\le0.
+\end{aligned}
+\]
+
+Bounds intersect any configured directional restriction. R is a per-coordinate scaled trust
+radius; v is a raw-unit one-step proxy rate. K, v and the control map are assumptions. The actual
+finite search approximates this problem with the L1 and risk penalties above, plus normalized
+squared positive Tier2/Tier4 excesses and bounded feedback. If a gradient surrogate is used,
+replace f in the *search loss* only; final validity always uses f_cal. Neither L-BFGS-B nor the
+finite sparse grid is a certificate of global feasibility/optimality. Gamma/beta synopsis terms
+are zero where hard bounds/frozen coordinates already enforce their associated constraints.
+
+## Mahalanobis distance and threshold methods
+
+For regime r, training-only standardized reference rows determine mean m_r and shrinkage
+covariance S_r. With fixed configured diagonal floor lambda and Cholesky factor L_r:
+
+\[
+\Sigma_r=\widehat\Sigma_{\mathrm{Ledoit-Wolf},r}+\lambda I=L_rL_r^T,
+\qquad D_{M,r}(z)=\sqrt{(z-m_r)^T\Sigma_r^{-1}(z-m_r)}
+=\|L_r^{-1}(z-m_r)\|_2.
+\]
+
+The implementation solves the triangular system; it does not explicitly invert covariance.
+The original immutable operating settings select r throughout optimization and validation.
+Available cutoff methods are
+
+\[
+D_{\max,r}=d_{\mathrm{fixed}},\qquad
+D_{\max,r}=Q_q\{D_{M,r}(z_i):i\in\mathcal T_r\},\qquad
+D_{\max,r}=\sqrt{F^{-1}_{\chi^2_p}(q)}.
+\]
+
+The empirical quantile uses the declared training reference, never evaluation states. The
+chi-square cutoff assumes an appropriate multivariate distribution; it is not a universal
+coverage guarantee. v1 uses fixed5 and v2 fixed8; sensitivity results state their own method,
+reference distribution and quantile. The fixed thresholds are not fitted after seeing outcomes.
+
+## Calibration and coupling residual checks
+
+Let p be the uncalibrated predictor probability and a clipped logit
+l=log(clip(p)/clip(1-p)). Sigmoid and temperature maps are
+
+\[
+f_{\mathrm{sigmoid}}(x)=\sigma(a l+b),\ a\ge0,\qquad
+f_{\mathrm{temperature}}(x)=\sigma(l/T),\ T>0.
+\]
+
+Parameters minimize binary log loss on validation-engine predictions. Isotonic calibration
+fits a monotone piecewise-linear map with clipped endpoints. Runtime logit clipping uses
+10^-12; NumPy and differentiable paths share that rule and float64 calibration arithmetic.
+Calibration is applied once. It does not change the label definition y=1[RUL<=H]. Training
+RUL is final_cycle-current_cycle; official-test RUL adds the provided remaining-life offset.
+
+For a dependent channel j, the Tier4 residual threshold is calibrated separately:
+
+\[
+e_{ij}=d_{ij}-g_j(c_i,s_i),\quad
+b_j=k_\sigma\operatorname{std}_{i\in\mathcal V}(e_{ij}),\quad
+|d'_j-g_j(c',s)|\le b_j.
+\]
+
+The configured validation reference filter is explicit. Residual mean, standard deviation,
+R2 and share beyond threshold are reported; a large bias is not hidden by claiming that a
+large sensor movement proves consistency. Propagation and its gradient approximation are
+separate from exact residual/YAML checks used for final acceptance.
+
+## Metric denominators, uncertainty and triage
+
+For N declared queries, V_i=1[f_cal(x'_i)<=.20], P_i=1[D_M(x'_i)<=D_max], T3_i and T4_i are
+independent tier flags; R_i indicates a returned nonzero feasible candidate, and A_i a feasible
+bounded sparse action. The key rates are
+
+\[
+\mathrm{Validity}=\frac{\sum_i V_i}{N},\qquad
+\mathrm{Plausibility}_{all}=\frac{\sum_i P_i}{N},\qquad
+\mathrm{Plausibility}_{returned}=\frac{\sum_i P_iR_i}{\sum_iR_i},
+\]
+\[
+\mathrm{Tier3}=\frac{\sum_i T3_i}{N},\quad
+\mathrm{Tier4}=\frac{\sum_i T4_i}{N},\quad
+\mathrm{Joint}=\frac{\sum_i V_iP_iT3_iT4_iA_i}{N}.
+\]
+
+An empty conditional denominator is unmeasured, not zero or100%. Failed queries remain in
+all-query denominators. The legacy sample runner reports infeasible-interval pre-screen
+exclusions explicitly; its sampled rates are not all-alert rates. The full Phase7 framework
+retains all declared alert states. Risk drop is mean(f(x)-f(x')); success sparsity averages
+proxy support only over joint successes, with all/returned support reported separately.
+
+Bootstrap draws sample **whole engines with replacement**, carrying every state and solver
+seed of each selected engine together. Ratios are recomputed from summed numerators and
+denominators in each draw; report the engine count, observations, seed, replicate count and
+zero-denominator draws. These intervals describe these sampled engines and fitted models,
+not intervention uncertainty or a new predictor-training ensemble.
+
+Below tau_danger: NO_INTERVENTION. At/above the gate, joint accepted action: RECOVERABLE.
+A proxy/statistically acceptable feasible action with risk drop>=delta_min and final risk
+**above** tau_safe: PARTIAL. Otherwise: ESCALATE with diagnostics. A low-risk but Tier2-failing
+candidate can be E1/ESCALATE; PARTIAL cannot report risk<=.20. Stage latency passes when p95
+is at or below the upper budget; a lower displayed band endpoint is never a minimum.

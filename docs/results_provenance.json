@@ -1,0 +1,1037 @@
+{
+  "run_id": "phase7-20261020T102540Z",
+  "git_hash": "63c2ed445fba16c73a2771e184f635abf76b4405",
+  "summary_sha256": "e0de87c06b418be761142d259ccad8870b81232217b6d75303ee7a91957082fe",
+  "study_path": "configs\\experiments\\phase7-study.yaml",
+  "study_sha256": "67094790e414a57b3d6a403f3682bd3ebb1914be74584379c482ddfad1d48c5a",
+  "groups": {
+    "FD001/xgb/v1/internal_heldout_all_alerts/fast/full": {
+      "config_set_sha256": "f24c40c738be62a62cdd859cab4f2124b6aa3c7d9d2390f3b0368d2a1926e8c3",
+      "config_hash": [
+        "387710b067719302aba415b8bbdbb9ba32c609364e27e5f6290008815b0966cb",
+        "47254ac5ea494ee5e333a754252edca0b9024d9ed5b792f3d0f561b5b0cb2271",
+        "b7670ffb756389ed13c6724024713341ee0c0f83248fa3466e95bdd9297c6671",
+        "b8a56224aaeb156f53936e8c46e3bd9188bbc9f29cf308158de1f91ec76123f6",
+        "d008252a3892855e1806034bb2c3b52cfaba58e150b2ef32dd7add4989ed6029"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-xgb-v1.yaml"
+      ],
+      "protocol": [
+        "v1"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "5.0"
+      ],
+      "population": [
+        "internal_heldout_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E2",
+        "E3",
+        "none"
+      ]
+    },
+    "FD001/xgb/v1/grouped_oof_all_alerts/fast/full": {
+      "config_set_sha256": "a3483e883531d1d12b008ef5ac2c1dd5e98c2990ad40dcb0d2ca5cbedeedc2e3",
+      "config_hash": [
+        "02b1f50f2abafd4e11f8c7d91e86c3750e8b5aadea28e12ae2a35a3d81155f20",
+        "0313e3df38896090ee51f609fe05443150c99959dad8098aac080f260c0b73ac",
+        "0338db7ac8c367e41b11297ebc07dcbd3f3a6ad6f31fa109af10c65f080f4d1c",
+        "178e25a1d334ac02e836f9056f176d28d8007e17b4423dd1808f0c2a50701a43",
+        "1fdbe489038c878c1ec395cd5a7bb401ed09df558c78a29c8dce9932ddba421c",
+        "379677e80af228947bf94329e1c76644a29a6fce1e1bcef103d5c73016399a8d",
+        "40bba9c9fd657681176356b7ccedae1be65d57c89843a915e7d271dbd778909a",
+        "42cbc035b44e8fb85827c23e5e07cd9e1e2d464ef0d483f570aa1950a2509c07",
+        "4d46be033ada35c9e2b79204a4a42f7b46bac9055ed9526bf66daa07fbb292b0",
+        "51ef79da72edce7aab3b6a68e89de70e2d9836b478227b8cf99a920f4f728964",
+        "57262dfbeb52b06e55eb7dc0a9116f2a0bd897316a40992e581c6ed47f37658a",
+        "6708371d8281389f1055b79045897ddfdbb6aa274b214efd0dcfafd89bda6b0c",
+        "6cf4b9f3decb2a0901ffc258a4e7381eea0d4b6788a4c1c5fcc9adbde73c8d0d",
+        "6def5b045649d02d20946db840b1633990968cc53c696dcf887e78bd37aac200",
+        "70249f824c981405607040d644333058af63202efc6d312ac7b82450b30bc547",
+        "8b4e91df50afb090e452431d84e65308034c36855b000a60bd671e73482ab689",
+        "8cf752217f1d36bbdbb3a66d3fadbeb26d10e99c9ca805993d8c74fdbe72de34",
+        "ab8981ea677c311fc9ecb603a13faf9b870c57b69be3c210ca756af960834ea9",
+        "ae089f056bf7ed819c333eefa247fbfbd6570278b3f26f45cf3ce8d05b263af6",
+        "b4f909e23bdb8458cc596a663f02b353a240c11057213488bb503d20e16ddbd7",
+        "c5c8b5e6a4c6544649436c7940911e81a0760613ab7c37d778ff04dfc92822d6",
+        "cb9f47023d7dc60765f2ed014744167f6302f864b404d07e25ef89da4763fbc1",
+        "cf84646ea36d5c0799c0d45b2850098cec05b822cc55cdda628b5e0f03be4ede",
+        "e5dbc93d26087bb53466fcd967aac31e4739ca4fff9f5851b46843695e83b888",
+        "f1ae19edc42d1d7c59a4cccd9f0928a51a149b7136bef3f35b999457837cf5b4"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-xgb-v1.yaml"
+      ],
+      "protocol": [
+        "v1"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "5.0"
+      ],
+      "population": [
+        "grouped_oof_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E2",
+        "E3",
+        "none"
+      ]
+    },
+    "FD001/xgb/v1/official_test_all_alerts/fast/full": {
+      "config_set_sha256": "0ad569564fa6edd51af24059ee4e59effd239da21231dc9088222f5a3fb7974b",
+      "config_hash": [
+        "387710b067719302aba415b8bbdbb9ba32c609364e27e5f6290008815b0966cb",
+        "47254ac5ea494ee5e333a754252edca0b9024d9ed5b792f3d0f561b5b0cb2271",
+        "b7670ffb756389ed13c6724024713341ee0c0f83248fa3466e95bdd9297c6671",
+        "b8a56224aaeb156f53936e8c46e3bd9188bbc9f29cf308158de1f91ec76123f6",
+        "d008252a3892855e1806034bb2c3b52cfaba58e150b2ef32dd7add4989ed6029"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-xgb-v1.yaml"
+      ],
+      "protocol": [
+        "v1"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "5.0"
+      ],
+      "population": [
+        "official_test_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E3",
+        "none"
+      ]
+    },
+    "FD001/xgb/v2/internal_heldout_all_alerts/fast/full": {
+      "config_set_sha256": "dace208feedc8ab0fade66b4d4b62c45f0d84dc5510bce68252305f627797599",
+      "config_hash": [
+        "42d1cdd4424b16c719947f97e467daf178f22ba1ad985b3b47ddd3012ac0a69a",
+        "4807060124d9fb65e68fb02317f1e240d97f6954b66ba3e56c6e95f955aa04e1",
+        "76b79302ffe7581df1453bedceaabfb11aaf25a07e68af9a0c7f9d879c5fdf32",
+        "a6dc02c11b6a18fb41880b8521421ccff47f96aa0102cca0648ca34525d91d7b",
+        "de084dfd83722c4a167f4959e29bd0eb455400ae9166d806ccf818096d345689"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-xgb-v2.yaml"
+      ],
+      "protocol": [
+        "v2"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "8.0"
+      ],
+      "population": [
+        "internal_heldout_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E2",
+        "E3",
+        "none"
+      ]
+    },
+    "FD001/xgb/v2/grouped_oof_all_alerts/fast/full": {
+      "config_set_sha256": "432c17f956ccfcdfdabd9b073cb74b26c6d7e8877746630065d66b6a5329c61e",
+      "config_hash": [
+        "08a410fe8ef0326cdea309d06a6283a3f9ca0548968f5b7cb984af42106f2764",
+        "13c4a860cafaaeec233c0a55e0bcc1535970646b378e6aaaa570bf9575b9b62d",
+        "2ad20974c72f1e7eb7bb851adfb5faf931a31613e47a186e31b8eaa5b9686748",
+        "2b894b9d3532e5c39f5c8653e6c5fa2acb7d24ca5f3f8431fb4253078eee0774",
+        "2c9abed0480e5a75c5872323d6ae65c17559e3300ebc1bd037309dce4bcb015e",
+        "2d6d0f21f8ce5e160082a3eb39cfa377e1b7f5c323eadd804bccacc507ef39de",
+        "2e0cefe0968a91c1c88e52d25f929f6795adc0224dcbe51073bc335b764b5240",
+        "3a92f5e36c8c95f7093e6bb864dfb4aa0a56ede7b191d0dd4e2ef17c104a9538",
+        "3da0651d806ad82a391f3f749d5dbb3f592b9430e7c8390a22ea49352bbac4ac",
+        "3f9088e7899c48d34d51f9d9be1726ce646b53997c9fb6353d54d33d80ae6b60",
+        "448e8bbcb02e83ec8cde84439ca9637f8c6d9aced3f89a6f1e9cea8d2d6bdc55",
+        "51d313a98934add8103eaade029a652f2f28ededd904dd034d439f73cdb2398d",
+        "65d2cad09fad787d61d938d377b6ae3901e4c42ce339ef172d5f854c171f38b7",
+        "7c9549713f84a51b11ddcb899b5b1964b05429760fed4356adc1b6dd0d597ac0",
+        "81f84b23553e4f9c591cd5ac221e22ddaeab1ad1fb8fc65988c715cb05d13d29",
+        "849917853da50a1282714eeac8567ed22f634111ba26c1a41eb00ac8eb73883d",
+        "9087abaf3e7cb3a83b624b35ebfbf754376a073bb8f9332b7eb87e80ceb5c24b",
+        "9097cea07559be02ed51fe46b287a32cb1f3e3894e6af349697f11b3251bbded",
+        "9768c7a7f7d020dfb4ee25ae581cfa6710098ac30eced98371f78ceb9e8982dc",
+        "afb7137820355708f532f2a34bf21f2262c0cf7dd4f750153f871437789e54a3",
+        "ca45fb77764a2370dba13e55ddf54438e2deab105dd599d90e1c31a7959bc349",
+        "cd338280bde689cd8b58bbe62643b0875120a6aa27943e6da648d814f9082a71",
+        "ea98fd5a607b6c9637b867db0acbfdcbd45c281d0c8df31644f6fa5930cac790",
+        "f1e04f96561287bb3b60f82be600741f1aab5ef91e5fa6b456fe62a118529ad3",
+        "ff5f904493fb268a39db1571a97169d2c0b843e0597f87ec3d1757f317b942a0"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-xgb-v2.yaml"
+      ],
+      "protocol": [
+        "v2"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "8.0"
+      ],
+      "population": [
+        "grouped_oof_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E2",
+        "E3",
+        "none"
+      ]
+    },
+    "FD001/xgb/v2/official_test_all_alerts/fast/full": {
+      "config_set_sha256": "bf715a849ba303ec345c22157f46ed3d6ad2f5e41bf15972c9a04a560a039e22",
+      "config_hash": [
+        "42d1cdd4424b16c719947f97e467daf178f22ba1ad985b3b47ddd3012ac0a69a",
+        "4807060124d9fb65e68fb02317f1e240d97f6954b66ba3e56c6e95f955aa04e1",
+        "76b79302ffe7581df1453bedceaabfb11aaf25a07e68af9a0c7f9d879c5fdf32",
+        "a6dc02c11b6a18fb41880b8521421ccff47f96aa0102cca0648ca34525d91d7b",
+        "de084dfd83722c4a167f4959e29bd0eb455400ae9166d806ccf818096d345689"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-xgb-v2.yaml"
+      ],
+      "protocol": [
+        "v2"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "8.0"
+      ],
+      "population": [
+        "official_test_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E2",
+        "E3",
+        "none"
+      ]
+    },
+    "FD001/mlp/v1/internal_heldout_all_alerts/fast/full": {
+      "config_set_sha256": "7d114224c7f650d7566309bd0eb97b4b48de04a3d033477234a101e31d74d579",
+      "config_hash": [
+        "055449ac85ff54bc6b7793b41849f5e22f5fc642c2613e5ba953e15cfb686248",
+        "27ae03b9319734aba94d6d04cee39319bfd8446d5a696ccbfea98492c0e7cae5",
+        "2b359080157153d651f565ba9a04b0973f6f7dc6089bf5ae953dfb7345b1cc62",
+        "36cdf14132b8ecee904622fe8f78ae845401f95ce82c7ac83e4ca4c6f530ef82",
+        "d8a823c94f8b21215719b9a5ec58902f6dbfa7c239b97cf018b949341f00dfd7"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-mlp-v1.yaml"
+      ],
+      "protocol": [
+        "v1"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "5.0"
+      ],
+      "population": [
+        "internal_heldout_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E2",
+        "E3",
+        "none"
+      ]
+    },
+    "FD001/mlp/v1/grouped_oof_all_alerts/fast/full": {
+      "config_set_sha256": "00ba5c6ad8918f6739a7c8f06addfcffad4726ebc8ee35be8ec8377e7052c95e",
+      "config_hash": [
+        "12746311c4bdd3327055875047cc69b8ef58fbbdd822a95c8f9ec75fa128559d",
+        "1599e16cb1a1dd4430ef74a5e6040fa8961588684c0cbbf8f07b91a4e530cf1e",
+        "1c35d84ab3d35be01716ab2783ed09b20e15df1fd133345b3db93fe4ef6b3f12",
+        "2ffd32a40afe631f273a36aa52acc3ced1c5d7f279e38187a579013a9cd9fb78",
+        "39ad536d5c92488a036af31fa77bb58bd78620d9f991a8dec9d9e5c376a9c66e",
+        "42d05b178748cd69d2f253028d60cc7f93a0ff848efb6f6e7ead5f3870799347",
+        "4382f9113d5fee3ad3192497383b2501e95ed11e8e3ba54e0048f721b6e4a08c",
+        "49fe6e53ff6aa3376c7f334ae3fe70aae830a49bdba80d61a1c65921a4026b7e",
+        "528df9de7dcf01926e390da2951269ed60d0995c0ca369cf271052087a7fdecb",
+        "554b89577ba6a433741ede9cbe8cd33d2d6921d448d18d2d15f49822b1596b1f",
+        "5be222d164554ef81c770dd86da56a13ab6d4265a7859e2f9c897fe3edcb56a1",
+        "5c413995747b129392dbce2ad4106ffe9d4b671d83c3e1ffd664f049f8e5ad89",
+        "678433d6de2861e36dd11bd3cb519bcaf89a7cf94530b4939262869a8c5d7e54",
+        "69184ad9dbe310a5f6e43337d22fd126b8d45457f49873cc17a305cac9b3f045",
+        "7027ae6a0fdb93a2caede40c1ad480a85b27053a79ad70b6644fec6dbeae4e5c",
+        "8e69ce2331a764b46924530970889b273a47997ee41f8ef6e71b8573c757ea80",
+        "ada561ba50237c0d27d2223092fe554f5605e0c6bf470b7227066b4ac866cfed",
+        "bf4780cc4d101e23d9624d3a229525c837765de5afea4a30444f273eeeff99ed",
+        "c34b8124c0e309f2ade29e286ada478106ad4c4687707975bac88de20fb178d1",
+        "c3cfaa8c7d383a55cd9bba26c0a1995eae760dd5691428b29689e41758c3c7a8",
+        "c5aeeacbf2b6346b15a9ee60b5c57b1f951a4f3c670df41d0d3afe6725d1b834",
+        "c62e6c1ebbb3ceac33ef7633d8ce03709eba34d91440d19a3882e090c591651b",
+        "e9b61bb83f33d8c89e715c49f317cd2a532ee143a51b53ba43e4adcae04ced43",
+        "efbe7270816d4f7d81ae9db7b5d62b522e9f0ed39ffc52656e0a98c00e5fe449",
+        "f20dd4d67bd53359b63db3c626ce63f121fb0a0d7fc285e6fbe0d59d1bacd32a"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-mlp-v1.yaml"
+      ],
+      "protocol": [
+        "v1"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "5.0"
+      ],
+      "population": [
+        "grouped_oof_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E2",
+        "E3",
+        "none"
+      ]
+    },
+    "FD001/mlp/v1/official_test_all_alerts/fast/full": {
+      "config_set_sha256": "130506d4a2658fce61714f6cfb6f0607f236eb46a1c763f1604c0a4ee7a10195",
+      "config_hash": [
+        "055449ac85ff54bc6b7793b41849f5e22f5fc642c2613e5ba953e15cfb686248",
+        "27ae03b9319734aba94d6d04cee39319bfd8446d5a696ccbfea98492c0e7cae5",
+        "2b359080157153d651f565ba9a04b0973f6f7dc6089bf5ae953dfb7345b1cc62",
+        "36cdf14132b8ecee904622fe8f78ae845401f95ce82c7ac83e4ca4c6f530ef82",
+        "d8a823c94f8b21215719b9a5ec58902f6dbfa7c239b97cf018b949341f00dfd7"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-mlp-v1.yaml"
+      ],
+      "protocol": [
+        "v1"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "5.0"
+      ],
+      "population": [
+        "official_test_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E3",
+        "none"
+      ]
+    },
+    "FD001/mlp/v2/internal_heldout_all_alerts/fast/full": {
+      "config_set_sha256": "166e2dfcfdf70cea6f9f3e9c0bed9d403a421d7ece7fce11ce1be2482c83715c",
+      "config_hash": [
+        "0f4b8ffe8ac75937f0e96e2249fb8da274d1c60972bc36f6a7625e5eb17aec76",
+        "97cae065f37ffa6e0a8afb66f069ce34870435cc74dea3293e40219c1c0017cb",
+        "a10a683c769e1673d383da56ce2cffb53df5a48134895de641ebf9d624888c1d",
+        "e0710ee0ead8d5a1347579316bc127d6c380a1bd4895955639716e09b2b88b18",
+        "f3b86bf09a48a0777b400ed0e9f48d1e9d6f514cdad5e70a0d910787f694131c"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-mlp-v2.yaml"
+      ],
+      "protocol": [
+        "v2"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "8.0"
+      ],
+      "population": [
+        "internal_heldout_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E2",
+        "E3",
+        "none"
+      ]
+    },
+    "FD001/mlp/v2/grouped_oof_all_alerts/fast/full": {
+      "config_set_sha256": "90039fe60b7e9b4b7ed0df53ed27cdc4077d904696bed117e1240f0e1c746e86",
+      "config_hash": [
+        "06db2b0d045f24e36b0e8b364571fb3aad14ddd749e528df6fbe8c28f75a0043",
+        "070185210b71a5347680c2287a26b1ee4068ee6970792b928f410453c1ba1b5e",
+        "0b715f123b9f8a49dfdd0ded13549b74d17977d2eee0a3eddf149c22ac1ae62e",
+        "0eff0e19e38940e16c1b479fccbf1a29caa157ef4810a75e54422c62b43e47f6",
+        "1f10cb85adf4583959ba84c7d1c4993101f097d7db9f211fd47648d71deb3eff",
+        "28fb9bdb53457e6cd4f80876d3cab0cc670a7bbfd035790c29624e92e2af2c5a",
+        "2ce138a4df7f5b69dd5def6016c5ea523037e95b19030ba1a7f4a0ccc675d02f",
+        "329d74481cebec59afde9cfb93d3b3fedc2d1f5bdee7085ba2312afc31e03dff",
+        "4de93fb9982bf0b6fdd9b734f524525efeb850e1f1c50bd9a84265e13193ecfb",
+        "50bec7e667fc3623c7e1dd56488fcf02e5b26d42c55e39a8d123459f2c043b2d",
+        "50d426b35f50c03f51585c25be32c7300fddfcee538564b3e7b28df03697cd61",
+        "60a5e5044744ab6c09557d6547fe4c4354871276fc6a97a11d4387ecaf7a6adb",
+        "65002399ab3ac85a3837d8d1d7491125307ece86a4fe92fd7469ddd148dc62e4",
+        "6f88184c41308983f68f3de6ba50c13f6fd79a49cb4643f4dd5ed62cf4d95a84",
+        "8d42dd612242e061e1d20aa484f5e03646803a1f0ffe68a322766f929f30fbde",
+        "92fca7bf3fe895f4fc123b59ea33c8a6de2b422270d1c4add91a1a12bd1f4162",
+        "a503f599336fd6480955b59c1a24401df222e8a0f9228abf4da0bbf4bff6d123",
+        "bbbbd36312581ecd744b8f07d8f1b74dd6630659ba8f40b27b8eaca9bdf6c1d1",
+        "bd8107b230d97f93755cde4e89dddfabd65e526373f135011284dfade1a2e654",
+        "c9e99cae1dfc5803f78f79af8cfca94c421356dfeb212ee7dc65f46fb66bbf8c",
+        "d15d5afd86e77532029e7ffdabb61bc56889fa5e1b067d401ddde0f1febb6918",
+        "da378f08b948186be2241a94b091d2b1247c62744eb6cef1255d63bc9de61fa1",
+        "e3fb99d6245288824cde9631782bbeb2651a7e0f306356e6e3c47b8545b98163",
+        "e49ce278cdc9ffc68dd1f8e3c778b41782683d4eb79ff8647609fa854e03f9ae",
+        "f22056c6ece4e490a3198df112fe23b2e5b710db50f0ea7ad50eed8b60cd01a6"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-mlp-v2.yaml"
+      ],
+      "protocol": [
+        "v2"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "8.0"
+      ],
+      "population": [
+        "grouped_oof_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E2",
+        "E3",
+        "none"
+      ]
+    },
+    "FD001/mlp/v2/official_test_all_alerts/fast/full": {
+      "config_set_sha256": "a81ee697efa05ffa0e9b60b5931999344745440903680c09d37c303dce359d0f",
+      "config_hash": [
+        "0f4b8ffe8ac75937f0e96e2249fb8da274d1c60972bc36f6a7625e5eb17aec76",
+        "97cae065f37ffa6e0a8afb66f069ce34870435cc74dea3293e40219c1c0017cb",
+        "a10a683c769e1673d383da56ce2cffb53df5a48134895de641ebf9d624888c1d",
+        "e0710ee0ead8d5a1347579316bc127d6c380a1bd4895955639716e09b2b88b18",
+        "f3b86bf09a48a0777b400ed0e9f48d1e9d6f514cdad5e70a0d910787f694131c"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-mlp-v2.yaml"
+      ],
+      "protocol": [
+        "v2"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "8.0"
+      ],
+      "population": [
+        "official_test_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E3",
+        "none"
+      ]
+    },
+    "FD001/lstm/v1/internal_heldout_all_alerts/fast/full": {
+      "config_set_sha256": "4438e5823357266365c23eb64c22361763e33f35938691795d8004789f8f13d5",
+      "config_hash": [
+        "375acd296ef2ef253dd869ef84df70973346c7137265d89a0eedffc05a81cec0",
+        "41296e94f9a3b9fc7ac4e7a0cd0b832324cc8a47b6fdb7665e5d5892b3a70847",
+        "78cd7e7d9c4845cd7803c83a5c73b38f5580c23d99cdddd3e3705ba8f5bb7685",
+        "943989e0e7b5b8c1efbda678b5e1532d862a2036fd37f694521529dbadc89e4e",
+        "c830fd1d503114ac41c6d8d2ad390ae3f8d47835113878d72c9db8c1a21ba1d9"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-lstm-v1.yaml"
+      ],
+      "protocol": [
+        "v1"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "5.0"
+      ],
+      "population": [
+        "internal_heldout_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "none"
+      ]
+    },
+    "FD001/lstm/v1/grouped_oof_all_alerts/fast/full": {
+      "config_set_sha256": "55573371be194b1a5f0f4e0982095b78283e1b2cc56eb846dff77fc114a77279",
+      "config_hash": [
+        "019d83bf689747deafc4a68993162fc8a710972300433993d6e841861d7c70f2",
+        "18f45cecec1ae62c8147e1ff502a49f437acf25b02162bc4ed4134da74c55ffc",
+        "1ce9d2b03d404a7db95f2e767ed18a66ba9298ddb3329c85b0baf8961aef4f27",
+        "25963f171d4f134ca961aae7c080373a34de3b24f7cbe285a63f82c7a0fc97a2",
+        "3d89d2e250001f293699539b1b9cbb2ae16670bf972a765b1e7571597d9333e5",
+        "507bc962dc5946f15cb0acc29f115e3b1c660f8d8e0e8ea79e7a8956f74a4aff",
+        "50d23cccd3cffd346064c1895e8ed9060673e2f4a5cbc9be3435fa7cb5355526",
+        "581d7a5dfc4c3a5ea74e29dd70be812d192f79b05e63c623b3808d8a7220b7f2",
+        "6055cdd6af794192bb125469ea06904d97213c51dff29d9c069f02db92e1910a",
+        "6795526004b2774241a687dcce9af8a0cfc4cb24df48bc8a6ddeb1d65b5993a3",
+        "8a5a578ead5d4137658f7baa974db880f0758642149f02d30cc33ea5cacd5655",
+        "8d2659b6d3808d4235a933b4e1405a8bb3c95f0eaf129a54a52d813b16c5cab9",
+        "8ec4c445fb4763e49b3d581bad043ef8451f1498ce461fb5e36ee77e510e0b35",
+        "933a0181ace9a72c285be31f213d5b135a01a1f204af4d6d2d44c6a1aae11f95",
+        "9c505dfed3bd29ec1edf90e44f5da3d7a72dfc2567c4ed1ded590f41e47588bf",
+        "a2b9590de5fc13b0531273a8999b48967b5a90b2e13232f0d94d34ec22c28973",
+        "a49488a371315120e4326a2f45e0444090197f5ed805f4659ed0936fb896ffd4",
+        "b180c160afbd88af629e4c2215703bb0454fbe6916187d9cdc5e5bc86a822a62",
+        "b1c44e3ad1c9cf06255eb214c77cfa5656e45c4eee2718c238e3d7996f0abe18",
+        "b3e4513b4e822e55a015a20d4b93163d12606d2ed390a1ca65ca4a3896a7034e",
+        "eecec84070f2a6bda9002eaa20f57833f864baa2ea129423b5e96bdb5addcb62",
+        "f463db6beb380a94e72cadcb2d3551724054eb0ca9ad2f6081ad7e561b0f6a82",
+        "f6057b84c2e27dd7ca9659c0538655451ed67fc15832d4fb49ac98610d48f7a8",
+        "fc8fb00b95c9aae463cec9fbe4e885716e21c41c940b4ed93067c8baea218f97",
+        "fd66f37322dfe5b5d9558a22bada14a2e92551273f256e302470d1fa985aa5fd"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-lstm-v1.yaml"
+      ],
+      "protocol": [
+        "v1"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "5.0"
+      ],
+      "population": [
+        "grouped_oof_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "none"
+      ]
+    },
+    "FD001/lstm/v1/official_test_all_alerts/fast/full": {
+      "config_set_sha256": "5b74978c24b0df487b5ccf5668e533269cd79bcf018b9bcdad2dea9efc9e32cc",
+      "config_hash": [
+        "375acd296ef2ef253dd869ef84df70973346c7137265d89a0eedffc05a81cec0",
+        "41296e94f9a3b9fc7ac4e7a0cd0b832324cc8a47b6fdb7665e5d5892b3a70847",
+        "78cd7e7d9c4845cd7803c83a5c73b38f5580c23d99cdddd3e3705ba8f5bb7685",
+        "943989e0e7b5b8c1efbda678b5e1532d862a2036fd37f694521529dbadc89e4e",
+        "c830fd1d503114ac41c6d8d2ad390ae3f8d47835113878d72c9db8c1a21ba1d9"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-lstm-v1.yaml"
+      ],
+      "protocol": [
+        "v1"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "5.0"
+      ],
+      "population": [
+        "official_test_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "none"
+      ]
+    },
+    "FD001/lstm/v2/internal_heldout_all_alerts/fast/full": {
+      "config_set_sha256": "3fb276a97f70708cb7bc6f0fe6f76ecc380d719d13c27063db385d230165e696",
+      "config_hash": [
+        "70f7b33fb185b281c4430ad928be7ce5485544ea50f9db122a062d2c0bd044ba",
+        "81ac3078a851f514b516dae67beb95e4a5e946b5093c18cbb14fb71410e4f5f1",
+        "b325d3b8132e0d754d5e90b9ffa8adf62b66dc40843d7592926b7437fff59d9b",
+        "be07c4b93e23c534ddcc729420dac5fcd0af2d60a336aced4e08d3cfb897f0ff",
+        "d70a6ebc267dcfb98e9292c7568b9515d5bd049631319156ea32a0097e8d869a"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-lstm-v2.yaml"
+      ],
+      "protocol": [
+        "v2"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "8.0"
+      ],
+      "population": [
+        "internal_heldout_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "none"
+      ]
+    },
+    "FD001/lstm/v2/grouped_oof_all_alerts/fast/full": {
+      "config_set_sha256": "c2b3258f3cea1210101eab414c75f7a889b247152f7e7f740c444109bb1cfe0e",
+      "config_hash": [
+        "02d105e31b65f63a63d37ebff9259ef9012189f6cda31ec68b3822e1ffd575f5",
+        "0567c969fbfbcb935a1e1b638ed245995ad3451299882b5d351dd3bdd5b404c1",
+        "194a40f0ef5294e03fddbcdf96e53a895e9750144af53977968a7b84000d6234",
+        "3db07755d044f6ebf67dd5708b786817abce623a819eceab0c9c128e616b8444",
+        "417a39d4b0eaf5313bd1376dd64f0134dc3072e5723325d3a03ebe3749c1282e",
+        "4ea2a5120fa3c2c5b6508ca2222cfedea73f48a3978929dbc38a891301f3e8c8",
+        "53be5cd8279dc27aaa0a13c7edc46b83b98f6d7422f0b923816f1bd96dfcd7e0",
+        "56f2fe1bba3a830f9614a53918ee01b3524f9116fc09187a6bfe7da5d6237334",
+        "5c2c25beee1fee158c70c1407d5926b0a3e80e03f03273b9272e26119c041895",
+        "6333eea8c214cd529639a32ddbb362484fa4a0ddd4e502de894af65ac0051450",
+        "641ced2f31607fbb631df25ce1dc0fa6a7c143513bcfcc2f4ea33df5b982d726",
+        "6bd82b6ee1eb9b25d8fc73d5ff7d33ca5d7e57be3091d4dc816c986fb9d16aea",
+        "6dea3d1567c6de14521d0cbe3aec244ee64243c65de1e310b22fef92f536923b",
+        "750cfa9e92a1e64a784fa68c1ff8625f6735e31a9930ee09d9611c917f3ac33c",
+        "7e6d67b571cf500b0392f7555acc3798cbb92c0ffb57c3d149f700a7258ca6ed",
+        "803ee8bd2af9dee55514cf5a4404edb95071d1e7defc7d71dae8708720bb3fd4",
+        "864c9995be88d7d81a7da82839edec47ff43ad377cbb145136d40fae9e8956f0",
+        "acd09b389434958da8b1bb7f171f8f4c2c47baf639a02a36d19e54d4e14cc9c5",
+        "ad37cc796b4b2284dc096b4f0604b0d4a8c6b1c5e1595daf194f9db69f3cb1c4",
+        "ae1e20deb099e386b0530f87eb1cee8ca773388e30a34566306d4da3b5f34479",
+        "cb027055a1a797ef373a9f0fdda75d065233a4ea95c56f501999f530e9da89d3",
+        "d7a27e96494801ad3dd15a85de89757b7e1992504c48b4f037c6db588782454f",
+        "ec10f16747906846cc9e3b271912224417825c996ca1f0553e71bd27a63a780e",
+        "f144cd51a6c54996df54ea283dfbfd809cfe19cb98c71e699af8db6b6a61f2e2",
+        "f9f1ebd7eb4dc12a5031892bf9e6ce27c47c605a7ab53785f0a5851763404bbb"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-lstm-v2.yaml"
+      ],
+      "protocol": [
+        "v2"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "8.0"
+      ],
+      "population": [
+        "grouped_oof_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "none"
+      ]
+    },
+    "FD001/lstm/v2/official_test_all_alerts/fast/full": {
+      "config_set_sha256": "fd6903baf944ebfef84f3264d8e58de7490f60820eccf7004db846adc9f878e0",
+      "config_hash": [
+        "70f7b33fb185b281c4430ad928be7ce5485544ea50f9db122a062d2c0bd044ba",
+        "81ac3078a851f514b516dae67beb95e4a5e946b5093c18cbb14fb71410e4f5f1",
+        "b325d3b8132e0d754d5e90b9ffa8adf62b66dc40843d7592926b7437fff59d9b",
+        "be07c4b93e23c534ddcc729420dac5fcd0af2d60a336aced4e08d3cfb897f0ff",
+        "d70a6ebc267dcfb98e9292c7568b9515d5bd049631319156ea32a0097e8d869a"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD001-lstm-v2.yaml"
+      ],
+      "protocol": [
+        "v2"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "8.0"
+      ],
+      "population": [
+        "official_test_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "none"
+      ]
+    },
+    "FD002/xgb/v1/internal_heldout_all_alerts/fast/full": {
+      "config_set_sha256": "a7522879e1bd8eba8836d5f637ddfdb5e3d746ccd5c38f439bcf84a00234cc80",
+      "config_hash": [
+        "30723add36f39d26d4b763cf3cebaa09b501d4a67b76a492dff8b21926b0bfe2",
+        "815827b3ad6c76124d04ff379827d857d43faa01a68c8c14093b328b8f40e20d",
+        "b94e70437c22a5becc67c458f30b83a91577c8ab6db7ac857ef67a5cb3257264",
+        "e98b73cd3a09ad87f6b92efb197f6ea1d960609eb5c88333e6cd569b41e88721",
+        "f2a9450bcf9f410b67f1a07a49ce8c4813ac83fcb6b010a98b06f556339c3af9"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD002-xgb-v1.yaml"
+      ],
+      "protocol": [
+        "v1"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "5.0"
+      ],
+      "population": [
+        "internal_heldout_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E2",
+        "E3"
+      ]
+    },
+    "FD002/xgb/v1/grouped_oof_all_alerts/fast/full": {
+      "config_set_sha256": "7fdfd01db0aaca0b5ddfe6bda8b269bf0b04f85287bf1188c5e7f5153a8de46b",
+      "config_hash": [
+        "0cdfce90245e70d6dda0fc091d61d7aebfce0d49cc5f1c13a224112ec8b06f6e",
+        "26681e0da13a22c87870777a7e226075cc8fe2d5a7cb6425fed1c67397306f39",
+        "2a012036aa99880f996450d8891641e2f587402eb6b1cfb212119367d8642e7e",
+        "32016c357aeb2e5047bccb56fdddfebbed3673af0702528d0b601870678a7d8b",
+        "32d8fe4ad1999e6f1a4f416a994f495a60b33efd6c8c65ed262b2bcd64653137",
+        "3775b66d3d29558ec86246c844bb303184b6ffb5ac967be09fff51c6296478f8",
+        "4589ebb1fe1e075274d808d8669d601da7d492ef8098cd56917ec09ba8fe2ccc",
+        "57225817fc819732d0da3cf0c5c8ade82224d53002ff8ed34bade12e2a523f42",
+        "5c4fba318c1f032ee4ad66b93e9282a45b9645a4dc9f0ddfdfb2199a622a0cbe",
+        "690361efe9b94b89fb5e271109c113cb8fb5bb1f3dc7165c2182c285618f551a",
+        "703ebdc589c1f5fe663c4052b68e71fc5e084d9650b4f5e14fbb371f8178933a",
+        "7960959a4f452ce4eacf2d22f46de95adcc38cb0cedb8a4d9a8c89ef3a9aa52c",
+        "899e0189561d7ca0c2b2236937a799cd36a069c897a4b865ef47529d74af1a95",
+        "912b805765ceffc58eb76cc74d975d4c5b25abd415a443eda6338bdc42d5f16a",
+        "93b91dd59dc98726c22a329f4e21f1110dfefc0376da1f9eb3467c2229308059",
+        "b33a7da927c37ca358357093b8f064a7609d4a400051b204526b3cdc25b15d81",
+        "cedf6279a4a07d8becbb5c2d0ebadca5d900ae0072916e2c1b0dbfcf30ff8f8e",
+        "cfa3bc76e639f842941bc33758f7db718189934a4b8b5c80f00dc09bf406da8d",
+        "e1b0e91bf3410b352c3de112d7c79336f883396280cc0811fbe899125ca22441",
+        "e2424d6e4258c18d061c9141e09540a488c2231decd474e7dbc930616951b6bc",
+        "e31d2dd52aa842f268a7036ed352df60ebb4e029b32f67ca67e6ee03ca5cde1e",
+        "e8ff6c2a84cb643775cb925ee018c2ddb71fb6f2a93567690c6853ec2da6e96d",
+        "ef5679f841b37fe788352cfdbaecb173bd9133c64b2a1492226e089680616eba",
+        "f12b71906fe0f390159067fb9e06057a64f9dbad43d4b76707717c4cc799a203",
+        "fcdc07fb80d7af771fbcc407f34fb30cb1c9f6b82cb992d0819f4d71c4ce5930"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD002-xgb-v1.yaml"
+      ],
+      "protocol": [
+        "v1"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "5.0"
+      ],
+      "population": [
+        "grouped_oof_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E2",
+        "E3"
+      ]
+    },
+    "FD002/xgb/v1/official_test_all_alerts/fast/full": {
+      "config_set_sha256": "2bcd60ad093c45a6bd19c027719ee1dc004b6239f31013c28806f9af3f52cbae",
+      "config_hash": [
+        "30723add36f39d26d4b763cf3cebaa09b501d4a67b76a492dff8b21926b0bfe2",
+        "815827b3ad6c76124d04ff379827d857d43faa01a68c8c14093b328b8f40e20d",
+        "b94e70437c22a5becc67c458f30b83a91577c8ab6db7ac857ef67a5cb3257264",
+        "e98b73cd3a09ad87f6b92efb197f6ea1d960609eb5c88333e6cd569b41e88721",
+        "f2a9450bcf9f410b67f1a07a49ce8c4813ac83fcb6b010a98b06f556339c3af9"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD002-xgb-v1.yaml"
+      ],
+      "protocol": [
+        "v1"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "5.0"
+      ],
+      "population": [
+        "official_test_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E2",
+        "E3"
+      ]
+    },
+    "FD002/xgb/v2/internal_heldout_all_alerts/fast/full": {
+      "config_set_sha256": "3e5abf5100175d285c43e9926225b5ae8e193b7a01c6a93505a4c741c57aceb1",
+      "config_hash": [
+        "13d21a7011a50df267af7164339f8bb084fcb787336ccead420be664dba8613e",
+        "51c6e6ce660f55c07751841bc440a7c89960877e68cef88424bf2c17e4c10117",
+        "657b645f03339a7f18f21a97ea28ba8f40191199c7655708dcc5a6d27c6057bd",
+        "849c855930d3860b8f46b07e06c5973decebf43b2ddf68c26ef8fed5b860e159",
+        "99da2824405680895045224703f32ed00c6e5be99cccfca388b64c5d6d483ca5"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD002-xgb-v2.yaml"
+      ],
+      "protocol": [
+        "v2"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "8.0"
+      ],
+      "population": [
+        "internal_heldout_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E2",
+        "E3"
+      ]
+    },
+    "FD002/xgb/v2/grouped_oof_all_alerts/fast/full": {
+      "config_set_sha256": "9eb007b33342f1e209b03a2b08aa93f462f02a20e65056c9219585134e56f75a",
+      "config_hash": [
+        "0668aecf8228b86bf32867861cff4092b4e0894aca01d19a6b001b15302999a2",
+        "104d8eadc19cc00ed5c1453158c5491a4942a0530f54fdd0b83079b41b5b1533",
+        "193753cd9f7dc075f263660443ef458dd046c6e0463764cc68e598ea22706d0a",
+        "1fa6dc9bf87153623d809bc1bef37370fca01c8648dad43834791bedbdc66417",
+        "23c64eea971e7c5f4501fd9aeed3fd05e5aaeada3e2acd76c9528027b5b74f67",
+        "27ee249130fe38a801077eacf6a747533d106f8bcb393d3a308f36b35104b957",
+        "2be00cd45fde8b3d69682946c8290af698b76077732a80a008028bf5ffa29c92",
+        "35dc76fe8cf32d5ae479ee6464c9cde720bdbe4faebbfe07fbcc5db983648a30",
+        "5481c09e3afc041b77534e5288ee1a2246fedf4b5e5ce3e601b0cf0d6eaddf8c",
+        "65009d2211e2b93f4bc9a816188800af77e3bd6be889398c9f040d88aa29f411",
+        "6d47df2bbd4a26e890396515390c78d52276772336a30dabfc61b0d4385526a7",
+        "71e1e922d7f21ea3e57635c1b54aba1ce0fe6009c67b9e07fc63e0ef66510fc5",
+        "8064b2189217c23862f522904b3b132deafc7bac485b7f32406c4210b5fcf981",
+        "8a70825cd165faa12dce6d3912334dd34d1b59fe9b71be66e78bc5c5f4699e94",
+        "bfcd6922a056b2c419bdb40cd8c3adab09cf736c6abd6c67b71b194a785159e9",
+        "c03a8df4d09e30bcef317f902a8b94c9ff91db8b2d027ff987842dcdf458e7ab",
+        "c04b123c5afb7c3c2e0b6044ade582885a5abf00ce28e31fc117e7388451490b",
+        "c604705211282b5ec8597e015c73be32e1653407151b50916065340e99d276a9",
+        "c94186640748c6ccf314de64b6f929e6455948388cf85b36ce86d7c56b1f94d8",
+        "d65b4277fd7fe291744d64f31ad370b367ba5110b73f834cb317c59846eda649",
+        "e432ff920b1d2da38b023f0f979c76f0d776f98f4666f37481e8f501be188480",
+        "ec51689917588fc5bd1ae397e1368e5b04c0c11b4266912ba6dbd61ba5ff1e6a",
+        "f1d8b4a8b45342a65cc2c9f52b3fccbc90f5ca56b63d940326c4b74ec482db65",
+        "fab92313822633b718ded1a891bb7fee8ca319b7f6c01c1b76b848c05410a524",
+        "fcbde8e572e96edc2a529a2e686a7aa54702127d48f85ca9e781f82a157f124c"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD002-xgb-v2.yaml"
+      ],
+      "protocol": [
+        "v2"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "8.0"
+      ],
+      "population": [
+        "grouped_oof_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E2",
+        "E3"
+      ]
+    },
+    "FD002/xgb/v2/official_test_all_alerts/fast/full": {
+      "config_set_sha256": "58da936f3c43d38ccb289716fa8f4fa719faa2e790b14ce665ba48ff27895737",
+      "config_hash": [
+        "13d21a7011a50df267af7164339f8bb084fcb787336ccead420be664dba8613e",
+        "51c6e6ce660f55c07751841bc440a7c89960877e68cef88424bf2c17e4c10117",
+        "657b645f03339a7f18f21a97ea28ba8f40191199c7655708dcc5a6d27c6057bd",
+        "849c855930d3860b8f46b07e06c5973decebf43b2ddf68c26ef8fed5b860e159",
+        "99da2824405680895045224703f32ed00c6e5be99cccfca388b64c5d6d483ca5"
+      ],
+      "config_path": [
+        "configs\\experiments\\phase7-FD002-xgb-v2.yaml"
+      ],
+      "protocol": [
+        "v2"
+      ],
+      "k_max": [
+        "3"
+      ],
+      "K": [
+        "1"
+      ],
+      "D_max": [
+        "8.0"
+      ],
+      "population": [
+        "official_test_all_alerts"
+      ],
+      "solver_tau_safe": [
+        "0.2"
+      ],
+      "evidence_level": [
+        "E1",
+        "E2",
+        "E3"
+      ]
+    }
+  },
+  "latency": {
+    "config_hash": "47254ac5ea494ee5e333a754252edca0b9024d9ed5b792f3d0f561b5b0cb2271",
+    "git_hash": "63c2ed445fba16c73a2771e184f635abf76b4405",
+    "protocol": "v1",
+    "k_max": 3,
+    "K": 1,
+    "D_max_version": "v1",
+    "D_max": 5.0,
+    "population": "development_all_alerts_repeated_fixed_order"
+  }
+}

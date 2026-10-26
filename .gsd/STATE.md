@@ -2,57 +2,53 @@
 phase: 10
 status: in_progress
 ---
-# Phase10 packaging and reproduction implementation; full gate pending
+# Phase 10 final verification checkpoint — 2026-10-26 IST
 
-User authorized 7->8->9->10 in this chat, no confirmations, full gate before next. Only root
-implements, subagents independent read-only audits. MIT selected after human delegated choice.
-Phase7 b4a8614/phase7-closed, Phase8 1608d6d/phase8-closed, Phase9 0f33c0f/phase9-closed.
-Never restart historical phase7-20261020T102540Z: exit0 2026-10-24T04:26:44Z, frozen source
-63c2ed445fba16c73a2771e184f635abf76b4405, measurements/configs/models unchanged.
+Phases7/8/9 CLOSED: b4a8614/1608d6d/0f33c0f and respective phaseN-closed tags.
+User authorizes immediate continuation through10 without confirmation. Root implements;
+subagents independent audits only. MIT selected after user delegated. Public schemas2.0.0 frozen.
+Never restart historical Phase7 run phase7-20261020T102540Z: exit0, ended2026-10-24T04:26:44Z,
+frozen measured source63c2ed445fba16c73a2771e184f635abf76b4405. All old artifacts/configs preserved.
 
-Phase10 plans 01..04 committed3c8f854. New implementation now ready for checkpoint commit:
-0.2.0 runtime dependencies/extras, MIT/LICENSE/CITATION/CHANGELOG, portable init/dashboard CLI,
-packaged config/taxonomy/settings, build hook embeds package source hashes/commit independent
-of operator cwd. Independent auditor found runtime dependencies and unrelated-CWD Git provenance;
-root fixed, P10-001/002 in defects. Frozen public schemas2.0.0 unchanged.
+Current HEAD10d546474e7b211155d2fe190c671cab6ff8d3df before docs/view checkpoint.
+Actual clean installed reproduction COMPLETE (not rerun):
+C:/Users/chira/prescriptxai-phase10-clean/demo/artifacts/reproduction/
+run reproduce-20261025T062618591382Z/source10d5464;5stages/616.7122392s;
+69train/16validation/15test engines;378alerts/0intervalexclusions/20records/11engines.
+Independent audit: seeded selection exact, true riskerror0, DMerror<=8.88e-16, all8bootstrap
+metrics match<=1.11e-16;18output/6fingerprint/68source hashes pass. Canonical measured_metrics.json.
+Configruntime SHA b7089ac81d50010792662b6632c587353f0b442735c6479b3e80af8e010f8b8e;
+Gitblob differs only169CRLF, normalizedYAMLmatches; source25filesCRLFonlydifferences.
+Allquery records remain; don't overwrite/rerun. Stage durations not serial latency experiment.
 
-One-command reproduce implemented using existing scientific functions: prepare, train/calibrate,
-fit learned coupling and covariance, evaluate and report. Manifest retains failure stages and
-refuses all existing output directories. Committed-profile candidate configs/experiments/
-phase10-reproduce-v1.yaml copied byte-identically to resources/default.yaml. Internal held-out
-seeded uniform sample <=20 feasible alerts, pre-screen exclusions disclosed; reused-engine demo,
-not new generalization. All historical scientific settings unchanged; output paths point to
-artifacts/reproduction, processed files also within it. Commit protocol BEFORE actual NASA run.
+Initial Docker10dimage built after accountgroup collision fix; projectprescriptxai-phase10
+api/dashboard running healthy on127.0.0.1:8000/8501, ownsONLYthose2containers. Otherprojects
+alsoactive: neverstoptheirs. Workspacevolume env PRESCRIPTXAI_WORKSPACE points to externaldemo.
+Current Dockerfile fixed UID/GID10001, installs dist/prescriptxai-0.2.0-py3-none-any.whl.
+Need rebuild from newclean checkpoint after latest dashboard source change and recreate our2.
 
-Verification so far: 10 focused packaging/reproduction tests pass16.10s, Ruff allclean,mypy65clean.
-Preliminary sdist+wheel built under artifacts/phase10/distributions; clean environment
-C:/Users/chira/prescriptxai-phase10-clean/.venv installed65distributions, import0.2.0 points to
-site-packages, CLI help/init verified outsidecheckout. That wheel predates reproduce! Rebuild
-from the clean checkpoint and reinstall before realworkflow. Existing preliminary initialized
-workspace C:/Users/chira/prescriptxai-phase10-clean/workspace; preserve it, use a fresh final demo
-workspace after rebuild. Fresh init config now includes processedroot insideartifacts/reproduction.
-ActualNASA archive repositorydata/raw/CMAPSSData.zip exists12429152bytes. Use auto-download in
-finalREADME workflow to test actualquickstart whenpossible, manual localcopy fallback disclosed.
+New source changes: dashboard canonicalreproductionmetrics fallback, refusesincomplete/mismatched
+manifest; packaged dashboard telemetry_population=train alignsCLI/demo internalheldout cases.
+External demo/configs/dashboard.yaml stilloldtest value: update that operator-only setting to
+train foractualUI; measurementconfigs/models/records unchanged. Installedfinalwheel musthave
+viewchanges; rebuild/reinstallwithoutfitting, record fittedsource10d separately fromviewsource.
+ActualCLIexamples5/c241 REC .883373152081179->.1284214696040072 E3 and2/c278 ESC
+.997038295561199->.3612983062471661 evidence none savedartifacts/phase10/demo-*-cli.log.
+Invalidcycle5/999999 readableerror captured but exitmustrecapturefromexternaldemo.
 
-Dockerfile multistage Python3.12-slim, CPUtorch2.14.1 fromofficialCPUindex thenprojectextras,
-nonrootUID10001, /work ownership, API/dashboard compose read-only config/data/artifactmounts,
-actualhealthchecks. Docker healthy Engine29.4.0/WSL2, so MUST build/run notmarkunverified.
-No Docker build or realNASA reproduction has yet run. No activePython process atlastinventory.
-Build hook duplicate _build_info.json inclusion fromsdist fixed; rebuild mustconfirm no warning.
+Docs authored/strictMkDocsbuildPASS4.40s;tables24rows/144metricCIs independentlyexact;
+newdocs_results.py generatescommittedtables/provenance/PNG+PDF/paperresults fromhistoricalsummary.
+Docsrequirementspresent; demoUI/screenshots stillpending. FullcurrentRuffclean/mypy65clean;
+11focusedtestspass22.69s. Fullpytestcov running with log artifacts/phase10/full-gate-first.log,
+exitfile/coverage-gate-first.json whencomplete. Discoverprocessesbeforestartingduplicate.
+Coverage floors unchanged: scoped>=90 excludingONLYdashboard/app.py,full>=89.56184002912975,
+combined>=86.07837763770897. No floorlowering. Needfinalallchecks after anyfix.
 
-Next: checkpointcommit, rebuild/reinstalldistribution; actual installed reproduce in freshworkspace
-with cleancommittedconfig; inspectmanifestcounts/hash/IDs. Root can authordocs whileworkflowruns,
-but avoidcompeting heavyjobs ifreportingworkflowruntime. RunactualDocker afterward andshowdemo.
-Need documentation: trueMkDocs+autodoc build (Makefile stillfilepresence only!), README5commands,
-architecture/math/currentlimits/assumptions/evidence,2synopsisQAs+>=15newQAs,SDG9.1/9.4honestly,
-realresultgeneratedtables/figures,5mindemo exactREC/PARTorESC/failureIDs,backupinstructions,
-slideoutline,paperIEEE skeleton allcitationsTODO-VERIFY. ExistingPhase8screenshots remainavailable.
-Dashboard evidence pages currentlyexpectPhase7summary shape; mustadapthonestly fornewreproreports.
-No Gitremote exists; noinventedGitHub/PyPI/DOI. Docs pinnednewgroup installedallgroups.
+Agentphase10_packaging_audit retrying modified-sdistnegative-test afterquotareset; priorauditpass
+foractualrepro. Docsagentfinishedallnumericchecks/rootaddressed5wordingfindings. Needfinal
+independentnarrowcheck ofremainingreleaseconcerns, noimplementationdelegation.
 
-Fullfinalgate required: Ruff,mypy,allpytestcov, docsactualbuild, cleaninstall+demo, Dockeractual,
-independentaudits. Preservecoverage scoped>=90% excludingONLYdashboard/app.py (AppTest), full line
->=89.56184002912975 andcombined>=86.07837763770897. Phase9reference513tests/42fixeddefects;
-read docs/phase9_changes.md forcompleteevidence. UpdatePROGRESS/traceability/phase10summaries,
-conventionalcommit/tagphase10-closed onlyafterfullgate. Deleteexistingheartbeat
-prescriptxai-phase-7-phase-8 afterverified10closure. No Phase11/PartB prompt supplied, do notinvent.
+Next: finishfullgate/fixlegitcoverage; checkpointcommit/buildreinstalllatestwheel; verifyDocker
+nonroot/API requests,actualbrowserallreprodemo,saveimages; finalpackage/hashes/docs/coverage;
+updatePROGRESS/traceability/phase10report/planSUMMARIES; conventionalcommit/tagphase10-closed
+ONLYfullpass. Then delete heartbeatprescriptxai-phase-7-phase-8; no Phase11/PartB invention.

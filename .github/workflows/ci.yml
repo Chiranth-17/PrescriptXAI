@@ -32,6 +32,10 @@ jobs:
         run: uv run ruff check .
       - name: Type check
         run: uv run mypy src
+      - name: Build documentation and distributions
+        run: |
+          uv run mkdocs build --strict
+          uv run python -m build
       - name: Scan current source for credential exposure
         run: uv run python scripts/quality/secret_scan.py
       - name: Tests with coverage

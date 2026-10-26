@@ -1,107 +1,99 @@
 # Architecture
 
-## Data flow
-
-1. `data.download` fetches an archive into the configured raw-data directory and validates the ZIP.
-2. `data.cmapss` parses FD001–FD004; `data.preprocess` creates labels from the final-cycle RUL and
-   fits the scaler only on training-engine rows.
-3. `data.splits` assigns whole engine IDs to train, validation, and internal holdout partitions.
-4. `models.train` fits XGBoost, a differentiable MLP, or an LSTM using only train engines. Early
-   stopping and probability calibration use the disjoint validation engines; the internal test
-   engines are reserved for one-time reporting. XGBoost gets a distilled MLP surrogate for its
-   gradient path. The versioned registry stores weights, calibrator, scaler, feature order, config
-   hash, Git revision, metrics, and engine provenance.
-5. The recourse optimizer changes only configured controllable proxy features. It uses bounded
-   L-BFGS-B with torch-autograd gradients from the MLP or distilled MLP, propagates changes through
-   the fitted dependent-sensor model, enforces top-k sparsity by support re-optimization, and
-   re-scores every final candidate with the true calibrated predictor. It returns raw/scaled proxy
-   deltas, solver diagnostics, and an independent model-risk result.
-6. The validator runs Tier 1 model safety, Tier 2 training-distribution Mahalanobis distance,
-   Tier 3 actuator bounds/rates and immutable-feature checks, and Tier 4 configured coupling rules.
-   Missing coupling rules fail closed. Simulator support is a Protocol boundary, not a simulator
-   implementation, and remains disabled by default.
-7. `PrescriptXAIEngine.recommend` is the shared typed boundary used by CLI, FastAPI, and Streamlit.
-   Evaluation deterministically samples high-risk rows from engine-held-out data and records
-   per-stage latency and independent validity outcomes.
-
-## Configuration and artifacts
-
-`configs/default.yaml` owns risk thresholds, split fractions, model settings, optimization limits,
-latency/quality targets, and artifact paths. `configs/features.yaml` owns the feature taxonomy,
-actuator ranges/rates, and coupling rules. Training writes model and Mahalanobis artifacts under
-`artifacts/`; raw and processed data and fitted artifacts are ignored by Git.
-
-The LSTM consumes windows built within each engine. Early windows are left-padded by repeating that
-engine's first observed row. In recourse, the final timestep is the candidate state; earlier
-timesteps remain fixed observed history. The current snapshot recommendation API does not accept
-sequence history, so use `predict_risk_sequence` and `torch_forward` for LSTM sequence inference.
-
-The default C-MAPSS taxonomy maps seven measured sensor channels to configurable controllable
-proxies and keeps all three operating settings immutable. Those channels are telemetry, not direct
-actuator commands. Coupling models estimate dependent sensor outputs from training-data
-co-variation; neither the proxy map nor the learned relations establish causal physics or operational
-safety. See [limitations](limitations.md).
-
-## Interfaces
-
-- CLI: download, train, recommend, evaluate, serve.
-- Optional FastAPI: `/health` and `/recommend`.
-- Streamlit: raw state upload, measured risk/delta visualization, per-tier results, and limitation
-  notices.
-- Evaluation: JSON and Markdown report with denominators, configured target statuses, and
-  unmeasured stages left unmeasured, including direction agreement among nearby states and explicit
-  frozen-feature, actuator-bound, and rate-limit violation counts.
-
-
-## Phase 5 validation boundary
-
-All consumers share `validation.pipeline.validate_candidate`. Its report has independent
-`model_valid`, `plausible` (Tier 2 only), `constraints_ok` (Tiers 3–4), `joint`, failing-tier names,
-signed margins, per-rule explanations and E1–E5 evidence. Collect-all and fail-fast use the same
-checks; fail-fast unrun tiers and unavailable dynamics are skipped rather than passed. Version
-1.1.0 of the public result/report adds this evidence, status and assumptions without changing the
-underlying delta units. The Phase 6 interface freeze has not occurred yet.
-
-`validation.feasibility` supplies differentiable penalties to the existing optimizer, while final
-acceptance reuses the exact runtime checks and true calibrated predictor. At most N configured
-feedback refinements increase only the penalty weight. The diagnostic return remains separate
-from an accepted counterfactual. Persisted validators are checked against runtime feature order,
-fitting engines, threshold method/value, reference choice, covariance floor and regime count.
-
-Run the frozen real-data funnel/preparation with:
-
-```powershell
-uv run python scripts/diagnostics/phase5_validate.py
-```
-
-Commit code, protocol and configs before measuring. This command verifies the raw archive hash,
-loads the saved Phase 4 candidates, preserves query denominators, fits validators on the declared
-fitting engines, calibrates coupling residuals on validation engines, writes ignored fitted
-artifacts/query caches, and generates `docs/phase5_changes.md` plus the K sensitivity figure.
-Historical configs under `configs/experiments/phase4-historical-*` are executable mirrors created
-for traceability, not retroactive preregistration. Original effective hashes/measurement commits
-remain attached to each historical report column.
-
-
-## Phase 6 public decision pipeline
+PrescriptXAI is a research decision-support library. Its public facade, `PrescriptXAI`, is shared
+by CLI, FastAPI and Streamlit; they do not implement separate risk or validation rules.
+RecourseResult and ValidationReport are frozen at schema **2.0.0**. Package release0.2.0 is a
+separate version. The highest available evidence is E3 under documented sensor-proxy assumptions.
 
 ```mermaid
 flowchart LR
-  R[Raw vector / named row / JSON] --> N[Validate units, columns and observed history]
-  N --> P[True calibrated predictor]
-  P --> G{Risk >= tau_danger?}
-  G -->|Yes| O[FAST or THOROUGH bounded sparse search]
-  G -->|No| Z[Zero change]
-  O --> V[Independent Tiers 1-4 and skipped dynamic hook]
-  Z --> V
-  V --> T[Gate outcome or RECOVERABLE / PARTIAL / ESCALATE]
-  T --> S[Versioned RecourseResult]
-  S --> C[CLI / FastAPI / dashboard consumer]
+  ZIP[NASA raw archive] --> Split[Split complete engine trajectories]
+  Split --> Fit[Train-only preprocessing, predictor and coupling]
+  Split --> Cal[Validation-only calibration and residual thresholds]
+  Fit --> Bundle[Trusted fitted artifacts and provenance]
+  Cal --> Bundle
+  Bundle --> Facade[PrescriptXAI facade]
+  Raw[Observed raw state and optional genuine history] --> Facade
+  Facade --> Gate{Calibrated risk at least alert threshold?}
+  Gate -->|yes| Search[Sparse bounded proxy search]
+  Gate -->|no| Unchanged[No intervention]
+  Search --> Validate[Independent Tiers 1 to 4]
+  Unchanged --> Validate
+  Validate --> Result[Typed result, triage and evidence]
+  Result --> UI[CLI / HTTP / dashboard]
+  Result --> Eval[Records, engine bootstrap and reports]
 ```
 
-`PrescriptXAI` is the public facade. Artifact contents, taxonomy and configuration fingerprint a
-bounded cache; predictor/coupling access is locked and each request copies its mode settings.
-Optional CPU process workers receive the facade configuration snapshot. LSTM history consists
-of actual preceding observations; propagation and optimization affect the latest timestep.
-Final Tier 1 rescoring determines every public risk and triage field. Core library calls return
-Pydantic objects; plotting belongs to reporting or operator interfaces. See decision_pipeline.md.
+## Modules and ownership
+
+| Module | Responsibility |
+|---|---|
+| `data` | Archive integrity, canonical columns, cycle/RUL labels, engine splits, train-only scalers/regimes |
+| `models` | XGBoost, MLP and LSTM; validation-only monotone calibration; gradient surrogate; typed registry |
+| `constraints` | YAML taxonomy, raw bounds/rates/directions, residual-preserving learned coupling |
+| `recourse` | Scaled controls, L-BFGS-B smooth/split L1, support search, bounded true-model grid |
+| `validation` | Independent true risk, regime-specific Mahalanobis, proxy engineering and coupling checks |
+| `pipeline` | Input/context checks, verified artifact assembly, bounded cache, thread-safe prediction and triage |
+| `evaluation` | Declared cohorts, persisted records, both plausibility denominators, whole-engine intervals |
+| `api`, `cli`, `dashboard` | Thin consumers, friendly typed errors, current observed telemetry and export |
+| `reproduce`, `workspace`, `provenance` | Portable initialization, fresh data-to-report workflow, installed-source identity |
+
+Training partitions contain entire engines. Predictor selection uses predictive/calibration
+metrics; recourse outcomes do not tune the predictor. Early stopping and probability calibration
+use validation engines drawn from the public training file. Covariance and coupling regressors
+fit training engines only; residual limits are calibrated on disjoint validation engines. The
+internal holdout is never a fitting set. Official test engine IDs are a separate dataset namespace.
+
+The snapshot models operate on raw named fields through a train-fitted scaler. LSTM training
+constructs within-engine windows; early training windows repeat the first observation. Public
+sequence recommendations require **real preceding observations** in InputContext. History stays
+fixed and only the latest state is changed. Insufficient observed history is an explicit error;
+it is not fabricated for a demo. Final true calibrated risk is authoritative even when the
+search uses a surrogate gradient.
+
+## Serving and operator flow
+
+The facade validates names/order/types, finite representable measurements, units and history.
+Verified model/scaler/covariance/coupling identities and content hashes key a bounded cache.
+Predictor/coupling access is locked; each request receives its own mode configuration. Optional
+CPU process workers use a configuration snapshot and bounded batch sizes. Manual dashboard
+edits call the same validation path and cannot turn a low-risk but implausible state into an
+accepted intervention.
+
+HTTP routes are GET `/health`, `/config`, `/version` and POST `/assess`, `/recommend`,
+`/recommend/batch`, `/validate-controls`; `/docs` and `/openapi.json` expose the API contract.
+Payload limits, sanitized validation errors, configured CORS and optional environment API keys
+are enforced. These are local research services, not a complete production security boundary.
+Streamlit has Operator Console, Fleet Overview, Model and Validation Diagnostics, Evaluation
+Results, and About and Limitations. Source/model switches invalidate stale decisions.
+
+## Persistence and reproducibility
+
+`prescriptxai init` copies bundled YAML templates to a new operator workspace. `reproduce` uses
+that configuration to prepare, train/calibrate, fit validators, evaluate and report in a fresh
+artifact directory. Configuration, archive, model and report hashes, engine IDs, package source,
+versions, stage times and failure checkpoints live in the manifest. A built wheel carries its
+source commit and file hashes; an unrelated operator Git repository cannot supply its identity.
+A modified source distribution is explicitly marked dirty. The fixed Phase10 sample is a
+reused-engine demonstration, not a re-run or replacement of the full Phase7 experiment.
+
+Legacy fitted objects require trusted local artifact roots and byte identity checks. Never load
+an uploaded/downloaded pickle. See [artifact security](artifact_security.md). Generated data and
+fitted artifacts stay out of Git and distributions. Docker installs the same wheel, runs as
+UID10001 and mounts the operator's configs, data and artifacts read-only for serving.
+
+## Extension points
+
+- **Predictor:** implement the `FailureModel`/`RiskEstimator` contract in `models.base`; define
+  raw-feature ordering, calibrated probabilities, optional differentiable path and serialization.
+  Extend training/registry selection and fit/provenance tests. A surrogate cannot decide validity.
+- **Constraint:** add typed YAML settings and a shared `TierResult`/`CheckResult`; use the exact
+  validator for final acceptance. A differentiable penalty is an approximation, not a new verdict.
+  Add unit/edge/science tests and preregister any changed evaluation protocol before measuring.
+- **Emulator:** supply a learned transition adapter with held-out unit and operating-region
+  validation, residual/coverage metrics and explicit E4 evidence. Current static coupling is not
+  a dynamics emulator. Do not label a learned model physics.
+- **Simulator:** implement `DynamicSimulator.validate_candidate` and an independently validated physics
+  integration before claiming E5. `NullSimulator` is the default; skipped dynamics never pass.
+- **Schema:** after Phase6, any public result/report change needs a version bump, schema changelog
+  and agreement of every owner. Package-only changes do not silently change schema2.0.0.

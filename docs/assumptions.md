@@ -1,6 +1,6 @@
 # Evaluation assumptions
 
-This file records assumptions that affect Phase 4 measurements. They are explicit model inputs,
+This file records assumptions that affect the versioned experiments and current software. They are explicit model inputs,
 not established engine dynamics.
 
 ## Sensor-proxy rate limits
@@ -73,7 +73,8 @@ checks never pass. No RUL extension is claimed.
 The committed `docs/evaluation_protocol.md` specifies train-only Ledoit–Wolf covariance,
 Cholesky scoring, all-cycle reference, unchanged fixed D_max versions and validation-only
 coupling residual calibration. Healthy-to-moderate covariance reference and quantile thresholds
-are supported but are not evaluated alternatives until the Phase 7 ablation. Regime assignments
+were separately evaluated in the completed Phase 7 ablations; their labeled results never
+replace the fixed-protocol headline. Regime assignments
 are determined from frozen original operating settings. Changing a sensor cannot select a
 friendlier regime. Fitting and calibration engines are disjoint from test engines.
 

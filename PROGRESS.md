@@ -1,24 +1,26 @@
 # PrescriptXAI Progress
 
-## Phase 10 packaging/reproduction checkpoint — not closure
+## Phase 10 verification checkpoint — 2026-10-26 IST; not closure
 
-Release0.2.0 runtime metadata/extras, MIT license (human delegated choice), citation/changelog,
-portable init/dashboard entrypoints and source-owned build provenance are implemented.
-The sdist and wheel build and a clean Python3.13 environment outside the checkout installs
-65 distributions; library import, CLI help and three configuration templates succeed.
-This preliminary wheel predates reproduce and is not the final release proof. Seven packaging
-tests plus three actual reproduction/negative tests pass (10total,16.10s); strict mypy65clean.
-Root implemented the independent auditor's concrete missing-dependency and wrong-CWD-commit
-findings; P10-001/002 logged separately from the42closed Phase9 defects.
+The installed reproduction completed all five stages: run `reproduce-20261025T062618591382Z`,
+source `10d546474e7b211155d2fe190c671cab6ff8d3df`, 616.7122392 s, 69/16/15 engines in fitting/
+calibration/internal test. All 20 queries from 378 alerts are retained, 0 interval exclusions,
+11 sampled engines. Independent audit reproduced selection, true risks and whole-engine CIs;
+checked 18 output hashes, 68 packaged source hashes and fitting separation. Validity 12/20,
+T2 both denominators 12/20, joint 10/20; complete labeled CIs in docs/phase10_changes.md.
 
-The new reproduce command uses existing preparation, predictor/calibration, learned coupling,
-covariance and evaluation/report routines; manifest retains stages, source/config/input/output
-hashes, IDs and durations. Failed/existing outputs are refused, never replaced. Its committed
-Phase10 profile declares a separate seeded sample of at most20 feasible internal-holdout alerts,
-with interval exclusions disclosed; it does not modify the frozen Phase7 populations/results.
-The real NASA workflow has not run yet. Dockerfile/compose are implemented but not yet built or
-verified. Remaining: real clean installed reproduction, Docker/API/dashboard/demo, full buildable
-docs/math/QAs/figures/paper, independent audits and complete Phase10 software/coverage gate.
+Docker image built; both API/dashboard services reached healthy status with read-only host
+artifacts and runtime UID/GID 10001. Group-name collision corrected. CLI verified RECOVERABLE
+engine5/cycle241 (.8833731521 -> .1284214696, E3) and ESCALATE engine2/cycle278
+(.9970382956 -> .3612983062, no cumulative evidence level). These are individual proxy examples.
+
+Generated 24 population rows / 144 metric+CI cells and figures from preserved Phase7 evidence;
+independent audit matched all cells/config-label hashes. README five commands, architecture/math,
+21 defense QAs, SDG9, docstring API, demo script and IEEE-style paper skeleton are present.
+Strict MkDocs build succeeds; Ruff clean, mypy65clean. 11 packaging/reproduction/AppTest tests
+pass22.69s. Current full test/coverage run is pending; final release, browser demo/screenshots,
+modified-sdist audit and final traceability/closure remain. Historical sources/results and
+schema2.0.0 unchanged. MIT is the user's delegated license choice. No Phase11 prompt invented.
 
 ## Phase status table
 

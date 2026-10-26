@@ -11,6 +11,7 @@ from typing import Any
 import pytest
 import yaml
 from fastapi.testclient import TestClient
+from streamlit.testing.v1 import AppTest
 from typer.testing import CliRunner
 
 from fixtures.hardening import raw_fixture
@@ -44,6 +45,15 @@ def _profile(directory: Path) -> Path:
     profile = directory / "profile.yaml"
     profile.write_text(yaml.safe_dump(config.model_dump(mode="json")), encoding="utf-8")
     return profile
+
+
+def render_reproduction_page(path: str, diagnostics: bool) -> None:
+    """Use the same display entry point with actual generated report files."""
+    from pathlib import Path
+
+    from prescriptxai.dashboard.pages import reproduction_evidence
+
+    reproduction_evidence(Path(path), diagnostics, {})
 
 
 @pytest.mark.e2e
@@ -82,6 +92,24 @@ def test_real_reproduce_command_writes_loadable_hashed_artifacts(tmp_path: Path)
     saved = [json.loads(line) for line in (root / "query_results.jsonl").read_text().splitlines()]
     assert saved == report["records"]
     assert report["provenance"]["reproduction_run_id"] == manifest["run_id"]
+    for diagnostics in (False, True):
+        view = AppTest.from_function(
+            render_reproduction_page, args=(str(root / "measured_metrics.json"), diagnostics)
+        ).run()
+        assert not view.exception and not view.warning
+        displayed = view.dataframe[0].value.set_index("metric")
+        assert displayed.loc["validity", "estimate"] == measured["metrics"]["validity"]["estimate"]
+        assert (
+            displayed.loc["plausibility_returned", "denominator"]
+            == measured["metrics"]["plausibility_returned"]["denominator"]
+        )
+        assert any(manifest["run_id"] in item.value for item in view.caption)
+    metrics_path = root / "measured_metrics.json"
+    metrics_bytes = metrics_path.read_bytes()
+    metrics_path.write_text("{}", encoding="utf-8")
+    broken = AppTest.from_function(render_reproduction_page, args=(str(metrics_path), False)).run()
+    assert not broken.exception and broken.warning and not broken.dataframe
+    metrics_path.write_bytes(metrics_bytes)
     snapshot = (root / "manifest.json").read_bytes()
     with pytest.raises(ValueError, match="refusing to replace"):
         reproduce(profile)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any, Literal
 
 import pandas as pd
@@ -136,6 +137,10 @@ def evidence_page(
     st.header(PAGES[2] if diagnostics else PAGES[3])
     directory = backend.settings.report_directory
     summary_path = directory / "summary.json"
+    reproduction_path = directory / "measured_metrics.json"
+    if not summary_path.exists() and reproduction_path.exists():
+        reproduction_evidence(reproduction_path, diagnostics, info)
+        return
     try:
         summary = saved_json(str(summary_path), file_identity(summary_path))
     except OperatorError as error:
@@ -271,6 +276,70 @@ def evidence_page(
         st.dataframe(curve, hide_index=True, width="stretch")
     else:
         st.info("No saved K sensitivity data for this model; no curve is inferred.")
+
+
+def reproduction_evidence(path: Path, diagnostics: bool, info: dict[str, Any]) -> None:
+    """Display canonical saved reproduction intervals without inventing a full study."""
+    try:
+        measured = saved_json(str(path), file_identity(path))
+        manifest_path = path.with_name("manifest.json")
+        manifest = saved_json(str(manifest_path), file_identity(manifest_path))
+        if manifest.get("status") != "complete" or manifest.get("run_id") != measured["run_id"]:
+            raise ValueError("the matching reproduction manifest is not complete")
+        labels = {
+            key: measured[key]
+            for key in (
+                "run_id",
+                "config_sha256",
+                "protocol",
+                "population",
+                "mode",
+                "K",
+                "k_max",
+                "D_max",
+            )
+        }
+        labels["source"] = measured["source"]["git_commit"]
+        rows = pd.DataFrame(
+            [{"metric": name, **value, **labels} for name, value in measured["metrics"].items()]
+        )
+        # Required fields reject malformed/truncated evidence instead of implying completeness.
+        rows[["estimate", "lower", "upper", "engine_count", "denominator", "observation_count"]]
+        counts = measured["counts"]
+        st.caption(f"Run {labels['run_id']} · measured source {labels['source']}")
+        st.info(
+            "Small reproduction on reused held-out engines; not a new generalization study. "
+            "Every interval bootstraps whole engines. E3 is the maximum proxy evidence; "
+            "validity alone is not physical safety."
+        )
+        st.json({**labels, "counts": counts, "evidence_limit": measured["evidence_limit"]})
+        st.dataframe(rows, hide_index=True, width="stretch")
+        st.download_button(
+            "Download reproduction metrics CSV",
+            rows.to_csv(index=False),
+            "reproduction-metrics.csv",
+            "text/csv",
+        )
+        if diagnostics:
+            st.subheader("Predictive calibration and learned coupling evidence")
+            st.json(
+                {
+                    "model": info.get("model_diagnostics", {}),
+                    "coupling": info.get("coupling_diagnostics", {}),
+                }
+            )
+            st.info(
+                "This short reproduction does not include a constraint ladder, K curve or "
+                "serial latency study. See the separately preserved Phase 7 report for those."
+            )
+        else:
+            st.caption(
+                "Tier 2 is reported over all queries and returned candidates separately. "
+                "Joint success is stricter than plausibility. Workflow durations are not "
+                "isolated serial latency measurements."
+            )
+    except (OperatorError, KeyError, TypeError, ValueError) as error:
+        st.warning(f"Reproduction evidence unavailable or invalid: {error}")
 
 
 def about_page() -> None:
