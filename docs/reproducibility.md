@@ -27,6 +27,17 @@ on the Windows host recorded in its manifest. Preparation took 20.2733 s, traini
 Allow roughly 10–20 minutes on comparable hardware, plus installation/download time; this is an
 operational estimate, not a latency budget measurement. Actual hardware and dependency versions
 are retained in `artifacts/reproduction/manifest.json`.
+The recorded baseline has **16 logical CPUs**, processor identifier **AMD64 Family 25 Model 68
+Stepping 1, AuthenticAMD**, **Windows 11** and **Python 3.13.9**. RAM and a retail processor
+model are not inferred from that identifier.
+
+A second, independent empty operator directory followed the five README commands using
+Python `venv` and `pip`: run `reproduce-20261026T042558162985Z`, clean source
+`8aa18cb086999b885aa95a5af2dcb26315aa0acb`, completed in **479.8035529 s**. Its selected CSV,
+all scientific record fields and all eight engine-bootstrap metrics match the prior run.
+Both original timings remain saved. Docker/browser verification overlapped this second
+workflow, so these durations are not an isolated speed comparison. See the release report
+for the actual browser results and their platform-specific candidate differences.
 
 It retained 20/20 queries from 378 alerts, with 0 interval pre-screen exclusions and 11 sampled
 engines. Validity was 12/20, Tier 2 was 12/20 over both all and returned candidates, and joint

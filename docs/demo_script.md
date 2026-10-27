@@ -28,6 +28,20 @@ verifies the widgets, exports and diagnostics; see [Phase 10 verification](phase
 A reproduction on another numerical platform may yield slightly different candidates; display
 what the current artifact actually returns, and retain unexpected failures.
 
+The fresh Windows README run `reproduce-20261026T042558162985Z` on source `8aa18cb` reproduces
+both displayed risks and triage outcomes in the browser. The same engine 5/241 case in the
+Linux Docker image, using the original fitted artifacts, returns risk **0.1083572930** and
+D_M **4.3108395311**, also RECOVERABLE/E3. These are distinct saved search outcomes; there is
+no claim of identical actions across operating systems. The true predictor and all tiers
+independently revalidate the Linux candidate. Both platforms disclose surrogate disagreement.
+
+Saved actual walkthroughs: [Windows RECOVERABLE](screenshots/phase10-readme-recoverable.png),
+[Windows ESCALATE](screenshots/phase10-readme-escalate.png),
+[Docker RECOVERABLE](screenshots/phase10-docker-recoverable.png),
+[Docker ESCALATE](screenshots/phase10-docker-escalate.png),
+[Docker evaluation](screenshots/phase10-docker-evaluation.png) and
+[Docker diagnostics](screenshots/phase10-docker-diagnostics.png).
+
 ## 0:00–0:40 — purpose and boundary
 
 Open Operator Console. Explain prediction versus diagnostic explanation versus sparse proxy

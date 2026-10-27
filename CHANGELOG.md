@@ -3,10 +3,14 @@
 This project uses semantic versioning for the Python package. Public result schemas
 have a separate version; RecourseResult and ValidationReport remain 2.0.0.
 
-## 0.2.0 — in development
+## 0.2.0 — 2026-10-27
 
 - Installable runtime dependencies and optional API, dashboard and baseline extras.
 - Portable workspace initialization and dashboard entrypoint, MIT license and citation.
+- One-command registered reproduction with durable query records, engine-bootstrap metrics,
+  complete manifests and source identity preserved through wheel/sdist builds.
+- Verified non-root Docker API/dashboard, README-only clean installation, real demo captures,
+  buildable mathematical/API documentation and measured publication tables.
 - Includes Phases 7–9: full measured evaluation, operator dashboard, systematic hardening,
   typed failures, trusted artifact boundaries and numerical regression protection.
 - Historical experiment source hashes and results remain unchanged. Consult their

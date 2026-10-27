@@ -1,54 +1,48 @@
 ---
 phase: 10
-status: in_progress
+status: complete
 ---
-# Phase 10 final verification checkpoint — 2026-10-26 IST
+# PrescriptXAI closure state — 2026-10-27 IST
 
-Phases7/8/9 CLOSED: b4a8614/1608d6d/0f33c0f and respective phaseN-closed tags.
-User authorizes immediate continuation through10 without confirmation. Root implements;
-subagents independent audits only. MIT selected after user delegated. Public schemas2.0.0 frozen.
-Never restart historical Phase7 run phase7-20261020T102540Z: exit0, ended2026-10-24T04:26:44Z,
-frozen measured source63c2ed445fba16c73a2771e184f635abf76b4405. All old artifacts/configs preserved.
+Authorized Phases7→8→9→10 have passed their gates. The final closure commit is identified by
+`phase10-closed`; verify that tag before treating an interrupted release operation as finished.
+Delete heartbeat `prescriptxai-phase-7-phase-8` after tag verification. No Phase11 prompt or PartB
+was supplied; neither is invented. No further experiment is pending.
 
-Current HEAD10d546474e7b211155d2fe190c671cab6ff8d3df before docs/view checkpoint.
-Actual clean installed reproduction COMPLETE (not rerun):
-C:/Users/chira/prescriptxai-phase10-clean/demo/artifacts/reproduction/
-run reproduce-20261025T062618591382Z/source10d5464;5stages/616.7122392s;
-69train/16validation/15test engines;378alerts/0intervalexclusions/20records/11engines.
-Independent audit: seeded selection exact, true riskerror0, DMerror<=8.88e-16, all8bootstrap
-metrics match<=1.11e-16;18output/6fingerprint/68source hashes pass. Canonical measured_metrics.json.
-Configruntime SHA b7089ac81d50010792662b6632c587353f0b442735c6479b3e80af8e010f8b8e;
-Gitblob differs only169CRLF, normalizedYAMLmatches; source25filesCRLFonlydifferences.
-Allquery records remain; don't overwrite/rerun. Stage durations not serial latency experiment.
+Historical closures: Phase7 b4a8614, Phase8 1608d6d, Phase9 0f33c0f and respective tags.
+Never restart historical run phase7-20261020T102540Z: exit0 on2026-10-24T04:26:44Z,
+frozen measurement source63c2ed445fba16c73a2771e184f635abf76b4405. Preserve all historical
+records/models/thresholds/configurations/timings/populations. Result/report schemas2.0.0;
+package0.2.0. MIT chosen under the user's delegated decision.
 
-Initial Docker10dimage built after accountgroup collision fix; projectprescriptxai-phase10
-api/dashboard running healthy on127.0.0.1:8000/8501, ownsONLYthose2containers. Otherprojects
-alsoactive: neverstoptheirs. Workspacevolume env PRESCRIPTXAI_WORKSPACE points to externaldemo.
-Current Dockerfile fixed UID/GID10001, installs dist/prescriptxai-0.2.0-py3-none-any.whl.
-Need rebuild from newclean checkpoint after latest dashboard source change and recreate our2.
+Runtime8aa18cb086999b885aa95a5af2dcb26315aa0acb:524passed/66test-onlywarnings/353.04s;
+Ruffclean,mypy65clean. Scoped/full/combinedcoverage90.84624553039332/89.85028881291996/
+86.38832012819371%;allfloorspass. Proof artifacts/phase10/full-gate-first.log,
+coverage-8aa18cb.json andcoverage-gate-first.json. Subsequent changes docs/captures only.
+Strictdocsbuild,dependency0known/132thirdparties,checkpointcredentialscan0/366pass.
+Finalrelease build/install proof: artifacts/phase10/final-release-verification.json.
 
-New source changes: dashboard canonicalreproductionmetrics fallback, refusesincomplete/mismatched
-manifest; packaged dashboard telemetry_population=train alignsCLI/demo internalheldout cases.
-External demo/configs/dashboard.yaml stilloldtest value: update that operator-only setting to
-train foractualUI; measurementconfigs/models/records unchanged. Installedfinalwheel musthave
-viewchanges; rebuild/reinstallwithoutfitting, record fittedsource10d separately fromviewsource.
-ActualCLIexamples5/c241 REC .883373152081179->.1284214696040072 E3 and2/c278 ESC
-.997038295561199->.3612983062471661 evidence none savedartifacts/phase10/demo-*-cli.log.
-Invalidcycle5/999999 readableerror captured but exitmustrecapturefromexternaldemo.
+Completed installed runs (do not overwrite/rerun):
+- C:/Users/chira/prescriptxai-phase10-clean/demo, reproduce-20261025T062618591382Z,
+  source10d546474e7b211155d2fe190c671cab6ff8d3df,616.7122392s.
+- C:/Users/chira/prescriptxai-phase10-readme, reproduce-20261026T042558162985Z,
+  source8aa18cb,479.8035529s; allfiveREADMEcommandsverified.
+Both20queries/11engines,378alerts/0intervalexclusions,69/16/15split; scientificrecords/8metrics
+match,1163numericfieldsexact. Validity12/20,T2both12/20,joint10/20; CIsinPhase10report.
+ConfigSHA b7089ac81d50010792662b6632c587353f0b442735c6479b3e80af8e010f8b8e.
+CRLF/hashdifferences disclosed, not normalized away. Workflowtimings notisolated.
 
-Docs authored/strictMkDocsbuildPASS4.40s;tables24rows/144metricCIs independentlyexact;
-newdocs_results.py generatescommittedtables/provenance/PNG+PDF/paperresults fromhistoricalsummary.
-Docsrequirementspresent; demoUI/screenshots stillpending. FullcurrentRuffclean/mypy65clean;
-11focusedtestspass22.69s. Fullpytestcov running with log artifacts/phase10/full-gate-first.log,
-exitfile/coverage-gate-first.json whencomplete. Discoverprocessesbeforestartingduplicate.
-Coverage floors unchanged: scoped>=90 excludingONLYdashboard/app.py,full>=89.56184002912975,
-combined>=86.07837763770897. No floorlowering. Needfinalallchecks after anyfix.
+FreshWindowsbrowser5/c241THOROUGH RECOVERABLErisk.1284214696E3,2/c278ESCALATE
+risk.3612983062none;invalid5/c999999exit2. Sixcaptures/exports saved. LinuxREC.1083572930
+is a distinct independentlyvalidatedcandidate. Dockerff8d45fa... API/dashboardhealthy,
+UID/GID10001/read-onlymounts/HTTP200+422. Onlyownverificationcontainersstopped.
+Windowsdashboardathttp://127.0.0.1:8501; logs/processidentity artifacts/phase10/readme-dashboard*.
+Rediscoverprocessbeforeoperating; neverassumePIDpersists.
 
-Agentphase10_packaging_audit retrying modified-sdistnegative-test afterquotareset; priorauditpass
-foractualrepro. Docsagentfinishedallnumericchecks/rootaddressed5wordingfindings. Needfinal
-independentnarrowcheck ofremainingreleaseconcerns, noimplementationdelegation.
-
-Next: finishfullgate/fixlegitcoverage; checkpointcommit/buildreinstalllatestwheel; verifyDocker
-nonroot/API requests,actualbrowserallreprodemo,saveimages; finalpackage/hashes/docs/coverage;
-updatePROGRESS/traceability/phase10report/planSUMMARIES; conventionalcommit/tagphase10-closed
-ONLYfullpass. Then delete heartbeatprescriptxai-phase-7-phase-8; no Phase11/PartB invention.
+Independentagentsauditedonly;rootimplemented. Docs24rows/144cells/6compactrowsmatchpreserved7;
+modified-sdistnegative6checkspass. SevenPhase10defectsfixed. Complete7-taskmapping
+ docs/traceability.md;reportdocs/phase10_changes.md;instructionsREADME anddocs/reproducibility.md;
+exactcasesdocs/demo_script.md. Sixscreenshots,buildableAPI/mathdocs,21defenseanswers,
+conditionalSDG9.1/9.4,paperskeletonTODO-VERIFYcitations. Generateddata/fitsremainignored.
+Historicaltargetmissesremain;proxyassumptions,surrogate/couplinglimits,atmostE3,
+noRULextension/physicalproof/upload/hostedCI/DOIclaim.

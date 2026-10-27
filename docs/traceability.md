@@ -238,3 +238,29 @@ not new C-MAPSS generalization or a replacement for Phase7 latency. Fresh depend
 109distributions plus explicit local-project exclusion; current/history credential scan0matches.
 Nightlyselection3pass/510deselected,docscheckpass. No known open critical software defect;
 hostedCI/GPU execution remains unclaimed. Closure phase9-closed follows this verified gate.
+
+## Phase 10 packaging, reproducibility and demo — complete gate
+
+This mapping supersedes the historical queued Phase 10 row. The complete source prompt is
+`docs/prompts/phase10_packaging_reproducibility.md`; detailed proof and limitations are in
+`docs/phase10_changes.md`. Runtime verification uses clean source `8aa18cb`; subsequent changes
+are documentation and captures. The closure commit is identified by `phase10-closed`.
+
+| Task | Deliverable | Actual verification |
+|---|---|---|
+| 1. Packaging, version, license, citation | pyproject/hatch build; VERSION 0.2.0; CHANGELOG; MIT LICENSE; CITATION.cff; portable resources | sdist → wheel; clean installed library/CLI; all 68 packaged source hashes; modified-archive negative audit; no fitted data bundled |
+| 2. Docker | Multistage Dockerfile, non-root compose API/dashboard, healthchecks, read-only data/config/artifact mounts | Image ff8d45fa9abc from source8aa18cb; both healthy, UID/GID10001; health/version/config/UI 200, real assess/validate 200, malformed input422; real browser solves/exports |
+| 3. Reproduction | `prescriptxai reproduce`; fixed committed phase10-reproduce-v1.yaml; complete manifests and durable selected-query/record files | Two clean Windows runs: 616.7122392 and479.8035529s; 20queries/11engines each, all scientific fields and8engine-bootstrap metrics match; all failures retained |
+| 4. Documentation | README five commands/Mermaid/screenshots/results; architecture/math/limitations/assumptions/evidence; defense Q&A; MkDocs Material/docstring API | Fresh venv+pip+init+reproduce+dashboard worked outside checkout;21answers (2synopsis+19additional); strict site build; tables24rows/144cells independently matched |
+| 5. SDG9 | Targets9.1/9.4 in README, defense Q&A and docs/sdg9.md | Official-target citations; conditional motivation only, no invented reliability/efficiency improvement |
+| 6. Demo assets | Exact5/241RECOVERABLE,2/278ESCALATE,5/999999failure; real captures;5-minute script, backup-recording instructions,8-slide outline, generated figures | Windows andLinux actual browser/JSON; risks/tier evidence independently checked; failureexit2; six screenshot files; no claimed unrecorded video |
+| 7. Paper | IEEE-style paper/README.md and generated paper/results.md | All required sections,6measured rows; literature citations TODO-VERIFY; no fabricated bibliography |
+| Complete gate | Full software/coverage/docs/install/demo and independent audits | 524passed/66test-only warnings; Ruffclean;strictmypy65;scoped90.84624553039332%,full89.85028881291996%,combined86.38832012819371%; allfloors pass |
+
+Protocol for both reproduction runs: v1, THOROUGH, k_max=3, assumed K=1, D_max v1=5,
+reused internal held-out FD001 engines, 69/16/15 actual split, 378 alerts and zero interval
+exclusions. Run IDs and exact config/source hashes accompany all metrics in the Phase 10 report.
+No population cap was introduced into the historical Phase 7 study: this separate small
+reproduction profile was committed before its runs. Original Phase7/8/9 records remain intact.
+Public schemas stay2.0.0. Highest available evidence is E3 under proxy assumptions; no physical
+safety or RUL-extension claim. Historical target gaps remain, and Phase11/PartB remain unavailable.

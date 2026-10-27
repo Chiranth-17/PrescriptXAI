@@ -1,26 +1,46 @@
 # PrescriptXAI Progress
 
-## Phase 10 verification checkpoint — 2026-10-26 IST; not closure
+## Phase 10 — complete gate and release 0.2.0, 2026-10-27 IST
 
-The installed reproduction completed all five stages: run `reproduce-20261025T062618591382Z`,
-source `10d546474e7b211155d2fe190c671cab6ff8d3df`, 616.7122392 s, 69/16/15 engines in fitting/
-calibration/internal test. All 20 queries from 378 alerts are retained, 0 interval exclusions,
-11 sampled engines. Independent audit reproduced selection, true risks and whole-engine CIs;
-checked 18 output hashes, 68 packaged source hashes and fitting separation. Validity 12/20,
-T2 both denominators 12/20, joint 10/20; complete labeled CIs in docs/phase10_changes.md.
+Delivered installable wheel/sdist with source manifests, portable CLI/dashboard, non-root Docker,
+one-command reproduction, buildable docs/API/math,21defense answers,real demo captures,
+generated publication tables/figures and IEEE-style paper skeleton. MIT was selected under the
+user's delegated license choice; public result schemas remain2.0.0.
 
-Docker image built; both API/dashboard services reached healthy status with read-only host
-artifacts and runtime UID/GID 10001. Group-name collision corrected. CLI verified RECOVERABLE
-engine5/cycle241 (.8833731521 -> .1284214696, E3) and ESCALATE engine2/cycle278
-(.9970382956 -> .3612983062, no cumulative evidence level). These are individual proxy examples.
+Full runtime gate on `8aa18cb086999b885aa95a5af2dcb26315aa0acb`: **524passed**,66warnings from
+short test-only fits,353.04s; Ruffclean,strictmypy65clean. Scoped line7622/8390=90.84624553039332%,
+full line7622/8483=89.85028881291996%,combined9704/11233=86.38832012819371%; all Phase9 floors
+pass without lowering. Strict MkDocs build passes;11focused package/repro/AppTests pass.
+Dependency audit0known/132third-party distributions,explicit local-project exclusion; checkpoint
+credentialscan0matches/366files in its documented pattern scope. HostedCI remains unclaimed.
 
-Generated 24 population rows / 144 metric+CI cells and figures from preserved Phase7 evidence;
-independent audit matched all cells/config-label hashes. README five commands, architecture/math,
-21 defense QAs, SDG9, docstring API, demo script and IEEE-style paper skeleton are present.
-Strict MkDocs build succeeds; Ruff clean, mypy65clean. 11 packaging/reproduction/AppTest tests
-pass22.69s. Current full test/coverage run is pending; final release, browser demo/screenshots,
-modified-sdist audit and final traceability/closure remain. Historical sources/results and
-schema2.0.0 unchanged. MIT is the user's delegated license choice. No Phase11 prompt invented.
+Two clean installed runs completed all five stages: `reproduce-20261025T062618591382Z` on10d5464
+in616.7122392s and `reproduce-20261026T042558162985Z` on8aa18cb in479.8035529s. Each retains
+20queries/11engines from378alerts/0intervalexclusions,69/16/15fit/calibration/test split.
+Independent audits match all scientific fields (1163numericfields),selectedCSV and8engine-CI
+metrics;18output/6fingerprint checks perrun pass. Validity12/20,T2bothdenominators12/20,
+joint10/20; complete labeled engine CIs and config hashes are in docs/phase10_changes.md.
+Durations are operational, not isolated latency comparisons; original timings remain saved.
+
+Fresh README venv/pip/init/reproduce/dashboard works outside checkout. Real Windows browser
+engine5/c241 THOROUGH risk.8833731521→.1284214696 RECOVERABLE/E3; engine2/c278
+.9970382956→.3612983062 ESCALATE/none. Invalid5/c999999 returns readableerror/exit2.
+Docker API/dashboard healthy asUID/GID10001,allworkspace mountsread-only; realHTTP200/422 and
+browserexports verified. LinuxRECcandidate risk.1083572930 differs fromWindows and is separately
+validated; platform action identity is not claimed. Six actual screenshots are linked in the
+demo script. Only the two verification containers were stopped; the fresh Windows dashboard
+remains available at http://127.0.0.1:8501 while its process runs.
+
+Independent docs audit matches24population rows/144metric+CIcells and6compactrows against
+preserved Phase7 evidence. Modified-sdist negative audit passes6checks. Seven packaging defects
+are fixed and verified. Historical sources/configurations/models/results/target misses stay
+unchanged; bounds/rates/K are assumptions,maximumE3,no physical-safety orRUL-extension claim.
+
+How to run: README's five commands in an empty operator directory; Docker and developer checks
+in docs/reproducibility.md; exact cases in docs/demo_script.md. Verified workspace:
+`C:/Users/chira/prescriptxai-phase10-readme`. Full evidence and limitations: docs/phase10_changes.md;
+task mapping: docs/traceability.md. Closure commit/tag `phase10-closed` follows the verified gate.
+Authorized continuation ends after this tag; no Phase11 orPartB source was supplied or invented.
 
 ## Phase status table
 
@@ -36,7 +56,7 @@ schema2.0.0 unchanged. MIT is the user's delegated license choice. No Phase11 pr
 | 7 — Full experimental framework | Closed; measured target gaps retained | 171490 quality + 2496 diagnostics, 48 reference cases, 2000 serial calls; independent audit and full software gate passed |
 | 8 — Streamlit operator dashboard | Closed at1608d6d / phase8-closed | Five pages, live shared validation, real walkthrough,321 tests and independently audited32-callback UI timing |
 | 9 — Systematic testing and hardening | Closed; full gate passed | 513tests,90.5843% scoped line coverage,42fixed defects, audited profiling and10000-call memory check; phase9-closed |
-| 10 — Packaging, documentation and demo readiness | In progress | Phase9-closed verified at0f33c0f; packaging/repro/docs/demo plans active; user delegated license choice, MIT selected |
+| 10 — Packaging, documentation and demo readiness | Complete gate; phase10-closed | 524tests; two audited clean reproductions; actual Docker and README dashboard; docs, MIT, citation and paper skeleton |
 | 11 — Remaining phase | Not started | Source prompt / Part B changes table not supplied |
 
 ## Authorized continuation order — updated 2026-10-24 IST
@@ -47,7 +67,8 @@ next phase starts. The preserved prompts are `docs/prompts/phase8_operator_dashb
 `docs/prompts/phase9_testing_hardening.md` and `docs/prompts/phase10_packaging_reproducibility.md`.
 The existing heartbeat `prescriptxai-phase-7-phase-8` now continues through verified Phase 10
 closure. Its ID, thread and 15-minute schedule are retained; its earlier stop-after-Phase-8
-instruction is superseded. Phase9 is closed; Phase10 implementation is active and its gate is pending.
+instruction is superseded. Phases7–10 have complete gates; the heartbeat is removed after verifying
+the Phase10 closure tag. No further phase is authorized by an invented prompt.
 
 Phase 9 includes the requested >=90% line-coverage gate, defect log, property/fuzz/fault/golden/
 science tests, cross-process determinism, security audit, profiling and 10,000-call memory check,

@@ -30,7 +30,9 @@ path in command 2. Open http://localhost:8501. The registered FD001 XGBoost work
 and verifies data, fits/calibrates the predictor, fits validators, evaluates up to 20 registered
 sampled alerts and writes all records plus a manifest. It refuses to replace existing outputs.
 Expect about 10–20 minutes after installation on comparable CPU hardware; the verified run took
-616.71 s. This is a reproduction demonstration on reused engines, not a new generalization claim.
+616.71 s, and a second clean README installation completed it in 479.80 s. These are workflow
+durations, not controlled latency comparisons. This demonstrates reproduction on reused engines,
+not new generalization.
 
 Choose **THOROUGH** for the [exact demo cases](docs/demo_script.md). For the API, run
 `.venv/Scripts/prescriptxai serve` in a second terminal in this same directory; interactive
@@ -75,6 +77,14 @@ determines Tier 1. Full details: [architecture](docs/architecture.md), [math](do
 Historical Phase 8 screenshot, with its source, engine/cycle, risks and checks recorded in
 [the walkthrough report](docs/phase8_changes.md). The new reproduction has its own model and
 [demo instructions](docs/demo_script.md); historical screenshots are not relabeled as new runs.
+
+![Fresh README installation: engine 5/cycle 241, THOROUGH, E3](docs/screenshots/phase10-readme-recoverable.png)
+
+Fresh Windows reproduction `reproduce-20261026T042558162985Z`, source `8aa18cb`, protocol v1,
+assumed K=1, k_max=3, D_max=5: true model risk 0.8833731521 → 0.1284214696, all four static
+tiers pass under proxy assumptions. This individual case is not a population success rate.
+See the [complete release verification](docs/phase10_changes.md) for config hashes, platform
+differences, whole-engine intervals, test counts and retained target misses.
 
 ## Measured results
 
