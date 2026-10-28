@@ -1,6 +1,17 @@
 # PrescriptXAI Progress
 
-## Phase 10 — complete gate and release 0.2.0, 2026-10-27 IST
+## Phase 11 independent final audit — in progress, 2026-10-28 IST
+
+The user supplied the complete Phase11 prompt after Phase10 closure. Three independent reviewers
+are auditing code they did not implement; root repairs verified gaps and reviewers recheck them.
+The initial full gate passes524tests with unchanged coverage. A fresh installed reproduction
+completed20queries/11engines in711.3422288s and matches the prior scientific records exactly.
+The complete34,298-record second-seed replay is separately preregistered; it is not replaced
+by the small packaging workflow. Final traceability, repairs, API/dashboard/Docker checks and
+independent replay comparison remain. Historical target misses and limitations stay explicit.
+See .gsd/STATE.md and .gsd/phases/11/01-PLAN.md for the active audit state.
+
+## Phase 10 â€” complete gate and release 0.2.0, 2026-10-27 IST
 
 Delivered installable wheel/sdist with source manifests, portable CLI/dashboard, non-root Docker,
 one-command reproduction, buildable docs/API/math,21defense answers,real demo captures,
@@ -23,8 +34,8 @@ joint10/20; complete labeled engine CIs and config hashes are in docs/phase10_ch
 Durations are operational, not isolated latency comparisons; original timings remain saved.
 
 Fresh README venv/pip/init/reproduce/dashboard works outside checkout. Real Windows browser
-engine5/c241 THOROUGH risk.8833731521→.1284214696 RECOVERABLE/E3; engine2/c278
-.9970382956→.3612983062 ESCALATE/none. Invalid5/c999999 returns readableerror/exit2.
+engine5/c241 THOROUGH risk.8833731521â†’.1284214696 RECOVERABLE/E3; engine2/c278
+.9970382956â†’.3612983062 ESCALATE/none. Invalid5/c999999 returns readableerror/exit2.
 Docker API/dashboard healthy asUID/GID10001,allworkspace mountsread-only; realHTTP200/422 and
 browserexports verified. LinuxRECcandidate risk.1083572930 differs fromWindows and is separately
 validated; platform action identity is not claimed. Six actual screenshots are linked in the
@@ -46,20 +57,20 @@ Authorized continuation ends after this tag; no Phase11 orPartB source was suppl
 
 | Phase | Status | Notes |
 |---|---|---|
-| 0 — Scaffold and package foundation | Complete | Packaging, configuration, schemas, logging, CI, and checks |
-| 1 — Data ingestion and preprocessing | Complete | Real FD001–FD004 loaded, split, filtered, scaled, and reported |
-| 2 — Predictive models | Complete | XGBoost, differentiable MLP/LSTM, validation-only calibration, and real FD001 metrics |
-| 3 — Feature taxonomy and sensor coupling | Complete | Proxy taxonomy, fitted physical bounds, coupling propagation and Tier 4 checks |
-| 4 — Constrained recourse engine | Closed; synopsis targets measured honestly | Constrained search, final protocol audit, grouped uncertainty, historical errata |
-| 5 — Multi-tier validation (current prompt) | Closed; measured gaps retained | Shared tiers, bounded feedback, real funnels, audits and phase5-closed |
-| 6 — Decision support pipeline, CLI and API | Closed; performance target gap retained | Public schema 2.0.0, real delivery gates, 600-result audit, phase6-closed |
-| 7 — Full experimental framework | Closed; measured target gaps retained | 171490 quality + 2496 diagnostics, 48 reference cases, 2000 serial calls; independent audit and full software gate passed |
-| 8 — Streamlit operator dashboard | Closed at1608d6d / phase8-closed | Five pages, live shared validation, real walkthrough,321 tests and independently audited32-callback UI timing |
-| 9 — Systematic testing and hardening | Closed; full gate passed | 513tests,90.5843% scoped line coverage,42fixed defects, audited profiling and10000-call memory check; phase9-closed |
-| 10 — Packaging, documentation and demo readiness | Complete gate; phase10-closed | 524tests; two audited clean reproductions; actual Docker and README dashboard; docs, MIT, citation and paper skeleton |
-| 11 — Remaining phase | Not started | Source prompt / Part B changes table not supplied |
+| 0 â€” Scaffold and package foundation | Complete | Packaging, configuration, schemas, logging, CI, and checks |
+| 1 â€” Data ingestion and preprocessing | Complete | Real FD001â€“FD004 loaded, split, filtered, scaled, and reported |
+| 2 â€” Predictive models | Complete | XGBoost, differentiable MLP/LSTM, validation-only calibration, and real FD001 metrics |
+| 3 â€” Feature taxonomy and sensor coupling | Complete | Proxy taxonomy, fitted physical bounds, coupling propagation and Tier 4 checks |
+| 4 â€” Constrained recourse engine | Closed; synopsis targets measured honestly | Constrained search, final protocol audit, grouped uncertainty, historical errata |
+| 5 â€” Multi-tier validation (current prompt) | Closed; measured gaps retained | Shared tiers, bounded feedback, real funnels, audits and phase5-closed |
+| 6 â€” Decision support pipeline, CLI and API | Closed; performance target gap retained | Public schema 2.0.0, real delivery gates, 600-result audit, phase6-closed |
+| 7 â€” Full experimental framework | Closed; measured target gaps retained | 171490 quality + 2496 diagnostics, 48 reference cases, 2000 serial calls; independent audit and full software gate passed |
+| 8 â€” Streamlit operator dashboard | Closed at1608d6d / phase8-closed | Five pages, live shared validation, real walkthrough,321 tests and independently audited32-callback UI timing |
+| 9 â€” Systematic testing and hardening | Closed; full gate passed | 513tests,90.5843% scoped line coverage,42fixed defects, audited profiling and10000-call memory check; phase9-closed |
+| 10 â€” Packaging, documentation and demo readiness | Complete gate; phase10-closed | 524tests; two audited clean reproductions; actual Docker and README dashboard; docs, MIT, citation and paper skeleton |
+| 11 â€” Remaining phase | Not started | Source prompt / Part B changes table not supplied |
 
-## Authorized continuation order — updated 2026-10-24 IST
+## Authorized continuation order â€” updated 2026-10-24 IST
 
 The user supplied full Phase 9 and Phase 10 prompts and explicitly requested the order
 **Phase 7 -> Phase 8 -> Phase 9 -> Phase 10**, with each complete gate passing before the
@@ -67,7 +78,7 @@ next phase starts. The preserved prompts are `docs/prompts/phase8_operator_dashb
 `docs/prompts/phase9_testing_hardening.md` and `docs/prompts/phase10_packaging_reproducibility.md`.
 The existing heartbeat `prescriptxai-phase-7-phase-8` now continues through verified Phase 10
 closure. Its ID, thread and 15-minute schedule are retained; its earlier stop-after-Phase-8
-instruction is superseded. Phases7–10 have complete gates; the heartbeat is removed after verifying
+instruction is superseded. Phases7â€“10 have complete gates; the heartbeat is removed after verifying
 the Phase10 closure tag. No further phase is authorized by an invented prompt.
 
 Phase 9 includes the requested >=90% line-coverage gate, defect log, property/fuzz/fault/golden/
@@ -77,7 +88,7 @@ Docker verification when available, reproduction workflow, complete docs/demo/pa
 and the user's license-choice instruction (MIT offered as default). No unavailable Phase 11 or
 Part B content is invented. Current frozen measurements and schema 2.0.0 remain protected.
 
-## Phase 8 closure — 2026-10-24 IST
+## Phase 8 closure â€” 2026-10-24 IST
 
 - Done: shared manual preview facade/API; direct/HTTP adapters with actual content identity;
   observed telemetry and genuine LSTM prefix; invalidating session state; all five pages,
@@ -105,7 +116,7 @@ Part B content is invented. Current frozen measurements and schema 2.0.0 remain 
   `mingw32-make all-checks`. See docs/phase8_changes.md and docs/phase8_walkthrough.md.
   Closure1608d6d9c1c995cf024fdcc29d1db5d785564b3f / phase8-closed verified; Phase9 started.
 
-## Phase 9 start — 2026-10-24 IST
+## Phase 9 start â€” 2026-10-24 IST
 
 Four concrete plans under .gsd/phases/9 preserve all11 task areas. Independent read-only audits
  have reproduced raw corrupt-artifact exceptions, missing-calibrator acceptance, contradictory
@@ -114,7 +125,7 @@ regressions are next; no Phase9 completion or coverage/security/performance resu
 The >=90% line target will be measured with explicit rendering exclusions and full-package
 coverage retained alongside it. Historical Phase7/8 measurements and frozen2.0.0schemas remain.
 
-### Phase 9 science/golden/E2E checkpoint — 2026-10-25 IST; not closure
+### Phase 9 science/golden/E2E checkpoint â€” 2026-10-25 IST; not closure
 
 Runtime boundary commit42c7800 follows ebc9570. All11 requested scientific error classes now
 have explicit regressions, including holdout perturbation invariance, declared solver-tuning
@@ -141,7 +152,7 @@ are required. No Phase9 timing or10000-call memory stage has run yet. Commit pre
 then run serial baseline/profile, optimize only measured hotspots with unchanged goldens, run
 after/memory, independently audit, finish complete Phase9 gate/tag, and proceed directly to10.
 
-### Phase 9 profiling checkpoint — measurements in progress
+### Phase 9 profiling checkpoint â€” measurements in progress
 
 Preregistration and baseline source bf50dff. Fixture preparation and serial before stage exit0;
 120/120 timed calls retained over2synthetic engines. p50=18.5547ms,p95=37.418115ms,
@@ -158,7 +169,7 @@ constant and disparate-scale features. Eighteen scaling/property/golden/restart/
 pass after optimization; Ruff/mypy62clean. No settings, artifacts or golden files changed.
 After timing and10000-call memory check remain next; no performance improvement is claimed yet.
 
-### Phase 9 independent measured audit — complete, final gate next
+### Phase 9 independent measured audit â€” complete, final gate next
 
 After source2fd1055 completes120/120calls over2synthetic engines: p50=12.626ms,p95=23.85524ms,
 p99=26.482568ms; engine95%p95CI[23.80822,23.85524]ms,2000drawsseed17. Fixture p95 decreases36.25%.
@@ -178,7 +189,7 @@ cases pass. AlloperatorCLI commands now use friendly anticipated-error handling.
 credential-pattern scan:327files/747blobs,zero matches (disclosed heuristic scope). Fullfinalgate,
 freshdependency audit/nightlyselection/progress/traceability/tag remain next; Phase9stillopen.
 
-## Phase 9 boundary checkpoint — not phase closure
+## Phase 9 boundary checkpoint â€” not phase closure
 
 - Twenty-five reproduced defects and fixes are logged in docs/defects.md: trusted local Python-
   object loading, identity snapshots, fitted calibration/model/scaler/coupling/regime validation,
@@ -215,7 +226,7 @@ All7newnegative cases now pass;60pipeline/API cases pass and5property tests pass
 successful/no-op examples. Typed input failures remain422; unexpected fitted-component faults
 are actionable ArtifactError/503 rather than raw traces. Frozen2.0.0fields remain unchanged.
 
-## Phase 7 closure — 2026-10-24 IST
+## Phase 7 closure â€” 2026-10-24 IST
 
 Run `phase7-20261020T102540Z`, measured source `63c2ed445fba16c73a2771e184f635abf76b4405`,
 committed study `configs/experiments/phase7-study.yaml`. Complete measured target/gap report:
@@ -247,7 +258,7 @@ committed study `configs/experiments/phase7-study.yaml`. Complete measured targe
   require new run IDs and committed protocols. Start Phase8 immediately after closure commit/tag,
   then9->10after their full gates. Historical measurements and schema2.0.0 remain immutable.
 
-### Exact checkpoint resume — 2026-10-24 IST
+### Exact checkpoint resume â€” 2026-10-24 IST
 
 The original process stopped at 2026-10-23 18:34 UTC (00:04 IST on October 24), after
 122,821/171,490 quality calls. The execution log has no terminal traceback; the old tool session
@@ -277,7 +288,7 @@ four quality workers (24848, 27184, 27640, 29024) are active under main PID 3759
 reports AC/system/display requests active. This verifies resumed checkpoint progress, not phase
 closure. All original records remain present; completed stages beyond diagnostics are pending.
 
-### Quality stage complete — 2026-10-24 08:45 IST
+### Quality stage complete â€” 2026-10-24 08:45 IST
 
 At 03:15 UTC, the saved stage marker confirms all **171,490/171,490 quality calls** on
 frozen source `63c2ed445fba16c73a2771e184f635abf76b4405`. Together with 2,496 completed
@@ -291,9 +302,9 @@ This is a stage milestone, not Phase 7 closure or an audited performance headlin
 completion, 1,000 serial latency calls per mode, complete record/provenance audits, engine
 bootstrap report/target gaps, traceability and the final quality/coverage gate remain required.
 Do not run competing tests, training, quality jobs or heavy audits once serial latency starts.
-Phases 8–10 remain queued until their preceding full gates pass; no source commit yet.
+Phases 8â€“10 remain queued until their preceding full gates pass; no source commit yet.
 
-### Reference complete; serial latency active — 2026-10-24 09:15 IST
+### Reference complete; serial latency active â€” 2026-10-24 09:15 IST
 
 At 03:45 UTC, the reference stage marker confirms all 48 declared cases on source `63c2ed4`.
 The saved reference file contains 48 leverage checkpoints and 40 failed-state oracle checkpoints;
@@ -301,12 +312,12 @@ all 40 record production reproduction and verified finite search-superset flags.
 still require the independent final audit. Finite-search absence is not continuous infeasibility.
 
 The same main process has begun the prescribed isolated serial latency stage. The read-only
-checkpoint contained 176/1,000 FAST samples (indices 0–175); THOROUGH had not begun. Ten warmups
+checkpoint contained 176/1,000 FAST samples (indices 0â€“175); THOROUGH had not begun. Ten warmups
 per mode are excluded by the frozen protocol. No tests, training, quality jobs or heavy audits
 are to run concurrently. Preserve every timing, keep source/config/models/populations unchanged,
 and wait for both modes and the report before the full closure audit/checks. Phase 7 remains open.
 
-## Phase 7 — framework implementation and preparation (2026-10-20)
+## Phase 7 â€” framework implementation and preparation (2026-10-20)
 
 The direct Phase 7 prompt supersedes the earlier missing-prompt status for this phase.
 Preregistration is commit `0c0b6e1`; initial preparation source is `4ffb038`. No Phase 7
@@ -324,7 +335,7 @@ recourse result or design-target pass is claimed before the complete saved measu
   artifact hashes, engine partitions and feature compatibility. OOF coverage is exactly 100
   FD001 engines per model and 260 FD002 engines. Original MLP/LSTM tensors, scaler statistics
   and calibrator parameters were preserved during metadata migration.
-- Frozen historical FD001 XGBoost fold training seeds are 1730–1734; the other prepared models
+- Frozen historical FD001 XGBoost fold training seeds are 1730â€“1734; the other prepared models
   use 1729. The five study seeds vary solver randomness only. Metadata records actual training
   seeds, source hashes and metrics rather than implying five independent predictor fits.
 - The stable-source `mingw32-make all-checks` passed: Ruff clean, strict mypy clean for 55 source
@@ -354,7 +365,7 @@ each query is checkpointed. Live log: `artifacts/phase7-execution.log`. No compl
 is made while these required stages are running.
 
 The independent manifest audit verified 64 cohorts, all 112 asset hashes and 57 unique input /
-validator paths. Expected quality calls are 5 solver seeds × (32,596 FAST + 1,702 THOROUGH) =
+validator paths. Expected quality calls are 5 solver seeds Ã— (32,596 FAST + 1,702 THOROUGH) =
 171,490; paired diagnostics contain 2,496 calls. These counts include both protocols and the
 declared development population. No reported FAST test alerts were capped. LSTM insufficient
 history is counted explicitly (135 internal, 900 OOF and 900 official rows per protocol).
@@ -378,7 +389,7 @@ discrepancies were found. Maximum true-risk error was 0, independent Cholesky D_
 3.55e-15, and coupling-margin error 0. All accepted actions satisfied their actual target and
 original constraints. This is an audited partial snapshot, not the completed Phase 7 gate.
 
-### Partial diagnostic update — 2026-10-21
+### Partial diagnostic update â€” 2026-10-21
 
 The report was regenerated successfully from 1,541 saved observations in 129 groups. It remains
 explicitly PARTIAL. An independent read-only audit then verified all 1,596 records in its newer
@@ -406,12 +417,12 @@ These distance/margin measurements diagnose the gap; no threshold, rate, bound o
 setting is changed. The full population, remaining diagnostics, reference search and serial
 latency are still pending. Phase 8 remains queued until the full Phase 7 gate passes.
 
-### Diagnostic stage complete; full quality stage started — 2026-10-21
+### Diagnostic stage complete; full quality stage started â€” 2026-10-21
 
 All 2,496 diagnostic calls finished at 04:20:14 UTC (09:50 IST). The persisted completion
 marker records source `63c2ed445fba16c73a2771e184f635abf76b4405` and exactly 2,496 results.
 The report was regenerated successfully from that complete diagnostic snapshot: 208 groups,
-52 variants × 12 paired states × four dataset/protocol cohorts. It remains PARTIAL because
+52 variants Ã— 12 paired states Ã— four dataset/protocol cohorts. It remains PARTIAL because
 quality, reference and latency stages are unfinished. Both protocol versions are retained.
 
 The independent diagnostic-stage audit checked every identity/config hash, paired population,
@@ -429,14 +440,14 @@ new predictor fit, threshold adjustment or solver change was made. The full Phas
 including reference diagnostics, 1000 serial calls per mode, final audit/report and software
 closure checks, is still pending; Phase 8 has not started.
 
-### Early quality checkpoint audit — 2026-10-21
+### Early quality checkpoint audit â€” 2026-10-21
 
 An independent read-only audit captured 2,036 quality records from the original active run
 `phase7-20261020T102540Z`, source `63c2ed445fba16c73a2771e184f635abf76b4405`. Available
 records at that snapshot were FD001/XGBoost, protocol/D_max v1 (5), k_max=3, assumed K=1,
 config `configs/experiments/phase7-FD001-xgb-v1.yaml`, runtime config hash
 `47254ac5ea494ee5e333a754252edca0b9024d9ed5b792f3d0f561b5b0cb2271`: internal FAST
-(378 queries × five solver seeds), internal THOROUGH first alerts (15 × five seeds), and
+(378 queries Ã— five solver seeds), internal THOROUGH first alerts (15 Ã— five seeds), and
 71 partial official FAST queries with seed 1729. These are audit scopes, not pooled estimates.
 All canonical identities, input/config hashes, population/seed labels, frozen settings and
 engine partitions passed; SQLite integrity passed. A stratified numerical sample of 100
@@ -447,7 +458,7 @@ coupling-margin error 0. No tests, training, candidate replay or source edits we
 The full 171,490-call quality population, reference and serial latency gates remain pending;
 the partial official population is not a headline result. Phase 8 remains queued.
 
-### Continued execution — 2026-10-22
+### Continued execution â€” 2026-10-22
 
 The original main process (PID 47224) and its four quality workers are advancing again on
 the unchanged measured source. At 02:47:58 UTC (08:17 IST), the saved quality count was
@@ -457,7 +468,7 @@ is not asserted. All recorded timings and interruption-related outliers are reta
 latency has not begun, no process was restarted, and no population, threshold, bound, rate,
 configuration or measured source changed. Phase 7 remains open and Phase 8 remains queued.
 
-### Delay diagnosis and operational fix — 2026-10-22
+### Delay diagnosis and operational fix â€” 2026-10-22
 
 Windows Power-Troubleshooter events now confirm that the overnight logging gaps correspond
 to low-power states: sleep/wake 2026-10-20 12:04:07 -> 2026-10-21 03:44:02 UTC and
@@ -482,7 +493,7 @@ quality/reference/serial latency/report/audit/software gates remain required for
 
 A further independent quality audit verified 15,163 registered result identities, provenance
 and engine partitions in one consistent read-only snapshot. Its numerical sample covered
-75 new-stratum records from official/development populations and OOF folds 1–5, with both
+75 new-stratum records from official/development populations and OOF folds 1â€“5, with both
 modes where available and all five solver seeds. Scope is FD001/XGBoost/v1 only, assumed
 K=1, k_max=3, D_max=5, run/source as above; each record's committed config path/runtime hash
 and six corresponding artifact bundles were checked against the manifest. The sample had
@@ -494,7 +505,7 @@ differed by at most 1.79e-7 (float32); true singleton risk remains authoritative
 THOROUGH correctly includes first alerts from all validation engines before the capped FAST
 sample, as preregistered. No solver call was replayed or modified. The full study is unfinished.
 
-### Power-state follow-up — 2026-10-22
+### Power-state follow-up â€” 2026-10-22
 
 Quality checkpoints paused between 10:30:08 and 10:55:28 UTC. Windows Kernel-Power events
 506/507 identify Modern Standby, including an `Austerity Battery Drain Budget Exceeded`
@@ -523,7 +534,7 @@ reports AC=true, system/display requests active and previous/requested execution
 been observed. At the next read-only checkpoint, 38,840 quality records were saved; the original
 process and four workers remained healthy, with only diagnostics marked complete.
 
-### Further power interruption and safe continuation — 2026-10-23
+### Further power interruption and safe continuation â€” 2026-10-23
 
 The original run `phase7-20261020T102540Z` remains on measured source
 `63c2ed445fba16c73a2771e184f635abf76b4405`, with main PID 47224 and the same four
@@ -532,8 +543,8 @@ all 2,496 diagnostics remain complete. Current rows are FD001/LSTM/v1 grouped OO
 FAST calls. Reference, serial latency, final report/audit and closure gate remain pending.
 
 Windows Power-Troubleshooter event 1 records sleep/hibernate from
-2026-10-22 22:55:02 UTC to 2026-10-23 02:01:21 UTC (04:25–07:31 IST). Additional
-observed log gaps are 18:21:56–21:30:03, 21:31:18–21:52:44 and 21:52:55–22:55:02 UTC
+2026-10-22 22:55:02 UTC to 2026-10-23 02:01:21 UTC (04:25â€“07:31 IST). Additional
+observed log gaps are 18:21:56â€“21:30:03, 21:31:18â€“21:52:44 and 21:52:55â€“22:55:02 UTC
 on October 22; their causes are not inferred from missing log output alone. The operational
 helper recorded AC=false at 22:55:07 UTC, then AC=true and system/display requests active
 again at 02:01:45 UTC. Its fresh 02:02:15 UTC status confirms the requests remain active.
@@ -546,7 +557,7 @@ Phase 8 remains queued until its complete gate passes.
 
 At 08:03 UTC (13:33 IST), the same run reached FD002/XGBoost/v1 internal FAST evaluation,
 with 95,084/171,490 quality calls saved. Windows event 1 records a further hibernate interval
-from 07:47:11 to 08:01:28 UTC (13:17–13:31 IST). Helper v2 recorded AC=false at 06:43:34
+from 07:47:11 to 08:01:28 UTC (13:17â€“13:31 IST). Helper v2 recorded AC=false at 06:43:34
 UTC and AC=true with system/display requests active at 08:03:06 UTC. These observations do
 not prove the cause of earlier log gaps or uninterrupted operation while requests are active.
 The original experiment and workers resumed without replacement. All timings are retained;
@@ -554,7 +565,7 @@ reference and serial latency have not begun, and no measured-source/config chang
 
 At 12:42 UTC (18:12 IST), 100,645/171,490 quality calls were saved, now FD002/XGBoost/v1
 official-test FAST evaluation. Windows event 1 confirms another hibernate interval from
-11:03:17 to 12:41:31 UTC (16:33–18:11 IST); helper v2 reports AC/system/display requests
+11:03:17 to 12:41:31 UTC (16:33â€“18:11 IST); helper v2 reports AC/system/display requests
 active again from 12:41:31 UTC. The same experiment and worker PIDs remain alive and
 advancing. Preserve all timing outliers; no measured source, config or population changed.
 
@@ -596,7 +607,7 @@ See `docs/experimental_framework.md` for stage order, provenance, uncertainty an
 - Give XGBoost a distilled MLP gradient path and report measured fidelity for the surrogate.
 - Keep C-MAPSS operating settings immutable and expose measured sensor channels used as controllable
   proxies only through `configs/features.yaml`, with a visible proxy warning.
-- Estimate physical bounds from the 1st–99th train-engine percentiles plus the configured margin;
+- Estimate physical bounds from the 1stâ€“99th train-engine percentiles plus the configured margin;
   persist fitted ranges with trained model and coupling artifacts.
 - Score coupling fit quality with engine-grouped cross-validation and report below-floor sensors
   directly; do not use in-sample fit scores for the quality gate.
@@ -610,7 +621,7 @@ See `docs/experimental_framework.md` for stage order, provenance, uncertainty an
   within train engines only and persisted with the model. They are telemetry envelopes, not
   actuator slew rates.
 - Model validity records the true calibrated-risk threshold independently. Joint success also
-  requires a sparse optimizer-feasible action and passing Tiers 2–4; a safe-risk diagnostic that
+  requires a sparse optimizer-feasible action and passing Tiers 2â€“4; a safe-risk diagnostic that
   fails the sparse search cannot count as a successful action.
 
 ## Assumptions
@@ -630,14 +641,14 @@ See `docs/experimental_framework.md` for stage order, provenance, uncertainty an
 - The C-MAPSS proxy mapping and statistical coupling rules are configurable, but none proves a real
   actuator mapping or causal thermodynamics. A domain-reviewed control mapping is required before
   any operational use.
-- The measured FD001 coupling fit falls below the configured R² floor for `sensor_3` and `sensor_6`;
+- The measured FD001 coupling fit falls below the configured RÂ² floor for `sensor_3` and `sensor_6`;
   those relations remain flagged and need better predictors or additional validated measurements.
 - The optional simulator remains an interface only and is disabled by default.
 - The Phase 6 interface accepts observed LSTM history and fixes earlier timesteps during recourse.
   Real Phase 6 population measurements use the preregistered XGBoost predictor; LSTM interface
   behavior is verified with genuine fitted test models, not substituted into those measurements.
 - Phase 4 closure metrics are in `docs/phase4_final.md`; the earlier contradictory summary has
-  been superseded. The final report distinguishes model validity from Tiers 2–4 plausibility and
+  been superseded. The final report distinguishes model validity from Tiers 2â€“4 plausibility and
   reports v1 and frozen v2, all-alert, first-alert, grouped OOF, and official-test populations.
 
 Phase 0 scaffold verification is complete. GNU Make's Windows executable is named mingw32-make in
@@ -682,7 +693,7 @@ downloaded datasets or trained artifacts.
 - Fresh Python 3.11.17 sync from pyproject.toml and uv.lock: passed.
 - Wheel build and py.typed marker inclusion: passed.
 
-## Phase 1 — Data ingestion and preprocessing
+## Phase 1 â€” Data ingestion and preprocessing
 
 The cached NASA archive was CRC-checked and parsed from the real files. Its computed SHA-256 is
 `c9c5dec12a945a82e8bb4446589d7fb3cc057b5e5d81fa1a12e25ee9912ad3b2`; no expected checksum was
@@ -718,14 +729,14 @@ both present; dropped sensors are absent from prepared CSVs and listed in the JS
 - `prescriptxai data download --subset FD001`: passed against the valid local archive; printed the
   computed digest. The live network transfer path was not exercised because the archive was already
   present; failed-transfer handling is covered by a test and emits manual instructions with exit 2.
-- `prescriptxai data prepare --subset FD001` and the same command for FD002–FD004: passed on real
+- `prescriptxai data prepare --subset FD001` and the same command for FD002â€“FD004: passed on real
   NASA data with configured row-count checks.
 - Fixture preparation idempotency, loader schema/corruption, exact RUL boundary, engine disjointness,
   deterministic regimes, train-only scaling, dropped sensors, and inverse round-trip: passed.
 - `mingw32-make all-checks` with Python 3.11.17: Ruff passed, mypy passed for 48 source files,
   95 tests passed, 80% total coverage, and the docs target passed.
 
-## Phase 2 — Predictive models and calibrated risk
+## Phase 2 â€” Predictive models and calibrated risk
 
 Trained all three model choices on the real FD001 C-MAPSS training file with seed `1729`, failure
 horizon `30`, and thresholds `tau_danger=0.80`, `tau_safe=0.20`. The 100 run-to-failure engines
@@ -743,11 +754,11 @@ s11,s12,s13,s14,s15,s17,s20,s21`); the train-only variance filter dropped `s1,s5
 Held-out classification and calibration results came from the generated JSON artifacts. Confusion
 matrix values below are `TN/FP/FN/TP`, with labels ordered `0,1`.
 
-| Model | AUROC | AUPRC | F1 at 0.80 | Brier before → after | ECE before → after | High-risk recall | TN/FP/FN/TP |
+| Model | AUROC | AUPRC | F1 at 0.80 | Brier before â†’ after | ECE before â†’ after | High-risk recall | TN/FP/FN/TP |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| XGBoost | 0.99105 | 0.95674 | 0.85612 | 0.03485 → 0.02552 | 0.03654 → 0.00909 | 0.77419 | 2800/16/105/360 |
-| MLP | 0.99126 | 0.95717 | 0.85511 | 0.02509 → 0.02527 | 0.00723 → 0.00748 | 0.77419 | 2799/17/105/360 |
-| LSTM | 0.99299 | 0.96543 | 0.83436 | 0.02251 → 0.02204 | 0.01364 → 0.01070 | 0.73118 | 2806/10/125/340 |
+| XGBoost | 0.99105 | 0.95674 | 0.85612 | 0.03485 â†’ 0.02552 | 0.03654 â†’ 0.00909 | 0.77419 | 2800/16/105/360 |
+| MLP | 0.99126 | 0.95717 | 0.85511 | 0.02509 â†’ 0.02527 | 0.00723 â†’ 0.00748 | 0.77419 | 2799/17/105/360 |
+| LSTM | 0.99299 | 0.96543 | 0.83436 | 0.02251 â†’ 0.02204 | 0.01364 â†’ 0.01070 | 0.73118 | 2806/10/125/340 |
 
 The FD001 XGBoost AUROC exceeded the investigation trigger of `0.90`. Its distilled MLP had test
 MAE `0.01321`, Spearman rank correlation `0.96763`, agreement `0.98659` at `tau_safe=0.20`, and
@@ -769,7 +780,7 @@ surrogate fidelity when applicable.
 - `mingw32-make all-checks` with Python 3.13.9: Ruff passed, mypy passed for 49 source files,
   105 tests passed with 77% total coverage, and the documentation target passed.
 
-## Phase 3 — Feature taxonomy, physical bounds, and sensor coupling
+## Phase 3 â€” Feature taxonomy, physical bounds, and sensor coupling
 
 `configs/features.yaml` now maps all three C-MAPSS operating settings and all 21 sensor channels
 to their standard columns and meanings. Operating settings are immutable. The configured proxies
@@ -790,14 +801,14 @@ RUL above the configured healthy-to-moderate cutoff. The default Ridge backend h
 representation; configured gradient-boosting and sklearn MLP backends are distilled to a
 differentiable torch MLP. Tier 4 reports out-of-fold residual bounds and YAML engineering rules.
 The optimizer's torch gradient path propagates changes through dependent sensors before predictor
-inference. Coupling fit R² and residual standard deviation are measured with deterministic,
+inference. Coupling fit RÂ² and residual standard deviation are measured with deterministic,
 engine-grouped cross-validation.
 
 The real FD001 coupling fit used seed `1729`, five grouped folds, 47 training engines, and 8,072
-healthy-to-moderate rows. Its configured floor is R² `0.35`; two relations are below that floor and
+healthy-to-moderate rows. Its configured floor is RÂ² `0.35`; two relations are below that floor and
 remain flagged:
 
-| Dependent sensor | Engine-grouped out-of-fold R² | Residual standard deviation (raw units) | Floor status |
+| Dependent sensor | Engine-grouped out-of-fold RÂ² | Residual standard deviation (raw units) | Floor status |
 |---|---:|---:|---|
 | `sensor_11` | 0.67856 | 0.11326 | pass |
 | `sensor_13` | 0.66789 | 0.03371 | pass |
@@ -817,9 +828,9 @@ documented in `docs/limitations.md`.
 
 ### Phase 3 verification
 
-- The real retained feature lists for FD001–FD004 each passed taxonomy coverage and train-derived
+- The real retained feature lists for FD001â€“FD004 each passed taxonomy coverage and train-derived
   bounds validation: 18, 24, 19, and 24 model inputs respectively.
-- The real FD001 coupling model and HTML/PNG diagnostics were fitted and persisted. R² floor
+- The real FD001 coupling model and HTML/PNG diagnostics were fitted and persisted. RÂ² floor
   failures for `sensor_3` and `sensor_6` are reported without tuning or suppression.
 - Tests cover duplicate/missing/invalid bounds, masks, percentile margin behavior, bounds projection
   idempotence, raw/scaled conversion, rate-limit boundary checks, NaN rejection, real healthy-state
@@ -834,12 +845,12 @@ documented in `docs/limitations.md`.
   129 tests passed with 77% total coverage; the documentation target passed. Unit tests emitted
   convergence warnings only for deliberately short (8-iteration) nonlinear-backend fixtures.
 
-## Phase 4 — Constrained recourse engine and final closure
+## Phase 4 â€” Constrained recourse engine and final closure
 
 The constrained engine and the final evidence audit are closed. Closure means the implementation,
 protocol comparison, diagnostics, and documentation are complete; it does not mean that every
 synopsis target passed. The measured headline result remains below the true-risk target. All results
-use the true calibrated predictor for Tier 1, and report plausibility independently for Tiers 2–4.
+use the true calibrated predictor for Tier 1, and report plausibility independently for Tiers 2â€“4.
 
 The authoritative report is `docs/phase4_final.md`; its complete saved evidence is
 `docs/phase4_full_diagnosis_results.json`. The SVG K curve is `docs/phase4_k_curve.svg`. The report
@@ -848,19 +859,19 @@ uses the v1 protocol (`k_max=3`, `K=1`, `D_max=5`) and the precommitted v2 proto
 
 | Headline metric | Target | V1 | V2 | Result |
 |---|---:|---:|---:|---|
-| True calibrated model validity, all 200 queries | ≥0.95 | 0.560 [0.468, 0.636] | 0.560 [0.469, 0.637] | Fail both |
-| Tier 2 plausibility, all 200 queries | ≥0.90 | 0.530 [0.432, 0.615] | 0.990 [0.975, 1.000] | V1 fail; V2 pass |
-| Joint Tiers 2–4 plausibility, all 200 | reported separately | 0.435 [0.362, 0.498] | 0.525 [0.447, 0.592] | Low; not model validity |
-| Mean risk reduction | ≥0.60 | 0.610 [0.551, 0.662] | 0.611 [0.553, 0.667] | Pass both |
-| Mean changed features among joint successes | ≤3 | 2.816 [2.735, 2.879] | 2.781 [2.739, 2.829] | Pass both |
-| Optimization p95 | ≤1,800 ms | 1,904.5 ms [1,648.9, 2,175.5] | 2,022.5 ms [1,679.7, 2,514.5] | Fail both |
+| True calibrated model validity, all 200 queries | â‰¥0.95 | 0.560 [0.468, 0.636] | 0.560 [0.469, 0.637] | Fail both |
+| Tier 2 plausibility, all 200 queries | â‰¥0.90 | 0.530 [0.432, 0.615] | 0.990 [0.975, 1.000] | V1 fail; V2 pass |
+| Joint Tiers 2â€“4 plausibility, all 200 | reported separately | 0.435 [0.362, 0.498] | 0.525 [0.447, 0.592] | Low; not model validity |
+| Mean risk reduction | â‰¥0.60 | 0.610 [0.551, 0.662] | 0.611 [0.553, 0.667] | Pass both |
+| Mean changed features among joint successes | â‰¤3 | 2.816 [2.735, 2.879] | 2.781 [2.739, 2.829] | Pass both |
+| Optimization p95 | â‰¤1,800 ms | 1,904.5 ms [1,648.9, 2,175.5] | 2,022.5 ms [1,679.7, 2,514.5] | Fail both |
 
 Headline uses 200 sampled rows from 378 actionable alerts across 15 held-out engines. The all-alert
 results, first alert per engine, grouped out-of-fold sample, and official NASA test sample are all
 reported separately with engine-cluster intervals. The official test sample contains 159 alerts from
 19 engines; grouped OOF contains 200 sampled queries from 78 engines across five folds. Protocol v2
 Tier 2 rates were 0.989 for all alerts, 0.935 for grouped OOF, and 1.000 for official test; corresponding
-joint Tiers 2–4 rates were 0.521, 0.575, and 0.881. These do not change the headline model-validity
+joint Tiers 2â€“4 rates were 0.521, 0.575, and 0.881. These do not change the headline model-validity
 result. First-alert summaries have only 15 engines and are not used to claim the headline target.
 
 ### Closure diagnostics and decisions
@@ -869,7 +880,7 @@ result. First-alert summaries have only 15 engines and are not used to claim the
   search superset: 59 had no safe candidate found within that set and one had a missed candidate.
   Every replay matched the production return. No case is classified as globally infeasible; finite
   candidate searches do not prove continuous-space infeasibility.
-- **Sparsity and settings:** headline policy is `k_max≤3`. `k_max=5` is one-factor sensitivity only.
+- **Sparsity and settings:** headline policy is `k_maxâ‰¤3`. `k_max=5` is one-factor sensitivity only.
   On a 60-query/14-engine sample, k3 baseline Tier 1/Tier 2/joint rates were 0.533/0.517/0.383;
   changing only k to 5 gave 0.833/0.733/0.717. Successful headline candidates passed recorded
   support, bound, and rate checks.
@@ -893,11 +904,11 @@ result. First-alert summaries have only 15 engines and are not used to claim the
   (secondary diagnostic only).
 - **FAST mode:** among 32 shared successes, FAST and thorough returned exactly the same candidate
   and risk. FAST optimization p95 was 2,435.7 ms, above the 1,800 ms target.
-- **End-of-life concentration:** among headline queries with RUL≤10 (83 rows across 15 engines),
+- **End-of-life concentration:** among headline queries with RULâ‰¤10 (83 rows across 15 engines),
   joint success was 0.096 [0.025, 0.190]. Risk-reduction histograms and RECOVERABLE/PARTIAL/ESCALATE
   triage appear by population and life stage in the final report.
-- **Coupling quality:** engine-grouped held-out R² and residual standard deviation are reported for
-  every dependent sensor. `sensor_3` (R²=0.3469) and `sensor_6` (R²=0.0304) fall below the configured
+- **Coupling quality:** engine-grouped held-out RÂ² and residual standard deviation are reported for
+  every dependent sensor. `sensor_3` (RÂ²=0.3469) and `sensor_6` (RÂ²=0.0304) fall below the configured
   0.35 fit floor and remain explicitly flagged.
 - **Evidence boundary:** the work is E1 dataset/model and software evidence only. C-MAPSS has sensor
   telemetry, no commanded actuator interventions or validated counterfactual simulator. The proxy
@@ -921,30 +932,30 @@ thresholds, populations, and timings are preserved in the JSON evidence.
 - Report target misses remain visible and are not corrected by redefining metrics or changing the
   frozen headline protocol.
 
-## Phases 5–11 orchestration preflight — 2026-10-18
+## Phases 5â€“11 orchestration preflight â€” 2026-10-18
 
 **Not started: required source instructions are missing.** The requested
 `docs/prompts/remaining_phases_5_to_11.md` and `docs/prompts/phase_changes.md` both returned `False`
 from `Test-Path`; no `docs/prompts/` directory or Part B change table is present. The known pasted
-attachment contains Phase 4 closure tasks only. Numbered rules 12–21 were subsequently supplied by
-the user and added verbatim to `AGENTS.md`, preserving the original instructions and rules 22–29.
+attachment contains Phase 4 closure tasks only. Numbered rules 12â€“21 were subsequently supplied by
+the user and added verbatim to `AGENTS.md`, preserving the original instructions and rules 22â€“29.
 
-The requested Phase 5–11 tasks and gates cannot be inferred from the older roadmap. Existing
+The requested Phase 5â€“11 tasks and gates cannot be inferred from the older roadmap. Existing
 Phase 5/6 completion rows above describe that earlier delivery and do not certify execution of the
 new prompts. At that point all seven requested phases were unstarted, zero phase gates had run and no new
 `phase<N>-closed` tags existed for this request. Evidence and missing-input requirements
 are recorded in `docs/traceability.md`.
 
-The remaining inputs are the Phase 5–11 prompt file and Part B table. Copy the actual Part B table
+The remaining inputs are the Phase 5â€“11 prompt file and Part B table. Copy the actual Part B table
 into the changes file before executing Phase 5; then run the per-phase gates, record measurements,
 commit, tag, and proceed in order.
 
 
-## Phase 5 validation revision — historical work log
+## Phase 5 validation revision â€” historical work log
 
 The user subsequently supplied the complete Phase 5 prompt directly; it supersedes the Phase 5
-missing-prompt preflight above. At that point Phase 6–11 prompts and the Part B table were unavailable.
-Rules 12–29 are preserved in AGENTS.md. No later phase is inferred from an older roadmap.
+missing-prompt preflight above. At that point Phase 6â€“11 prompts and the Part B table were unavailable.
+Rules 12â€“29 are preserved in AGENTS.md. No later phase is inferred from an older roadmap.
 
 The Phase 5 protocol/configs were committed at `d64826c` before real-data measurements. The
 implementation consolidates train-only shrinkage/Cholesky distances, regime-aware scoring,
@@ -962,11 +973,11 @@ new source revision. Both cases have explicit regression tests. Config threshold
 predictor and solver settings are unchanged. Historical config mirrors now load successfully.
 
 
-## Phase 5 multi-tier validation — closed
+## Phase 5 multi-tier validation â€” closed
 
 Real FD001 run `phase5-20261018T092602Z`; measured source `8b1a206fc1800a0674019b6e0527c2a31a5159df`; preregistration `d64826c5c1bd69dc6310c7c2d11506a7add11822`.
 
-Implemented: shared true-predictor Tier 1, train-only Ledoit–Wolf/Cholesky Tier 2 with regime/reference/quantile options, reused bound/rate Tier 3, validation-only residual-calibrated Tier 4, explicit skipped simulator, schema 1.1.0, and bounded in-loop feedback. API/dashboard preserve margins, rules, evidence and assumptions.
+Implemented: shared true-predictor Tier 1, train-only Ledoitâ€“Wolf/Cholesky Tier 2 with regime/reference/quantile options, reused bound/rate Tier 3, validation-only residual-calibrated Tier 4, explicit skipped simulator, schema 1.1.0, and bounded in-loop feedback. API/dashboard preserve margins, rules, evidence and assumptions.
 
 ### Headline measurements and gaps
 
@@ -999,11 +1010,11 @@ The 95% true-model target is missed under both protocols. Tier 2 meets its 90% a
 - 20 rejected development rows contain 24 bound and 24 rate-interval violations, covering 10 engine/cycle queries across both protocols. All have `infeasible_actuator_interval`, infeasible actuator constraints, and acceptance=False. These original/diagnostic states are not recommended actions.
 - All 11 missing OOF candidates per protocol remain in the 200-query denominator. The OOF first-alert run covers all 100 engines; full 2378-alert paired coverage remains Partial because Phase 4 did not save all candidates. Official replay covers 159 alerts / 19 engines. The K curve carries 60 queries / 14 engines beside its bootstrap intervals.
 - Reused saved states are explicitly not fresh independent generalization. Proxy mapping, raw bounds/rates and assumed K are unchanged. Only the required covariance estimator and validation-only residual calibration were revised; risk gates and D_max stay frozen.
-- sensor_6 calibration R² is 0.031962, residual std 0.001653, and threshold-exceedance share 0.029068 on 2649 healthy-to-moderate rows from 16 validation engines. Historical grouped fit warnings remain. Available checks reach E3 at most; no E4/E5 or RUL-extension claim.
+- sensor_6 calibration RÂ² is 0.031962, residual std 0.001653, and threshold-exceedance share 0.029068 on 2649 healthy-to-moderate rows from 16 validation engines. Historical grouped fit warnings remain. Available checks reach E3 at most; no E4/E5 or RUL-extension claim.
 
 ### Verification and reproduction
 
-- `mingw32-make all-checks`: Ruff clean; mypy clean for 51 source files; 215 tests passed; coverage 79.7753% (80% displayed), above Phase 4’s reported 79%; docs check passed. The 24 convergence warnings come from deliberately short test-only nonlinear-backend fits.
+- `mingw32-make all-checks`: Ruff clean; mypy clean for 51 source files; 215 tests passed; coverage 79.7753% (80% displayed), above Phase 4â€™s reported 79%; docs check passed. The 24 convergence warnings come from deliberately short test-only nonlinear-backend fits.
 - Run: `uv run python scripts/diagnostics/phase5_validate.py`. Measurement inputs/configs were committed before the run. Presentation additions were rendered offline from the saved JSON without rerunning or tuning the solver.
 - Main report: `docs/phase5_changes.md`; curve: `docs/phase5_k_curve.svg`; detailed ignored evidence: `artifacts/phase5/funnel.json`; diagnostics/validators: `artifacts/phase5/`.
 - Detailed evidence SHA-256: `8cefe8e69091369e4db1d4935e7b57fd9bc1fbaec16dac646790e0e1564e7e13`.
@@ -1013,10 +1024,10 @@ The 95% true-model target is missed under both protocols. Tier 2 meets its 90% a
 
 - The validity and optimization-latency targets remain missed. Any tuning or performance changes must be developed on validation engines and frozen before a future test run; no targets were adjusted for this closure.
 - Full OOF all-alert paired coverage and new unseen-engine generalization are Partial/Not met as recorded in `docs/traceability.md`. No dynamic simulator or validated emulator is available; NullSimulator correctly skips.
-- At Phase 5 closure, Phase 6–11 prompts and the Part B changes table were unavailable. The user subsequently supplied Phase 6 directly; Phases 7–11 and Part B still need their actual source instructions.
+- At Phase 5 closure, Phase 6â€“11 prompts and the Part B changes table were unavailable. The user subsequently supplied Phase 6 directly; Phases 7â€“11 and Part B still need their actual source instructions.
 
 
-## Phase 6 — historical implementation work log
+## Phase 6 â€” historical implementation work log
 
 - Public PrescriptXAI facade, versioned shared results, risk gate, triage, FAST/THOROUGH,
   genuine fixed-prefix LSTM adaptation, bounded process batches and locked artifact cache implemented.
@@ -1044,7 +1055,7 @@ Final tests will run after serial timing finishes to avoid a competing test work
 records keep their measured source hash; the final closure source will be identified separately.
 The execution crossed dates and contains long timing outliers; none will be removed or padded.
 
-## Phase 6 — closed with measured performance gaps
+## Phase 6 â€” closed with measured performance gaps
 
 Population run `phase6-20261018T114827Z`; measured source `a72832c271015a2391ed452a9dca7776a5131a98`; preregistration `a72832c271015a2391ed452a9dca7776a5131a98`. Final software gate used `d177460282299f915918e7e69a31d28a90c6c84f`. Full labeled tables, config file/runtime hashes, p50/p95/p99 and engine-bootstrap CIs are in `docs/phase6_changes.md`. Committed base configs are `configs/experiments/phase6-pipeline-v1.yaml` and `phase6-pipeline-v2.yaml`; grouped OOF uses the five `phase6-fold-<1..5>-v1.yaml` and five `phase6-fold-<1..5>-v2.yaml` files in the same directory.
 
@@ -1068,7 +1079,7 @@ Both protocols use K=1, k_max=3 and true thresholds 0.80/0.20. D_max versions re
   FAST optimization p95=6282.10 ms [5949.73, 6874.71]; 100 engines. Budget p95<=1800 ms: NOT MET.
   THOROUGH optimization p95=5138.14 ms [4820.40, 5664.40]; 100 engines. Budget p95<=1800 ms: NOT MET.
 
-- Development, internal held-out, grouped OOF and official test populations are reported side by side for both modes/protocols. All returned diagnostics and failures remain in the disclosed denominators. The high first-alert validity is not compared as an improvement over Phase 5’s later mixed-cycle sample.
+- Development, internal held-out, grouped OOF and official test populations are reported side by side for both modes/protocols. All returned diagnostics and failures remain in the disclosed denominators. The high first-alert validity is not compared as an improvement over Phase 5â€™s later mixed-cycle sample.
 - The run crossed dates and contains interruption-related timing outliers. All samples are retained; timing is not a controlled steady-state estimate. FAST is not certified to meet the production budget. UI/cold startup are unmeasured. The separate one-engine CLI timing demonstration also missed optimization/total budgets.
 - The historical assumed-K curve remains beside K=1 in the report. No new K tuning, causal intervention, validated simulator or RUL-extension claim is made.
 
@@ -1094,9 +1105,9 @@ mingw32-make all-checks
 
 - Performance target gaps remain open under rule 13; no threshold or metric definition was relaxed. Controlled latency and future optimization work need a separately frozen development/evaluation plan.
 - Bounds, rate limits, sensor proxies and K are assumptions. Coupling fit limitations from Phase 5 remain. Current evidence cannot establish real actuator efficacy or dynamic safety.
-- Phases 7–11 and the Part B change table are still missing their actual source prompts; they have not been invented or started.
+- Phases 7â€“11 and the Part B change table are still missing their actual source prompts; they have not been invented or started.
 
-## Phase 9 closed — 2026-10-25 IST
+## Phase 9 closed â€” 2026-10-25 IST
 
 Full final runtime source583b2fce27d0803590caad5711d1bf518aaf30ba:513tests passed,66warnings from
 short test-only fits,246.93s; Ruffclean,strictmypy62clean. Scoped line7379/8146=90.58433587036582%,

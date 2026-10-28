@@ -341,3 +341,49 @@ preserving action with proxy sparsity <=k_max, independent of the model-safety v
 Whole-engine ratios use the existing clustered bootstrap with2000 draws/seed1729 and95% CIs;
 zero-returned replicates/counts remain explicit. Selected query rows and each completed record
 are persisted before subsequent work. A failed workflow is incomplete, never a new pass.
+
+## Phase 11 independent replay audit — registered before execution, 2026-10-28
+
+The user requested a final audit after Phase 10. Independent reviewers inspect code they did
+not implement; the original implementer fixes verified gaps and reviewers recheck those fixes.
+This audit does not change scientific settings or add product features.
+
+Committed audit settings: `configs/experiments/phase11-audit.yaml`; complete replay study:
+`configs/experiments/phase11-seed1730-replay.yaml`. The latter differs from the Phase7 study
+only in run label, a new output directory and solver_seeds=[1730]. It retains all 34,298 quality
+queries for this seed:32,116 main FAST alerts,1,526 test THOROUGH first alerts,480 development
+FAST and176 development THOROUGH. All64 quality groups remain, with no added cap. All four
+dataset/model profiles, v1/v2, internal/OOF/official populations and original failure states
+remain. The separate required `reproduce` command uses the existing Phase10 20-query profile;
+it does not substitute for this complete replay.
+
+Execute the existing quality runner in an isolated clean checkout of historical measured source
+`63c2ed445fba16c73a2771e184f635abf76b4405`, with its locked environment and byte-verified copies
+of original raw data, fitted assets and all diagnostic validators. Do not refit or modify the
+original files. Pass the absolute path to the newly committed study in the main checkout;
+do not add an untracked scientific config to the frozen checkout. Record both the historical
+execution commit and the new audit-preregistration commit/config hash. They are different
+identities: this audit registration necessarily postdates the original experiment.
+
+Before launch verify the imported module path, package/core dependency versions, clean source,
+all copied hashes and absence of a duplicate run. Use a new run ID; per-query checkpoints are
+preserved and an interrupted run resumes only after compatibility and process checks. No
+completed query, failure or duration is replaced. Quality replay timings are not a new isolated
+latency study; no latency budget is certified from them.
+
+First compare new1730 against historical1730 for the exact expected query population and all
+scientific records. Require discrete fields, identities, feature roles and threshold verdicts
+to match exactly. Numerical values use absolute tolerance1e-6 plus relative tolerance1e-5.
+Then separately compare new1730 with historical1729: rates must match exactly; scientific
+means use the same numeric tolerance, and any per-query difference is reported. These are
+NEW audit tolerances, registered before this replay; Phase7 originally reported five-seed
+variation but did not preregister cross-seed acceptance tolerances. The numerical magnitude
+is borrowed from documented software-golden tolerances, not a claim of statistical equivalence.
+Never let numeric tolerance turn a failed tier into a pass. Keep timings and execution metadata
+separate from scientific comparisons. Recompute aggregate metrics and95% whole-engine CIs
+(2000replicates,seed1729), retaining all failures and the actual engine count per population.
+
+The reused public engines cannot demonstrate fresh-engine generalization or strict once-ever
+test use. Record that protocol limitation as Partial, without changing the populations or
+claiming historical preregistration for a newly chosen audit threshold. Target misses remain
+valid findings; neither model selection nor solver/threshold tuning is permitted.

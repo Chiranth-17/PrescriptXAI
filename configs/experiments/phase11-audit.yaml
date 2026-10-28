@@ -1,0 +1,36 @@
+audit_version: phase11-final-audit-v1
+historical_run_id: phase7-20261020T102540Z
+historical_source: 63c2ed445fba16c73a2771e184f635abf76b4405
+release_under_audit: b219041801d720f75973da24a1c5b43d5dcd0154
+replay_study: configs/experiments/phase11-seed1730-replay.yaml
+stage: quality
+solver_seed: 1730
+historical_reference_seeds: [1730, 1729]
+expected_quality_records: 34298
+expected_main_fast_records: 32116
+expected_test_thorough_records: 1526
+expected_development_fast_records: 480
+expected_development_thorough_records: 176
+expected_quality_groups: 64
+numeric_absolute_tolerance: 0.000001
+numeric_relative_tolerance: 0.00001
+discrete_fields_must_match_exactly: true
+query_identities_must_match_exactly: true
+threshold_verdicts_must_match_exactly: true
+cross_seed_rate_absolute_tolerance: 0.0
+cross_seed_mean_absolute_tolerance: 0.000001
+cross_seed_mean_relative_tolerance: 0.00001
+comparison_exclusions: [timings, execution_run_id, operational_source_metadata]
+bootstrap_replicates: 2000
+bootstrap_confidence: 0.95
+bootstrap_seed: 1729
+timings_are_isolated_latency_measurements: false
+new_generalization_claim: false
+notes:
+  - These tolerances are newly registered audit rules, not historical Phase7 acceptance criteria.
+  - Numerical magnitudes follow the software golden tolerance; discrete outcomes override closeness.
+  - Compare new seed1730 to historical1730 first, then separately to historical1729.
+  - Cross-seed rate changes have zero allowance; any mismatch is disclosed, never tuned away.
+  - Reuse all fixed models, engine partitions, thresholds, bounds, rates, K, and query populations.
+  - Preserve all completed records, failures and timings; no replacement or sampling cap.
+  - Historical public engines were previously evaluated; this is reproducibility evidence only.

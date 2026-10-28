@@ -1,0 +1,122 @@
+study_version: phase11-seed1730-replay-v1
+frozen_solver_config: configs/experiments/phase6-pipeline-v1.yaml
+output_root: artifacts/phase11/seed-replay
+artifact_root: artifacts/phase7-models
+datasets:
+  FD001:
+  - xgb
+  - mlp
+  - lstm
+  FD002:
+  - xgb
+optional_datasets:
+  FD003: false
+  FD004: false
+solver_seeds:
+- 1730
+model_seed: 1729
+split_seed: 1729
+d_max_versions:
+  v1: 5.0
+  v2: 8.0
+grouped_folds: 5
+workers: 4
+cpu_threads_per_worker: 1
+headline_mode: fast
+headline_population: all_alerts
+thorough_population: first_alert_per_engine
+development_max_queries: 60
+diagnostic_max_queries: 12
+oracle_max_failed_queries: 12
+diagnostic_seed: 1729
+bootstrap_replicates: 2000
+bootstrap_confidence: 0.95
+latency_runs_per_mode: 1000
+latency_warmups_per_mode: 10
+diagnostic_models:
+- FD001/xgb
+- FD002/xgb
+diagnostic_solver_seed: 1729
+oracle_grid_points: 7
+oracle_chunk_rows: 1024
+checkpoint_every_queries: 1
+tau_safe_grid:
+- 0.1
+- 0.2
+- 0.3
+k_max_grid:
+- 1
+- 2
+- 3
+- 5
+horizon_H_grid:
+- 15
+- 30
+- 50
+K_grid:
+- 1
+- 2
+- 3
+- 5
+- 10
+alpha_grid:
+- 1.0
+- 10.0
+- 100.0
+beta_grid:
+- 0.0
+- 1.0
+- 100.0
+gamma_grid:
+- 0.0
+- 1.0
+- 100.0
+d_max_quantile_grid:
+- 0.95
+- 0.99
+- 0.999
+d_max_methods:
+- empirical
+- chi_square
+reference_distributions:
+- all_cycles
+- healthy_to_moderate
+risk_band_edges:
+- 0.8
+- 0.85
+- 0.9
+- 0.95
+- 1.0000000000000002
+rul_bucket_edges:
+- 0.0
+- 11.0
+- 21.0
+- 31.0
+- 1000000.0
+life_fraction_edges:
+- 0.0
+- 0.7
+- 0.8
+- 0.9
+- 1.0000000000000002
+risk_reduction_edges:
+- -1.0
+- 0.0
+- 0.1
+- 0.3
+- 0.6
+- 1.0000000000000002
+unconstrained_free_rate_fraction: 1.0
+dice_enabled: true
+targets:
+  validity: 0.95
+  sparsity_all: 3.0
+  plausibility_all: 0.9
+  plausibility_returned: 0.9
+  risk_reduction: 0.6
+assumptions:
+- C-MAPSS sensor channels are controllable proxies.
+- Bounds and p99 adjacent-cycle rates are empirical assumptions, not actuator limits.
+- K is an assumed intervention horizon.
+- FD002 predictor uses global scaling; Tier 2 is regime aware.
+- Static data establish no RUL extension; simulator/emulator not evaluated.
