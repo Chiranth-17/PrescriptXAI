@@ -27,7 +27,11 @@ from prescriptxai.data.prepare import prepare_cmapss
 from prescriptxai.data.preprocess import add_training_labels
 from prescriptxai.data.splits import split_engines
 from prescriptxai.evaluation.calibration_plot import write_calibration_plots
-from prescriptxai.evaluation.report import build_evaluation_provenance, write_evaluation_report
+from prescriptxai.evaluation.report import (
+    build_evaluation_provenance,
+    evaluation_metric_intervals,
+    write_evaluation_report,
+)
 from prescriptxai.evaluation.runner import evaluate_states
 from prescriptxai.logging_utils import configure_logging
 from prescriptxai.models.registry import save_model_bundle
@@ -616,6 +620,7 @@ def evaluate_model(
         markdown_path,
         run_configuration=config.recourse.model_dump(mode="json"),
         provenance=provenance,
+        metric_intervals=evaluation_metric_intervals(run, engine, splits.test),
     )
     typer.echo(
         json.dumps(

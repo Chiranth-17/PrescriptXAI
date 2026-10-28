@@ -106,4 +106,5 @@ def test_evaluation_samples_deterministically_and_writes_measured_reports(tmp_pa
     ]
     assert len(serialized["records"]) == 2
     assert markdown_path.is_file()
-    assert "Model validity and physical plausibility" in markdown_path.read_text(encoding="utf-8")
+    report_text = markdown_path.read_text(encoding="utf-8")
+    assert "Model validity and statistical plausibility" in report_text

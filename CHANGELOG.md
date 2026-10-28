@@ -3,6 +3,17 @@
 This project uses semantic versioning for the Python package. Public result schemas
 have a separate version; RecourseResult and ValidationReport remain 2.0.0.
 
+## Unreleased — Phase 11 audit corrections
+
+- CLI evaluation reports use the same engine-bootstrap definitions as reproduction, expose
+  both Tier 2 denominators, target shortfalls and per-query stage uncertainty, and label the
+  evidence as statistical/proxy checks. Missing timing evidence remains explicitly unavailable.
+- Publication metadata, figure labels and budget diagnoses derive from the measured input;
+  visible study tables include observation counts and denominators. Historical results are preserved.
+- Historical Phase 4 target/evidence annotations have a prominent erratum.
+- Unsupported gradient operations raise TypeError as a capability mismatch, replacing
+  NotImplementedError guards; implemented predictor/search paths and public schemas are unchanged.
+
 ## 0.2.0 — 2026-10-27
 
 - Installable runtime dependencies and optional API, dashboard and baseline extras.

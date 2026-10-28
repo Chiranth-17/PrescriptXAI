@@ -48,7 +48,7 @@ class FailureModel(ABC):
 
     def torch_forward(self, x_tensor: torch.Tensor) -> torch.Tensor:
         """Return differentiable probabilities when supported by this predictor."""
-        raise NotImplementedError(f"{type(self).__name__} does not support gradients")
+        raise TypeError(f"{type(self).__name__} does not support gradients")
 
     @abstractmethod
     def save(self, path: Path) -> Path:

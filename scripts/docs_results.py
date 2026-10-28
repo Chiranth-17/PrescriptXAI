@@ -6,6 +6,29 @@ import json
 from pathlib import Path
 
 
+def publication_context(source, groups):
+    """Derive publication labels from measured inputs, rejecting inconsistent metadata."""
+    study = source["manifest"]["configuration"]
+    confidence = study["bootstrap_confidence"]
+    draws = study["bootstrap_replicates"]
+    seeds = study["solver_seeds"]
+    if any(group["seeds"] != seeds for group in groups):
+        raise ValueError("publication groups disagree with registered solver seeds")
+    labels = {
+        name: sorted({value for group in groups for value in group["labels"][name]})
+        for name in ("k_max", "K", "D_max")
+    }
+    bootstrap_seeds = sorted({group["metrics"]["validity"]["ci"]["seed"] for group in groups})
+    return (
+        f"FAST/full/all-alert populations; k_max={labels['k_max']}, assumed K={labels['K']}, "
+        f"D_max={labels['D_max']} (registered versions {study['d_max_versions']}). "
+        f"Values are percentages with {100 * confidence:g}% whole-engine bootstrap CIs "
+        f"({draws} requested draws, seeds {bootstrap_seeds}); "
+        "the engine count beside each row applies to every interval. "
+        f"{len(seeds)} solver seeds {seeds} repeat fixed predictors, not independent engines. "
+    )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("summary", type=Path)
@@ -25,7 +48,7 @@ def main():
     metrics = ["validity", "plausibility_all", "plausibility_returned", "tier3", "tier4", "joint"]
     header = "| Model / protocol / population | Queries / seed observations / engines | Validity | T2 all | T2 returned | T3 | T4 | Joint | Config set |"
     separator = "|---|---:|---:|---:|---:|---:|---:|---:|---|"
-    rows, compact, plotted = [], [], []
+    rows, compact, plotted, selected_groups = [], [], [], []
 
     def percentage(ci):
         if ci["estimate"] is None:
@@ -42,6 +65,7 @@ def main():
             for population in populations:
                 key = f"{dataset}/{model}/{protocol}/{population}/fast/full"
                 group = source["groups"][key]
+                selected_groups.append(group)
                 set_hash = hashlib.sha256(
                     json.dumps(group["labels"], sort_keys=True).encode()
                 ).hexdigest()
@@ -57,10 +81,8 @@ def main():
         f"Run `{identity['run_id']}`; measured source `{identity['git_hash']}`.\n\n"
         f"Study `{identity['study_path']}`, SHA256 `{identity['study_sha256']}`; "
         f"saved summary SHA256 `{identity['summary_sha256']}`.\n\n"
-        "FAST/full/all-alert populations; k_max=3, assumed K=1, D_max v1=5 and v2=8. "
-        "Values are percentages with95% whole-engine bootstrap CIs (2000 draws, seed1729); "
-        "the engine count beside each row applies to every interval. Five solver seeds repeat "
-        "fixed predictors, not independent engines. E3 is the maximum available proxy evidence. "
+        + publication_context(source, selected_groups)
+        + "E3 is the maximum available proxy evidence. "
         "All outcomes, including failures, remain in all-query denominators. T2 returned has its "
         "own denominator in the source data. Config-set identifiers below resolve to every exact "
         "committed config path/runtime hash in [results_provenance.json](results_provenance.json).\n\n"
@@ -73,11 +95,10 @@ def main():
     content += "\n## Serial latency design target / measured / gap\n\n"
     latency = source["latency"]
     content += f"Same run/source; configuration identity `{latency['labels']['config_hash']}`. "
-    content += "Protocolv1, K1, k_max3, D_max5; validation alerts repeated in fixed order. "
-    content += (
-        "1000calls/mode,16engines. Warm serial backend only; startup/network/UI unmeasured.\n\n"
-    )
-    content += "| Mode / stage | Upper budget ms | Measured p95 ms [95% engine CI] | Engines | Gap above budget ms | Pass |\n|---|---:|---:|---:|---:|---|\n"
+    content += f"Labels `{json.dumps(latency['labels'], sort_keys=True)}`. "
+    content += "Warm serial backend only; startup/network/UI unmeasured.\n\n"
+    confidence = source["manifest"]["configuration"]["bootstrap_confidence"]
+    content += f"| Mode / stage | Upper budget ms | Measured p95 ms [{100 * confidence:g}% engine CI] | Engines / calls | Gap above budget ms | Pass |\n|---|---:|---:|---:|---:|---|\n"
     for mode, stages in latency["modes"].items():
         for stage, item in stages.items():
             if item["p95_ms"] is None:
@@ -85,10 +106,14 @@ def main():
             ci = item["p95_engine_ci"]
             value = f"{item['p95_ms']:.3f} [{ci['lower']:.3f}, {ci['upper']:.3f}]"
             gap = max(0, item["p95_ms"] - item["upper_budget_ms"])
-            content += f"| {mode} / {stage} | {item['upper_budget_ms']:g} | {value} | {item['engine_count']} | {gap:.3f} | {item['passed']} |\n"
-    content += (
-        "\nOptimization misses in both modes are retained; faster-than-lower-band is a pass. "
-    )
+            content += f"| {mode} / {stage} | {item['upper_budget_ms']:g} | {value} | {item['engine_count']} / {item['count']} | {gap:.3f} | {item['passed']} |\n"
+    misses = [
+        f"{mode}/{stage}"
+        for mode, stages in latency["modes"].items()
+        for stage, item in stages.items()
+        if item["passed"] is False
+    ]
+    content += f"\nMeasured budget misses: {misses}. Faster-than-lower-band is a pass. "
     content += "[Full framework report](phase7_changes.md) includes funnel, ladder, oracle, K curves and diagnoses.\n"
     Path("docs/results.md").write_text(content, encoding="utf-8")
     Path("docs/results_provenance.json").write_text(
@@ -143,10 +168,15 @@ def main():
             for title, group in plotted
         ],
     )
-    ax.set_ylabel("Rate (%) · 95% whole-engine bootstrap CI")
+    ax.set_ylabel(f"Rate (%) · {100 * confidence:g}% whole-engine bootstrap CI")
     ax.set_ylim(0, 105)
+    plot_labels = {
+        name: sorted({value for _, group in plotted for value in group["labels"][name]})
+        for name in ("K", "k_max", "protocol")
+    }
     ax.set_title(
-        "FD001 XGBoost · FAST · K=1 · k_max=3 · v1/v2\nStatic proxy evidence, not real-machine safety"
+        f"FD001 XGBoost · FAST · K={plot_labels['K']} · "
+        f"k_max={plot_labels['k_max']} · {plot_labels['protocol']}\nStatic proxy evidence"
     )
     ax.legend(loc="lower right")
     target = Path("docs/figures")

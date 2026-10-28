@@ -13,7 +13,7 @@ from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 from time import perf_counter
-from typing import Any, cast
+from typing import Any
 
 import pandas as pd
 
@@ -24,12 +24,12 @@ from prescriptxai.constraints.taxonomy import load_taxonomy
 from prescriptxai.data.cmapss import load_cmapss_archive
 from prescriptxai.data.download import download_archive, verify_archive
 from prescriptxai.data.prepare import prepare_cmapss
-from prescriptxai.evaluation.metrics import (
-    EvaluationRecord,
-    action_sparsity,
-    clustered_ratio_interval,
+from prescriptxai.evaluation.metrics import EvaluationRecord
+from prescriptxai.evaluation.report import (
+    build_evaluation_provenance,
+    evaluation_metric_intervals,
+    write_evaluation_report,
 )
-from prescriptxai.evaluation.report import build_evaluation_provenance, write_evaluation_report
 from prescriptxai.evaluation.runner import EvaluationRun, evaluate_states
 from prescriptxai.models.registry import save_model_bundle
 from prescriptxai.models.train import train_risk_model
@@ -48,81 +48,8 @@ def _hash(path: Path) -> str:
 def reproduction_metrics(
     run: EvaluationRun, service: PrescriptXAI, original: pd.DataFrame
 ) -> dict[str, Any]:
-    """Report independent tiers and both T2 denominators with whole-engine uncertainty."""
-    indexed = original.set_index(["engine_id", "cycle"])
-    scales = dict(
-        zip(
-            service.engine.model.feature_names,
-            service.engine.model.scaler.scaler.scale_,
-            strict=True,
-        )
-    )
-    records = run.records
-    returned = []
-    feasible = []
-    supports = []
-    for row in records:
-        before = cast(pd.Series, indexed.loc[(row.engine_id, row.cycle)])
-        changed = any(
-            abs((row.candidate_state[name] - before[name]) / scale)
-            > service.config.recourse.change_tolerance
-            for name, scale in scales.items()
-        )
-        support = action_sparsity(
-            {str(name): float(value) for name, value in before.items()},
-            row.candidate_state,
-            [
-                name
-                for name in service.engine.taxonomy.controllable_feature_names()
-                if name in scales
-            ],
-            scales,
-            service.config.recourse.change_tolerance,
-        )
-        action_ok = support <= service.config.recourse.k_max and not (
-            row.actuator_bound_violations
-            or row.rate_limit_violations
-            or row.frozen_feature_violations
-        )
-        supports.append(support)
-        feasible.append(action_ok)
-        returned.append(float(changed and action_ok))
-    ones = [1.0] * len(records)
-    t2 = [float(row.tier2_plausible) for row in records]
-    joint = [
-        float(
-            row.model_valid
-            and row.tier2_plausible
-            and row.tier3_engineering_valid
-            and row.tier4_coupling_valid
-            and action_ok
-        )
-        for row, action_ok in zip(records, feasible, strict=True)
-    ]
-    vectors = {
-        "validity": ([float(row.model_valid) for row in records], ones),
-        "plausibility_all": (t2, ones),
-        "plausibility_returned": ([a * b for a, b in zip(t2, returned, strict=True)], returned),
-        "tier3": ([float(row.tier3_engineering_valid) for row in records], ones),
-        "tier4": ([float(row.tier4_coupling_valid) for row in records], ones),
-        "joint": (joint, ones),
-        "mean_risk_drop": ([row.initial_risk - row.final_risk for row in records], ones),
-        "sparsity_success": (
-            [support * ok for support, ok in zip(supports, joint, strict=True)],
-            joint,
-        ),
-    }
-    return {
-        key: clustered_ratio_interval(
-            [row.engine_id for row in records],
-            numerator,
-            denominator,
-            seed=service.config.seed,
-            replicates=service.config.evaluation.bootstrap_replicates,
-            confidence=0.95,
-        )
-        for key, (numerator, denominator) in vectors.items()
-    }
+    """Use the shared audited report definitions for reproduction metrics."""
+    return evaluation_metric_intervals(run, service.engine, original)
 
 
 def reproduce(config_path: Path, progress: Callable[[str], None] = print) -> Path:
@@ -326,12 +253,14 @@ def reproduce(config_path: Path, progress: Callable[[str], None] = print) -> Pat
             "completed_queries": len(run.records),
         }
     with stage("report"):
+        intervals = reproduction_metrics(run, service, trained.splits.test)
         write_evaluation_report(
             run,
             config.artifacts.evaluation_report,
             config.artifacts.evaluation_report.with_suffix(".md"),
             config.recourse.model_dump(mode="json"),
             provenance=provenance,
+            metric_intervals=intervals,
         )
         measured = {
             "run_id": manifest["run_id"],
@@ -345,7 +274,7 @@ def reproduce(config_path: Path, progress: Callable[[str], None] = print) -> Pat
             "k_max": config.recourse.k_max,
             "D_max": service.engine.mahalanobis.max_distance,
             "counts": manifest["evaluation_counts"],
-            "metrics": reproduction_metrics(run, service, trained.splits.test),
+            "metrics": intervals,
             "evidence_limit": manifest["evidence_limit"],
             "returned_definition": (
                 "nonzero model-feature change with feasible bounded sparse action"

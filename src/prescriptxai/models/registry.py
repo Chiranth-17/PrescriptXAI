@@ -109,7 +109,7 @@ class ModelBundle:
         """Forward scaled inputs through a differentiable estimator and calibration map."""
         if not getattr(self.estimator, "supports_gradients", False):
             if self.surrogate is None:
-                raise NotImplementedError(
+                raise TypeError(
                     "this bundle has no differentiable predictor or surrogate"
                 )
             raw = self.surrogate.torch_forward(scaled_tensor)
@@ -126,7 +126,7 @@ class ModelBundle:
     ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         """Return calibrated risk and derivatives with respect to scaled model inputs."""
         if not self.supports_gradients:
-            raise NotImplementedError("this bundle does not have a differentiable model path")
+            raise TypeError("this bundle does not have a differentiable model path")
         if hasattr(self.estimator, "window"):
             raise ValueError("LSTM gradients require a sequence history window")
         matrix = self.scaler.transform(frame[list(self.feature_names)])

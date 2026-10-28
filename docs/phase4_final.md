@@ -1,5 +1,17 @@
 # Phase 4 final evaluation
 
+> **Phase 11 historical erratum.** The saved measurements below are preserved as recorded.
+> Historical rows assigning the 90% plausibility target to joint Tiers 2–4 used an incorrect
+> target annotation: 90% applies to **Tier 2 alone**, with both returned-candidate and
+> all-query denominators. Joint checks and joint success have no synopsis target.
+> Historical pass/gap annotations for that joint row must not be used as a target verdict.
+> The historical evidence-level vocabulary in this report is also superseded: E1 is model
+> validity, E2 statistical plausibility, E3 proxy engineering/coupling, E4 held-out validated
+> learned emulation, E5 validated physics simulation. This project reaches at most E3;
+> its bounds, rates and controllable channels are assumptions. See the later complete
+> [Phase 7 report](phase7_changes.md), [current results](results.md) and
+> [final traceability](traceability.md) for separate tiers, engine intervals and target gaps.
+
 | Run metadata | Value |
 |---|---|
 | Run ID | `phase4-20261018T071947Z` |

@@ -9,13 +9,18 @@ import platform
 from collections import Counter, defaultdict
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
 
 from prescriptxai.evaluation.experiments import StudyConfig
-from prescriptxai.evaluation.metrics import EvaluationSummary
+from prescriptxai.evaluation.metrics import (
+    EvaluationSummary,
+    action_sparsity,
+    clustered_ratio_interval,
+    engine_bootstrap_interval,
+)
 from prescriptxai.evaluation.runner import (
     DirectionConsistency,
     EvaluationRun,
@@ -279,8 +284,9 @@ def write_study_report(
             f"Labels: `{json.dumps(labels, sort_keys=True)}`.",
             f"Solver seeds: `{summary['seeds']}`; training seeds: model_metadata.json.",
             "",
-            "| Metric | Engine CI (engines) | Mean/std | Difference | Target | Gap | Diagnosis |",
-            "|---|---|---|---|---|---|---|",
+            "| Metric | Engine CI (engines) | Observations / denominator | Mean/std | "
+            "Difference | Target | Gap | Diagnosis |",
+            "|---|---|---|---|---|---|---|---|",
         ]
         for name, metric in summary["metrics"].items():
             ci = metric["ci"]
@@ -314,6 +320,7 @@ def write_study_report(
             )
             lines.append(
                 f"| {name} | {value} [{ci['lower']}, {ci['upper']}] ({ci['engine_count']} engines)"
+                f" | {ci['observation_count']} / {ci['denominator']}"
                 f" | {metric['seed_mean']} ± {metric['seed_std']} | {difference} | {target} | {gap}"
                 f" | {diagnosis} |"
             )
@@ -564,6 +571,82 @@ def build_evaluation_provenance(
     return metadata
 
 
+def evaluation_metric_intervals(
+    run: EvaluationRun, engine: PrescriptXAIEngine, original: pd.DataFrame
+) -> dict[str, Any]:
+    """Report independent tiers and both T2 denominators with whole-engine uncertainty."""
+    indexed = original.set_index(["engine_id", "cycle"])
+    scales = dict(
+        zip(
+            engine.model.feature_names,
+            engine.model.scaler.scaler.scale_,
+            strict=True,
+        )
+    )
+    records = run.records
+    returned = []
+    feasible = []
+    supports = []
+    for row in records:
+        before = cast(pd.Series, indexed.loc[(row.engine_id, row.cycle)])
+        changed = any(
+            abs((row.candidate_state[name] - before[name]) / scale)
+            > engine.config.recourse.change_tolerance
+            for name, scale in scales.items()
+        )
+        support = action_sparsity(
+            {str(name): float(value) for name, value in before.items()},
+            row.candidate_state,
+            [name for name in engine.taxonomy.controllable_feature_names() if name in scales],
+            scales,
+            engine.config.recourse.change_tolerance,
+        )
+        action_ok = support <= engine.config.recourse.k_max and not (
+            row.actuator_bound_violations
+            or row.rate_limit_violations
+            or row.frozen_feature_violations
+        )
+        supports.append(support)
+        feasible.append(action_ok)
+        returned.append(float(changed and action_ok))
+    ones = [1.0] * len(records)
+    t2 = [float(row.tier2_plausible) for row in records]
+    joint = [
+        float(
+            row.model_valid
+            and row.tier2_plausible
+            and row.tier3_engineering_valid
+            and row.tier4_coupling_valid
+            and action_ok
+        )
+        for row, action_ok in zip(records, feasible, strict=True)
+    ]
+    vectors = {
+        "validity": ([float(row.model_valid) for row in records], ones),
+        "plausibility_all": (t2, ones),
+        "plausibility_returned": ([a * b for a, b in zip(t2, returned, strict=True)], returned),
+        "tier3": ([float(row.tier3_engineering_valid) for row in records], ones),
+        "tier4": ([float(row.tier4_coupling_valid) for row in records], ones),
+        "joint": (joint, ones),
+        "mean_risk_drop": ([row.initial_risk - row.final_risk for row in records], ones),
+        "sparsity_success": (
+            [support * ok for support, ok in zip(supports, joint, strict=True)],
+            joint,
+        ),
+    }
+    return {
+        key: clustered_ratio_interval(
+            [row.engine_id for row in records],
+            numerator,
+            denominator,
+            seed=engine.config.seed,
+            replicates=engine.config.evaluation.bootstrap_replicates,
+            confidence=0.95,
+        )
+        for key, (numerator, denominator) in vectors.items()
+    }
+
+
 def write_evaluation_report(
     run: EvaluationRun,
     json_path: Path,
@@ -571,10 +654,12 @@ def write_evaluation_report(
     run_configuration: Mapping[str, Any] | None = None,
     *,
     provenance: Mapping[str, Any] | None = None,
+    metric_intervals: Mapping[str, Any] | None = None,
 ) -> None:
     """Write records and computed metrics to JSON and Markdown files."""
     json_path.parent.mkdir(parents=True, exist_ok=True)
     markdown_path.parent.mkdir(parents=True, exist_ok=True)
+    latency_intervals = _latency_intervals(run, provenance)
     json_document = {
         "summary": run.summary.to_dict(),
         "counterfactual_direction_consistency": run.direction_consistency.__dict__,
@@ -585,6 +670,8 @@ def write_evaluation_report(
         "recourse_search_configuration": dict(run_configuration or {}),
         "provenance": dict(provenance or {}),
         "records": [record.__dict__ for record in run.records],
+        "whole_engine_metric_intervals": dict(metric_intervals or {}),
+        "whole_engine_latency_intervals": latency_intervals,
     }
     json_path.write_text(json.dumps(json_document, indent=2, allow_nan=False), encoding="utf-8")
     markdown_path.write_text(
@@ -609,6 +696,8 @@ def write_evaluation_report(
                 else None
             ),
             provenance=provenance,
+            metric_intervals=metric_intervals,
+            latency_intervals=latency_intervals,
         ),
         encoding="utf-8",
     )
@@ -617,6 +706,54 @@ def write_evaluation_report(
 def _format_metric(value: float | None) -> str:
     """Display missing values as unmeasured and numeric outcomes to four places."""
     return "Unmeasured" if value is None else f"{value:.4f}"
+
+
+def _latency_intervals(run: EvaluationRun, provenance: Mapping[str, Any] | None) -> dict[str, Any]:
+    """Bootstrap per-query timings by engine; aggregate setup timings have no engine CI."""
+    config = (provenance or {}).get("effective_configuration", {})
+    seed = config.get("seed", 1729)
+    replicates = config.get("evaluation", {}).get("bootstrap_replicates", 2000)
+    result = {}
+    for stage, field in (
+        ("inference_per_row", "inference_ms"),
+        ("optimization", "optimization_ms"),
+        ("validation", "validation_ms"),
+        ("pipeline", "backend_pipeline_ms"),
+    ):
+        rows = [row for row in run.records if getattr(row, field) is not None]
+        if len(rows) != len(run.records) or not rows:
+            continue
+        ci = engine_bootstrap_interval(
+            [row.engine_id for row in rows],
+            [getattr(row, field) for row in rows],
+            seed=seed,
+            replicates=replicates,
+            statistic=lambda sample: float(np.percentile(sample, 95)),
+        )
+        result[stage] = ci.__dict__
+    return result
+
+
+def _interval_text(interval: Mapping[str, Any] | None) -> str:
+    """Display missing uncertainty honestly, including empty conditional denominators."""
+    if interval is None:
+        return "Unavailable (no engine-linked observations supplied)"
+    return (
+        f"[{_format_metric(interval['lower'])}, {_format_metric(interval['upper'])}]; "
+        f"{interval['engine_count']} engines; {interval['observation_count']} observations; "
+        f"denominator {interval.get('denominator', interval['observation_count'])}"
+    )
+
+
+def _metric_gap(value: float | None, target: str) -> str:
+    """Show shortfall in the metric's units, never treating a diagnostic as targeted."""
+    if value is None:
+        return "Unmeasured"
+    parts = target.split()
+    if len(parts) != 2 or parts[0] not in (">=", "<="):
+        return "No target"
+    limit = float(parts[1])
+    return f"{max(0.0, limit - value if parts[0] == '>=' else value - limit):.4f}"
 
 
 def render_markdown(
@@ -629,6 +766,8 @@ def render_markdown(
     mean_true_model_evaluations: float | None = None,
     *,
     provenance: Mapping[str, Any] | None = None,
+    metric_intervals: Mapping[str, Any] | None = None,
+    latency_intervals: Mapping[str, Any] | None = None,
 ) -> str:
     """Render dynamically computed measurements and target statuses."""
     lines = [
@@ -637,26 +776,67 @@ def render_markdown(
         f"Eligible high-risk held-out states: {summary.eligible_high_risk_states}",
         f"Evaluated states: {summary.evaluated_states}",
         f"Model-valid candidates: {summary.model_valid_count}",
-        f"Physically plausible candidates: {summary.physically_plausible_count}",
+        f"Candidates passing proxy checks Tiers 2–4: {summary.physically_plausible_count}",
         f"Successful sparse recourses: {summary.successful_recourse_count}",
         "",
-        "| Metric | Measured | Target | Status |",
-        "|---|---:|---:|---|",
+        "| Metric | Measured | 95% whole-engine CI / counts | Target | Shortfall | Status |",
+        "|---|---:|---|---:|---:|---|",
     ]
     metrics: dict[str, Any] = {
         "Model validity rate": summary.recourse_validity_rate,
         "Optimizer sparse-action feasibility rate": summary.recourse_feasibility_rate,
         "Joint successful recourse rate": summary.successful_recourse_rate,
-        "Joint physical plausibility rate (Tiers 2–4)": summary.physical_plausibility_rate,
+        "Joint proxy-check rate (Tiers 2–4)": summary.physical_plausibility_rate,
         "Distributional plausibility rate (Tier 2)": summary.tier2_plausibility_rate,
         "Tier 3 engineering rate": summary.tier3_engineering_rate,
         "Tier 4 coupling rate": summary.tier4_coupling_rate,
         "Average sparsity": summary.average_sparsity,
         "Mean risk reduction": summary.mean_risk_reduction,
     }
-    for name, metric in metrics.items():
-        status = "unmeasured" if metric.passed is None else ("pass" if metric.passed else "fail")
-        lines.append(f"| {name} | {_format_metric(metric.value)} | {metric.target} | {status} |")
+    keys = (
+        "validity",
+        "feasibility",
+        "joint",
+        "joint_proxy_checks",
+        "plausibility_all",
+        "tier3",
+        "tier4",
+        "sparsity_success",
+        "mean_risk_drop",
+    )
+    for (name, metric), key in zip(metrics.items(), keys, strict=True):
+        interval = (metric_intervals or {}).get(key)
+        status = (
+            "unmeasured"
+            if metric.value is None
+            else "measured; no target"
+            if metric.passed is None
+            else "pass"
+            if metric.passed
+            else "fail"
+        )
+        lines.append(
+            f"| {name} | {_format_metric(metric.value)} | {_interval_text(interval)} | "
+            f"{metric.target} | {_metric_gap(metric.value, metric.target)} | {status} |"
+        )
+    returned = (metric_intervals or {}).get("plausibility_returned")
+    returned_value = returned["estimate"] if returned else None
+    lines.append(
+        "| Distributional plausibility (Tier 2), returned candidates | "
+        f"{_format_metric(returned_value)} | "
+        f"{_interval_text(returned)} | {summary.tier2_plausibility_rate.target} | "
+        f"{_metric_gap(returned_value, summary.tier2_plausibility_rate.target)}"
+        " | conditional denominator shown separately |"
+    )
+    lines.extend(
+        (
+            "",
+            "All-query rates retain every evaluated failure. Returned means a nonzero "
+            "model-feature change with feasible bounded sparse action. Successful-action "
+            "sparsity is conditional on joint success; its denominator is shown above. "
+            "Intervals resample complete engines (seed and draw count in JSON).",
+        )
+    )
     if direction is not None:
         lines.extend(
             (
@@ -671,7 +851,7 @@ def render_markdown(
     if mean_returned_action_sparsity is not None:
         lines.extend(
             (
-                "Mean changed features across all returned candidates: "
+                "Mean changed features across all evaluated queries (including failures): "
                 f"{mean_returned_action_sparsity:.4f}",
                 "The target average sparsity metric above is computed over successful recourses.",
             )
@@ -703,30 +883,37 @@ def render_markdown(
             "",
             "## Latency",
             "",
-            "| Stage | Mean ms | P95 ms | Target range | Upper budget |",
-            "|---|---:|---:|---|---|",
+            "| Stage | Mean ms | P95 ms | 95% whole-engine p95 CI / counts | "
+            "Upper budget ms | Gap above budget ms | Verdict |",
+            "|---|---:|---:|---|---:|---:|---|",
         )
     )
     for name, metric in summary.latency.items():
-        status = "unmeasured" if metric.passed is None else ("pass" if metric.passed else "fail")
-        if metric.below_target_range:
-            status = "below expected range"
         budget = (
             "unmeasured"
             if metric.upper_budget_passed is None
             else ("pass" if metric.upper_budget_passed else "fail")
         )
+        gap = (
+            _metric_gap(metric.p95_ms, f"<= {metric.target_max_ms}")
+            if metric.target_max_ms is not None
+            else "No target"
+        )
         lines.append(
             f"| {name} | {_format_metric(metric.mean_ms)} | "
-            f"{_format_metric(metric.p95_ms)} | {status} | {budget} |"
+            f"{_format_metric(metric.p95_ms)} | "
+            f"{_interval_text((latency_intervals or {}).get(name))} | "
+            f"{_format_metric(metric.target_max_ms)} | "
+            f"{gap}"
+            f" | {budget} |"
         )
     lines.extend(
         (
             "",
             "The pipeline timing covers the backend recommendation call. Telemetry ingestion and "
             "dashboard rendering remain unmeasured; operator-visible latency is unmeasured.",
-            "Expected-range conformance and the upper latency budget are shown separately; "
-            "finishing below a range does not require adding delay.",
+            "The verdict uses p95 at or below the upper budget; faster is a pass. "
+            "These query timings are operational observations, not a serial latency certification.",
         )
     )
     if provenance:
@@ -748,8 +935,12 @@ def render_markdown(
     lines.extend(
         (
             "",
-            "Model validity and physical plausibility are reported separately; "
+            "Model validity and statistical plausibility are reported separately; "
             "sparse-action feasibility is shown independently.",
+            "C-MAPSS controllable channels, bounds and rates are documented proxy assumptions. "
+            "The maximum available evidence is E3 (proxy engineering/coupling checks); "
+            "passing Tier 1 alone does not establish physical safety. "
+            "E4 validated emulation and E5 validated physics simulation are unavailable.",
             "C-MAPSS is static run-to-failure data and does not establish RUL extension.",
             "",
         )
