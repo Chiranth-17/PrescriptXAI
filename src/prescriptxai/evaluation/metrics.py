@@ -18,6 +18,7 @@ from sklearn.metrics import (
 
 from prescriptxai.config import EvaluationConfig
 from prescriptxai.evaluation.latency import LatencyMetric, summarize_latency
+from prescriptxai.validation.base import EvidenceLevel
 
 
 def predictor_metrics(
@@ -126,6 +127,8 @@ class EvaluationRecord:
     dependent_sensor_count: int | None = None
     dependent_residual_violation_count: int | None = None
     searched_candidate_states: tuple[Mapping[str, float], ...] = ()
+    # None identifies historical unlabelled records; new evaluations retain the validated level.
+    evidence_level: EvidenceLevel | None = None
 
 
 @dataclass(frozen=True)

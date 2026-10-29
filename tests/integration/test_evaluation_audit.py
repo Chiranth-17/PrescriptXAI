@@ -22,7 +22,11 @@ from prescriptxai.evaluation.runner import (
 from prescriptxai.models.calibration import ProbabilityCalibrator
 from prescriptxai.pipeline import PrescriptXAIEngine
 from prescriptxai.validation.base import TierResult
-from prescriptxai.validation.pipeline import ValidationReport, fit_mahalanobis_validator
+from prescriptxai.validation.pipeline import (
+    ValidationReport,
+    fit_mahalanobis_validator,
+    validate_candidate,
+)
 
 
 def _engine() -> tuple[PrescriptXAIEngine, pd.DataFrame]:
@@ -100,6 +104,21 @@ def test_report_persists_effective_settings_fingerprints_and_actual_query_timing
     assert saved["provenance"]["effective_configuration"]["seed"] == engine.config.seed
     assert saved["provenance"]["resolved_taxonomy"]["actuator_constraints"]["actuator"]
     assert len(saved["records"]) == 2
+    for record in run.records:
+        # Compare with the canonical validation report, without re-running optimization.
+        checked = validate_candidate(
+            dict(rows.set_index(["engine_id", "cycle"]).loc[(record.engine_id, record.cycle)]),
+            dict(record.candidate_state),
+            engine.model,
+            engine.taxonomy,
+            engine.mahalanobis,
+            engine.config,
+            engine.coupling,
+        )
+        assert record.evidence_level == checked.evidence_level
+    assert [row["evidence_level"] for row in saved["records"]] == [
+        record.evidence_level for record in run.records
+    ]
     times = [record.inference_ms for record in run.records]
     assert all(time is not None and time > 0 for time in times)
     assert all(

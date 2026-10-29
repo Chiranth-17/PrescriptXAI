@@ -645,6 +645,7 @@ def evaluate_states(
                     else None
                 ),
                 searched_candidate_states=(result.optimization.search_candidate_states),
+                evidence_level=result.validation.evidence_level,
             )
         )
         if on_record is not None:

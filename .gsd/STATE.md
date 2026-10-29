@@ -104,3 +104,13 @@ no frozen scientific threshold/bound/ratechanges. Targets andgaps allpreserved; 
 Futurepriorities:validatedsimulator,N-CMAPSSfreshunits,firstprinciplescoupling,richeractualactuatordata.
 NoPartBrequirementsinvented. Next: commitcheckpointdocs, preservehealthyreplay, monitorwithoutduplicate,
 thenindependentFULLcomparison, finalizeonlythenpublicstatus/progress/docsgate/conventionalclosurecommit.
+
+CURRENT FOLLOW-UP FIX (after checkpoint e723d7d): independent E18 audit found legacy per-query evaluation/JSONL
+records omitted attained evidence_level (v2/fullstudy alreadycompliant). Rootadded optionalinternal
+EvaluationRecord.evidence_level(None=historicalunlabelled), populatedfromexisting
+result.validation.evidence_level in evaluate_states. No publicschema/algorithm/configchanges.
+Uncommitted mainfiles metrics.py,runner.py,2integrationtestfiles,CHANGELOG. Focused15tests passed43.14s;
+Ruff/mypy65clean; independentreviewpending. Earlier527gate/currentinstalledreproduction proofappliesD12,
+notyetthisnewannotationfix. Commitfixafterreview thennewdurable fullgate/package/Docker/installedreproduce
+proofsunderDISTINCTevidence-level-*filenames/outputdirs; preserveoldD12evidence. Fullfrozenreplay63
+continuesunchanged; at04:23:57Z13740records/38of64countcompletegroups,4workers. Watchagentstillactive.

@@ -11,6 +11,8 @@ have a separate version; RecourseResult and ValidationReport remain 2.0.0.
 - Publication metadata, figure labels and budget diagnoses derive from the measured input;
   visible study tables include observation counts and denominators. Historical results are preserved.
 - Historical Phase 4 target/evidence annotations have a prominent erratum.
+- Legacy per-query evaluation reports and durable reproduction checkpoints retain the
+  validation report's attained evidence level. Historical unlabeled records remain identifiable.
 - Unsupported gradient operations raise TypeError as a capability mismatch, replacing
   NotImplementedError guards; implemented predictor/search paths and public schemas are unchanged.
 

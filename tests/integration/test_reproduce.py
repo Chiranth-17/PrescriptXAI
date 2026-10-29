@@ -91,6 +91,7 @@ def test_real_reproduce_command_writes_loadable_hashed_artifacts(tmp_path: Path)
     assert measured["metrics"]["validity"]["observation_count"] == len(report["records"])
     saved = [json.loads(line) for line in (root / "query_results.jsonl").read_text().splitlines()]
     assert saved == report["records"]
+    assert all(row["evidence_level"] in {"none", "E1", "E2", "E3"} for row in saved)
     assert report["provenance"]["reproduction_run_id"] == manifest["run_id"]
     for diagnostics in (False, True):
         view = AppTest.from_function(
