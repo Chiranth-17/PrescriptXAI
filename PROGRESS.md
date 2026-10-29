@@ -2,6 +2,24 @@
 
 ## Phase 11 independent final audit â€” in progress, 2026-10-29 IST
 
+Latest verified product source: `4995c301331db78b1e31f58de3cdcd957b1ca336`.
+The full gate passed all **527 tests** (66 warnings, 1498.23 seconds), with improved
+coverage: scoped **90.91880341880342%**, full **89.92603029235646%**, and combined
+**86.48337028824834%**. The current wheel, installed source hashes, and Docker real-case
+checks pass. A fresh installed reproduction completed **20 queries / 11 engines** in
+**2042.3577359 seconds**; all 18 output hashes and 68 source hashes passed. Common
+scientific fields and eight saved engine-CI objects match four earlier Windows runs.
+Every new query/checkpoint also records its attained evidence level: **10 E3 / 2 E1 /
+8 none**, independently revalidated. An audit-only CSV precision mismatch was diagnosed
+and corrected without altering results; the first audit failure is preserved. Earlier d12
+proofs below retain their source scope. The scientific replay still uses frozen source63.
+
+The same frozen scientific run resumed as **segment 3 at 2026-10-29T15:37:16Z**, after
+independent verification of all **30,729 saved results / 30,733 registered cases**. Every
+completed result, including its timings, is preserved; all scientific payloads/cases match
+historical seed1730 exactly. **3,569 queries remain** in two FD002/v2 grouped-OOF groups.
+The complete replay and final independent comparison are still required for closure.
+
 The supplied Phase 11 prompt supersedes historical queued/Phase11-unavailable notes below.
 Independent reviewers inspected code they did not implement; root repaired verified gaps and
 reviewers rechecked them. Report corrections are committed at
@@ -10,7 +28,7 @@ both Tier 2 denominators, target gaps, proxy evidence, measured no-target rows a
 publication metadata. Historical Phase 4 annotations have an erratum. Public result schemas
 remain 2.0.0; historical measured source/configs/models/results were not replaced.
 
-The post-fix full gate passed **527 tests**, 66 test-fit warnings, 539.52s; Ruff clean,
+The earlier d12 post-fix full gate passed **527 tests**, 66 test-fit warnings, 539.52s; Ruff clean,
 strict mypy 65 files clean and strict MkDocs 7.95s. Coverage improved without exclusions/floor
 changes: scoped **7657/8422 = 90.91664687722631%**, full **7657/8515 = 89.92366412213741%**,
 combined **9749/11273 = 86.48097223454272%**. Independent evidence and real command outputs
@@ -20,7 +38,7 @@ are in [final verification](docs/final_verification.md). The initial gate also p
 Fresh installed baseline reproduction completed 20 queries / 11 engines from 378 alerts with
 0 interval exclusions, in 711.3422288s, source b219041. All 18 output hashes were verified;
 scientific records and all eight engine intervals exactly match both prior Windows runs.
-The additional **current-wheel reproduction also completed** at
+The earlier **d12 installed reproduction also completed** at
 `C:/Users/chira/prescriptxai-phase11-final`: run `reproduce-20261028T141720017713Z`,
 exit 0, all five stages in **626.4732678s**, 20 queries / 11 engines. All 18 output hashes and
 68 source hashes pass; all scientific records/eight saved CI objects exactly match three prior
@@ -39,14 +57,14 @@ matching d12dec1; nonroot UID 10001, read-only mounts, health 200, invalid input
 real decisions passed. Linux REC risk 0.10835729296287716 is separately validated; no Windows/
 Linux action identity is claimed. Only owned verification containers were removed.
 
-The full registered second-seed replay is **running in execution segment 2**, not complete.
+The full registered second-seed replay is **running in execution segment 3**, not complete.
 Initial execution stopped after **7,651 / 34,298** saved results, last checkpoint
 2026-10-28T16:55:16Z, without an exit marker. No live experiment process remained on discovery;
 termination time/cause are unknown. No reboot, relevant resource event or Python exception
 was located; nearby Store-update failures do not establish causation. Independent checks
 confirmed SQLite integrity, all completed payloads/cases/timings, frozen source and inputs.
 
-The **same run resumed 2026-10-29T02:43:47Z** with separate segment logs/exit metadata and
+The **same run first resumed 2026-10-29T02:43:47Z** with separate segment logs/exit metadata and
 four workers. At 02:58Z **7,823 / 34,298** results were saved. All 7,651 original result payloads
 including timings and 7,655 registered case payloads remain byte-identical. Four registered but
 uncommitted cases may be retried; this uncertainty is disclosed, not hidden as new failures or
@@ -63,6 +81,27 @@ Copied inputs match both roots; taxonomy bytehash differs only by eight Git LFâ†
 conversions, with identical YAML/normalized bytes. Both hashes and Windows-build change are
 disclosed. No frozen running file was edited. Windows smoke services were verified on Oct28;
 the Oct29 interruption discovery found them no longer running.
+
+Segment 2 later stopped with `BrokenProcessPool` after **30,729 / 34,298** saved results,
+last checkpoint **2026-10-29T10:57:42.428547Z**. Shutdown-delay events start seconds later;
+Windows records planned OS-upgrade restarts and a current boot at 11:03:54Z. This supports
+a host shutdown interrupting the worker pool; its exact termination mechanism is not proven.
+The earlier unknown-cause finding concerns segment 1 only. Before segment 3, an independent
+audit checked SQLite integrity, all 151 copied inputs in both roots, source/core versions,
+all retained scientific payloads against historical seed1730, and the original timing hashes.
+All **30,729 result payloads including timings / 30,733 cases** were separately hashed for
+post-resume preservation checks. Four registered but uncommitted cases may be retried.
+At the 15:37:16Z resume, **62 / 64 groups** were count-complete; 3,361 FAST and 208 THOROUGH
+queries remained. The previous active-metadata value 38 was a stale health-cache field,
+not a change to scientific records. No completed record, timing, model, setting or population
+was replaced. Proof: `artifacts/phase11/replay-segment3-preflight-independent.json` and
+`replay-segment3-preserved-payload-hashes.json`; separate execution/log pointers are in
+`replay-active-run.json`. The full required final comparison remains pending.
+The seconds-later shutdown events are preserved in
+`artifacts/phase11/replay-segment3-shutdown-window-doc-review.json`, supplementing the later
+restart events in `replay-segment3-host-evidence-independent.json`. The independent
+post-launch check confirms every pre-segment3 result/timing and case payload remains
+byte-identical: `replay-segment3-post-resume-preservation-independent.json` (zero mismatches).
 
 [Current traceability](docs/traceability.md) maps 64 synopsis/audit rows. Independent review
 verified 216 metric rows across 24 headline strata, 12 latency rows, 24 config identities and

@@ -2,9 +2,11 @@
 
 The independent Phase11 audit has verified the software gate (527 tests, improved coverage),
 actual API/dashboard/browser/export checks, a new Docker build and current-source installed
-runtime. The current installed reproduction also passed (20queries/11engines,626.47s).
-The complete34298-record second-seed replay stopped after7651records and has safely resumed as segment2;
-its final comparison is pending. Phase11 remains open until those required checks and their independent
+runtime. The current4995installed reproduction also passed (20queries/11engines,2042.3577359s),
+including all20attained-evidence labels,18outputhashes/68sourcehashes and8engine intervals.
+The complete 34,298-record second-seed replay resumed as segment3 after independent
+verification of all 30,729 retained records and their timings; its final comparison is pending.
+Phase11 remains open until those required checks and their independent
 comparisons finish. This is the current exception register, not a completion declaration.
 
 All synopsis requirements and implementing files/tests/evidence are in [traceability](traceability.md).
@@ -45,7 +47,7 @@ The following lists every current Partial or Not met row without hiding absent f
 | §11 published public GitHub repository | Not met | Local installable MIT software is verified; no public repository publication evidence exists. |
 | §11 authored presentation deck | Not met | Live demo is available; deck deliverable is absent. |
 | Phase11 strict once-ever held-out evaluation and fresh-engine v2 provenance | Partial | Development-only predictor selection and fit isolation are supported; strict never-before-seen test/fresh-engine and every older diagnosis preregistration cannot be certified retroactively. |
-| Phase11 second-seed complete frozen evaluation replay | Partial | Final comparison pending full same-run completion; original records/timings retained, cause unknown. No completion or second-seed agreement claim from partial records. |
+| Phase11 second-seed complete frozen evaluation replay | Partial | Full same-run completion/comparison pending. All 30,729 pre-segment3 results/timings retained. Segment1 cause unknown; segment2 failed near a recorded OS-upgrade shutdown. No agreement claim from partial records. |
 
 Maximum available evidence is E3 under assumed proxy channels, bounds, rates and K. Model
 validity, Tier2statistical plausibility, Tier3engineering checks, Tier4coupling and joint success

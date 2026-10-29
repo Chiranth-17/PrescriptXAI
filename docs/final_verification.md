@@ -2,15 +2,118 @@
 
 Status at this checkpoint: **Partial**. Independent checks below are real completed checks;
 post-fix full checks, Docker build and current installed reproduction have passed. The complete
-34298-record seed replay was interrupted after7651saved records and has resumed as a verified second execution segment; its final comparison remains pending.
+34,298-record seed replay resumed as segment3 after independently verified checkpoint
+recovery; its complete final comparison remains pending.
 No overall final-audit completion is claimed from these partial outputs.
 
 Main checkout: `C:/Users/chira/OneDrive/Desktop/5thsemEL`.
 Release under audit: `b219041801d720f75973da24a1c5b43d5dcd0154` /0.2.0.
-Reviewed report corrections: `d12dec1a1a776d9e8416cec22d879e560498875f`. Independent reviewers did not implement product code.
+Initial report corrections: `d12dec1a1a776d9e8416cec22d879e560498875f`; current follow-up
+`4995c301331db78b1e31f58de3cdcd957b1ca336` retains each query's attained level. Independent reviewers did not implement product code.
 Schemas RecourseResult/ValidationReport remain2.0.0; frozen scientific source/YAML values and fitted
 artifacts are preserved in the separate replay checkout. A disclosed Git taxonomy newline-byte
 difference is detailed in the replay provenance section below. Quality replay timings are not isolated latency evidence.
+
+## Latest complete software verification — source4995
+
+Commit `4995c301331db78b1e31f58de3cdcd957b1ca336` fixes the independently identified AGENTS18
+presentation gap: future legacy evaluation/JSONL records retain their canonical validation
+report's attained level. Historical unlabelled records deserialize as unknown (null), never a
+fabricated `none` outcome. Public RecourseResult/ValidationReport schemas remain2.0.0; models,
+solver decisions, thresholds, bounds and rates are unchanged. Committed review proof:
+`artifacts/phase11/legacy-evidence-level-committed-review.json`.
+
+The full `mingw32-make all-checks` command passed: **527tests/66warnings/1498.23s**, Ruffclean,
+strictmypy65clean, strictdocs25.62s. Exact coverage improves over d12without exclusions/floor changes:
+scoped7659/8424=90.91880341880342%, full7659/8517=89.92603029235646%,
+combined9751/11275=86.48337028824834%. Proof `coverage-evidence-level-independent-audit.json`
+and actual `evidence-level-all-checks.log/.exit`. Real output excerpt:
+
+```text
+uv run ruff check .
+All checks passed!
+uv run mypy src
+Success: no issues found in 65 source files
+uv run pytest --cov=prescriptxai --cov-report=term-missing --cov-report=json --cov-report=xml
+Required test coverage of 86.07837763770897% reached. Total coverage: 86.48%
+================ 527 passed, 66 warnings in 1498.23s (0:24:58) ================
+INFO    -  Documentation built in 25.62 seconds
+```
+
+Current wheel/installed Python3.13.9 source hashes68/68match4995;75wheel entries/311sdist entries.
+Wheel SHA256 `d783e9d3669098cd72a62d04750806307055eeb37d2dbd1a6b4b5ba5cae617ea`.
+The new Docker build and installed68source-hash audit passed; image
+`sha256:f4e9444876fe2582d318da3d89354beda4c2a1fdd92cd0c7465cdeaf2966fb87`,
+tag `prescriptxai:phase11-4995c30`. UID10001/read-only mounts/API/dashboard200/invalid422 passed.
+Actual Linux HTTP REC5/c241 risk0.10835729296287716/E3 and ESC2/c278risk0.3612983062471661/none
+bothpassed, schemas2.0.0. Only two ownership-checked containers were removed; all preexisting
+running container IDs were retained. Source/context/commands/real outputs are in
+`evidence-level-full-check-docker-audit.md` and `evidence-level-package-docker-independent-audit.json`.
+No Windows/Linux action identity or isolated latency result is claimed.
+
+Fresh workspace `C:/Users/chira/prescriptxai-phase11-evidence-final` completed actual
+`prescriptxai init .` then `prescriptxai reproduce` from its installed venv. Runtime
+`configs/default.yaml` is byte-identical to committed `configs/experiments/phase10-reproduce-v1.yaml`,
+SHA256 `b7089ac81d50010792662b6632c587353f0b442735c6479b3e80af8e010f8b8e`.
+Run `reproduce-20261029T100600311811Z` completed all five stages, **exit0/2042.3577359000337s**,
+20queries/11engines from378alerts/0exclusions; fit/calibration/test partitions69/16/15.
+All18output hashes and68installed source hashes pass. Common scientific record fields, selected
+CSV and all8saved metric/CI objects match FOUR previous Windows runs exactly. The new annotation
+is separately verified, not silently removed: every20saved labels matches freshly recomputed
+canonical validation and the independent prior-flag policy, with countsE3=10/E1=2/none=8.
+All report/checkpoint records agree. Manual whole-engine bootstrap recomputation agrees within1e-12.
+
+Real completed stdout:
+
+```text
+Starting data_prepare
+Completed data_prepare (30.84s)
+Starting train_and_calibrate
+Completed train_and_calibrate (128.46s)
+Starting fit_validators
+Completed fit_validators (1.86s)
+Starting evaluate
+Completed evaluate (1877.39s)
+Starting report
+Completed report (2.99s)
+Completed reproduction: C:\Users\chira\prescriptxai-phase11-evidence-final\artifacts\reproduction\manifest.json
+```
+
+Actual measured engine intervals for this small packaging workflow (not the complete study):
+
+Run `reproduce-20261029T100600311811Z`; source `4995c301331db78b1e31f58de3cdcd957b1ca336`;
+committed config `configs/experiments/phase10-reproduce-v1.yaml`, SHA256
+`b7089ac81d50010792662b6632c587353f0b442735c6479b3e80af8e010f8b8e`.
+FD001/XGB, protocolv1, THOROUGH, k_max3, assumedK1, D_maxv1=5; population
+`reused internal held-out FD001 engines; seeded feasible-alert sample`.
+Whole-engine bootstrap:2000draws,seed1729,95%confidence; engine frame/count appears beside each interval.
+
+| Metric | Measured [95% engine CI] | Engines | Observations / denominator |
+|---|---:|---:|---:|
+| validity | 0.600000000 [0.450000000, 0.777777778] | 11 | 20 / 20 |
+| plausibility_all | 0.600000000 [0.428571429, 0.764705882] | 11 | 20 / 20 |
+| plausibility_returned | 0.600000000 [0.428571429, 0.764705882] | 11 | 20 / 20 |
+| tier3 | 1.000000000 [1.000000000, 1.000000000] | 11 | 20 / 20 |
+| tier4 | 1.000000000 [1.000000000, 1.000000000] | 11 | 20 / 20 |
+| joint | 0.500000000 [0.333333333, 0.687500000] | 11 | 20 / 20 |
+| mean_risk_drop | 0.577940412 [0.492979741, 0.673580202] | 11 | 20 / 20 |
+| sparsity_success | 2.900000000 [2.666666667, 3.000000000] | 11 | 20 / 10 |
+
+Acceptance uses both JSON `passed=true` and exit0 in
+`evidence-level-reproduce-comparison.json/.exit`; the consolidated proof is
+`evidence-level-reproduce-independent-audit.md`. Durations are operational under concurrent
+quality work, not isolated latency comparisons. Earlier d12/b219 proofs below are retained.
+
+Preserved operational/audit failures: PowerShell5.1 promoted uv's ordinary stderr notice to
+NativeCommandError before any reproduction/model run; PowerShell7/native exit checks corrected it.
+A long combined Docker helper-write/run command was rejected before dispatch with no detailed reason;
+separate reviewable bounded helpers and explicit invocation were accepted. Finally, the first
+post-run audit incorrectly parsed the saved17digit CSV with default pandas parsing:14queries
+then differed in immutable settings by about1e-16, producing false Tier3 failures. Round-trip
+parsing matches standard float conversion in all480telemetry cells and restores canonical
+agreement. The initial false audit/incorrectexit0 remain in `*-comparison-attempt1.*`; the helper
+now fails closed unless its JSON passes. No optimizer, source scientific logic, config, model or
+saved result was changed to resolve this reconstruction error.
 
 ## Complete project check command
 
@@ -92,9 +195,9 @@ No duration comparison is presented as a latency benchmark. New report rendering
 same saved records independently preserved all8metric/CI objects and4per-query stage p95 values;
 proof `artifacts/phase11/presentation-real-reproduction-audit.json`.
 
-## Fresh reproduction after report corrections
+## Earlier d12 reproduction after initial report corrections
 
-Because report/reproduction code changed, the current d12dec1 wheel was installed in a new
+Because report/reproduction code changed, the then-current d12dec1 wheel was installed in a new
 empty `C:/Users/chira/prescriptxai-phase11-final` workspace. Distribution inspection verifies
 75wheel entries/304sdist entries and68source hashes against the installed wheel and checkout,
 with0mismatches. Install/compatibility and actual `prescriptxai init .` completedexit0;
@@ -1769,6 +1872,43 @@ There is no replacement population or discarded completed timing. Proof:
 are not claimed by this replay. Current process/log/checkpoint pointers:
 `artifacts/phase11/replay-active-run.json`, `replay-launch-audit.json` and `replay-input-copy.json`.
 
+Segment 2 subsequently ended with `BrokenProcessPool` after **30,729 saved results / 30,733
+registered cases**; the last checkpoint was **2026-10-29T10:57:42.428547Z**. Windows recorded
+shutdown-delay events seconds later and planned OS-upgrade restarts, with current boot at
+11:03:54Z. This supports host shutdown as the interruption context; it does not prove the
+precise worker-termination mechanism. The unknown-cause/no-reboot finding above concerns
+the first segment's discovery window only. Actual traceback excerpt:
+
+```text
+concurrent.futures.process.BrokenProcessPool: A process in the process pool was terminated abruptly while the future was running or pending.
+```
+
+Independent recovery checks verified SQLite integrity, frozen source/core versions, all 151
+copied inputs in both roots, every retained query/case against historical seed1730, and all
+original timing hashes. **Zero exact scientific or case mismatches** were found in the 30,729
+saved results. All 30,729 result payloads INCLUDING timings and 30,733 cases were separately
+hashed for the next preservation check. Four registered cases had no committed result and
+may be retried; no completed failure or timing is replaced. Source, configuration, workers
+and declared populations remain unchanged. Evidence:
+`artifacts/phase11/replay-segment3-preflight-independent.json`,
+`replay-segment3-preserved-payload-hashes.json` and
+`replay-segment3-host-evidence-independent.json`. The exact shutdown-delay events at
+10:57:49Z and 10:57:52Z are retained separately in
+`replay-segment3-shutdown-window-doc-review.json`; the host-evidence file retains the later
+restart events. Post-launch independent verification found zero changes in all 30,729
+completed result/timing payloads and 30,733 cases:
+`replay-segment3-post-resume-preservation-independent.json`.
+
+After a fresh zero-duplicate process inventory, the same run resumed as **segment 3 at
+2026-10-29T15:37:16.7751539Z**, using the exact reviewed command and separate durable
+stdout/stderr/exit paths. At resume, 62 of 64 groups were count-complete; **3,569 queries**
+remained (3,361 FAST / 208 THOROUGH), both FD002/v2 grouped-OOF populations. An old value
+38 in active health metadata was a stale cache, not a scientific-group count. Final acceptance
+still requires all 34,298 records, all 64 groups, the source/count completion flag, an actual
+successful process exit, complete comparisons against both seeds, whole-engine CIs, and
+preservation of every completed payload from each prior segment. Operational replay timings
+are retained and disclosed; they do not certify a new isolated serial-latency result.
+
 Phase11 remains **in progress** until the complete replay, independent final comparison/report
 review and final progress/commit have finished. Missing physical evidence and roadmap
 outputs remain explicit Partial/Not met states, not reasons to fabricate or add features.
@@ -1782,3 +1922,16 @@ traceability (20Partial/12Notmet). Strict `uv run mkdocs build --strict` complet
 with the Final audit navigation. Evidence `artifacts/phase11/docs-strict-independent-20261029.log/.exit`
 and `final-docs-independent-review-20261029.md`. Later text-only checkpoint updates retain the
 same links/nav; final closure review remains required after complete replay comparison.
+
+The segment3 recovery checkpoint also passed a fresh independent strict build:
+`.venv/Scripts/python.exe -m mkdocs build --strict --site-dir artifacts/phase11/docs-site-segment3-independent-20261029`.
+Actual output: `Documentation built in 3.99 seconds`, native exit0. The reviewer verified
+the root and all four audit HTML pages, navigation/content, all 20 links, and unchanged
+before/after hashes for 143 source/documentation/configuration files. The 64 traceability
+rows still match all 32 exceptions. Proof:
+`artifacts/phase11/segment3-docs-independent-checkpoint-review.md/.json` and
+`docs-strict-segment3-independent-20261029-attempt2.log/.exit`.
+An earlier default-output attempt returned exit0 but stopped at cleaning with missing HTML;
+it is explicitly rejected and preserved. An audit-only navigation probe initially required
+an active page to link to itself; the corrected probe checks its label and other-page links,
+with that first false audit retained. No product source or scientific result changed.
