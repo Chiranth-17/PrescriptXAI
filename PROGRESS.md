@@ -1,15 +1,133 @@
 # PrescriptXAI Progress
 
-## Phase 11 independent final audit — in progress, 2026-10-28 IST
+## Phase 11 independent final audit — in progress, 2026-10-29 IST
 
-The user supplied the complete Phase11 prompt after Phase10 closure. Three independent reviewers
-are auditing code they did not implement; root repairs verified gaps and reviewers recheck them.
-The initial full gate passes524tests with unchanged coverage. A fresh installed reproduction
-completed20queries/11engines in711.3422288s and matches the prior scientific records exactly.
-The complete34,298-record second-seed replay is separately preregistered; it is not replaced
-by the small packaging workflow. Final traceability, repairs, API/dashboard/Docker checks and
-independent replay comparison remain. Historical target misses and limitations stay explicit.
-See .gsd/STATE.md and .gsd/phases/11/01-PLAN.md for the active audit state.
+The supplied Phase 11 prompt supersedes historical queued/Phase11-unavailable notes below.
+Independent reviewers inspected code they did not implement; root repaired verified gaps and
+reviewers rechecked them. Report corrections are committed at
+`d12dec1a1a776d9e8416cec22d879e560498875f`. They expose engine confidence intervals,
+both Tier 2 denominators, target gaps, proxy evidence, measured no-target rows and input-derived
+publication metadata. Historical Phase 4 annotations have an erratum. Public result schemas
+remain 2.0.0; historical measured source/configs/models/results were not replaced.
+
+The post-fix full gate passed **527 tests**, 66 test-fit warnings, 539.52s; Ruff clean,
+strict mypy 65 files clean and strict MkDocs 7.95s. Coverage improved without exclusions/floor
+changes: scoped **7657/8422 = 90.91664687722631%**, full **7657/8515 = 89.92366412213741%**,
+combined **9749/11273 = 86.48097223454272%**. Independent evidence and real command outputs
+are in [final verification](docs/final_verification.md). The initial gate also passed 524 tests;
+20 focused post-fix tests passed before the full gate.
+
+Fresh installed baseline reproduction completed 20 queries / 11 engines from 378 alerts with
+0 interval exclusions, in 711.3422288s, source b219041. All 18 output hashes were verified;
+scientific records and all eight engine intervals exactly match both prior Windows runs.
+The additional **current-wheel reproduction also completed** at
+`C:/Users/chira/prescriptxai-phase11-final`: run `reproduce-20261028T141720017713Z`,
+exit 0, all five stages in **626.4732678s**, 20 queries / 11 engines. All 18 output hashes and
+68 source hashes pass; all scientific records/eight saved CI objects exactly match three prior
+Windows runs. A separately implemented engine bootstrap agrees within 1e-12. Default config
+is byte-identical to committed
+`configs/experiments/phase10-reproduce-v1.yaml` (SHA256
+`b7089ac81d50010792662b6632c587353f0b442735c6479b3e80af8e010f8b8e`).
+This small package workflow is separate from the complete scientific replay.
+
+Actual API, real-asset AppTest and browser smokes passed. RECOVERABLE engine 5/c241 has model
+risk 0.883373152081179 → 0.1284214696040072, E3; ESCALATE engine 2/c278 remains
+0.3612983062471661, evidence none. API/AppTest/browser exports match 38 scientific fields per
+case; downloaded metric CSV matches 144 saved fields. Four actual Phase 11 screenshots are
+under `docs/screenshots/`. Docker build passed in 326.06s with 68 installed source hashes
+matching d12dec1; nonroot UID 10001, read-only mounts, health 200, invalid input 422 and both
+real decisions passed. Linux REC risk 0.10835729296287716 is separately validated; no Windows/
+Linux action identity is claimed. Only owned verification containers were removed.
+
+The full registered second-seed replay is **running in execution segment 2**, not complete.
+Initial execution stopped after **7,651 / 34,298** saved results, last checkpoint
+2026-10-28T16:55:16Z, without an exit marker. No live experiment process remained on discovery;
+termination time/cause are unknown. No reboot, relevant resource event or Python exception
+was located; nearby Store-update failures do not establish causation. Independent checks
+confirmed SQLite integrity, all completed payloads/cases/timings, frozen source and inputs.
+
+The **same run resumed 2026-10-29T02:43:47Z** with separate segment logs/exit metadata and
+four workers. At 02:58Z **7,823 / 34,298** results were saved. All 7,651 original result payloads
+including timings and 7,655 registered case payloads remain byte-identical. Four registered but
+uncommitted cases may be retried; this uncertainty is disclosed, not hidden as new failures or
+replacement records. First 20 new scientific records/cases match historical seed1730 exactly.
+Run `phase11-seed1730-20261028T030707Z`, frozen source
+`63c2ed445fba16c73a2771e184f635abf76b4405`, preregistration `02f0145`, study
+`configs/experiments/phase11-seed1730-replay.yaml`, SHA256
+`59b1f3c3d139dea7971eddf01f2401e520694dd804b36ad6ebb18ef6e892cd60`.
+All 64 groups / 34,298 records remain required; no cap, replacement, tuning or retraining.
+Partial comparison successes are not final acceptance. Discover current PIDs/logs/checkpoints
+from `artifacts/phase11/replay-active-run.json`; preservation proof is
+`replay-segment2-post-resume-preservation.json`. Final full comparison awaits completion.
+Copied inputs match both roots; taxonomy bytehash differs only by eight Git LF→CRLF
+conversions, with identical YAML/normalized bytes. Both hashes and Windows-build change are
+disclosed. No frozen running file was edited. Windows smoke services were verified on Oct28;
+the Oct29 interruption discovery found them no longer running.
+
+[Current traceability](docs/traceability.md) maps 64 synopsis/audit rows. Independent review
+verified 216 metric rows across 24 headline strata, 12 latency rows, 24 config identities and
+198 implementing-file references. The [complete target appendix](docs/final_targets.md) records
+every measured value, whole-engine CI/count, denominator and gap; all failures are retained.
+A fresh independent strict docs build passed after the audit/nav/status edits (exit 0, 5.88s).
+No final phase closure is claimed until the complete replay and final comparison finish.
+
+### Design targets and measured gaps
+
+Historical measured run `phase7-20261020T102540Z`, source
+`63c2ed445fba16c73a2771e184f635abf76b4405`, study `configs/experiments/phase7-study.yaml`
+SHA256 `67094790e414a57b3d6a403f3682bd3ebb1914be74584379c482ddfad1d48c5a`.
+Targets across all 24 reported headline strata are met in 6/24 validity, 9/24 Tier2-all,
+9/24 Tier2-returned, 24/24 all-query support and 10/24 risk-drop strata. These are descriptive
+strata counts, not pooled independent trials. Every miss remains visible in the appendix.
+
+The following representative row group is FD001/XGB/v1/grouped-OOF/all-alerts/FAST/full,
+100 engines, k_max=3, assumed K=1, D_max=5. Profile
+`configs/experiments/phase7-FD001-xgb-v1.yaml`; runtime config-set identity
+`a3483e883531d1d12b008ef5ac2c1dd5e98c2990ad40dcb0d2ca5cbedeedc2e3`. All 24 groups are reported side by side in the appendix.
+
+| Target / diagnostic | Measured [95% engine CI] | Engines / observations / denominator | Target | Gap | Result |
+|---|---:|---:|---:|---:|---|
+| Validity | 0.525231287 [0.493042329, 0.556434093] | 100 / 11890 / 11890 | >=0.95 | 0.424768713 | not met |
+| Tier 2, all queries | 0.486963835 [0.445946048, 0.526111941] | 100 / 11890 / 11890 | >=0.9 | 0.413036165 | not met |
+| Tier 2, returned | 0.510449088 [0.474595694, 0.544636191] | 100 / 11890 / 11245 | >=0.9 | 0.389550912 | not met |
+| Tier 3 | 0.951219512 [0.920096479, 0.978265210] | 100 / 11890 / 11890 | none | — | no target |
+| Tier 4 | 0.916736754 [0.894516787, 0.936155068] | 100 / 11890 / 11890 | none | — | no target |
+| Joint success | 0.399074853 [0.367285456, 0.429127112] | 100 / 11890 / 11890 | none | — | no target |
+| Mean support | 2.763246426 [2.668784211, 2.846641390] | 100 / 11890 / 11890 | <=3 | 0.000000000 | met |
+| Mean model-risk drop | 0.563200300 [0.535622883, 0.589619100] | 100 / 11890 / 11890 | >=0.6 | 0.036799700 | not met |
+
+Serial latency workload uses FD001/XGB/v1 development alerts, k_max3, K1, D_max5, 1,000 calls
+and 16 engines per mode. Both optimization budgets miss: FAST p95 2339.074780ms
+[2256.86622525,2403.2715535], gap539.074780ms; THOROUGH p95 2080.227280ms, gap280.227280ms
+(with its full engine CI in the appendix). FAST backend total misses 2200ms by148.233290ms;
+THOROUGH backend total 2089.845030ms passes. Ingestion, inference and validation pass.
+The separate server UI-build p95 115.3545ms [108.8,120.46], 8 engines / 32 callbacks,
+passes250ms within that scope. Full browser/network/UI-inclusive latency remains unmeasured.
+Its study/source/config and every latency CI/gap are in the appendix; separate p95 values are
+never summed to claim a full-system measurement.
+
+### Known limits and evidence reached
+
+The research question is answered only in a statistical/proxy action space. C-MAPSS proxy
+mapping/bounds/rates and intervention K are assumptions; the exact synopsis actuator/environmental
+and dependent-core taxonomy is not reproduced by these public channels. The objective uses
+scaled control-space L1, hard masks/bounds and finite search rather than a certified raw full-state
+global minimum. Tier 1 alone is weak; plausibility and coupling diagnostics accompany validity.
+Highest available level is **E3**; no validated emulator/E4 or physics simulator/E5 exists.
+Real production restoration, causal failure reduction, fuel/emissions/resource gains, SDG9.1/9.4
+field effects, lifespan/disposal/downtime benefits and RUL extension are not established.
+Strict once-ever/fresh-engine protocol evidence remains Partial due to prior public FD001
+exposure and a legacy diagnosis without matching pristine provenance. A replay does not repair
+that history. A complete submitted/peer-reviewed paper, public GitHub publication and authored
+slide deck are absent; the technical report, local MIT software, paper skeleton and live demo
+are distinct bounded deliverables. All Partial/Not met rows remain in traceability.
+
+Prioritized future work: (1) validated real simulator integration, (2) N-CMAPSS extension with
+fresh units and operating regions, (3) first-principles coupling validation, (4) richer actual
+actuator telemetry and sensor-response data, followed by prospective field outcome studies.
+How to run: README/operator commands and `docs/reproducibility.md`; exact audit commands,
+known failed attempts and evidence paths are in `docs/final_verification.md`. Do not duplicate
+the active replay. Historical phase entries below retain their original dates and scope.
 
 ## Phase 10 â€” complete gate and release 0.2.0, 2026-10-27 IST
 

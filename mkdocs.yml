@@ -40,6 +40,11 @@ nav:
       - Limitations: limitations.md
       - Evaluation protocol: evaluation_protocol.md
   - Operator demo: demo_script.md
+  - Final audit:
+      - Exceptions and status: final_audit_report.md
+      - Requirement traceability: traceability.md
+      - Complete targets and gaps: final_targets.md
+      - Verification outputs: final_verification.md
   - Defense questions: defense_qa.md
   - SDG 9: sdg9.md
   - API reference: api_reference.md

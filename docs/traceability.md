@@ -1,266 +1,115 @@
-# Phases 5–11 requirement traceability
+# Final synopsis traceability — Phase 11 audit in progress
 
-## Phase 8 direct prompt — queued, not started
+This is the current requirement map, superseding [historical phase snapshots](traceability_history.md).
+The user supplied Phase11 after Phase10 closure; earlier queued/Phase11-unavailable text is historical.
+Every status is scoped: **Done** requires evidence for the stated implementation, **Partial** records
+an implemented subset or target miss, and **Not met** records an absent output/outcome with a diagnosis.
+Missing telemetry/simulation is an evidence limit, never a reason to fabricate a result.
 
-The direct dashboard prompt is preserved in `docs/prompts/phase8_operator_dashboard.md`.
-The user explicitly selected **Wait for Phase 7 gate** on 2026-10-20. All Phase 8 implementation,
-tests, real UI walkthrough, screenshots and closure checks remain pending that gate. A read-only
-interface preflight found that the existing dashboard uses the legacy engine/results and must
-adopt the frozen v2 facade; it identified no authorization to bypass the Phase 7 dependency.
-No dashboard code or public schema was changed before the Phase7 gate. Phase9/10 prompts are
-subsequently supplied and preserved; Phase11 and PartB remain unavailable.
+Three fresh reviewers independently inspected code they did not implement; root repaired reviewed
+reporting gaps in commit `d12dec1`. Independent rechecks preserved all eight real reproduction metric/CI
+objects. Historical measurements/source remain unchanged. Phase11 is **not closed** while the complete
+second-seed replay and its final comparison remain pending. See [real verification outputs](final_verification.md).
 
-## Phase 7 direct prompt — closed with measured gaps
+## Evidence register and reading the matrix
 
-The directly supplied Phase 7 prompt supplies this phase's requirements. The earlier missing-source
-entries below are historical; Phase11 and the PartB changes table remain unavailable.
-Study inputs were committed at `0c0b6e1` before fitting; preparation began on `4ffb038`.
+Source module fragments below are relative to `src/prescriptxai/`; brace lists enumerate actual files.
+Tests use project paths where available. Historical supporting evidence is labeled separately from
+newly repeated checks. Scientific intervals resample whole engines, never independent states.
 
-Measurement update (2026-10-21): all 2496 preregistered diagnostic calls completed and were
-structurally audited with zero dropped queries; the complete diagnostic snapshot reports all
-208 groups. An additional 288 FD002 numerical checks, including all H-sensitivity and full-method
-diagnostics, passed. These audit scopes overlap earlier samples. The original source `63c2ed4`
-is now running the full 171490-call quality stage. Overall Phase 7 remains Partial until quality,
-reference, serial latency, final report/audit and closure checks finish. No Phase 8 implementation
-has begun; its subsequently supplied direct prompt is preserved and queued above.
+**E7:** `artifacts/experiments/phase7-20261020T102540Z/{manifest.json,summary.json,records.sqlite3,latency.sqlite3,latency.json,reference.json,model_metadata.json,report.md,K_curve.html,risk_reduction.html}`. Measured source `63c2ed445fba16c73a2771e184f635abf76b4405`; committed study `configs/experiments/phase7-study.yaml`, SHA256 `67094790e414a57b3d6a403f3682bd3ebb1914be74584379c482ddfad1d48c5a`. Complete saved counts: 171,490 quality, 2,496 diagnostics, 48 reference cases, 2,000 serial latency calls. Full report has 272 groups. Original independent artifacts: `artifacts/phase7-final-audit/`; scope explicitly includes saved proofs without optimization replay. Public explanation: `docs/phase7_changes.md`.
 
-| Prompt task | Implementation / evidence | Current status |
-|---|---|---|
-| 1. Pure metrics and engine bootstrap | `evaluation/metrics.py`; whole-engine conditional-ratio and hand-count tests | Met: 26970 independent interval recomputations match |
-| 2. All required datasets/models, seeds, populations, resume/manifest | `evaluation/assets.py`, `study.py`, `experiments.py`, `runner.py`; 28 real bundles / 112 hashes audited | Met:171490 quality calls,64cohorts,all five seeds and declared populations |
-| 3. Unconstrained, bounded, full and DiCE baselines | Actual re-optimization with original final validators; pinned DiCE installed and exercised | Met: complete paired measurements, failures retained |
-| 4. Funnel, ladder, verified reference, leverage and strata | `diagnostics.py`, `study.py`, generated report; finite absence remains unresolved | Met:48leverage/40failed-state proofs, full funnels and strata |
-| 5. One-component search ablations | `ablations.py`; actual search policies, original reporting taxonomy and runtime settings | Met: paired effects saved and reported |
-| 6. One-factor sensitivity grids and assumed-K curve | Preregistered YAML grids, true H refits, fixed .20 headline; dense fallback budget disclosed | Met:2496diagnostics, complete sensitivities and K curve |
-| 7. Surrogate/teacher and adversarial evidence | True singleton rescore, surrogate error / false-safe share, distance and violation metrics | Met: error, distance, coupling-margin and unsafe-variant metrics |
-| 8. At least 1000 actual serial calls per mode | Checkpointed real-call harness, excluded warmups, stage quantiles and engine CIs | Met:1000FAST+1000THOROUGH/16engines, full workload identity independently verified |
-| 9. Markdown / HTML report and target gaps | Saved-result JSON/CSV/MD/HTML, seed variation, target-gap diagnoses, K plot and risk histogram | Met:272groups plus docs/phase7_changes.md/HTML supplement; honest target misses |
-| Required software gate | Final Ruff/mypy55 clean,276passed,83.350720%branch-inclusive coverage; docs/lock passed | Met: exact floor preserved/ratcheted with explicit precision |
-| FD003 / FD004 optional experiments | Explicitly unscheduled in preregistration | Not evaluated; not a required-subset result |
-| Simulated trajectory health | No validated emulator or simulator exists; interface remains optional | Not evaluated; E3 proxy evidence maximum, no RUL extension |
+**E8:** `artifacts/phase8/walkthrough-{recoverable,partial,manual-rejected}.json`, `artifacts/phase8/ui-render-20261024-v1/{manifest.json,samples.jsonl,summary.json}`, and `docs/screenshots/phase8-*.jpg`. UI run `phase8-ui-render-20261024-v1`, source `52affd06d39b03f76a0dd70417c3a75bd76f55c4`, study `configs/experiments/phase8-ui-render.yaml`, SHA256 `05f692de6b78fa6c9ca3477de8e3c4dd7454cfccff7d9259ef43909d5b4c6f5b`. Registration `215cb1f50a318660c4b126d2abb077c24a3e850a` precedes measurement. FD001/XGB/v1, FAST, k_max=3, assumed K=1, D_max v1=5, official-test last-observed-cycle UI population. Model profile runtime hash `47254ac5ea494ee5e333a754252edca0b9024d9ed5b792f3d0f561b5b0cb2271`. Real demonstration examples are not all-query efficacy estimates.
 
-No Phase 7 target is marked met from test fixtures, model preparation or historical Phase 6 results.
-All generated telemetry, model files and measurement output remain ignored by Git.
+**E10:** `artifacts/phase10/final-release-verification.json`, `coverage-final.json`, actual `readme-recoverable.json`/`readme-escalate.json` and `docker-*.json`; six screenshots in `docs/screenshots/phase10-*.png`; `docs/demo_script.md`. Final release 0.2.0, schemas 2.0.0; full gate recorded 524 tests at tested runtime `8aa18cb086999b885aa95a5af2dcb26315aa0acb`, scoped line coverage 90.84624553039332%, full line 89.85028881291996%, combined 86.38832012819371%. The scoped exclusion is explicitly the AppTest-driven dashboard entrypoint, not all dashboard logic. These are historical saved results, not a fresh Phase 11 gate.
 
-Final closure evidence: `docs/phase7_changes.md`, run`phase7-20261020T102540Z`, measured source
-`63c2ed445fba16c73a2771e184f635abf76b4405`. All173986cases/records structurally audited;
-1631 numerical strata/220actualLSTM histories checked, zero discrepancies, true-risk error0,
-D_Mmax2.27e-13. All26970engineCIs/9248seedstats/1904funnelcounts match. Full serial fingerprint
-and2000orderedindices match; recorded reference proofs checked without an optimization replay.
-Finalgate276passed/70warnings/119.22s; coverage83.3507197997079%branch-inclusive,
-87.28953905603092%line. No measured source/model/constraint setting changed after outcomes.
-Target misses are rule13 evidence gaps, not omitted implementation; UI/startup unmeasured.
-
-## Orchestration preflight — 2026-10-18
-
-Historical status: **Not met — required source instructions were unavailable.** At this preflight
-no phase had started under the new Phases 5–11 orchestration request. Later direct Phase 5/6 prompts
-supersede this missing-input status for those phases; see their task records below.
-A separate read-only audit independently confirmed the missing inputs and older-roadmap mismatch.
-
-- **Full Phase 5–11 prompts — Not met.** `docs/prompts/remaining_phases_5_to_11.md` does not exist.
-  `Test-Path` returned `False`; a repository search, including hidden paths, found no file with that
-  name. The existing `.gsd/phases/5/01-PLAN.md` belongs to the earlier roadmap and cannot establish
-  the contents of the newly requested seven phase prompts.
-- **Part B change table — Not met.** `docs/prompts/phase_changes.md` does not exist, and the current
-  user request does not include the Part B table to copy into it. The known conversation attachment
-  `Pasted text.txt` contains Phase 4 closure tasks C1–C12 only, not the requested Phase 5–11 prompts
-  or Part B. The changes file must be populated from the supplied table rather than invented.
-- **Referenced AGENTS.md rules 12–21 — Met.** The user supplied these ten rules after the initial
-  preflight; they are now included verbatim. The ten unnumbered original rules, numbered additions
-  22–29, and the per-phase status instruction have all been preserved.
-
-## Phase execution status
-
-At preflight, phases **5, 6, 7, 8, 9, 10, and 11** were **Not started** for this orchestration. Their individual
-tasks and gates cannot be enumerated or marked complete until the referenced source prompts and
-Part B changes are available. No implementation task has been skipped or replaced with an inferred
-task. Earlier completion labels in `PROGRESS.md` describe the previous roadmap, not these missing
-phase prompts.
-
-## Required inputs to resume
-
-The remaining required sources are `docs/prompts/remaining_phases_5_to_11.md` and the Part B table
-(or the document containing it). After these are available, copy the Part B table into
-`docs/prompts/phase_changes.md` and start Phase 5. Preserve the closed Phase 4 protocols and
-measurements.
+**E11R:** fresh installed reproduction `reproduce-20261027T141904574202Z`, source `b219041801d720f75973da24a1c5b43d5dcd0154`, described in [final verification](final_verification.md). It is a package-workflow check, not a replacement for E7 or the complete second-seed evaluation.
 
 
-## Phase 5 direct prompt — closed revision
+## Every synopsis requirement
 
-The user supplied Phase 5 directly after preflight. This supplies its tasks/gate and authorizes
-execution. The user subsequently supplied Phase 6 directly. Phase 7–11 and Part B remain unavailable;
-no replacements are invented.
+| Requirement | Implementing files / documentation | Tests / checks | Saved result / screenshot evidence | Status | Honest scope / diagnosis |
+|---|---|---|---|---|---|
+| RQ — sparse, actionable, physically plausible interventions avoiding operating-distribution extrapolation | `src/prescriptxai/recourse/{objective,optimizer}.py`, `validation/pipeline.py`, `docs/limitations.md` | `tests/e2e/test_recommendation_contract.py`; `tests/integration/test_evaluation_audit.py` | E7 separate validity/T2/T3/T4/joint, support, D_M and coupling margins; [complete target appendix](final_targets.md) | Partial | research question answered empirically for statistical/proxy action spaces; not established for actual actuator interventions. Substantial validity/plausibility gaps remain. |
+| §1 high-risk failure probability alert, tau_danger=0.80 | `pipeline.py:assess/recommend`, `configs/default.yaml` | `tests/integration/test_phase6_pipeline.py::test_gate_exact_boundary_and_zero_action` tests 0.79, 0.80 and equality | E7 raw before-risk; E8 operator alerts | Done | for calibrated H=30-cycle classification; no literal 12-hour clock conversion. |
+| §1 minimal physically bounded control adjustments | `recourse/optimizer.py`, `constraints/bounds.py`, `configs/features.yaml`, `docs/assumptions.md` | `tests/unit/test_recourse_validation.py::test_optimizer_finds_sparse_safe_bounded_candidate_and_reports_both_delta_units` | E7 mean support and explicit rejected cases | Done | for bounded sparse proxy search; finite search is not a global minimality proof. |
+| §1 safely restore operation without halting production | Evidence-level and triage language in `schemas.py`, `dashboard/operator.py`, `docs/limitations.md` | Negative/triage tests in `tests/integration/test_phase6_pipeline.py`, `tests/integration/test_phase8_backend.py` | E8 manual rejection can have low predictor risk but failed constraints | Not met | as a real-machine outcome. Software provides decision support and truthful escalation; no observed ongoing-production intervention. |
+| §2.1 prediction-only baseline / actionable gap | `models/{xgb_model,torch_models,calibration,train}.py`, `pipeline.py` | `tests/unit/test_predictive_models.py`; `tests/integration/test_phase6_pipeline.py` | E7 predictor metadata and recourse outcomes | Done | as software distinction; downtime cost claim is not measured. |
+| §2.2 diagnosis differs from control, SHAP/LIME example | `pipeline.py:explain_result`, `dashboard/plots.py:waterfall_chart`, `docs/defense_qa.md` | `tests/unit/test_phase8_presentation.py`; `tests/integration/test_phase8_dashboard.py` | Actual E8 sequential and Shapley-style waterfalls | Done | for diagnostic/action distinction and model-contribution charts. No claim that a literal SHAP/LIME implementation supplies control efficacy. |
+| §2.3 unconstrained realism fallacy / immutable and OOD attacks | `evaluation/ablations.py`, `validation/tier3_engineering.py`, `validation/tier2_mahalanobis.py` | `tests/integration/test_phase7_ablations.py`; `tests/unit/test_phase5_validation.py::test_healthy_fixture_collect_all_fail_fast_simulator_and_ood_tiers` | E7 paired unconstrained/bounded/full baselines and independent validators | Done | as measured comparison and safeguards; no blanket claim all counterfactual libraries are unconstrained. |
+| §2.4 static dataset versus interactive simulator | `validation/simulator.py`, `docs/limitations.md`, `.gsd/SPEC.md` | `tests/unit/test_recourse_validation.py::test_simulator_interface_is_opt_in_and_requires_an_adapter` | E7 `trajectory_health="not evaluated"`, no RUL extension | Done | for explicit distinction; actual dynamics absent. |
+| §3 composite objective and x'=x+delta | `recourse/objective.py`, `recourse/optimizer.py`, `docs/math.md` | Objective terms/gradient/split-mode tests in `tests/unit/test_recourse_validation.py` | E7 effective settings and per-result raw/scaled actions | Partial | for literal formula equivalence: implemented scaled control-space L1 plus propagated dependents, squared/linear hinge, hard masks/bounds and extra feasibility penalties; not literal raw full-state L1 or a certified global solve. Adaptations are documented. |
+| §3 L1 sparsity, only 2–3 controls | `RecourseObjective.torch_terms`, sparse support search/grid, `recourse/sparsify.py` | `tests/unit/test_recourse_validation.py::test_smooth_and_positive_negative_l1_modes_agree`; `tests/unit/test_recourse_validation.py::test_bounded_sparse_grid_respects_change_bounds_and_support_limit` | E7 support table; all headline means <=3 | Done | for scaled L1 and explicit k_max=3 cap. L1 alone does not guarantee the cap, and fewer than 2 actions is not a failure. |
+| §3 alpha prediction-flip loss / tau_safe=0.20 | `recourse/objective.py` hinge term; `validation/tier1_model.py` true calibrated final check | `tests/unit/test_recourse_validation.py::test_objective_terms_are_separately_reported_and_weighted`; `tests/unit/test_phase5_validation.py::test_tier1_reports_true_risk_margin_and_surrogate_disagreement` | E7 true validity and surrogate false-safe diagnostics | Done | for loss and final authority; 95% efficacy target is separately Partial below. |
+| §3 immutable beta→infinity | `recourse/objective.py` immutable term, controls-only decision vector; taxonomy masks | `tests/unit/test_recourse_validation.py::test_frozen_feature_is_unchanged_for_random_states`; immutable ambient/cycle negative test | E7 immutable violations and raw candidates | Done | via stronger hard exclusion. Beta multiplies zero, not a numeric infinite optimization weight. Ambient variables absent from actual dataset mapping are disclosed separately. |
+| §3 gamma physical-bounds penalty | `recourse/objective.py` squared bound excess and optimizer hard `L-BFGS-B` decision bounds | Weighted bound-term and raw/scaled-bound tests | E7 bounds/rate violations retained per query | Done | for configured proxy envelope. Gamma term is zero within feasible box; physical certification is not established. |
+| §4 Tier 1 model safety | `validation/tier1_model.py`, `validation/pipeline.py` | Surrogate disagreement and all-16-verdict truth-table tests in `tests/unit/test_phase5_validation.py` | E7 validity; E10 rejected risk .361298; E11R 12/20 | Done | true calibrated f(x')<=.20 is distinct from every other tier. |
+| §4 Tier 2 Mahalanobis formula and D_max | `validation/tier2_mahalanobis.py` training-only shrinkage/Cholesky; fixed regimes | `tests/unit/test_phase5_validation.py::test_shrinkage_distance_matches_scipy_and_has_finite_torch_gradient`; singular covariance/reference/regime tests | E7 v1/v2 distances, both denominators; original numerical audit max D_M error 2.27e-13 | Done | for statistical ellipsoidal plausibility; does not eliminate all OOD states or guarantee a physical manifold. |
+| §4 Tier 3 actuator limits and maximum rate of change | `constraints/bounds.py`, `validation/tier3_engineering.py`, YAML rate estimation | `tests/unit/test_constraints_phase3.py::test_rate_of_change_boundary`; `tests/unit/test_taxonomy.py::test_training_delta_rate_quantile_is_fitted_within_engine_only` | E7 Tier 3 rates and interval failures; E11R 20/20 | Done | for E3 assumed proxy limits, not measured actuator slew rates. |
+| §4 Tier 4 pressure-temperature / multivariate relationship rules | `constraints/coupling.py`, `validation/tier4_coupling.py`; three YAML ordering relations | `tests/unit/test_constraints_phase3.py::test_coupling_rules_pass_healthy_and_fail_inconsistent`; `tests/unit/test_phase5_validation.py::test_validation_only_coupling_calibration_preserves_regressors_and_provenance` | E7 residual R2/std/beyond-threshold and margin tables; E11R 20/20 | Done | for learned and configured proxy constraints; thermodynamic law/causal sensor response remains unverified. |
+| §4 optional simulator interface and disabled default | `validation/simulator.py:DynamicSimulator/NullSimulator`; disabled config | Simulator opt-in and no-adapter skipped tests | Every real run skips dynamics; E7 not evaluated | Done | Interface exists and is disabled; real dynamic execution is separately Not met below. |
+| §4 claim that four tiers guarantee no surrogate artifact exploitation | `recourse/optimizer.py`; `validation/tier1_model.py`; `validation/pipeline.py`: true-model rescore and independent checks | Genuine MLP singleton rescore authority; adversarial tests | E7 surrogate false-safe candidates exist and are rejected; FD002 Tier 1 100% with low T2/joint | Partial | rejects false-safe surrogate outputs and specified constraint failures, but cannot guarantee completeness, physical safety or causal fidelity. |
+| §5 graph node 1 sensor telemetry / pipeline table ingestion: 21-sensor C-MAPSS data | `data/cmapss.py` 21 sensor columns, `data/{prepare,preprocess,splits}.py`, `pipeline.py` vector input | `tests/unit/test_cmapss_phase1.py`; `tests/integration/test_engine_data_flow.py::test_engine_split_precedes_labels_and_scaler_fit` | E7 real archive data; E11R 20,631 train/13,096 test rows | Partial | dataset ingestion and explicit single-state interfaces exist; no independently demonstrated industrial live-stream connector. Constant-channel filtering means predictors need not consume all 21 channels. |
+| §5 graph node 2 predictor, LSTM/XGBoost and live probability | `models/{xgb_model,torch_models,registry,calibration}.py` | Genuine LSTM observed history and MLP final singleton-rescore tests | E7 FD001 XGB/MLP/LSTM and FD002 XGB; LSTM validity 0% retained | Done | for real predictors and probability API. LSTM uses genuine observed prefix and mutates only latest state. |
+| §5 graph node 3 risk gatekeeper >=.80 | `pipeline.py` request gate and zero-action path | Exact boundary test; below-gate invalid-state test | E8 selected states/alerts | Done | . Below gate does not claim physical safety. |
+| §5 graph node 4 / table recourse: sparse optimizer with feature freezing | `recourse/{objective,optimizer}.py` and `pipeline.py`, `constraints/taxonomy.py` | `tests/unit/test_recourse_validation.py`; `tests/integration/test_true_model_grid.py` | E7 saved candidates/effective settings | Done | within bounded finite proxy search. |
+| §5 graph node 5 / table validation: Mahalanobis and coupling | `validation/pipeline.py`; four tier modules | `tests/integration/test_phase5_contract.py`; 16-way truth-table test | E7 independently reported tier values, E8 reasons and margins | Done | for E1–E3 proxy/statistical workflow. |
+| §5 graph node 6 / table delivery: Streamlit sliders, risk deltas and waterfall | `dashboard/{app,operator,plots,state,backend,data}.py`; `pipeline.py:explain_result` | `tests/integration/test_phase8_dashboard.py::test_operator_selection_risk_solve_slider_and_exports`; manual API parity/locked-feature tests | E8/E10 real screenshots and exported results | Done | for all listed UI functions. Source identities and assumptions displayed. |
+| §6 illustrative 88%→17%, fuel −3.2%, bypass +1.1% case | `docs/limitations.md`, `docs/demo_script.md`, no embedded result constants in UI | `tests/integration/test_phase8_dashboard.py::test_ui_source_has_no_embedded_measured_results` | Actual E10 engine5/c241 .8833731521→.1284214696; engine2/c278 .9970382956→.3612983062 | Done | Illustrative values are labeled and replaced by actual model-score examples for demonstrations. This is not a replicated physical cruise intervention. |
+| §7 ingestion <10ms | `evaluation/latency.py`, `pipeline.py` normalization timing | `tests/integration/test_phase6_pipeline.py::test_measured_latency_and_upper_budget_rule`; serial experiment test | Raw E7 p95 FAST .178500 / THOROUGH .183035 ms, 16 engines each | Done | in warm request-normalization scope; network/stream acquisition not timed. |
+| §7 inference <15ms | `evaluation/latency.py`; `pipeline.py`; `models/registry.py`: actual model invocation | Same timing tests | E7 p95 3.048205 / 3.108680 ms, 16 engines each | Done | on the declared FD001/XGB/v1 workload. |
+| §7 bounded L-BFGS-B optimization 1.20–1.80s | `recourse/optimizer.py`, `evaluation/latency.py`; actual gradient plus bounded true-model search | Real-query serial timing integration test | E7 p95 2339.074780 / 2080.227280 ms; gaps 539.074780 / 280.227280 ms above 1800 | Partial | implemented/measured; both upper budgets missed. Lower endpoint is not a minimum. Exact values/CIs in [target appendix](final_targets.md). |
+| §7 physics validation <100ms | `validation/pipeline.py`, stage harness | Shared validation/API tests | E7 p95 5.493640 / 5.771035 ms, 16 engines each | Done | for statistical/proxy final validation. |
+| §7 UI <250ms | `dashboard/app.py` and `dashboard/operator.py` measured server build; committed UI study | AppTest and real browser samples | E8 p95 115.3545 [108.8,120.46] ms; 8 engines/32 callbacks | Partial | for literal complete UI latency: server construction passes, browser paint/network/loading/scoring/solve/attribution excluded. No browser p95 is established. |
+| §7 total about1.5–2.2s | `pipeline.py` actual total, not a sum of stage percentiles | Timing boundary/serial tests | E7 backend FAST 2348.233290 ms misses by148.233290; THOROUGH2089.845 ms passes2200 | Partial | backend FAST misses and full end-to-end UI/network/startup total is unmeasured. Separate studies cannot be summed to manufacture a full-pipeline p95. |
+| §8 validity >=95% | `evaluation/metrics.py`, `evaluation/study.py`; all-query true calibrated risk | Hand-count/bootstrap/failed-denominator tests | E7 [24-stratum target appendix](final_targets.md); FD001 XGB52.52–89.31%, LSTM0%, FD002100% | Partial | metric fully implemented, target population-dependent and missed on FD001. FD002 Tier1 is accompanied by poor plausibility/coupling/joint. |
+| §8 mean action sparsity <=3 | `evaluation/metrics.py`; `evaluation/study.py`: direct proxy support | `tests/unit/test_phase7_framework.py`, sparse-support tests | E7 all-query means <=3; E11R all-query2.95, success-only2.9 | Done | for headline full method and declared support definition; dependent propagation is separately reported. |
+| §8 distributional plausibility >=90% | `evaluation/metrics.py`; `evaluation/study.py`; `validation/tier2_mahalanobis.py`: Tier2-only all/returned rates | `tests/integration/test_evaluation_audit.py::test_tier2_owns_synopsis_plausibility_target_and_latency_budget_preserves_range`; conditional ratio tests | E7 [both denominator tables](final_targets.md) | Partial | FD001v1 and FD002v1/v2 miss; FD001v2 passes. Joint is not substituted for this metric. |
+| §8 failure-risk reduction >=.60 | `evaluation/metrics.py`; `evaluation/study.py`: true before-after model probability over all queries | `tests/unit/test_phase7_framework.py`, metric hand counts | E7 [target/gap rows](final_targets.md); FD001 XGB internal .5982(v1)/.5999(v2) miss despite rounding to .60 | Partial | measured model-score target passes some populations, misses others; no physical failure reduction is established. |
+| §8 simulated trajectory health conditional on simulator | `validation/simulator.py`; `evaluation/report.py`; `evaluation/study.py`: optional hook and explicit not-evaluated status | NullSimulator/opt-in tests | E7 `trajectory_health="not evaluated"`; E11R E3 limit | Not met | as a measured outcome; optional interface is Done and absence is not an implementation blocker. |
+| §9 controllable: Fuel Flow, Fan Speed, Bypass Ratio, Bleed Valve | `configs/features.yaml`: sensor12 phi, sensor8 fan, sensor15 BPR, sensor17 bleed enthalpy, sensor20/21 coolant bleed; sensor9 also proxy | `tests/unit/test_taxonomy.py::test_features_yaml_loads_with_controllable_proxies_and_coupling_rules` | E7 actions/E8 slider labels and explicit proxy notes | Partial | against literal actuator taxonomy: all mapped channels are sensor proxies; no direct bleed-valve command or real actuator telemetry. |
+| §9 immutable operational: altitude, Mach, total cycles | `configs/features.yaml`; `constraints/taxonomy.py`; `validation/tier3_engineering.py`: op_setting1/2/3 immutable, cycle/engine_id context frozen | Mask tests; random freeze; cycle attack tests | E7 originals/candidates and immutable-violation accounting | Done | for normalized altitude/Mach settings and observed cycle context. Context is not a predictor label. |
+| §9 immutable environmental: ambient temperature/pressure | `configs/features.yaml`; `constraints/taxonomy.py`; `validation/tier3_engineering.py`: generic immutable group; actual ambient channels absent | Synthetic ambient-change negative test in `tests/unit/test_phase5_validation.py` | Actual YAML has no independent ambient fields; sensor1 fan-inlet temperature and sensor5 fan-inlet pressure are dependent | Partial | generic freezing is implemented, actual requested environmental telemetry is absent. Do not silently equate inlet sensor readings with frozen ambient conditions. |
+| §9 dependent: HPC temp, LPT temp, Core Speed | `configs/features.yaml`; `constraints/taxonomy.py`; `constraints/coupling.py`: sensor3/4 and corrected core sensor14 dependent, residual-preserving coupling | Coupling propagation/raw-scaled gradient tests | E7 residual diagnostics; E8 dependent changes | Partial | HPC/LPT/corrected core are covered, but physical core speed sensor9 is controllable in YAML. Disclose this mapping choice instead of claiming literal taxonomy identity. |
+| §10 target9.4 resource-use efficiency / retrofit motivation | `docs/sdg9.md`, `docs/limitations.md` | Documentation review; no outcome test is possible from present data | No measured fuel/resource/emissions or lifecycle result | Partial | alignment discussion Done; measured contribution to9.4 Not met. |
+| §10 target9.1 reliable, sustainable, resilient infrastructure motivation | `docs/sdg9.md` | Documentation review | No field reliability or infrastructure outcome | Partial | alignment discussion Done; measured contribution to9.1 Not met. |
+| §10 industrial effect: extends equipment lifespan | Explicitly disclaimed in `docs/limitations.md`, `docs/defense_qa.md` | Static/dynamic separation tests | No dynamic response, lifespan or RUL intervention ground truth | Not met | No dynamic response, lifespan or RUL intervention ground truth; prohibited as a current result. |
+| §10 industrial effect: avoids premature disposal | `docs/sdg9.md` limits | No measured deployment/lifecycle evaluation | No disposal or lifecycle evidence | Not met | No measured deployment, lifecycle or disposal evaluation exists. |
+| §10 industrial effect: minimizes emergency downtime losses | `docs/sdg9.md` limits | No operational economic evaluation | No downtime, cost, or deployment baseline | Not met | No deployment, downtime, cost or operational economic baseline exists. |
+| §11 technical report: complete math, C-MAPSS analysis, validation math, full documentation | `docs/{math,data_pipeline,evaluation_protocol,phase7_changes,results,reproducibility,limitations}.md`, MkDocs | `tests/integration/test_evaluation_audit.py`, docs build gate; inspected original source/CIs | E7 report/HTML and E10 strict docs build | Done | for technical documentation with declared gaps. |
+| §11 research manuscript: academic paper submission / peer review | `paper/README.md` IEEE-style skeleton; generated `paper/results.md`; references TODO-VERIFY | No submission proof or bibliography-verification test exists | Skeleton explicitly says not submitted/peer reviewed | Partial | for manuscript preparation; actual complete submission and peer-reviewed publication **Not met**. Do not relabel outline as a paper submission. |
+| §11 software: production Python library + Streamlit; open-source GitHub repository | `pyproject.toml`, MIT `LICENSE`, package source, CLI/API/dashboard; local Git history | `tests/test_packaging.py`, `tests/integration/test_reproduce.py`, actual installed E11R | E10 wheel/sdist, installed CLI and Docker/browser verification | Partial | as literal roadmap: local installable MIT package/UI Done; no configured Git remote or verified published GitHub repository. Production deployment/safety certification is not shown by package tests. |
+| §11 presentation deck + live demo, covering problem/math/SDG | `docs/demo_script.md`, `docs/defense_qa.md`; actual screenshots | Browser/AppTest and real export checks | E8/E10 live demos exist; no project PPTX/ODP/KEY or authored slide artifact found | Partial | live demo Done, actual presentation deck **Not met**. Script/outline is not a slide deck. |
+| §12 defense answer1: how know change lowers real-machine failure probability? | `docs/defense_qa.md` question1, `docs/evidence_levels.md`, dashboard warnings | Truth-table, surrogate-disagreement, low-risk/failed-plausibility negative tests | E7 independent tiers; E8 manual rejected despite low risk | Done | explicitly says causal claim not established; statistical/proxy checks are not proof. Optional dynamic validation absent. |
+| §12 defense answer2: can claim specific extra RUL cycles on C-MAPSS? | `docs/defense_qa.md` question2; `.gsd/SPEC.md`; `docs/limitations.md` | Simulator skip tests and static label-flow checks | E7/E11R no trajectory health/RUL-extension result | Done | answer is no; RUL labels define classification target, not an intervention trajectory. |
+| §4 optional dynamic validation / E4–E5 | `src/prescriptxai/validation/simulator.py`; `docs/evidence_levels.md` | `tests/unit/test_recourse_validation.py` (opt-in/skip contract only) | E7 trajectory health not evaluated; no validated adapter or emulator artifact | Not met | No validated dynamic execution exists. Conservative default is disabled; no real safety or RUL effect follows from proxy checks. |
+| §6 replicated physical high-altitude cruise intervention | `docs/limitations.md`; `docs/demo_script.md` | No physical intervention test | E8/E10 demonstrations are static model counterfactuals | Not met | The illustrative risk/fuel/bypass percentages are not observed physical outcomes or efficacy targets. |
+| §10 measured SDG 9.4 field contribution | `docs/sdg9.md` | No deployment/lifecycle evaluation | No measured resource, emissions, fuel or retrofit benefit | Not met | Alignment is motivation; a model-risk reduction cannot establish resource efficiency. |
+| §10 measured SDG 9.1 field contribution | `docs/sdg9.md` | No field infrastructure reliability evaluation | No observed reliability/resilience result | Not met | Infrastructure benefit remains unmeasured. |
+| §11 completed research paper submission / peer review | `paper/README.md`; `paper/results.md` | Strict docs build checks documentation only | Paper skeleton explicitly identifies TODO-VERIFY citations and no submission | Not met | A skeleton/generated results table is not a completed submission or peer-reviewed publication. |
+| §11 published public GitHub repository | `pyproject.toml`; `LICENSE`; local Git history | Installed reproduction and packaging tests do not prove publication | `git remote -v` has no configured remote | Not met | Local installable MIT software is verified; no public repository publication evidence exists. |
+| §11 authored presentation deck | `docs/demo_script.md`; `docs/defense_qa.md` | Browser walkthrough verifies demo only | Outline/live screenshots exist; no authored PPTX/ODP/KEY/slide artifact | Not met | Live demo is available; deck deliverable is absent. |
+| Phase11 protocol / frozen thresholds, bounds, rate limits and artifact versions | `docs/evaluation_protocol.md`; `configs/experiments/phase7-study.yaml`; Phase11 registered audit YAML | `tests/integration/test_evaluation_audit.py`; `tests/unit/test_phase7_framework.py` | Independent protocol audit:171490quality records,112fitted+44diagnostic hashes,28disjoint partitions,zero contract mismatches | Done | Initial preregistration0c0b6e1 precedes source63c2ed4 and launch. No frozen scientific configuration differences were found. Strict once-ever use is a separate Partial row. |
+| Phase11 strict once-ever held-out evaluation and fresh-engine v2 provenance | `docs/evaluation_protocol.md`; `docs/phase4_final.md`; Git history | Leakage split tests establish fit isolation, not historical once-ever usage | Independent protocol audit documents prior FD001 exposure and dirty-source legacy diagnosis | Partial | Development-only predictor selection and fit isolation are supported; strict never-before-seen test/fresh-engine and every older diagnosis preregistration cannot be certified retroactively. |
+| Phase11 second-seed complete frozen evaluation replay | `configs/experiments/phase11-audit.yaml`; `configs/experiments/phase11-seed1730-replay.yaml` | Independent complete-record comparison under newly committed tolerance | Registered34298-record run phase11-seed1730-20261028T030707Z, interrupted after7651saved records and safely resumed as segment2; checkpoints/provenance and segment metadata in artifacts/phase11/replay-active-run.json | Partial | Final comparison pending full same-run completion; original records/timings retained, cause unknown. No completion or second-seed agreement claim from partial records. |
+| Phase11 final software / reproduce / API / dashboard / Docker gate | `Makefile`; `docs/final_verification.md` | Complete project checks, actual installed reproduce, HTTP smoke, real dashboard and Docker build | Post-fix527tests/coverageup; installed20query/11engine reproduction626.4732678s with18outputhashes/68sourcehashes/8CIs verified; real HTTP/AppTest/browser and Docker build/runtime smokes pass | Done | Completed checks have exact source/config/output evidence in final_verification.md. Overall Phase11 remains open for the complete frozen quality replay and final comparison. |
+| Phase11 no unfinished production paths | `src/prescriptxai/models/base.py`; `models/registry.py`; documented simulator contract | `tests/regression/test_report_denominators.py::test_unsupported_gradients_are_capability_errors` | Independent AST/claim inventory and explicit TypeError capability guards afterd12dec1 | Done | No src TODO/placeholder/stub/NotImplementedError remains. Abstract/Protocol signatures are contracts; production functions reject unsupported capabilities explicitly. Final rescan recorded in final verification. |
 
-| Prompt task | Implementation / evidence | Final status |
-|---|---|---|
-| 1. Training-only shrinkage/Cholesky, regimes, both quantiles, reference choice | validation/tier2_mahalanobis.py, validation/pipeline.py; statistical and regime tests | Met: real FD001 artifact fit; singular/regime/quantile/reference tests pass |
-| 2. Bounds/rates with violation margins | validation/tier3_engineering.py reuses constraints/bounds.py | Met |
-| 3. Validation-only residual calibration and per-rule margins | validation/tier4_coupling.py; calibration ID overlap tests | Met: 16 validation engines; saved calibration diagnostics |
-| 4. True calibrated risk and surrogate warning | validation/tier1_model.py, shared pipeline | Met |
-| 5. Dynamic hook and skipped NullSimulator, evidence | validation/simulator.py, base.py, versioned schemas | Met: explicit skipped NullSimulator and interface; E4/E5 unavailable |
-| 6. Ordered modes and independent verdict truth table | validation/pipeline.py; all sixteen combinations tested | Met |
-| 7. Shared in-search constraints and bounded refinement | validation/feasibility.py; recourse/objective.py and optimizer.py | Met: 752 integrated population rows; refinement cap verified |
-| 8. Engine-bootstrap paired/integrated funnels | scripts/diagnostics/phase5_validate.py, validation/funnel.py | Met: 42 funnels, before/after CIs, two protocols and K curve |
-| Full OOF all-alert paired replay | Saved sample retains 11 missing records; separately evaluate actual first alerts | Partial: no before candidates for every OOF alert |
-| New unseen-engine generalization after validator change | No new public FD001 engines beyond existing populations | Not met; paired replay explicitly labeled |
+## Target values, uncertainty and gaps
 
-No generated telemetry or simulator results substitute for missing evidence. A measured target
-miss is recorded with gap analysis, not treated as an implementation blocker.
+The [complete measured target appendix](final_targets.md) shows all24 headline model/protocol/population
+strata side by side, both Tier2 denominators, Tier3/Tier4/joint, support/risk reduction, engine CIs,
+query counts, runtime config identities and every positive target gap. The six latency rows are
+separately scoped. Thresholds, bounds and rates were not changed to close these gaps.
+All-query outcomes retain failures; conditional returned/success denominators are visible. No joint
+success statistic is compared with the90% Tier2 target. Validity alone is weak evidence: Tier2,
+coupling margins and the available evidence level accompany it. Highest available evidence is E3;
+actual returned candidates can reach less, including no level when Tier1 fails.
 
+## Final limits and future work
 
-### Phase 5 closure gate evidence
-
-`docs/phase5_changes.md` contains all run/config/git/protocol/population labels, before/after
-engine-bootstrap CIs, coupling/covariance diagnostics, headline target gaps and measured latency.
-Real-run source is `8b1a206fc1800a0674019b6e0527c2a31a5159df`; preregistration is
-`d64826c5c1bd69dc6310c7c2d11506a7add11822`. The phase-specific audit reproduced frozen
-predictor scores and distances, checked all twelve engine partition sets, and found no accepted
-constraint or safety violations. Rejected infeasible development diagnostics remain visible.
-
-Final `mingw32-make all-checks` exited zero: Ruff, strict mypy, 215 pytest cases with 79.7753%
-coverage (displayed 80%), and docs presence checks. Independent audits were read-only; their
-findings were fixed by the primary agent. No predictor, risk gate, physical bound, proxy rate,
-sigma multiplier or D_max was tuned using evaluation results. New real-data outputs, validators
-and caches remain git-ignored. E3 is a proxy constraint level, not causal or real-machine safety.
-
-Phases 7–11 still require their actual prompts and the actual Part B table. Phase 6 is authorized
-by the subsequent direct prompt. No missing content is invented.
-
-## Phase 6 direct prompt — closed with measured performance gaps
-
-The directly supplied Phase 6 prompt is the specification for this implementation. Its preregistration
-is committed at `9921c38`; measured implementation is `a72832c`; subsequent interface corrections
-are committed at `79cb7f4`. No frozen predictor or constraint setting changed in those corrections.
-
-| Prompt task | Implementation / evidence | Status |
-|---|---|---|
-| 1. Public factories, assessment, recommendations, batches, explanation | `pipeline.py`; typed facade, artifact fingerprints, bounded CPU workers, structured explanations | Met: factory, serialization, process/single parity and explanation tests passed |
-| 2. Full result, triage, provenance, timings, schema freeze | `schemas.py`; schema 2.0.0 snapshots and `schema_changelog.md`; strict round-trip consistency | Met: snapshots frozen, all three triage cases covered; real PARTIAL remains above tau_safe |
-| 3. Below-alert gate | Zero change below tau_danger; exact boundary tests; independent tier diagnostics retained | Met: 0.79/0.80 boundary and zero-change checks passed |
-| 4. FAST and THOROUGH | Request-local modes and recorded effective settings; production budget measured | Partial: both modes delivered; FAST p95<=1.80 s target Not met (OOF v1 6.84 s, v2 6.28 s) |
-| 5. Real stage p50/p95/p99 | `evaluation/latency.py`, `phase6_pipeline.py`, `phase6_report.py`; direct total, engine CIs | Met: 600 real results, both modes/protocols, four populations; interrupted-run timing qualification retained |
-| 6. Input handling | Vector/Series/dict, named order, finite values, units, observed history/context, typed errors | Met: malformed, NaN/inf/boolean, shape/unit/history and artifact mismatch tests passed |
-| 7. CLI | Recommend by engine/cycle or JSON, batch CSV, assess, latency-bench, info; observed sequence context | Met: CliRunner plus real RECOVERABLE/ESCALATE and both-mode latency-bench delivery gates passed |
-| 8. FastAPI | Six endpoints, OpenAPI, request IDs, 422/503, CORS, environment API key, actual-byte limit | Met: TestClient success/error paths, real high-risk parity and payload/security checks passed |
-| 9. Cache/thread safety/model choice | Fingerprint cache, shared inference lock, request config copies, xgb/MLP/LSTM adapters | Met: concurrent threads, seeded repeatability, process parity, genuine fitted MLP/LSTM/history and batch-memory tests passed |
-| UI rendering latency and cold startup | Excluded from backend timing; returned as unmeasured | Not measured in this phase; no inferred pass |
-| Fresh unseen-engine efficacy / real actuators / dynamics | Previously evaluated public engines and documented telemetry proxies only | Not established; E3 maximum, simulator skipped |
-
-Constructed fixtures exercise PARTIAL and negative cases only in tests. Real benchmark results are
-never replaced with synthetic values. No deployment-readiness or causal maintenance-benefit claim
-follows from a passing software gate. Phase closure can retain measured target gaps under rule 13.
-
-### Phase 6 closure gate evidence
-
-Population run `phase6-20261018T114827Z`, source `a72832c271015a2391ed452a9dca7776a5131a98`;
-protocol snapshot committed before measurement; configs `configs/experiments/phase6-pipeline-v1.yaml`,
-`phase6-pipeline-v2.yaml` and ten explicit fold configs. The complete run/config/runtime-hash labels,
-K=1, k_max=3, D_max v1=5/v2=8, population definitions, independent quality metrics and engine-bootstrap
-intervals are in `docs/phase6_changes.md`. All outcomes remain in their disclosed denominators.
-
-`mingw32-make all-checks` exited zero on delivered runtime `d177460`: 260 tests passed, Ruff and
-strict mypy passed (51 files), coverage 81.017036% versus Phase 5 79.775281%, docs check passed.
-Both public schemas are frozen at 2.0.0 with serialization snapshot tests and migration notes.
-The real CLI/API delivery smoke used `1e41d77`; subsequent annotation corrections passed the full gate.
-
-The independent audit verified all 600 records, all 16 true-first-alert cohorts, 12 engine partitions,
-36 fitted-artifact hashes and 16 committed config references with zero acceptance/leakage failures.
-True-risk error was zero; maximum D_M error was 1.78e-15. Evidence is conditional on proxy assumptions,
-at most E3. The raw run, delivery smoke and audit hashes are recorded in the report and PROGRESS.md.
-
-FAST optimization and backend-total budgets remain Not met. The interruption-affected timings
-retain all outliers; controlled steady-state latency remains unestablished. No frozen predictor,
-risk threshold, D_max, actuator bound, rate limit or intervention horizon changed after outcomes.
-Phase closure is recorded with tag `phase6-closed` and this target gap under rule 13.
-
-## Newly supplied Phase 9 and Phase 10 prompts — queued 2026-10-24 IST
-
-The completed Phase7/8 closure evidence below supersedes earlier queued-state notes.
-Historical entries retain the state known at their original checkpoint.
-
-The user's explicit sequence is Phase 7, Phase 8, Phase 9, Phase 10, with full gates in between.
-The complete direct requirements are preserved; this section claims receipt, not implementation.
-
-| Scope | Preserved specification | Current status |
-|---|---|---|
-| Phase 9 tasks 1–11 and hardening gate | `docs/prompts/phase9_testing_hardening.md` | Queued after Phase 8; coverage/security/defect/performance/science/E2E/CI work not yet verified |
-| Phase 10 tasks 1–7 and packaging/demo gate | `docs/prompts/phase10_packaging_reproducibility.md` | Queued after Phase 9; clean install/Docker/reproduce/docs/demo/paper work not yet verified |
-| Phase 11 and Part B table | No source supplied | Unavailable; not invented |
-
-The Phase 7 process interruption at 18:34 UTC on October 23 and exact checkpoint resume at
-18:39:57 UTC are operational events, not replaced scientific results. Provenance compatibility
-and SQLite integrity were verified before resuming the same run; four uncommitted cases may
-be retried, while all 125,317 committed records remain protected by their identities. Frozen
-HEAD/source stays `63c2ed445fba16c73a2771e184f635abf76b4405` until measurement completion.
-
-## Phase 7 full experimental framework — closed
-
-Complete requirement mapping, run identities, populations/protocols and target/gap diagnoses
-are in `docs/phase7_changes.md`. Run phase7-20261020T102540Z on frozen63c2ed4 completed
-171490 quality plus2496diagnostic records,48reference cases and1000serialcalls per mode.
-All26970engine-bootstrap intervals,9248seed statistics and1904funnels independently match.
-Numerical1631strata/220genuineLSTMhistories have zero discrepancies. Full gate276passed,
-Ruff/mypy clean and coverage unchanged. Closure b4a8614 / phase7-closed; target misses retained.
-
-## Phase 8 operator dashboard — complete gate
-
-The complete11-task mapping is in `docs/phase8_changes.md`; actual commands, cases, screenshot
-links, timing protocol/source/config hashes and exclusions are in `docs/phase8_walkthrough.md`.
-Implementation f9c59ac through52affd0 preserves public schemas2.0.0 and historical measurements.
-All five pages, direct/HTTP parity, observed history, manual shared validation, both waterfall
-methods, tier reasons, triage, locked features, exports and source-only evidence are delivered.
-
-Full gate321passed/70warnings,Ruffclean,mypy61clean;83.66412213740458%combined and
-87.32997481108312%line exceed both Phase7 floors. Three real browser exports independently
-match library validation and all33delta mappings. Registered UI study215cb1f / measured52affd0:
-32callbacks/8engines,FAST/FD001-XGB/v1,K1/k3/Dmax5,p95=115.3545ms,whole-engine95%CI
-[108.80,120.46]ms;8engines,upper250msbudget passes in server-build scope only. Independent
-audit40checks passes; zero discards/operator failures. Browser/network/startup unmeasured.
-Sixteen defects are fixed with regression references in docs/defects.md. Closure tagphase8-closed
-follows the verified gate and audits; complete Phase9 starts immediately afterward.
-
-## Phase 9 hardening — complete local gate
-
-All11task areas, real regression evidence and source/configuration identities are mapped in
-`docs/phase9_changes.md`. Forty-two reproduced defects have fixes and regression references in
-`docs/defects.md`; public schemas2.0.0 and historical measurements are unchanged. Final source
-583b2fc passes513tests/66test-only fit warnings/246.93s; Ruffclean,mypy62clean. Scoped line
-7379/8146=90.58433587036582%,full line89.56184002912975%,combined86.07837763770897%.
-Allthree gates pass and full-package floors are ratcheted upward for subsequent work.
-
-Preregistered fixture performance bf50dff->2fd1055 retains120calls/2synthetic engines persegment;
-p95=37.418115->23.855240ms with independent whole-engine bootstrap recomputation. All120paired
-decisions match exactly/5160numeric fields. The10000safe-call memory study completes with
-98686bytes Python live growth and737280bytes RSS growth. Independent audit finds zero differences
-in records, quantiles, CIs, identities and11checkpoints. This is software fixture evidence,
-not new C-MAPSS generalization or a replacement for Phase7 latency. Fresh dependency audit0known/
-109distributions plus explicit local-project exclusion; current/history credential scan0matches.
-Nightlyselection3pass/510deselected,docscheckpass. No known open critical software defect;
-hostedCI/GPU execution remains unclaimed. Closure phase9-closed follows this verified gate.
-
-## Phase 10 packaging, reproducibility and demo — complete gate
-
-This mapping supersedes the historical queued Phase 10 row. The complete source prompt is
-`docs/prompts/phase10_packaging_reproducibility.md`; detailed proof and limitations are in
-`docs/phase10_changes.md`. Runtime verification uses clean source `8aa18cb`; subsequent changes
-are documentation and captures. The closure commit is identified by `phase10-closed`.
-
-| Task | Deliverable | Actual verification |
-|---|---|---|
-| 1. Packaging, version, license, citation | pyproject/hatch build; VERSION 0.2.0; CHANGELOG; MIT LICENSE; CITATION.cff; portable resources | sdist → wheel; clean installed library/CLI; all 68 packaged source hashes; modified-archive negative audit; no fitted data bundled |
-| 2. Docker | Multistage Dockerfile, non-root compose API/dashboard, healthchecks, read-only data/config/artifact mounts | Image ff8d45fa9abc from source8aa18cb; both healthy, UID/GID10001; health/version/config/UI 200, real assess/validate 200, malformed input422; real browser solves/exports |
-| 3. Reproduction | `prescriptxai reproduce`; fixed committed phase10-reproduce-v1.yaml; complete manifests and durable selected-query/record files | Two clean Windows runs: 616.7122392 and479.8035529s; 20queries/11engines each, all scientific fields and8engine-bootstrap metrics match; all failures retained |
-| 4. Documentation | README five commands/Mermaid/screenshots/results; architecture/math/limitations/assumptions/evidence; defense Q&A; MkDocs Material/docstring API | Fresh venv+pip+init+reproduce+dashboard worked outside checkout;21answers (2synopsis+19additional); strict site build; tables24rows/144cells independently matched |
-| 5. SDG9 | Targets9.1/9.4 in README, defense Q&A and docs/sdg9.md | Official-target citations; conditional motivation only, no invented reliability/efficiency improvement |
-| 6. Demo assets | Exact5/241RECOVERABLE,2/278ESCALATE,5/999999failure; real captures;5-minute script, backup-recording instructions,8-slide outline, generated figures | Windows andLinux actual browser/JSON; risks/tier evidence independently checked; failureexit2; six screenshot files; no claimed unrecorded video |
-| 7. Paper | IEEE-style paper/README.md and generated paper/results.md | All required sections,6measured rows; literature citations TODO-VERIFY; no fabricated bibliography |
-| Complete gate | Full software/coverage/docs/install/demo and independent audits | 524passed/66test-only warnings; Ruffclean;strictmypy65;scoped90.84624553039332%,full89.85028881291996%,combined86.38832012819371%; allfloors pass |
-
-Protocol for both reproduction runs: v1, THOROUGH, k_max=3, assumed K=1, D_max v1=5,
-reused internal held-out FD001 engines, 69/16/15 actual split, 378 alerts and zero interval
-exclusions. Run IDs and exact config/source hashes accompany all metrics in the Phase 10 report.
-No population cap was introduced into the historical Phase 7 study: this separate small
-reproduction profile was committed before its runs. Original Phase7/8/9 records remain intact.
-Public schemas stay2.0.0. Highest available evidence is E3 under proxy assumptions; no physical
-safety or RUL-extension claim. Historical target gaps remain, and Phase11/PartB remain unavailable.
+The outstanding scientific/deliverable rows above are retained as honest final states where no
+underlying evidence exists. Priorities are validated real simulator integration, N-CMAPSS extension
+with fresh units/operating regions, first-principles coupling validation, and richer actual actuator
+telemetry. Field benefits require prospective operational evaluation. No new features or publication
+have been added merely to make this audit green. The missing PartB table is not invented.
