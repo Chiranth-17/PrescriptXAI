@@ -1,4 +1,4 @@
-# Final synopsis traceability — Phase 11 audit in progress
+# Final synopsis traceability — Phase 11 audit complete
 
 This is the current requirement map, superseding [historical phase snapshots](traceability_history.md).
 The user supplied Phase11 after Phase10 closure; earlier queued/Phase11-unavailable text is historical.
@@ -6,10 +6,13 @@ Every status is scoped: **Done** requires evidence for the stated implementation
 an implemented subset or target miss, and **Not met** records an absent output/outcome with a diagnosis.
 Missing telemetry/simulation is an evidence limit, never a reason to fabricate a result.
 
-Three fresh reviewers independently inspected code they did not implement; root repaired reviewed
-reporting gaps in commit `d12dec1`. Independent rechecks preserved all eight real reproduction metric/CI
-objects. Historical measurements/source remain unchanged. Phase11 is **not closed** while the complete
-second-seed replay and its final comparison remain pending. See [real verification outputs](final_verification.md).
+Independent reviewers inspected code they did not implement; root repaired reviewed reporting
+gaps in commits `d12dec1` and `4995c30`. Rechecks preserved all eight reproduction metric/CI
+objects, and independently verified every new attained-evidence annotation. Historical source,
+measurements and scientific settings remain unchanged. The full replay, both seed comparisons,
+576 engine-CI objects and raw backup have passed. The final map contains **33 Done / 19 Partial /
+12 Not met** rows. See [real verification outputs](final_verification.md) and the
+[complete exception list](final_audit_report.md).
 
 ## Evidence register and reading the matrix
 
@@ -24,6 +27,19 @@ newly repeated checks. Scientific intervals resample whole engines, never indepe
 **E10:** `artifacts/phase10/final-release-verification.json`, `coverage-final.json`, actual `readme-recoverable.json`/`readme-escalate.json` and `docker-*.json`; six screenshots in `docs/screenshots/phase10-*.png`; `docs/demo_script.md`. Final release 0.2.0, schemas 2.0.0; full gate recorded 524 tests at tested runtime `8aa18cb086999b885aa95a5af2dcb26315aa0acb`, scoped line coverage 90.84624553039332%, full line 89.85028881291996%, combined 86.38832012819371%. The scoped exclusion is explicitly the AppTest-driven dashboard entrypoint, not all dashboard logic. These are historical saved results, not a fresh Phase 11 gate.
 
 **E11R:** fresh installed reproduction `reproduce-20261027T141904574202Z`, source `b219041801d720f75973da24a1c5b43d5dcd0154`, described in [final verification](final_verification.md). It is a package-workflow check, not a replacement for E7 or the complete second-seed evaluation.
+
+**E11Q:** completed replay `phase11-seed1730-20261028T030707Z`, frozen source
+`63c2ed445fba16c73a2771e184f635abf76b4405`; preregistration `02f0145ad9ef75b10f3235455453cbaec0f0a9da`.
+Study `configs/experiments/phase11-seed1730-replay.yaml`, runtime SHA256
+`59b1f3c3d139dea7971eddf01f2401e520694dd804b36ad6ebb18ef6e892cd60`; audit
+`configs/experiments/phase11-audit.yaml`, SHA256 `fc1ea34597768a647f59517e9675a32bd12dddd65240fb73143da88939a560e2`.
+All 34,298 quality records / 64 groups completed, exit0. Each comparison against historical1730
+and1729 matched all query/config identities with zero mismatches; 576 whole-engine intervals passed.
+FD001/XGB/MLP/LSTM and FD002/XGB; v1/v2; k_max3, assumed K1, D_max5/8; internal held-out,
+grouped-OOF, official-test and development populations. Reused engines provide reproducibility
+evidence, not fresh-engine generalization. Raw files, all per-group engine counts/denominators,
+comparison/CIs and four execution segments are preserved under `artifacts/phase11/` in the main
+checkout. The runtime/Git-blob newline distinction is documented in final verification.
 
 
 ## Every synopsis requirement
@@ -47,7 +63,7 @@ newly repeated checks. Scientific intervals resample whole engines, never indepe
 | §4 Tier 2 Mahalanobis formula and D_max | `validation/tier2_mahalanobis.py` training-only shrinkage/Cholesky; fixed regimes | `tests/unit/test_phase5_validation.py::test_shrinkage_distance_matches_scipy_and_has_finite_torch_gradient`; singular covariance/reference/regime tests | E7 v1/v2 distances, both denominators; original numerical audit max D_M error 2.27e-13 | Done | for statistical ellipsoidal plausibility; does not eliminate all OOD states or guarantee a physical manifold. |
 | §4 Tier 3 actuator limits and maximum rate of change | `constraints/bounds.py`, `validation/tier3_engineering.py`, YAML rate estimation | `tests/unit/test_constraints_phase3.py::test_rate_of_change_boundary`; `tests/unit/test_taxonomy.py::test_training_delta_rate_quantile_is_fitted_within_engine_only` | E7 Tier 3 rates and interval failures; E11R 20/20 | Done | for E3 assumed proxy limits, not measured actuator slew rates. |
 | §4 Tier 4 pressure-temperature / multivariate relationship rules | `constraints/coupling.py`, `validation/tier4_coupling.py`; three YAML ordering relations | `tests/unit/test_constraints_phase3.py::test_coupling_rules_pass_healthy_and_fail_inconsistent`; `tests/unit/test_phase5_validation.py::test_validation_only_coupling_calibration_preserves_regressors_and_provenance` | E7 residual R2/std/beyond-threshold and margin tables; E11R 20/20 | Done | for learned and configured proxy constraints; thermodynamic law/causal sensor response remains unverified. |
-| §4 optional simulator interface and disabled default | `validation/simulator.py:DynamicSimulator/NullSimulator`; disabled config | Simulator opt-in and no-adapter skipped tests | Every real run skips dynamics; E7 not evaluated | Done | Interface exists and is disabled; real dynamic execution is separately Not met below. |
+| §4 optional simulator interface and disabled default | `validation/simulator.py:DynamicSimulator/NullSimulator`; disabled config | Tests of opt-in and explicit not-evaluated simulator status | Every real run skips dynamics; E7 not evaluated | Done | Interface exists and is disabled; real dynamic execution is separately Not met below. |
 | §4 claim that four tiers guarantee no surrogate artifact exploitation | `recourse/optimizer.py`; `validation/tier1_model.py`; `validation/pipeline.py`: true-model rescore and independent checks | Genuine MLP singleton rescore authority; adversarial tests | E7 surrogate false-safe candidates exist and are rejected; FD002 Tier 1 100% with low T2/joint | Partial | rejects false-safe surrogate outputs and specified constraint failures, but cannot guarantee completeness, physical safety or causal fidelity. |
 | §5 graph node 1 sensor telemetry / pipeline table ingestion: 21-sensor C-MAPSS data | `data/cmapss.py` 21 sensor columns, `data/{prepare,preprocess,splits}.py`, `pipeline.py` vector input | `tests/unit/test_cmapss_phase1.py`; `tests/integration/test_engine_data_flow.py::test_engine_split_precedes_labels_and_scaler_fit` | E7 real archive data; E11R 20,631 train/13,096 test rows | Partial | dataset ingestion and explicit single-state interfaces exist; no independently demonstrated industrial live-stream connector. Constant-channel filtering means predictors need not consume all 21 channels. |
 | §5 graph node 2 predictor, LSTM/XGBoost and live probability | `models/{xgb_model,torch_models,registry,calibration}.py` | Genuine LSTM observed history and MLP final singleton-rescore tests | E7 FD001 XGB/MLP/LSTM and FD002 XGB; LSTM validity 0% retained | Done | for real predictors and probability API. LSTM uses genuine observed prefix and mutates only latest state. |
@@ -91,8 +107,8 @@ newly repeated checks. Scientific intervals resample whole engines, never indepe
 | §11 authored presentation deck | `docs/demo_script.md`; `docs/defense_qa.md` | Browser walkthrough verifies demo only | Outline/live screenshots exist; no authored PPTX/ODP/KEY/slide artifact | Not met | Live demo is available; deck deliverable is absent. |
 | Phase11 protocol / frozen thresholds, bounds, rate limits and artifact versions | `docs/evaluation_protocol.md`; `configs/experiments/phase7-study.yaml`; Phase11 registered audit YAML | `tests/integration/test_evaluation_audit.py`; `tests/unit/test_phase7_framework.py` | Independent protocol audit:171490quality records,112fitted+44diagnostic hashes,28disjoint partitions,zero contract mismatches | Done | Initial preregistration0c0b6e1 precedes source63c2ed4 and launch. No frozen scientific configuration differences were found. Strict once-ever use is a separate Partial row. |
 | Phase11 strict once-ever held-out evaluation and fresh-engine v2 provenance | `docs/evaluation_protocol.md`; `docs/phase4_final.md`; Git history | Leakage split tests establish fit isolation, not historical once-ever usage | Independent protocol audit documents prior FD001 exposure and dirty-source legacy diagnosis | Partial | Development-only predictor selection and fit isolation are supported; strict never-before-seen test/fresh-engine and every older diagnosis preregistration cannot be certified retroactively. |
-| Phase11 second-seed complete frozen evaluation replay | `configs/experiments/phase11-audit.yaml`; `configs/experiments/phase11-seed1730-replay.yaml` | Independent complete-record comparison under newly committed tolerance | Registered 34,298-record run phase11-seed1730-20261028T030707Z; segment3 resumed after independent verification of all 30,729 retained results/timings and 30,733 cases. Checkpoint/provenance/segment metadata: artifacts/phase11/replay-active-run.json | Partial | Full same-run completion/comparison pending. All 30,729 pre-segment3 results/timings retained. Segment1 cause unknown; segment2 failed near a recorded OS-upgrade shutdown. No agreement claim from partial records. |
-| Phase11 final software / reproduce / API / dashboard / Docker gate | `Makefile`; `docs/final_verification.md` | Complete project checks, actual installed reproduce, HTTP smoke, real dashboard and Docker build | Current4995:527tests/coverageup; installed20query/11engine reproduction2042.3577359s with18outputhashes/68sourcehashes/8CIs and20attained-levelannotations verified; real HTTP/AppTest/browser and current Docker build/runtime smokes pass | Done | Completed checks have exact source/config/output evidence in final_verification.md. Overall Phase11 remains open for the complete frozen quality replay and final comparison. |
+| Phase11 second-seed complete frozen evaluation replay | `configs/experiments/phase11-audit.yaml`; `configs/experiments/phase11-seed1730-replay.yaml` | Independent complete-record/config/case comparisons against both seeds; 576 engine CIs; full timing-payload preservation and raw-backup audit | E11Q: all 34,298 records / 64 groups, quality source/count flag and exit0; each reference seed has 34,298 matched identities/config hashes and zero mismatches. All result/case payloads including timings preserved in independently verified main-checkout backup | Done | Registered tolerances passed without scientific changes. Four execution segments disclosed; four uncommitted cases at each resume may have retried optimizer work. This is reproducibility on reused engines, not fresh-engine generalization or new isolated latency evidence. |
+| Phase11 final software / reproduce / API / dashboard / Docker gate | `Makefile`; `docs/final_verification.md` | Complete project checks, actual installed reproduce, HTTP smoke, real dashboard and Docker build | Current4995:527tests/coverageup; installed20query/11engine reproduction2042.3577359s with18outputhashes/68sourcehashes/8CIs and20attained-levelannotations verified; real HTTP/AppTest/browser and current Docker build/runtime smokes pass | Done | Completed checks have exact source/config/output evidence in final_verification.md; historical browser source scope is explicit. All required replay and final audit gates also passed. |
 | Phase11 no unfinished production paths | `src/prescriptxai/models/base.py`; `models/registry.py`; documented simulator contract | `tests/regression/test_report_denominators.py::test_unsupported_gradients_are_capability_errors` | Independent AST/claim inventory and explicit TypeError capability guards afterd12dec1 | Done | No src TODO/placeholder/stub/NotImplementedError remains. Abstract/Protocol signatures are contracts; production functions reject unsupported capabilities explicitly. Final rescan recorded in final verification. |
 
 ## Target values, uncertainty and gaps

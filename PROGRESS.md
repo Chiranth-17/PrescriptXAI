@@ -1,6 +1,6 @@
 # PrescriptXAI Progress
 
-## Phase 11 independent final audit — in progress, 2026-10-29 IST
+## Phase 11 independent final audit — complete, 2026-10-30 IST
 
 Latest verified product source: `4995c301331db78b1e31f58de3cdcd957b1ca336`.
 The full gate passed all **527 tests** (66 warnings, 1498.23 seconds), with improved
@@ -14,11 +14,27 @@ Every new query/checkpoint also records its attained evidence level: **10 E3 / 2
 and corrected without altering results; the first audit failure is preserved. Earlier d12
 proofs below retain their source scope. The scientific replay still uses frozen source63.
 
-The same frozen scientific run resumed as **segment 3 at 2026-10-29T15:37:16Z**, after
-independent verification of all **30,729 saved results / 30,733 registered cases**. Every
-completed result, including its timings, is preserved; all scientific payloads/cases match
-historical seed1730 exactly. **3,569 queries remain** in two FD002/v2 grouped-OOF groups.
-The complete replay and final independent comparison are still required for closure.
+The complete frozen replay finished its **34,298 queries / 64 groups**, with the final
+checkpoint at **2026-10-29T18:37:58.711939Z**, source63 completion marker and actual exit0.
+Independent comparisons against historical **1730 and 1729 each matched all 34,298 query
+identities and effective-config hashes with zero mismatches**. All **576 whole-engine CI
+objects** passed: 2,000 bootstrap draws, seed1729, 95% confidence, with engine counts,
+observations, denominators and undefined conditional intervals preserved.
+
+The independently verified raw backup contains all **34,298 result payloads including
+timings / 34,298 cases**, with identical hashes and SQLite integrity OK at both roots.
+All earlier 33,038 result/timing and 33,042 registered-case payloads remain intact.
+Five files / **501,432,936 bytes** are preserved at
+`artifacts/phase11/seed-replay/phase11-seed1730-20261028T030707Z` in the main checkout.
+The managed archive tool protects the primary frozen checkout, which remains intact;
+no manual removal was attempted. Four execution segments are disclosed below. This is
+reproducibility evidence on reused engines, not new generalization or isolated latency evidence.
+
+The final requirement map is **33 Done / 19 Partial / 12 Not met**; all **31 exceptions**
+and their diagnoses remain in [the final audit report](docs/final_audit_report.md). Model
+validity, statistical plausibility, engineering checks, coupling and joint success remain
+separate. Maximum available evidence is E3 under documented proxy assumptions; no real
+machine safety, causal benefit or RUL extension is established. No features were added.
 
 The supplied Phase 11 prompt supersedes historical queued/Phase11-unavailable notes below.
 Independent reviewers inspected code they did not implement; root repaired verified gaps and
@@ -57,7 +73,8 @@ matching d12dec1; nonroot UID 10001, read-only mounts, health 200, invalid input
 real decisions passed. Linux REC risk 0.10835729296287716 is separately validated; no Windows/
 Linux action identity is claimed. Only owned verification containers were removed.
 
-The full registered second-seed replay is **running in execution segment 3**, not complete.
+The following execution history retains the interrupted checkpoints; the complete final
+acceptance above supersedes their provisional status.
 Initial execution stopped after **7,651 / 34,298** saved results, last checkpoint
 2026-10-28T16:55:16Z, without an exit marker. No live experiment process remained on discovery;
 termination time/cause are unknown. No reboot, relevant resource event or Python exception
@@ -74,9 +91,10 @@ Run `phase11-seed1730-20261028T030707Z`, frozen source
 `configs/experiments/phase11-seed1730-replay.yaml`, SHA256
 `59b1f3c3d139dea7971eddf01f2401e520694dd804b36ad6ebb18ef6e892cd60`.
 All 64 groups / 34,298 records remain required; no cap, replacement, tuning or retraining.
-Partial comparison successes are not final acceptance. Discover current PIDs/logs/checkpoints
-from `artifacts/phase11/replay-active-run.json`; preservation proof is
-`replay-segment2-post-resume-preservation.json`. Final full comparison awaits completion.
+Those partial comparison successes were not final acceptance. Execution/log/checkpoint pointers are
+in `artifacts/phase11/replay-active-run.json`; preservation proof is
+`replay-segment2-post-resume-preservation.json`. The full comparison awaited completion at
+that checkpoint; it has now passed.
 Copied inputs match both roots; taxonomy bytehash differs only by eight Git LF→CRLF
 conversions, with identical YAML/normalized bytes. Both hashes and Windows-build change are
 disclosed. No frozen running file was edited. Windows smoke services were verified on Oct28;
@@ -96,19 +114,41 @@ queries remained. The previous active-metadata value 38 was a stale health-cache
 not a change to scientific records. No completed record, timing, model, setting or population
 was replaced. Proof: `artifacts/phase11/replay-segment3-preflight-independent.json` and
 `replay-segment3-preserved-payload-hashes.json`; separate execution/log pointers are in
-`replay-active-run.json`. The full required final comparison remains pending.
+`replay-active-run.json`. The full comparison was pending at that checkpoint; it has now passed.
 The seconds-later shutdown events are preserved in
 `artifacts/phase11/replay-segment3-shutdown-window-doc-review.json`, supplementing the later
 restart events in `replay-segment3-host-evidence-independent.json`. The independent
 post-launch check confirms every pre-segment3 result/timing and case payload remains
 byte-identical: `replay-segment3-post-resume-preservation-independent.json` (zero mismatches).
 
+Segment 3 subsequently saved another 2,309 results before a further host interruption:
+**33,038 total**, last checkpoint **2026-10-29T16:34:56.480744Z**, no exit marker. Windows
+records idle standby, a user-initiated power-off and an unclean boot at 16:47:00Z. These
+events support host interruption; the exact worker termination time/mechanism is unknown.
+The restored host had no live experiment process. Independent segment4 preflight found
+SQLite integrity OK, zero exact scientific/case mismatches for all 33,038 saved results,
+and unchanged source, core versions, configuration and all 151 inputs in both roots.
+All prior 30,729 result/timing and 30,733 case hashes also match. A new baseline pins all
+**33,038 results including timings / 33,042 cases**; the post-launch check found zero
+changes. Four registered but uncommitted cases may be retried. The same run resumed at
+**16:56:04Z**, with 1,156 FAST / 104 THOROUGH queries remaining and 62/64 groups
+count-complete. Separate logs, exit path and reviewed wrapper preserve the four execution
+segments. Proofs: `artifacts/phase11/replay-segment4-{preflight-independent,host-evidence-independent,post-resume-preservation-independent}.json`.
+
+Registration byte provenance is also explicit: the committed study blob in02f0145 has LF
+endings (SHA256 `08b9667a1d6c257d9910349ccfa623b5e2c24cd0336a33c8613e295a21603adc`),
+while its unchanged Windows runtime file has CRLF (SHA256 `59b1f3c3d139dea7971eddf01f2401e520694dd804b36ad6ebb18ef6e892cd60`).
+All 122 line-ending conversions explain the 122-byte difference; normalized bytes and YAML
+are exactly equal. Both hashes are preserved in the independent registration-byte proof.
+The running file was not changed to match the Git blob.
+
 [Current traceability](docs/traceability.md) maps 64 synopsis/audit rows. Independent review
 verified 216 metric rows across 24 headline strata, 12 latency rows, 24 config identities and
 198 implementing-file references. The [complete target appendix](docs/final_targets.md) records
 every measured value, whole-engine CI/count, denominator and gap; all failures are retained.
-A fresh independent strict docs build passed after the audit/nav/status edits (exit 0, 5.88s).
-No final phase closure is claimed until the complete replay and final comparison finish.
+An earlier independent strict docs build passed after checkpoint audit/nav/status edits (exit 0, 5.88s).
+Complete replay/comparison and raw-preservation gates have now passed. Final independent
+documentation review and strict-build evidence are recorded in `docs/final_verification.md`.
 
 ### Design targets and measured gaps
 
@@ -165,8 +205,9 @@ Prioritized future work: (1) validated real simulator integration, (2) N-CMAPSS 
 fresh units and operating regions, (3) first-principles coupling validation, (4) richer actual
 actuator telemetry and sensor-response data, followed by prospective field outcome studies.
 How to run: README/operator commands and `docs/reproducibility.md`; exact audit commands,
-known failed attempts and evidence paths are in `docs/final_verification.md`. Do not duplicate
-the active replay. Historical phase entries below retain their original dates and scope.
+known failed attempts and evidence paths are in `docs/final_verification.md`. The replay is
+complete; do not launch another experiment for this audit. Historical entries below retain
+their original dates and scope.
 
 ## Phase 10 â€” complete gate and release 0.2.0, 2026-10-27 IST
 
@@ -225,7 +266,7 @@ Authorized continuation ends after this tag; no Phase11 orPartB source was suppl
 | 8 â€” Streamlit operator dashboard | Closed at1608d6d / phase8-closed | Five pages, live shared validation, real walkthrough,321 tests and independently audited32-callback UI timing |
 | 9 â€” Systematic testing and hardening | Closed; full gate passed | 513tests,90.5843% scoped line coverage,42fixed defects, audited profiling and10000-call memory check; phase9-closed |
 | 10 â€” Packaging, documentation and demo readiness | Complete gate; phase10-closed | 524tests; two audited clean reproductions; actual Docker and README dashboard; docs, MIT, citation and paper skeleton |
-| 11 â€” Remaining phase | Not started | Source prompt / Part B changes table not supplied |
+| 11 — Independent final audit | Complete; known exceptions retained | 527 tests; full 34298-query replay, both seed comparisons and 576 engine CIs passed; 33 Done / 19 Partial / 12 Not met. No Part B table invented. |
 
 ## Authorized continuation order â€” updated 2026-10-24 IST
 

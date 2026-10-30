@@ -1,10 +1,15 @@
-# Final verification — Phase 11 in progress
+# Final verification — Phase 11
 
-Status at this checkpoint: **Partial**. Independent checks below are real completed checks;
-post-fix full checks, Docker build and current installed reproduction have passed. The complete
-34,298-record seed replay resumed as segment3 after independently verified checkpoint
-recovery; its complete final comparison remains pending.
-No overall final-audit completion is claimed from these partial outputs.
+All required audit gates passed. The current software gate, installed reproduction, API/dashboard
+checks and Docker verification are complete. The entire **34,298-query / 64-group** frozen
+replay completed with actual exit0; both reference-seed comparisons had zero mismatches,
+all **576 whole-engine CI objects** passed, and every result/case payload including timings
+is preserved in an independently verified raw backup. The chronological interrupted checkpoints
+below are retained as history, followed by the final accepted outputs.
+
+The requirement map is **33 Done / 19 Partial / 12 Not met**. Missing physical evidence,
+historical once-ever/fresh-engine certainty and roadmap outputs remain explicit exceptions;
+they are not converted into achieved results by audit completion.
 
 Main checkout: `C:/Users/chira/OneDrive/Desktop/5thsemEL`.
 Release under audit: `b219041801d720f75973da24a1c5b43d5dcd0154` /0.2.0.
@@ -1848,13 +1853,25 @@ toCRLF in the clean replay checkout; parsed YAML and newline-normalized bytes ma
 Both hashes and the unchanged semantic comparison are retained in `replay-manifest-audit.json`.
 No running source/configuration file was edited. No cross-OS-build timing or bitwise guarantee is inferred.
 
+An additional registration byte audit distinguishes the committed study blob from its Windows
+working-file representation. In preregistration commit02f0145, the study is 2,034 bytes / 122 LF
+endings, SHA256 `08b9667a1d6c257d9910349ccfa623b5e2c24cd0336a33c8613e295a21603adc`.
+The unchanged runtime study is 2,156 bytes / 122 CRLF endings, SHA256
+`59b1f3c3d139dea7971eddf01f2401e520694dd804b36ad6ebb18ef6e892cd60`, matching the
+saved manifest and active pointer. Newline-normalized bytes and parsed YAML are exactly
+equal, with no BOM or text differences. This is a Git line-ending representation difference,
+not a post-registration parameter change. Both raw hashes are retained; runtime files were
+not edited to force hash agreement. Proof:
+`artifacts/phase11/replay-registration-study-byte-difference-peer-audit.json` and its supplement.
+
 Full scope34298quality records/64groups is retained. Only solver seed1730 and run/output labels
 change; no models/thresholds/bounds/rates/configured populations are refitted or capped.
 New1730 is compared to historical1730, then separately1729. Discrete/query/verdict identities
 must match exactly; numeric tolerance1e-6abs+1e-5relative; cross-seed rate tolerance0.
 These are newly committed Phase11 audit criteria, not retroactive historical tolerance rules.
 Timings/execution identity are the only declared comparison exclusions; timings stay saved.
-The complete comparison is **pending**. The initial execution segment stopped after7651saved
+The complete comparison was **pending at the following checkpoints** and has now passed.
+The initial execution segment stopped after7651saved
 records, last checkpoint2026-10-28T16:55:16.159869Z; discovery2026-10-29T02:38:22Z found no
 live experiment process or exit marker. The process termination time and cause are unknown.
 Windows had not rebooted sinceOct25; no shutdown/sleep/resource event or Python exception was
@@ -1909,19 +1926,181 @@ successful process exit, complete comparisons against both seeds, whole-engine C
 preservation of every completed payload from each prior segment. Operational replay timings
 are retained and disclosed; they do not certify a new isolated serial-latency result.
 
-Phase11 remains **in progress** until the complete replay, independent final comparison/report
-review and final progress/commit have finished. Missing physical evidence and roadmap
-outputs remain explicit Partial/Not met states, not reasons to fabricate or add features.
+Segment 3 then saved another **2,309 results** before a further host interruption, leaving
+**33,038 saved results / 33,042 registered cases**. Its last checkpoint is
+**2026-10-29T16:34:56.480744Z**; no exit marker exists. The host stopped returning commands
+during this period. On reconnection, Windows evidence showed idle standby, a user-initiated
+power-off, an unclean boot at **16:47:00Z**, and no surviving experiment process. These
+events establish interruption context, not the exact worker termination time/mechanism.
+Evidence: `artifacts/phase11/replay-segment4-host-evidence-independent.json`.
+
+The next independent preflight checked every retained scientific record/case against historical
+seed1730: **zero mismatches across all 33,038 results**; SQLite integrity OK. Frozen source,
+core versions, manifest assets, configuration and all 151 copied inputs in both roots match.
+Every prior 30,729 result/timing and 30,733 case hash remains intact. A new pinned baseline
+covers all **33,038 completed results INCLUDING timings / 33,042 cases**; the independent
+post-launch check again found zero payload changes. Four uncommitted cases may be retried;
+they are not replacement observations. Proofs:
+`replay-segment4-preflight-independent.json`, `replay-segment4-preserved-payload-hashes.json`,
+`replay-segment4-inflight-case-audit.json` and
+`replay-segment4-post-resume-preservation-independent.json`, with successful native exits.
+
+Following a fresh zero-duplicate inventory and independent wrapper review, the **same run
+resumed as segment 4 at 2026-10-29T16:56:04.4168125Z**, under unchanged source/study/workers.
+Separate logs and exit metadata are in `replay-segment4.execution.json` and the active pointer.
+At resume, **1,260 queries remained: 1,156 FAST / 104 THOROUGH**, with 62/64 groups
+count-complete. Final acceptance still requires the complete registered population, successful
+stage/exit markers, both historical-seed comparisons, all engine-CI checks, and full preservation
+of the newest 33,038-result timing baseline. No scientific configuration or power policy changed.
+
+The complete replay and independent comparisons subsequently passed, as recorded below.
+Missing physical evidence and roadmap outputs remain explicit Partial/Not met states,
+not reasons to fabricate results or add features.
+
+## Accepted complete replay and raw preservation
+
+Run `phase11-seed1730-20261028T030707Z`; execution source
+`63c2ed445fba16c73a2771e184f635abf76b4405`; preregistration
+`02f0145ad9ef75b10f3235455453cbaec0f0a9da`. Study
+`configs/experiments/phase11-seed1730-replay.yaml`, measured runtime SHA256
+`59b1f3c3d139dea7971eddf01f2401e520694dd804b36ad6ebb18ef6e892cd60`; audit
+`configs/experiments/phase11-audit.yaml`, SHA256
+`fc1ea34597768a647f59517e9675a32bd12dddd65240fb73143da88939a560e2`.
+The committed/runtime study newline distinction and both raw hashes are documented above.
+Scope: FD001/XGB/MLP/LSTM and FD002/XGB; protocols v1/v2; k_max3, assumed K1,
+D_max5/8; internal held-out, grouped-OOF, official-test and development populations.
+All 32,116 main FAST + 1,526 test THOROUGH + 480 development FAST + 176 development
+THOROUGH queries are retained. No refitting, threshold/bound/rate changes or new population caps.
+
+Actual quality command, executed in the frozen checkout in four disclosed segments:
+
+```text
+.venv/Scripts/python.exe scripts/diagnostics/phase7_experiments.py --study C:/Users/chira/OneDrive/Desktop/5thsemEL/configs/experiments/phase11-seed1730-replay.yaml --run-id phase11-seed1730-20261028T030707Z --stage quality
+```
+
+Final checkpoint: **2026-10-29T18:37:58.711939Z**. The actual segment4 exit file contains
+`0`; `stages.json` contains:
+
+```json
+{
+  "quality": {
+    "complete": true,
+    "source": "63c2ed445fba16c73a2771e184f635abf76b4405",
+    "observations": 34298
+  }
+}
+```
+
+Independent complete-record/case/config comparison, approved helper SHA256
+`f839e9bee9723075c8c95503360f0073b787c5f4372d7a56428203b520004818`, finished with
+JSON `passed=true`, native exit0 and the following actual output:
+
+```json
+{
+  "1730": {
+    "matched_new_identities": 34298,
+    "historical_quality_identities": 34298,
+    "not_yet_present_or_missing": 0,
+    "groups": 64,
+    "historical_groups": 64,
+    "verified_config_hashes": 34298,
+    "mismatch_count": 0,
+    "mismatch_fields": {},
+    "passed": true
+  },
+  "1729": {
+    "matched_new_identities": 34298,
+    "historical_quality_identities": 34298,
+    "not_yet_present_or_missing": 0,
+    "groups": 64,
+    "historical_groups": 64,
+    "verified_config_hashes": 34298,
+    "mismatch_count": 0,
+    "mismatch_fields": {},
+    "passed": true
+  }
+}
+```
+
+Numerical tolerance is absolute1e-6 / relative1e-5; query/discrete/verdict/group counts
+match exactly. Timings remain saved and are excluded from scientific equality comparison.
+Full proof: `artifacts/phase11/replay-complete-comparison.json/.log/.exit`.
+
+The independently implemented whole-engine bootstrap, approved helper SHA256
+`375dc54c0b4f6053bd55df93bae8750d9121245b519561ba7169184d67805ed1`, also returned
+JSON `passed=true`, failures[] and native exit0. Selected actual output fields:
+
+```json
+{
+  "complete_records": 34298,
+  "quality_groups": 64,
+  "metrics_per_group": 9,
+  "independent_ci_objects": 576,
+  "bootstrap_unit": "wholeengine",
+  "bootstrap_seed": 1729,
+  "bootstrap_replicates": 2000,
+  "bootstrap_confidence": 0.95,
+  "same_seed_ci_fields_checked": 5184,
+  "historical_five_seed_ci_fields_checked": 4032,
+  "historical_five_seed_observation_and_denominator_accounting_checked": true,
+  "failures": [],
+  "passed": true
+}
+```
+
+All 576 saved intervals include engine counts, observations, denominators and undefined
+conditional/zero-denominator information. They agree with historical1730 and the published
+five-seed intervals within the registered tolerance, with exact fivefold observation and
+denominator accounting. Proof: `replay-complete-engine-ci-audit.json/.log/.exit`.
+The published [target appendix](final_targets.md) retains every measured target, CI and gap;
+a fresh independent recheck found zero discrepancies in its 216 metric / 12 latency rows.
+
+Final provenance returned JSONtrue/native0: frozen source clean; all 151 unique inputs at
+both roots (302 file/root checks), 42,494,689 bytes per root, 28 fitted profiles, 44 diagnostic
+validators, core versions and all registration guards match. Proof:
+`replay-final-provenance-independent.json/.log/.exit`.
+
+Four segments saved **7,651 + 23,078 + 2,309 + 1,260 = 34,298** results. Every completed
+payload and timing survived each restart. Four registered but uncommitted cases at each
+resume may have retried optimizer work; its interrupted duration is unknown. No completed
+failure or timing was replaced. These operational quality timings do not establish a new
+isolated serial-latency measurement. Reused engines do not establish fresh-engine generalization.
+
+After every writer and audit reader exited, the whole unique raw run was copied to the main
+checkout at `artifacts/phase11/seed-replay/phase11-seed1730-20261028T030707Z`.
+Independent backup verification returned JSONtrue/errors[]/native0:
+
+```text
+5 files / 501432936 bytes; every raw byte hash identical before and after verification.
+Source SQLite integrity: ok. Copy SQLite integrity: ok.
+34298 result payloads and34298 case payloads at each root: identical hashes, INCLUDING timings.
+64 group counts identical; all33038 prior result/timing payloads and33042 prior cases intact.
+144 unique scientific model/diagnostic-asset paths have matching main-checkout counterparts.
+```
+
+The lines above summarize fields from the actual JSON, not fabricated console output.
+SQLite file SHA256 is `2faec68f7dc7d7663d5c6bb34e2ade017cae12cde1c9bed4fbe7005ff0c0c32f`;
+record-hash-map SHA256 is `af67c0ed72d4910f8cb32e3a2984fed37dcb2adc8e92e14991c81c4916f15d29`.
+Proofs: `replay-raw-backup-bytecopy.json` and
+`replay-raw-backup-independent-audit.json/.log/.exit`.
+
+The managed archive tool refused optional cleanup with: `The task's primary checkout cannot be removed.`
+The protected frozen checkout is retained intact; no manual removal or workaround was attempted.
+The independently verified main-checkout copy is the canonical preserved result directory.
+See `replay-worktree-retention.json` and `replay-active-run.json`; all four original segments
+and execution paths remain recorded. Consolidated replay acceptance:
+`replay-final-independent-acceptance.json/.md/.log/.exit`.
 
 
-## Updated documentation checkpoint
+## Earlier documentation checkpoints
 
-Independent review of the current audit pages confirms all216metric rows/24config identities/
+An earlier independent review confirmed all216metric rows/24config identities/
 12latency rows match saved evidence, all20local links resolve and all32exception rows match
 traceability (20Partial/12Notmet). Strict `uv run mkdocs build --strict` completedexit0 in5.88s
 with the Final audit navigation. Evidence `artifacts/phase11/docs-strict-independent-20261029.log/.exit`
 and `final-docs-independent-review-20261029.md`. Later text-only checkpoint updates retain the
-same links/nav; final closure review remains required after complete replay comparison.
+same links/nav. Closure review was still pending at that checkpoint; the final accepted
+requirement counts are 33 Done / 19 Partial / 12 Not met, with 31 exceptions.
 
 The segment3 recovery checkpoint also passed a fresh independent strict build:
 `.venv/Scripts/python.exe -m mkdocs build --strict --site-dir artifacts/phase11/docs-site-segment3-independent-20261029`.
@@ -1935,3 +2114,21 @@ An earlier default-output attempt returned exit0 but stopped at cleaning with mi
 it is explicitly rejected and preserved. An audit-only navigation probe initially required
 an active page to link to itself; the corrected probe checks its label and other-page links,
 with that first false audit retained. No product source or scientific result changed.
+
+## Final documentation verification
+
+The independent closing-text review passed **21 checks**: all 64 requirement rows and 31
+exceptions agree, all 23 local links resolve, pasted outputs match actual evidence, source
+scopes and raw-backup hashes pass, and the root plus four audit HTML pages render with the
+correct navigation/statuses. All 390 tracked-file hashes were stable during that review.
+The actual strict build was:
+
+```text
+.venv/Scripts/python.exe -m mkdocs build --strict --site-dir artifacts/phase11/docs-site-final-closure-independent-20261030
+INFO    -  Documentation built in 4.25 seconds
+```
+
+Native exit0 and actual HTML were both verified; exit0 alone was not accepted.
+Proof: `artifacts/phase11/phase11-final-closure-independent-review.json/.log/.exit` and
+`docs-strict-final-closure-independent-20261030.log/.exit`, with before/after hash snapshots.
+The final bounded publication check of this evidence reference is retained beside those proofs.

@@ -1,186 +1,90 @@
 ---
 phase: 11
-status: in_progress
+status: complete
 ---
-# Phase 11 final audit — 2026-10-29 IST
+# Phase 11 final audit — complete, 2026-10-30 IST
 
-LATEST PRIMARY CODE4995c301331db78b1e31f58de3cdcd957b1ca336: allsoftware/full527tests/package/
-Docker/installedreproductionandperqueryE18annotationauditspassed. Seeevidence-level-*proofs.
-MAJORPENDINGfullfrozenqualitysource63replayandindependentfullcomparison. No sourceeditsneeded.
-Rootcurrentdocs/progressupdatesuncommitted; finalprimarysource49/runtimeexacthashesstayfixed.
+Primary work: C:/Users/chira/OneDrive/Desktop/5thsemEL. Always use an explicit cwd.
+The attached primary frozen checkout remains at
+C:/Users/chira/.codex/worktrees/phase11-frozen-replay/5thsemEL, source
+63c2ed445fba16c73a2771e184f635abf76b4405. It is retained intact: the managed archive
+tool protects the task's primary checkout. No manual removal was attempted.
 
-PRIMARY WORK: C:/Users/chira/OneDrive/Desktop/5thsemEL (always explicit cwd).
-Attached chat cwd/FROZEN RUN: C:/Users/chira/.codex/worktrees/phase11-frozen-replay/5thsemEL,
-at63c2ed445fba16c73a2771e184f635abf76b4405. NEVER edit measured source/configs there while running.
-User explicitly supplied docs/prompts/phase11_final_audit.md: verify/fix gaps, NO FEATURES.
-Independent agents audit only; root implements corrections then reviewers recheck. No Blocked status.
-Phase10 b219041/phase10-closed stays closed; old Phase7–10heartbeat deleted. No automation exists.
+The user supplied docs/prompts/phase11_final_audit.md. This audit adds no features.
+Independent reviewers inspected code they did not implement; root repaired reviewed
+reporting/provenance gaps, and independent reviewers accepted the fixes and real results.
+No Phase 12 or missing Part B table has been invented. The old Phase7–10 heartbeat was
+removed after Phase10 closure; no automation exists.
 
-EARLIER VERIFIED RUNTIME BASELINE d12dec1a1a776d9e8416cec22d879e560498875f:
-fix(audit): expose engine uncertainty and truthful report denominators.
-Changes: shared8metric engineCIs in CLI/reproduce; bothT2denominators; targetgaps/p95CIs/proxylabels;
-visible study querycounts; input-derived publicationlabels; Phase4historicalerratum; 3unsupportedgradient
-NotImplementedError guards now TypeError. RecourseResult/ValidationReport2.0.0 unchanged. Frozen
-measurements/configs/models remain untouched. Independent fixreview approvedH1–H4,20actualrecords/8CIs,
-failed-queryconditionalprobe;65srcfiles rescan0unfinished/ast.Pass/NotImplementedError/TODOmarkers,
-7legitimateabstract/Protocolcontracts. Source has not changed since the full passing gate below.
+## Verified software
 
-FULL SOFTWARE GATE d12: mingw32-make all-checks exit0,527passed/66short-fitwarnings/539.52s;
-Ruffclean,mypy65clean,strictdocs7.95s. Independent exactcoverage scoped7657/8422=90.91664687722631,
-full7657/8515=89.92366412213741,combined9749/11273=86.48097223454272%. All3improveactualPhase10
-90.84624553039332/89.85028881291996/86.38832012819371floors; noexclusionchanges.
-Proof artifacts/phase11/all-checks-final.*,coverage-final-independent-audit.json.
-Initialgate524passed457.46s onb219 andfocused20tests40.37s are preserved, notsubstitutes.
+Product source 4995c301331db78b1e31f58de3cdcd957b1ca336; earlier reporting fix d12dec1.
+Full mingw32-make all-checks: 527 passed, 66 warnings, 1498.23s; Ruff clean,
+strict mypy65 clean. Coverage increased without lowering floors/exclusions:
+scoped7659/8424=90.91880341880342%, full7659/8517=89.92603029235646%,
+combined9751/11275=86.48337028824834%.
+Current installed reproduction reproduce-20261029T100600311811Z: all5 stages/exit0,
+20queries/11engines/2042.3577359000337s;18outputhashes/68sourcehashes pass.
+Common scientific fields/eight saved engine-CI objects match four previous Windows runs;
+20 attained-level annotations independently verified:10E3/2E1/8none.
+Current wheel/source/Docker runtime checks pass, including real REC/ESC cases.
+API/AppTest/browser source scopes are explicit; unchanged UI/API source is verified.
+RecourseResult/ValidationReport remain2.0.0; internal legacy records retain attained levels,
+with historical unlabelled values unknown/null. No scientific model/configuration change.
+Final source rescan:65files,0unfinishedmarkers/ast.Pass,7legitimate abstract/Protocol contracts.
 
-INSTALLED CURRENT REPRODUCTION COMPLETE independent: C:/Users/chira/prescriptxai-phase11-final,
-runreproduce-20261028T141720017713Z,sourceD12,wheel[api,dashboard],all5stages exit0/626.4732678s,
-completed2026-10-28T14:27:46.490964Z.20queries/11engines,378alerts/0prescreenexclusions,69/16/15partitions.
-Actualcommandprescriptxai reproduce afterinit .; runtimeconfigs/default.yaml BYTEIDENTICALcommitted
-configs/experiments/phase10-reproduce-v1.yaml SHAb7089ac81d50010792662b6632c587353f0b442735c6479b3e80af8e010f8b8e.
-Independent18outputhashes/68sourcehashes/75wheel+304sdistentries pass. All20nontimingrecords/selectedCSV/
-8savedmetricCIobjects exactlymatchTHREEpriorWindowsruns; manualwholeengine2000drawbootstrapseed1729
-agreeswithin1e-12(summationorder,notbitwiseclaim). Validity/T2both12/20,T3/T4both20/20,joint10/20.
-Proof reproduce-final-independent-audit.md,reproduce-final-comparison.json/.log/.exit,
-reproduce-final-current-wheel-reaudit.json,complete reproduce-final-active.json. DO NOT RE-RUN.
-Earlier freshb219installedrun711.3422288s andtwoPhase10runs also retained.
+## Complete frozen scientific replay
 
-API/APPTEST/BROWSER/Docker passed independently. Windows realREC5/c241 .883373152081179→.1284214696040072E3;
-ESC2/c278 .997038295561199→.3612983062471661none;health/config/version200+requestIDs,invalid422.
-AppTest2realcases/3exports+4pages; browser38scientificfieldscaseexact; CSV144fields exact.
-Fouractualdocs/screenshots/phase11-browser-{recoverable,escalate,evaluation,diagnostics}.png.
-Windowsservices8001/8502wereverifiedOct28; NO Pythonservices remained atOct29interruptiondiscovery.
-Dockerbuild326.06sexit0 image80e3503c9b50688fa9ab2d264af9d002c762105dec7f505d93c4617b501f9b70,
-wheelSHA6ed2e12faefd1105760f30ffe9d35d2e85be2e3914f3c5c01203f297ae6b6da6,68installedhashes0mismatch.
-ActualLinuxREC .10835729296287716E3,ESC .3612983062471661none separatelyvalidated, nocrossplatformidentity.
-UID/GID10001,readonlymounts,API/dashboard200,invalid422. Initial8002collisionwithunrelatedtaxii-server
-preserved; ownedverificationports8011/8511. ONLYown2containerscleaned; unrelatedprojectsuntouched.
-Evidence final-check-docker-audit.md,smoke-verification-audit.md,package-docker-independent-audit.json.
+Run phase11-seed1730-20261028T030707Z; source63 above; preregistration
+02f0145ad9ef75b10f3235455453cbaec0f0a9da. All34,298records/64groups completed;
+lastcheckpoint2026-10-29T18:37:58.711939Z, actual exit0 and quality source/count flag match.
+Study configs/experiments/phase11-seed1730-replay.yaml runtime SHA59b1f3c3d139dea7971eddf01f2401e520694dd804b36ad6ebb18ef6e892cd60;
+registered Git blob SHA08b9667a1d6c257d9910349ccfa623b5e2c24cd0336a33c8613e295a21603adc.
+Only122LF→CRLF conversions differ; normalized bytes/YAML exact, both rawhashes retained.
+Audit configs/experiments/phase11-audit.yaml SHAfc1ea34597768a647f59517e9675a32bd12dddd65240fb73143da88939a560e2.
+Models/splits seed1729 fixed, solverseed1730, protocols v1/v2, K1/k_max3/D_max5or8;
+all original populations/thresholds/bounds/rates/effective settings retained.
 
-ONLY MAJOR REQUIRED COMPUTATION REMAINING: full34298record/64group secondseedqualityreplay+comparison.
-Runphase11-seed1730-20261028T030707Z, source63c2ed4, prereg02f0145ad9ef75b10f3235455453cbaec0f0a9da.
-Main configs/experiments/phase11-seed1730-replay.yaml SHA59b1f3c3d139dea7971eddf01f2401e520694dd804b36ad6ebb18ef6e892cd60;
-auditconfigSHAfc1ea34597768a647f59517e9675a32bd12dddd65240fb73143da88939a560e2. Runtime externalstudy
-absolute mainpath; .venv/Scripts/python.exe scripts/diagnostics/phase7_experiments.py --study<mainstudy>
---run-idphase11-seed1730-20261028T030707Z --stagequality. Existingfrozenoutput artifacts/phase11/seed-replay/<id>.
-Scope32116mainFAST+1526testTHOROUGH+480devFAST+176devTHOROUGH. No caps/replacement/retraining/tuning.
-Original launch2026-10-28T13:56:38Z interrupted after7651records,lastcheckpoint16:55:16.159869Z,
-noexitmarker,no livePythonatOct29discovery. Cause/terminationtimeUNKNOWN. LastbootOct25; noinspected
-shutdown/sleep/resource/Pythonexceptionevent. NearbyChatGPTStorefailureevents are correlationonly;
-proof interruption-host-events.json. Neverinventapp-update-causedtermination.
+Independent row/case/config comparison: BOTH1730and1729 references each34,298matched
+query/config identities,64groups,0missing/0mismatches. Numeric atol1e-6/rtol1e-5;
+discrete/verdict/groupcounts exact. Approved helperf839e9...; full JSONtrue+nativeexit0.
+Independent CI helper375dc54...:576objects=64groups×9metrics; whole-engine2000draws,
+seed1729/95%;5,184same-seed fields +4,032published-five-seed fields checked,0failures.
+Engine counts/observations/denominators and undefined conditional intervals retained.
+Source/asset/runtime provenance passes:151unique inputs/42,494,689bytes perroot,
+302file-root checks,28fitted profiles/44diagnostic validators, source clean/coreversions same.
 
-SAMErun safelyRESUMEDsegment2 2026-10-29T02:43:47.0537898Z. DISCOVER CURRENT PIDs/logs from
-main artifacts/phase11/replay-active-run.json; DO NOT ASSUME oldPIDs/liveagent. Wrapper632→2004→44836
-atsegmentlaunch,4workers. Separate segment2 stdout/stderr/exit; originalsegmentlogs preserved.
-IndependentSQLiteintegrity/source/coreversions/all151copiedinputs42,494,689bytes perroot/assetmanifest
-checks pass. All7651old scientificrecords/cases/configs exactlymatchhistorical1730(excludingtimingonly).
-All7651originalcompletepayloadsINCLUDINGTIMINGS and7655cases byteidentical AFTERresume.
-4registered-but-uncommittedinflightcases mayretry; disclosedpossiblework, notdroppedcompletedtimings.
-At02:58Z7823/34298savedresults; first20NEWrecords scientificpayloads+cases matchhistorical1730 exactly.
-Evidence replay-segment2-independent-audit.md,replay-segment2-post-resume-preservation.json,
-replay-segment2-inflight-case-audit.json. Runninghealthy; NOduplicate, no restartfromscratch.
-Source/platformpreflight:Python3.13.9+recordedcoredepssame; Windowsbuild26200→26300disclosed.
-Taxonomy bytehashONLY8LF→CRLF convertedbyfreshGitcheckout; YAML/normalizedbytesEXACT, bothhashes
-retained replay-manifest-audit.json. DO NOT EDIT RUNNINGFILETOFIXHASH.28assets+44validators/cohorts/
-thresholds/frozenconfig/protocol/archive match. Original151copiedassets hashes bothroots0mismatch.
+Four segments saved7651+23078+2309+1260results. Segment1 interruption cause unknown;
+segments2/3 had recorded host shutdown/reboot context, exact termination mechanism unknown.
+Four registered-but-uncommitted cases at each resume may have retried optimizerwork;
+no completed result/failure/timing was replaced. All newest33038result/timing+33042case
+baseline payloads remain exact. Quality timings are operational, not new isolated latency
+measurements. These reused engines provide reproducibility, not fresh generalization.
 
-Final independentcomparison helper artifacts/phase11/replay_compare_independent.py pinsreadonlysnapshot,
-requires34298records+qualitycompletionflag/source/count+64groups beforeacceptance. Compare new1730to
-historical1730then1729. Newlypreregisteredauditnumeric1e-6abs+1e-5relative; allquery/discrete/verdictsexact;
-crossseedrates0tolerance. Time/executionidentityexcludedonlybut ALLtimings preserved. Noisolatednewlatency
-or freshgeneralizationclaim. QUALITYstage permitsotherchecks; NEVERheavyjobs concurrentwithSERIALlatency.
-HistoricalPhase7 complete173986records/runphase7-20261020T102540Z is NEVER restarted or edited.
-SummarySHAe0de87c06b418be761142d259ccad8870b81232217b6d75303ee7a91957082fe.
+## Preserved results and final deliverables
 
-DOCS/STATUS rootauthored, independentlyreviewed: docs/traceability.md64rows(current32Done/20Partial/12Notmet),
-final_targets.md24strata×9=216metricrows+12latencyrows/configidentitiesexact; final_verification.mdactualoutputs;
-final_audit_report.mdall32exceptions; traceability_history.mdpreservesolderstates. mkdocsnavFinalauditsadded.
-Reviewverified198filepaths/20local links,3verbatimJSONblocks, representativePROGRESS8metricrows exact.
-IndependentstrictdocsOct29exit0/5.88s afternewnav (minorlatertextupdatesarelink/navunchanged).
-Proof final-docs-independent-review-20261029.md,published-target-audit-20261029.json,
-final-exception-review-20261029.json,progress-target-check-20261029.json. Newdocs/progress/nav/screenshots
-needconventionalcheckpointcommit now; no phase11-closed/tag untilFULLREPLAY+comparisoncomplete.
+Canonical MAIN backup: artifacts/phase11/seed-replay/phase11-seed1730-20261028T030707Z.
+Independent backup nativeexit0/JSONtrue:5files/501432936bytes, all rawhashes exact before
+and after immutable audit, bothSQLiteintegrityOK, all34,298result payloads INCLUDINGtimings
+and34,298case payloads identical/64group counts,144scientific input Main counterparts match.
+DB SHA2faec68f7dc7d7663d5c6bb34e2ade017cae12cde1c9bed4fbe7005ff0c0c32f.
+Proofs: artifacts/phase11/replay-final-independent-acceptance.*, replay-complete-comparison.*,
+replay-complete-engine-ci-audit.*, replay-final-provenance-independent.*,
+replay-raw-backup-independent-audit.*, replay-worktree-retention.json.
+Active metadata is complete_verified and retains all4segments/original execution path plus
+canonical MAIN preservation path. No experiment process remains; DO NOT relaunch this audit.
 
-HONEST FINAL STATES: onlyproxyE3maximum, noactualproductionrestoration/RUL/fieldSDG/lifespan/resource/
-downtimebenefits; noE4/E5/dynamics. Missingrealsimulatornotblocker. Literal taxonomy/scaleobjective/global
-minimumguaranteePartial. Noactualdeck/completedsubmittedpaper/publicGitremote. Strictonceevertest/freshengine
-provenancePartial(priorFD001exposure/legacydirtydiagnosis); do nottryrepairhistorybyrefitting ornewfakeengines.
-Initialprereg0c0b6e1before63c2ed4run;171490historicqualitycontracts/112fitted+44validatorhashes/28partitionspass;
-no frozen scientific threshold/bound/ratechanges. Targets andgaps allpreserved; useracceptshonestNotmet.
-Futurepriorities:validatedsimulator,N-CMAPSSfreshunits,firstprinciplescoupling,richeractualactuatordata.
-NoPartBrequirementsinvented. Next: commitcheckpointdocs, preservehealthyreplay, monitorwithoutduplicate,
-thenindependentFULLcomparison, finalizeonlythenpublicstatus/progress/docsgate/conventionalclosurecommit.
+Public docs: docs/traceability.md (64rows:33Done/19Partial/12Notmet),
+docs/final_audit_report.md (ALL31exceptions), docs/final_targets.md (216metric/12latencyrows),
+docs/final_verification.md (actualcommands/outputs/source/config/evidence), PROGRESS.md.
+Final independent review/strict documentation build and conventional closure commit/tag
+are the publication gate; require actual complete HTML/JSONtrue/native0, never exit0 alone.
+No production source changed after the passing4995 software gate; later edits are audit docs.
 
-CURRENT FOLLOW-UP FIX COMMITTED4995c301331db78b1e31f58de3cdcd957b1ca336:
-Independent E18 audit found legacyEvaluationRecord/JSONL omitted attainedlevel (v2/fullstudycompliant).
-Rootaddedoptionalinternal EvidenceLevel(None=historicalunlabelled), capturedfromcanonical
-result.validation.evidence_level. No publicschema/solver/configchange. Independent16truthcases+20legacy
-compatibilitycasesapproved; committedfilehashesmatchreview. Focused15tests passed43.14s,Ruff/mypy65clean.
-NEWfullchecks+packageDocker ACTUALLYLAUNCHED09:54:26Z; DO NOTDUPLICATE. Mainignored
-artifacts/phase11/evidence-level-verification-active.json PIDs19008checks/32096buildatlaunch;
-run-evidence-level-{checks,build}.ps1 helpers. Distinct evidence-level-all-checks.*,coverage-evidence-level.*,
-evidence-level-package-build.*,evidence-level-docker-build.*,evidence-level-distributions preserveD12proofs.
-NewwheelSHA d783e9d3669098cd72a62d04750806307055eeb37d2dbd1a6b4b5ba5cae617ea,
-68sourcehashesclean4995/tree0c894ea4...,75wheel/311sdistentries independentlypass.
-Fresh C:/Users/chira/prescriptxai-phase11-evidence-final install/reproduceownedwrapper42804 at09:56;
-DO NOT DUPLICATE. Discover artifacts/phase11/evidence-level-reproduce-active.json anddurablelogs/exit.
-Agentphase11_installed_reproduction_audit ownsnewproofs/Docker/reproduction; no productedits.
-Earlier527gateandd12installedreproduction remain validONLYd12 until4995newfullgates finish.
-
-Frozenqualitysource63continuesUNCHANGED; at09:55:38Z29509/34298savedrecords,4workerssameparent44836.
-ActiveJSONhealthcached4:35duringagentquotalimit; liveDBadvancing, NOTstopped. Agentphase11_resume_auditor
-resumedwatchafterquotareset. FullCIhelper replay_complete_engine_ci_audit.py approvedSHA
-375dc54c0b4f6053bd55df93bae8750d9121245b519561ba7169184d67805ed1, guards preregsource+actualfilehashes,
-34298+source/countcompletion+64equalgroups; exactdenominatorcounts,9metricswholeenginebootstrap,
-zero-denominatorframeand5seedpublishedcountscaling independentlysoftwareprobed. DO NOTRUNFINALONPARTIAL.
-Aftercompletion runreadonly rowcomparison againsthistoric1730/1729 and CIhelper; preserveoriginal7651
-payloadtiminghashes. No cleanup/archivefrozenworktreeuntilALLuniquerawmeasurements/backupsverified.
-Afternew4995runtimegates andFULLquality/independentaudit, rootfinalizesdocstatuses/progress,
-independentreview/strictdocs, conventionalclosurecommit/tag. No completionfrompartialrecords.
-
-4995newfullgatePASS527/66/1498.23s,Ruff/mypy65/strictdocs25.62s; sourcecoverage7659/8424
-90.91880341880342scoped,7659/8517 89.92603029235646full,9751/11275 86.48337028824834combined;
-all3actualD12floorsimprove. NewDockerbuild/hash68/UID10001/readonly/health200/invalid422pass;
-realDockercasespending. Actualnewreproducerunreproduce-20261029T100600311811Z running20queries,
-latest5completed; ownedwrapper10580, auditwatcher14856. DiscoveractiveJSONfirst,no duplicates.
-FreshinstallfirstPS5stderrnoticefailurebeforeanyrunpreserved; PS7fixactual65packagespass.
-CombinedDockerhelperwrite+invokeautopolrejectedbeforedispatch; separateboundedhelpersaccepted,
-no escalation/obfuscation. Newproofsprefixevidence-level-*; priorD12notreplaced. Currentdocsnow
-add4995pendingcheckssection, but finalstatusstillpendingactualnewrepro+completequalityfullaudit.
-
-4995ALLSOFTWARE/REPRO/DOCKERGATES COMPLETE: currentreproduce runreproduce-20261029T100600311811Z,
-2042.3577359000337s,20queries11engines378alerts0exclusions69/16/15partitions;18outputhashes/68sourcespass.
-AllCOMMONscientificrecordfields/CSV/8savedCIobjects exactly4previousWindowsruns; ADDEDEVIDENCELEVEL
-separatelyvalidatedall20viacanonicalvalidation+oldflags,10E3/2E1/8none. ManualengineCIswithin1e-12.
-FinalauditJSONtrue+exit0; initialauditorCSVparse1e-16immutablefloatmismatches14queries(notproductbug)
-preservedattempt1falseJSON/incorrectexit0; parsernowround_tripall480telemetrycells exact andfailclosed.
-No science/source/config/resultchangeforauditrepair. Proof evidence-level-reproduce-independent-audit.md/json.
-CurrentDocker68hashes/imagef4e9444876fe2582d318da3d89354beda4c2a1fdd92cd0c7465cdeaf2966fb87,
-health/UID10001/readonly/invalid422/2actualcases pass; onlyownedcleanupdone,allpreexistingIDsretained.
-Docs/progress updatedwithactual4995successes; remainingmajorworkFULLqualitysource63+independent
-comparison. Latestquality10:46:23Z30460/34298,62/64groupscountcomplete,lastFD002v2OOFfast/thorough.
-Do notclaimfullstudycompleteyet. CIrowhelperexitguardpeerreviewf839..., CIs375unchanged.
-
-LATEST VERIFIED RECOVERY — 2026-10-29T15:38:11Z:
-Segment2 stopped after30,729 saved results, lastcheckpoint10:57:42.428547Z, BrokenProcessPool.
-Host shutdown events begin seconds later, planned OS-upgrade restarts/currentboot11:03:54Z;
-strong host-interruption context, exactworkertermination mechanism unproven. Segment1cause
-stillunknown. No new causal softwaredefect or settingsfix invented.
-Independent preflight verifies ALL30,729scientific records/cases exact historical1730, SQLiteok,
-151inputs/42,494,689bytes inBOTHroots, frozen63clean/coreversions/assets/config unchanged.
-ALL30,729complete resultpayloads INCLUDINGtimings and30,733casepayloads hashed in new
-replay-segment3-preserved-payload-hashes.json; original7651timings alsointact.4uncommitted
-casesmayretry, disclosed.62/64groupscountcomplete (activecache38wasstale),3569remaining:
-3361FAST+208THOROUGH, FD002/v2/groupedOOF. Full34298/64stillrequired.
-ROOTLAUNCHED SAMErunsegment3 2026-10-29T15:37:16.7751539Z, wrapper46300, redirector4388,
-execution44420 observed; discoveractualPIDsfromartifacts/phase11/replay-active-run.json.
-ExactreviewedwrapperSHA54bd59102db5bc6926f56da6e70b4a0a4530b74e78377611dbfebcd5fdc14131,
-same study/source/workers4/stagequality, separate segment3stdout/stderr/exit/executionJSON.
-0duplicatechainsbeforelaunch; firstauditorrawinventorycount2wasredirector+executionONEchain,
-firstsnapshotpreserved/correctedinterpretationdocumented. No source/config/model edits.
-PostlaunchALL30,729timingpayloads/30,733cases byteexact0mismatches, independentproofexit0:
-replay-segment3-post-resume-preservation-independent.json. Cohortsrebuilding, nocheckpointyet.
-Independent current4995softwarecloseout review PASS22checks; proofgate-closeout-independent-review.md/json.
-Currentdocs updated honestsegment3checkpoint; statusesstill32Done/20Partial/12Notmet.
-Next: independent strictdocs/checkpointcommit, healthyqualitymonitor, guardedFULLbothseedrowcomparison
-and576engineCIs after34298/64+source/countflag+actualexit0, recheckALLpresegment3payloadtimings,
-finaldocstatuses/progress/independentreview/conventionalclosurecommit/tag. DO NOTDUPLICATE RUN.
+Known final limits: E3 maximum under proxy assumptions; no validated dynamics/E4/E5,
+real-machine safety, causal risk/resource/SDG/lifespan/downtime/RUL benefit. Target misses
+remain measured with engine CIs/gaps. Literal taxonomy/objective equivalence and strict
+once-ever/fresh-engine provenance remain Partial; no paper submission/public repository/
+authored slide deck is claimed. Missing physical evidence is an honest final state, not a blocker.
+Future priorities: validated simulator integration; N-CMAPSS fresh units/regions;
+first-principles coupling validation; richer actuator and sensor-response telemetry.

@@ -1,13 +1,21 @@
-# Final audit exceptions — checkpoint, not closure
+# Phase 11 final audit — exceptions
 
-The independent Phase11 audit has verified the software gate (527 tests, improved coverage),
-actual API/dashboard/browser/export checks, a new Docker build and current-source installed
-runtime. The current4995installed reproduction also passed (20queries/11engines,2042.3577359s),
-including all20attained-evidence labels,18outputhashes/68sourcehashes and8engine intervals.
-The complete 34,298-record second-seed replay resumed as segment3 after independent
-verification of all 30,729 retained records and their timings; its final comparison is pending.
-Phase11 remains open until those required checks and their independent
-comparisons finish. This is the current exception register, not a completion declaration.
+The independent audit is complete. Product source `4995c301331db78b1e31f58de3cdcd957b1ca336`
+passed all **527 tests**, with increased coverage, installed reproduction, actual API/dashboard
+checks and Docker verification. The installed workflow completed **20 queries / 11 engines**;
+all attained evidence labels, 18 output hashes and 68 source hashes were verified.
+
+Frozen source `63c2ed445fba16c73a2771e184f635abf76b4405` completed the entire registered
+**34,298-query / 64-group** replay. Comparisons against historical seeds1730 and1729 each
+found **zero mismatches**; all **576 whole-engine CI objects** passed independent checks.
+Configs are `configs/experiments/phase11-seed1730-replay.yaml` and
+`configs/experiments/phase11-audit.yaml`;
+full hashes, tolerances, run labels and actual outputs are in [final verification](final_verification.md).
+All completed records and timings are preserved in an independently verified raw backup.
+
+Traceability contains **33 Done / 19 Partial / 12 Not met** requirements. The following
+lists every one of the **31 Partial or Not met** items. Audit completion does not establish
+the absent physical, historical-protocol or roadmap outcomes.
 
 All synopsis requirements and implementing files/tests/evidence are in [traceability](traceability.md).
 Every measured target/engine CI/count/denominator/gap is in [the target appendix](final_targets.md);
@@ -47,7 +55,6 @@ The following lists every current Partial or Not met row without hiding absent f
 | §11 published public GitHub repository | Not met | Local installable MIT software is verified; no public repository publication evidence exists. |
 | §11 authored presentation deck | Not met | Live demo is available; deck deliverable is absent. |
 | Phase11 strict once-ever held-out evaluation and fresh-engine v2 provenance | Partial | Development-only predictor selection and fit isolation are supported; strict never-before-seen test/fresh-engine and every older diagnosis preregistration cannot be certified retroactively. |
-| Phase11 second-seed complete frozen evaluation replay | Partial | Full same-run completion/comparison pending. All 30,729 pre-segment3 results/timings retained. Segment1 cause unknown; segment2 failed near a recorded OS-upgrade shutdown. No agreement claim from partial records. |
 
 Maximum available evidence is E3 under assumed proxy channels, bounds, rates and K. Model
 validity, Tier2statistical plausibility, Tier3engineering checks, Tier4coupling and joint success
