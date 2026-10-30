@@ -387,3 +387,33 @@ The reused public engines cannot demonstrate fresh-engine generalization or stri
 test use. Record that protocol limitation as Partial, without changing the populations or
 claiming historical preregistration for a newly chosen audit threshold. Target misses remain
 valid findings; neither model selection nor solver/threshold tuning is permitted.
+
+## Post-audit development profiling, remediation-development-profile-v1
+
+Preregistration: configs/experiments/remediation-development-profile-v1.yaml and
+scripts/diagnostics/remediation_profile.py are committed before the first run. This is a
+new, separately labeled development profile; original Phase7 and Phase11 records are immutable.
+
+Population: all60 saved FD001/XGB/v1/development_all_alerts/fast/full queries, solverseed1729,
+14validation engines, ordered byengine/cycle. These are the original QUALITY-development
+sample, not the original full serial-latency population. Overlap with saved serial identities
+is recorded without falsely asserting equal populations. BothFAST andTHOROUGH use exactly
+those same60 observations. Each mode receives
+two warmups and one measured call per observation (120total); one separate cProfile call
+permode occurs after timing. Loading, profiling and bootstrap computation are excluded.
+No test/training/quality/render job may overlap the serial stage; one native CPU thread is used.
+
+K=1, k_max=3, D_max v1=5, tau_safe=.20 and tau_danger=.80, every model/calibrator/covariance/
+coupling artifact, all masks/bounds/rates and all solver settings come from the unchanged
+saved effective configuration. No fitting or search-setting tuning is performed in this profile.
+The prior scientific metric definitions and all-query failure denominators remain unchanged.
+Each timed public outcome is transactionally checkpointed, including failures and outliers.
+Unexpected exceptions retain their latency and error type; they cannot produce an accepted run.
+
+p95 stage intervals bootstrap whole engines, 2000draws/seed1729/95%; engine counts and actual
+observations accompany every interval. The benchmark records source/config/input hashes and
+full outcomes. Before/after comparisons require exact query/discrete/tier verdict identities and
+numeric atol1e-6/rtol1e-5; operational timings/source metadata are separately labeled, not erased.
+Development p95s do not close a design target. A final implementation/config must be committed
+before the full serial1000calls/mode plus10warmups/mode gate on the unchanged full workload.
+No new engine generalization or physical/causal/SDG/RUL evidence is inferred from timing.

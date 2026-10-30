@@ -1,5 +1,22 @@
 # PrescriptXAI Progress
 
+## Post-audit remediation — in progress, 2026-10-30 IST
+
+The user authorized trying to repair the 31 remaining audit exceptions. The Phase11
+closure and frozen measurements remain historical evidence. Work is on
+`codex/audit-remediation`; [the remediation plan](docs/remediation_plan.md) separates
+locally repairable implementation/manuscript/deck gaps from missing physical/field evidence.
+Independent audits identified repeated feature/coupling work, but current-code real latency
+must be measured before attributing historical source63 gaps to today's implementation.
+The registered development profile uses all 60 original FD001/XGB/v1 development alerts
+from 14 engines, both modes, all outcomes/timings and engine-bootstrap CIs. It is not the
+final 1,000-call-per-mode latency gate. No thresholds, fitted models, bounds or rates change.
+
+Planned deliverables include a complete manuscript with verified references and all 24
+headline strata, an actual editable deck, measured implementation improvements where
+supported, and a clean public-source candidate. Submission/peer review/publication and
+physical/SDG/RUL outcomes will retain honest status until their required evidence exists.
+
 ## Phase 11 independent final audit — complete, 2026-10-30 IST
 
 Latest verified product source: `4995c301331db78b1e31f58de3cdcd957b1ca336`.

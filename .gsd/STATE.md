@@ -1,8 +1,29 @@
 ---
 phase: 11
 status: complete
+current_activity: post-audit-remediation
+activity_status: in_progress
 ---
 # Phase 11 final audit — complete, 2026-10-30 IST
+
+## Current authorized follow-up
+
+User asked "try to fix those", referring to31Partial/Notmet audit exceptions. Phase11-closed
+at44c2e00 remains a historical closure; do not rewrite frozen data or backdate its statuses.
+Active branch in MAIN is codex/audit-remediation. Root implements; agents audit only.
+Read docs/remediation_plan.md and new docs/evaluation_protocol.md addendum.
+First action: commit configs/experiments/remediation-development-profile-v1.yaml and
+scripts/diagnostics/remediation_profile.py BEFORE current-code baseline, then measureALONE.
+All60original QUALITY-development samples span14engines (not16, and NOTtheoriginalfull
+serialpopulation). Bothmodes/2warmups/1repeat/1profilecall/1native thread;120timedqueries,
+all full public outcomes + original backend timings + separate outer timers checkpointed.
+Newprofile is development ONLY, not1000calls/mode final latency verdict. No product runtime
+changes yet; implement only data-supported computation reuse, retaining settings and outputs.
+Authoredmanuscript/deck/publicreleasepreparation follow; no actualpublication/physicalbenefit
+claim without external evidence. Preserve all original constraints/models/thresholds/rates.
+Do not run rendering/tests/training/heavy audits concurrently with serial timing. Record new
+results/config/source/CIs, get independent review, run full nondecreasing-coverage gate,
+update PROGRESS and follow-up exception map, conventional commits. No new numbered phase.
 
 Primary work: C:/Users/chira/OneDrive/Desktop/5thsemEL. Always use an explicit cwd.
 The attached primary frozen checkout remains at
