@@ -145975,7 +145975,7 @@
     "artifacts\\phase7-models\\index.json": "eb5c309ef8fe8f73334280b5dfc2e6e3f0617455bc683b39aeb4fb1813428880",
     "paper\\manuscript.md": "dabe0f6f39bdd4c962def6fb5dc15675013d5ef0713fcccb55d184cdacd2b08b"
   },
-  "publication_builder_git": "762bd3bebd5d5aed0ce99205fecb4a5d9afbacda",
+  "publication_builder_git": "6a9e501cf6c48afff00610a72264ae00ad85b5cc",
   "builder_sha256": "9ace7fe416cd7b4be113cbc5874b928ed8ea24eef7ab3baa99a36c56de7858b2",
   "note": "Publication build only; saved measurements and original source identities retained."
 }
