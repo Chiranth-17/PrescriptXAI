@@ -3,6 +3,19 @@
 This project uses semantic versioning for the Python package. Public result schemas
 have a separate version; RecourseResult and ValidationReport remain 2.0.0.
 
+## Unreleased - post-audit remediation
+
+- Reuse one fresh deterministic feature/coupling lift per objective evaluation for risk and
+  feasibility gradients. Search settings, candidate construction and public schemas are unchanged.
+- Add objective/gradient regressions for actual scaled coupling, observed residuals, omitted
+  dependent channels, nonlinear teachers, repeated backward passes and invalid outputs.
+- Replace the paper outline with a full research draft, verified references, complete measured
+  tables and a portable deterministic PDF build from reviewed report data. Add an editable
+  research presentation. Submission, peer review and physical benefits remain unestablished.
+- Add a preregistered serial measurement runner with exact historical workloads, complete
+  outcome/timing retention, guarded resume and engine-bootstrap intervals. Runtime budget
+  success requires the completed measurements, not the implementation or development profile.
+
 ## Unreleased — Phase 11 audit corrections
 
 - CLI evaluation reports use the same engine-bootstrap definitions as reproduction, expose

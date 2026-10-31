@@ -131,7 +131,7 @@ def main():
         + "\n"
         + separator
         + "\n"
-        + "\n".join(compact)
+        + "\n".join(rows)
         + "\n",
         encoding="utf-8",
     )

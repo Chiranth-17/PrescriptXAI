@@ -19,6 +19,8 @@ from prescriptxai.data.preprocess import fit_feature_scaler
 from prescriptxai.models.registry import ModelBundle
 from prescriptxai.recourse.baselines import no_action_baseline, single_actuator_baseline
 from prescriptxai.recourse.objective import (
+    L1Mode,
+    PredictionLoss,
     RecourseObjective,
     prediction_flip_loss,
     scaled_l1_distance,
@@ -36,6 +38,79 @@ from prescriptxai.validation.tier1_model import validate_model_risk
 from prescriptxai.validation.tier2_mahalanobis import MahalanobisValidator
 from prescriptxai.validation.tier3_engineering import validate_engineering
 from prescriptxai.validation.tier4_coupling import validate_sensor_coupling
+
+
+@pytest.mark.parametrize("l1_mode", ["smooth", "split"])
+@pytest.mark.parametrize("prediction_loss", ["hinge", "squared_hinge"])
+@pytest.mark.parametrize("feedback_weight", [0.0, 7.0])
+def test_shared_features_preserve_objective_values_gradients_and_fresh_graphs(
+    l1_mode: L1Mode, prediction_loss: PredictionLoss, feedback_weight: float,
+) -> None:
+    """One nonlinear lift matches independent lifts, including bounds and repeated backprop."""
+    calls = 0
+
+    def lift(delta: torch.Tensor) -> torch.Tensor:
+        nonlocal calls
+        calls += 1
+        # An immutable coordinate and a nonlinear dependent channel join the two controls.
+        return torch.stack((delta[0], delta[1], delta[0].square() + 2 * delta[1],
+                            delta.new_tensor(0.4))).unsqueeze(0)
+
+    def risk(features: torch.Tensor) -> torch.Tensor:
+        return torch.sigmoid(features.sum())
+
+    def penalty(features: torch.Tensor) -> torch.Tensor:
+        return torch.relu(features[:, 2] - 0.1).square().sum()
+
+    common = dict(
+        lower_change=np.array([-0.3, -0.2]), upper_change=np.array([0.4, 0.5]),
+        safe_threshold=0.2, safety_margin=0.01, alpha=12.0, beta=1000.0, gamma=9.0,
+        l1_weight=0.8, l1_mode=l1_mode, smoothing_epsilon=1e-5,
+        prediction_loss=prediction_loss, feasibility_weight=feedback_weight,
+    )
+    separate = RecourseObjective(
+        lambda delta: risk(lift(delta)),
+        feasibility_function=lambda delta: penalty(lift(delta)), **common,
+    )
+    shared = RecourseObjective(risk, feasibility_function=penalty, feature_function=lift, **common)
+    for delta in (np.array([0.1, 0.2]), np.array([-0.3, 0.5]), np.array([0.6, -0.4])):
+        decision = shared.encode(delta)
+        expected_value, expected_gradient = separate.value_and_grad(decision)
+        calls = 0
+        actual_value, actual_gradient = shared.value_and_grad(decision)
+        assert calls == 1
+        assert actual_value == pytest.approx(expected_value, abs=1e-12)
+        np.testing.assert_allclose(actual_gradient, expected_gradient, rtol=1e-13, atol=1e-12)
+        assert shared.components(decision) == separate.components(decision)
+        # Reuse the identical leaf with two backward traversals: a cached old graph would fail.
+        leaf = torch.tensor(decision, requires_grad=True)
+        for _ in range(2):
+            value, _ = shared.torch_terms(leaf)
+            np.testing.assert_allclose(torch.autograd.grad(value, leaf)[0], expected_gradient,
+                                       rtol=1e-13, atol=1e-12)
+
+
+def test_shared_features_without_feedback_and_transform_errors() -> None:
+    """The feature hook also supports risk-only objectives and propagates invalid-lift errors."""
+    def lift(delta: torch.Tensor) -> torch.Tensor:
+        if delta[0] > 0.5:
+            raise ValueError("invalid feature lift")
+        return delta.square()
+
+    objective = RecourseObjective(
+        lambda features: torch.sigmoid(features.sum()), np.array([-1.0]), np.array([1.0]),
+        safe_threshold=0.2, safety_margin=0.0, alpha=2.0, beta=0.0, gamma=1.0,
+        l1_weight=1.0, l1_mode="smooth", smoothing_epsilon=1e-5,
+        prediction_loss="squared_hinge", feature_function=lift,
+    )
+    value, gradient = objective.value_and_grad(np.array([0.2]))
+    assert np.isfinite(value) and np.isfinite(gradient).all()
+    assert objective.components(np.array([0.2])).feasibility == 0.0
+    with pytest.raises(ValueError, match="invalid feature lift"):
+        objective.value_and_grad(np.array([0.6]))
+    objective.feature_function = lambda delta: delta * float("nan")
+    with pytest.raises(ValueError, match="non-finite"):
+        objective.value_and_grad(np.array([0.2]))
 
 
 def test_prediction_flip_and_scaled_l1_objective_components() -> None:

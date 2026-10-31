@@ -450,14 +450,12 @@ class RecourseOptimizer:
             support_upper = upper_array[support_positions]
             feature_function = build_feature_function(support_positions)
 
-            def risk_function(local_delta: torch.Tensor) -> torch.Tensor:
-                return self.bundle.torch_forward(feature_function(local_delta).float()).reshape(-1)[
-                    0
-                ]
+            def risk_function(features: torch.Tensor) -> torch.Tensor:
+                return self.bundle.torch_forward(features.float()).reshape(-1)[0]
 
-            def feasibility_function(local_delta: torch.Tensor) -> torch.Tensor:
+            def feasibility_function(features: torch.Tensor) -> torch.Tensor:
                 assert manifold_penalty is not None
-                return manifold_penalty(feature_function(local_delta))
+                return manifold_penalty(features)
 
             objective = RecourseObjective(
                 risk_function,
@@ -475,6 +473,7 @@ class RecourseOptimizer:
                 device=device,
                 feasibility_function=feasibility_function if manifold_penalty is not None else None,
                 feasibility_weight=feedback_weight,
+                feature_function=feature_function,
             )
             if initial_delta is None:
                 first = np.clip(np.zeros(len(support)), support_lower, support_upper)

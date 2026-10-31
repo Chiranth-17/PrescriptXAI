@@ -14,12 +14,12 @@ machine response or deployment safety. Learned coupling is not a physics simulat
 
 Prerequisites: Python 3.11–3.13, internet access for dependencies/NASA data, a trusted local
 checkout of this project, and an **empty operator directory** as your current directory.
-In command 2 replace the absolute checkout path if yours differs. No PyPI publication is assumed.
+In command 2 replace `C:/path/to/5thsemEL` with your trusted checkout path. No PyPI publication is assumed.
 These PowerShell commands do not require environment activation:
 
 ```powershell
 python -m venv .venv
-.venv/Scripts/python -m pip install 'C:/Users/chira/OneDrive/Desktop/5thsemEL[api,dashboard]'
+.venv/Scripts/python -m pip install 'C:/path/to/5thsemEL[api,dashboard]'
 .venv/Scripts/prescriptxai init
 .venv/Scripts/prescriptxai reproduce
 .venv/Scripts/prescriptxai dashboard
@@ -93,7 +93,7 @@ Run `phase7-20261020T102540Z`; measured source `63c2ed445fba16c73a2771e184f635ab
 
 Study `configs\experiments\phase7-study.yaml`, SHA256 `67094790e414a57b3d6a403f3682bd3ebb1914be74584379c482ddfad1d48c5a`; saved summary SHA256 `e0de87c06b418be761142d259ccad8870b81232217b6d75303ee7a91957082fe`.
 
-FAST/full/all-alert populations; k_max=3, assumed K=1, D_max v1=5 and v2=8. Values are percentages with95% whole-engine bootstrap CIs (2000 draws, seed1729); the engine count beside each row applies to every interval. Five solver seeds repeat fixed predictors, not independent engines. E3 is the maximum available proxy evidence. All outcomes, including failures, remain in all-query denominators. T2 returned has its own denominator in the source data. Config-set identifiers below resolve to every exact committed config path/runtime hash in [results_provenance.json](docs/results_provenance.json).
+FAST/full/all-alert populations; k_max=['3'], assumed K=['1'], D_max=['5.0', '8.0'] (registered versions {'v1': 5.0, 'v2': 8.0}). Values are percentages with 95% whole-engine bootstrap CIs (2000 requested draws, seeds [1729]); the engine count beside each row applies to every interval. 5 solver seeds [1729, 1730, 1731, 1732, 1733] repeat fixed predictors, not independent engines. E3 is the maximum available proxy evidence. All outcomes, including failures, remain in all-query denominators. T2 returned has its own denominator in the source data. Config-set identifiers below resolve to every exact committed config path/runtime hash in [results_provenance.json](docs/results_provenance.json).
 
 | Model / protocol / population | Queries / seed observations / engines | Validity | T2 all | T2 returned | T3 | T4 | Joint | Config set |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
@@ -135,7 +135,11 @@ Material/docstring documentation build. Source distribution and wheel land in ig
 HTML docs in ignored `site/`. [CI](.github/workflows/ci.yml) is configured for Python 3.11/3.12;
 hosted execution is not implied by local verification. Public result schemas remain **2.0.0**,
 independent of package **0.2.0**. See [CHANGELOG](CHANGELOG.md), [PROGRESS](PROGRESS.md),
-[demo and slide outline](docs/demo_script.md), and [paper skeleton](paper/README.md).
+[operator demo](docs/demo_script.md), and [complete research draft and build instructions](paper/README.md).
+
+The completed [research PDF](docs/research/prescriptxai-research-draft.pdf) and
+[editable presentation](docs/research/prescriptxai-research.pptx) report actual saved results.
+See [post-audit repairs and remaining exceptions](docs/remediation_status.md).
 
 ## License and citation
 

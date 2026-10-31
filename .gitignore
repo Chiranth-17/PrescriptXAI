@@ -33,3 +33,4 @@ coverage.xml
 coverage-gate.json
 dependency-audit.json
 site/
+output/

@@ -417,3 +417,46 @@ numeric atol1e-6/rtol1e-5; operational timings/source metadata are separately la
 Development p95s do not close a design target. A final implementation/config must be committed
 before the full serial1000calls/mode plus10warmups/mode gate on the unchanged full workload.
 No new engine generalization or physical/causal/SDG/RUL evidence is inferred from timing.
+
+## Post-audit full serial latency, remediation-final-latency-v1
+
+This addendum and `configs/experiments/remediation-final-latency-v1.yaml` are committed
+before execution of `scripts/diagnostics/remediation_latency.py`. The implementation and
+measurement helper are frozen for the run. The original study, fitted assets and records
+remain immutable; new measurements have their own output directory and source revision.
+
+The workload is the exact ordered 1,000 engine/cycle identities from each mode of the
+original `phase7-20261020T102540Z/latency.sqlite3`, reconstructed from the hash-pinned
+original FD001 archive. Both modes have the same 376 distinct states / 16 validation
+engines. Each mode receives 10 excluded warmups, then all 1,000 measured calls. This is
+the original full serial workload, not the separate 60-state development quality sample.
+No test/training/render/quality job or heavy audit may overlap measurement.
+
+The effective historical FD001/XGB/v1 configuration, models, calibrator, covariance,
+coupling, taxonomy, masks, bounds, rates, K=1, k_max=3, D_max=5, tau_safe=.20 and
+tau_danger=.80 remain fixed. Runtime settings come from the public result's actual
+solver log and are checked against the frozen policy. Genuine no-search exits retain
+empty solver logs, with their infeasible bound intersection or mandatory support excess
+independently checked. These failures remain in every all-query population.
+
+Native and PyTorch intra/inter-op thread counts are one and recorded at runtime. A
+temporary Windows idle-sleep inhibition request is restored afterward; no power profile
+or lid policy changes. Explicit lid closure/user suspension can still interrupt a run.
+Per-call UTC, process CPU time, observed public-call wall time, original backend timings
+and complete public results are retained. No outlier or host-interrupted timing is removed.
+The earlier development baseline overlapped Modern Standby and is not a causal speedup
+reference. Absolute new p95s are compared with budgets under the existing upper-end rule.
+
+Every result/error is transactionally checkpointed. A checkout-wide lock prevents a second
+runner. Resume requires the same committed source/config/workload/runtime/input identity,
+validates all completed rows, pins their payload hashes and appends only missing indices.
+Completed outputs cannot be rerun in place. Atomic manifests retain a previous copy and
+disclose execution segments. Unexpected errors retain their type and elapsed time; missing
+stage timings/error counts prevent a budget pass. UI/network/startup/attribution remain
+explicitly unmeasured by this backend experiment.
+
+Stage p95 CIs bootstrap complete engines, 2,000 draws, seed1729, 95% confidence; each shows
+its engine count and observations. All 2,000 required calls must finish before a final
+latency claim. Numerical comparisons of the 60-state development overlap use the already
+registered atol1e-6/rtol1e-5 with exact discrete/tier outcomes; wall times, UUIDs and source
+metadata are not scientific comparison fields. No fresh-engine or physical/RUL claim follows.

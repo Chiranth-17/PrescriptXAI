@@ -657,7 +657,7 @@ Run `phase7-20261020T102540Z`; measured source `63c2ed445fba16c73a2771e184f635ab
 
 ### Held-out coupling residual diagnostics
 
-These are saved validation-engine residual diagnostics for the base bundles. Coupling regressors were fitted on training engines; residual thresholds were calibrated on disjoint validation engines. Constant channels can have zero threshold or unstable R2; a fitted relationship is not a physics law. Fold-specific diagnostics remain in model_metadata.json.
+These are saved validation-engine residual diagnostics for the base bundles. Coupling regressors were fitted on training engines; residual thresholds were calibrated on disjoint validation engines. Constant channels can have zero threshold or unstable R2; a fitted relationship is not a physics law. Fold-specific coupling diagnostics are saved in `artifacts/phase7-models/index.json`, under `models[profile].coupling_calibration` (post-audit pointer correction; measurements unchanged).
 
 Run `phase7-20261020T102540Z`; measured source `63c2ed445fba16c73a2771e184f635abf76b4405`; committed study config `configs\experiments\phase7-study.yaml` (SHA-256 `67094790e414a57b3d6a403f3682bd3ebb1914be74584379c482ddfad1d48c5a`). Population: saved healthy-to-moderate coupling validation engines. k_max=3; K=1; D_max v1=5 / v2=8. Profile/variant rows identify the protocol and effective configuration; base/internal FAST hashes are registered below; exact fold/mode runtime hashes are in each saved report group label.
 

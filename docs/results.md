@@ -6,7 +6,7 @@ Run `phase7-20261020T102540Z`; measured source `63c2ed445fba16c73a2771e184f635ab
 
 Study `configs\experiments\phase7-study.yaml`, SHA256 `67094790e414a57b3d6a403f3682bd3ebb1914be74584379c482ddfad1d48c5a`; saved summary SHA256 `e0de87c06b418be761142d259ccad8870b81232217b6d75303ee7a91957082fe`.
 
-FAST/full/all-alert populations; k_max=3, assumed K=1, D_max v1=5 and v2=8. Values are percentages with95% whole-engine bootstrap CIs (2000 draws, seed1729); the engine count beside each row applies to every interval. Five solver seeds repeat fixed predictors, not independent engines. E3 is the maximum available proxy evidence. All outcomes, including failures, remain in all-query denominators. T2 returned has its own denominator in the source data. Config-set identifiers below resolve to every exact committed config path/runtime hash in [results_provenance.json](results_provenance.json).
+FAST/full/all-alert populations; k_max=['3'], assumed K=['1'], D_max=['5.0', '8.0'] (registered versions {'v1': 5.0, 'v2': 8.0}). Values are percentages with 95% whole-engine bootstrap CIs (2000 requested draws, seeds [1729]); the engine count beside each row applies to every interval. 5 solver seeds [1729, 1730, 1731, 1732, 1733] repeat fixed predictors, not independent engines. E3 is the maximum available proxy evidence. All outcomes, including failures, remain in all-query denominators. T2 returned has its own denominator in the source data. Config-set identifiers below resolve to every exact committed config path/runtime hash in [results_provenance.json](results_provenance.json).
 
 | Model / protocol / population | Queries / seed observations / engines | Validity | T2 all | T2 returned | T3 | T4 | Joint | Config set |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
@@ -37,19 +37,19 @@ FAST/full/all-alert populations; k_max=3, assumed K=1, D_max v1=5 and v2=8. Valu
 
 ## Serial latency design target / measured / gap
 
-Same run/source; configuration identity `47254ac5ea494ee5e333a754252edca0b9024d9ed5b792f3d0f561b5b0cb2271`. Protocolv1, K1, k_max3, D_max5; validation alerts repeated in fixed order. 1000calls/mode,16engines. Warm serial backend only; startup/network/UI unmeasured.
+Same run/source; configuration identity `47254ac5ea494ee5e333a754252edca0b9024d9ed5b792f3d0f561b5b0cb2271`. Labels `{"D_max": 5.0, "D_max_version": "v1", "K": 1, "config_hash": "47254ac5ea494ee5e333a754252edca0b9024d9ed5b792f3d0f561b5b0cb2271", "git_hash": "63c2ed445fba16c73a2771e184f635abf76b4405", "k_max": 3, "population": "development_all_alerts_repeated_fixed_order", "protocol": "v1"}`. Warm serial backend only; startup/network/UI unmeasured.
 
-| Mode / stage | Upper budget ms | Measured p95 ms [95% engine CI] | Engines | Gap above budget ms | Pass |
+| Mode / stage | Upper budget ms | Measured p95 ms [95% engine CI] | Engines / calls | Gap above budget ms | Pass |
 |---|---:|---:|---:|---:|---|
-| FAST / ingestion_ms | 10 | 0.178 [0.171, 0.185] | 16 | 0.000 | True |
-| FAST / inference_ms | 15 | 3.048 [3.018, 3.116] | 16 | 0.000 | True |
-| FAST / optimization_ms | 1800 | 2339.075 [2256.866, 2403.272] | 16 | 539.075 | False |
-| FAST / validation_ms | 100 | 5.494 [5.209, 5.685] | 16 | 0.000 | True |
-| FAST / pipeline_ms | 2200 | 2348.233 [2265.849, 2414.082] | 16 | 148.233 | False |
-| THOROUGH / ingestion_ms | 10 | 0.183 [0.179, 0.196] | 16 | 0.000 | True |
-| THOROUGH / inference_ms | 15 | 3.109 [3.002, 3.215] | 16 | 0.000 | True |
-| THOROUGH / optimization_ms | 1800 | 2080.227 [2029.095, 2171.671] | 16 | 280.227 | False |
-| THOROUGH / validation_ms | 100 | 5.771 [5.569, 6.104] | 16 | 0.000 | True |
-| THOROUGH / pipeline_ms | 2200 | 2089.845 [2039.342, 2181.371] | 16 | 0.000 | True |
+| FAST / ingestion_ms | 10 | 0.178 [0.171, 0.185] | 16 / 1000 | 0.000 | True |
+| FAST / inference_ms | 15 | 3.048 [3.018, 3.116] | 16 / 1000 | 0.000 | True |
+| FAST / optimization_ms | 1800 | 2339.075 [2256.866, 2403.272] | 16 / 1000 | 539.075 | False |
+| FAST / validation_ms | 100 | 5.494 [5.209, 5.685] | 16 / 1000 | 0.000 | True |
+| FAST / pipeline_ms | 2200 | 2348.233 [2265.849, 2414.082] | 16 / 1000 | 148.233 | False |
+| THOROUGH / ingestion_ms | 10 | 0.183 [0.179, 0.196] | 16 / 1000 | 0.000 | True |
+| THOROUGH / inference_ms | 15 | 3.109 [3.002, 3.215] | 16 / 1000 | 0.000 | True |
+| THOROUGH / optimization_ms | 1800 | 2080.227 [2029.095, 2171.671] | 16 / 1000 | 280.227 | False |
+| THOROUGH / validation_ms | 100 | 5.771 [5.569, 6.104] | 16 / 1000 | 0.000 | True |
+| THOROUGH / pipeline_ms | 2200 | 2089.845 [2039.342, 2181.371] | 16 / 1000 | 0.000 | True |
 
-Optimization misses in both modes are retained; faster-than-lower-band is a pass. [Full framework report](phase7_changes.md) includes funnel, ladder, oracle, K curves and diagnoses.
+Measured budget misses: ['FAST/optimization_ms', 'FAST/pipeline_ms', 'THOROUGH/optimization_ms']. Faster-than-lower-band is a pass. [Full framework report](phase7_changes.md) includes funnel, ladder, oracle, K curves and diagnoses.

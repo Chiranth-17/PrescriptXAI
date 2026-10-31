@@ -1,21 +1,39 @@
 # PrescriptXAI Progress
 
-## Post-audit remediation — in progress, 2026-10-30 IST
+## Post-audit remediation - in progress, 2026-10-31 IST
 
 The user authorized trying to repair the 31 remaining audit exceptions. The Phase11
 closure and frozen measurements remain historical evidence. Work is on
 `codex/audit-remediation`; [the remediation plan](docs/remediation_plan.md) separates
 locally repairable implementation/manuscript/deck gaps from missing physical/field evidence.
-Independent audits identified repeated feature/coupling work, but current-code real latency
-must be measured before attributing historical source63 gaps to today's implementation.
-The registered development profile uses all 60 original FD001/XGB/v1 development alerts
-from 14 engines, both modes, all outcomes/timings and engine-bootstrap CIs. It is not the
-final 1,000-call-per-mode latency gate. No thresholds, fitted models, bounds or rates change.
+Root removed duplicate feature/coupling evaluation within the objective. Independent
+review accepted value/gradient equivalence; candidate generation, search settings and
+public schemas remain unchanged. No thresholds, fitted models, masks, bounds or rates changed.
+All **540 tests** pass, 66 test-fit warnings, 394.54s; full all-checks exit0 in408.9738276s,
+Ruff clean, mypy65 clean, strict docs pass. Coverage increases: scoped7663/8426=
+**90.94469499169239%**, full7663/8519=**89.95187228547951%**, combined9757/11277=
+**86.52123791788597%**. The 53 focused production/objective tests also pass; the first
+test-fixture failure and its corrected runs are retained under artifacts/remediation.
 
-Planned deliverables include a complete manuscript with verified references and all 24
-headline strata, an actual editable deck, measured implementation improvements where
-supported, and a clean public-source candidate. Submission/peer review/publication and
-physical/SDG/RUL outcomes will retain honest status until their required evidence exists.
+The complete **18-page research draft** and **26-slide editable deck** are independently
+accepted, with all24headline/52diagnostic groups unchanged, 576table checks and no mismatches.
+The paper builds byte-identically from public report data without raw/fitted artifacts or Git.
+PDF SHA0c1878092156e754ae4f624b936a384947bdecdbe8d9512524dab83b51cd98b1;
+PPTX SHA8dd2afdd20da9072eec002d94b9c3293ea1dc8fd30ecd1cb76e9d20411714126.
+These close two presentation requirements. Current overlay: **35 Done /18Partial /11Notmet**;
+all31originalexceptions and29remaining needs are mapped in docs/remediation_status.md.
+Actual submission, peer review, public GitHub publication and field benefits remain absent.
+
+The original current-code development baseline finished **120calls /14engines /0errors**.
+All10engineCI objects match independent recomputation, but Modern Standby overlaps the run;
+four FAST calls retain5286.748923s of its5402.478527s total. It cannot certify a steady-state
+speedup. Full outcomes/outliers/source/config proofs remain intact. No experiment is active
+at this preregistration checkpoint. The repaired-source60state comparison and full1000calls
+permode/10warmups/16engines workload remain pending; no current latency target is closed.
+The final helper/config passed independent120real-result/21negative/sixatomic-write probes.
+Commit before launch; follow docs/evaluation_protocol.md and the saved prelaunch approval.
+No quality/training/render/heavy audit overlaps serial timing; preserve every result and
+execution segment. UI/network/startup/attribution remain outside the backend benchmark.
 
 ## Phase 11 independent final audit — complete, 2026-10-30 IST
 

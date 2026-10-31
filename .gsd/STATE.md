@@ -11,19 +11,33 @@ activity_status: in_progress
 User asked "try to fix those", referring to31Partial/Notmet audit exceptions. Phase11-closed
 at44c2e00 remains a historical closure; do not rewrite frozen data or backdate its statuses.
 Active branch in MAIN is codex/audit-remediation. Root implements; agents audit only.
-Read docs/remediation_plan.md and new docs/evaluation_protocol.md addendum.
-First action: commit configs/experiments/remediation-development-profile-v1.yaml and
-scripts/diagnostics/remediation_profile.py BEFORE current-code baseline, then measureALONE.
-All60original QUALITY-development samples span14engines (not16, and NOTtheoriginalfull
-serialpopulation). Bothmodes/2warmups/1repeat/1profilecall/1native thread;120timedqueries,
-all full public outcomes + original backend timings + separate outer timers checkpointed.
-Newprofile is development ONLY, not1000calls/mode final latency verdict. No product runtime
-changes yet; implement only data-supported computation reuse, retaining settings and outputs.
-Authoredmanuscript/deck/publicreleasepreparation follow; no actualpublication/physicalbenefit
-claim without external evidence. Preserve all original constraints/models/thresholds/rates.
-Do not run rendering/tests/training/heavy audits concurrently with serial timing. Record new
-results/config/source/CIs, get independent review, run full nondecreasing-coverage gate,
-update PROGRESS and follow-up exception map, conventional commits. No new numbered phase.
+Read docs/remediation_status.md and the new evaluation_protocol.md serial addendum.
+Current date31Oct2026. Root implemented one fresh shared feature/coupling lift per objective;
+independent value/gradient review accepted. Search settings/model assets/thresholds/rates and
+public schemas2.0.0 unchanged. Fullgate540passed/66warnings/394.54s; all-checks408.9738276s,
+Ruff/mypy65/docs pass; coverage increases90.94469499169239/89.95187228547951/86.52123791788597%.
+18page manuscript+26editable slides independently accepted. PDF0c187809.../PPTX8dd2afdd...;
+copied to docs/research/. Current requirement overlay35Done/18Partial/11Notmet,29exceptions.
+Phase11historicalclosedmap remains33/19/12. Publicrepo/submission/physicalbenefit remain absent.
+
+Development-before sourcea22f547 completed120calls/14engines/0errors. Windowsstandby overlaps;
+alltimings retained; no causal speedup claim. Do not rerun/overwrite that completed output.
+No experiment active at this preregistration checkpoint. Finish saving the reviewed changes
+and protocol conventionally BEFORE any new measurement. First repaired-source120call
+development comparison via remediation_profile.py (all60states/14engines) to verify actual
+outcome parity; developmentp95cannotclosebudgets. Then final full serial helper
+scripts/diagnostics/remediation_latency.py with configs/experiments/remediation-final-latency-v1.yaml:
+exactoriginal1000IDs/mode/376uniquestates/16engines/10warmups. BothCPUintra/interthreads1.
+GO helperSHA6b10903190be927ff9477eed4d83be80755544ff88773c127ad586728d9d0ebd,
+configSHA2bc6f275e89e88efd889c607dacd29599634092f4e24b20969a8616c4c14d16b.
+Independent120positive/21negative/sixatomic checks passed. Actual runtime unverified.
+Use checkoutwide lock, inspect process inventory, preserve full records/timings/errors and
+resume only matching source/config/input/runtime identity. No duplicate, cap or replacement.
+Do not run tests/training/render/quality/heavy audits concurrently with serial timing or edit
+measured source while running. Poll durable active-run artifacts for current PIDs/status.
+After full measurements audit raw records/CIs/outcome parity, update gaps/progress/current
+traceability overlay, prepare local clean source release, conventional commit. Do not publish
+to a guessed GitHub destination. No new numbered phase. No physical/SDG/RUL benefit claim.
 
 Primary work: C:/Users/chira/OneDrive/Desktop/5thsemEL. Always use an explicit cwd.
 The attached primary frozen checkout remains at

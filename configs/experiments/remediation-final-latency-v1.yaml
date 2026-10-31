@@ -1,0 +1,24 @@
+schema_version: 1
+purpose: isolated_full_serial_current_source_latency
+historical_directory: artifacts/experiments/phase7-20261020T102540Z
+historical_source: 63c2ed445fba16c73a2771e184f635abf76b4405
+source_config: configs/experiments/phase7-FD001-xgb-v1.yaml
+calls_per_mode: 1000
+warmups_per_mode: 10
+modes: [fast, thorough]
+expected_engines: 16
+native_threads: 1
+torch_interop_threads: 1
+bootstrap_replicates: 2000
+bootstrap_seed: 1729
+bootstrap_confidence: 0.95
+population: exact_ordered_engine_cycle_ids_from_historical_latency_sqlite
+sample_retention: all_calls_failures_outliers_and_original_backend_timings
+resume: same_source_config_inputs_runtime_identity_only_append_missing_indices
+sleep_policy: temporary_idle_sleep_inhibition_no_power_profile_or_lid_policy_change
+scientific_settings: unchanged_historical_effective_config_and_fitted_assets
+numeric_absolute_tolerance: 0.000001
+numeric_relative_tolerance: 0.00001
+discrete_and_tier_verdicts_exact: true
+scope: warm_serial_backend_UI_network_startup_and_attribution_unmeasured
+historical_results_replaced: false

@@ -45,6 +45,7 @@ nav:
       - Requirement traceability: traceability.md
       - Complete targets and gaps: final_targets.md
       - Verification outputs: final_verification.md
+      - Post-audit repairs: remediation_status.md
   - Defense questions: defense_qa.md
   - SDG 9: sdg9.md
   - API reference: api_reference.md

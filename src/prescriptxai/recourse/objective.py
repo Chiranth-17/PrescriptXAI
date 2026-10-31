@@ -33,8 +33,11 @@ class RecourseObjective:
 
     The decision vector contains scaled changes for controllable features only. Immutable and
     dependent channels are not variables; the former therefore have a hard-zero change and the
-    latter are propagated inside ``risk_function``. Physical bounds are also passed to L-BFGS-B;
+    latter are propagated inside the optional ``feature_function`` (or inside ``risk_function``
+    for legacy callers). With a feature function, both risk and feasibility callbacks consume
+    its output, which is computed afresh once per evaluation. Physical bounds go to L-BFGS-B;
     the penalty remains available as a separately reported term and is zero in the feasible box.
+    The lift and callbacks must be deterministic and must not mutate their inputs.
     """
 
     def __init__(
@@ -55,6 +58,7 @@ class RecourseObjective:
         device: torch.device | str = "cpu",
         feasibility_function: Callable[[torch.Tensor], torch.Tensor] | None = None,
         feasibility_weight: float = 0.0,
+        feature_function: Callable[[torch.Tensor], torch.Tensor] | None = None,
     ) -> None:
         """Validate objective settings and bind risk, bound, and loss functions."""
         if lower_change.ndim != 1 or upper_change.shape != lower_change.shape:
@@ -92,6 +96,7 @@ class RecourseObjective:
             raise ValueError("feasibility_weight must be finite and nonnegative")
         self.feasibility_function = feasibility_function
         self.feasibility_weight = feasibility_weight
+        self.feature_function = feature_function
 
     @property
     def control_count(self) -> int:
@@ -155,7 +160,10 @@ class RecourseObjective:
                 self.smoothing_epsilon, dtype=decision.dtype, device=decision.device
             )
             l1_value = (torch.sqrt(delta.square() + epsilon.square()) - epsilon).sum()
-        risk = self.risk_function(delta).reshape(()).to(dtype=decision.dtype)
+        # Lift once per evaluation. Both callbacks use the same current autograd graph;
+        # no graph or candidate is cached across objective calls or solver restarts.
+        features = self.feature_function(delta) if self.feature_function is not None else delta
+        risk = self.risk_function(features).reshape(()).to(dtype=decision.dtype)
         hinge = torch.relu(risk - (self.safe_threshold - self.safety_margin))
         prediction_value = hinge.square() if self.prediction_loss == "squared_hinge" else hinge
         lower = torch.as_tensor(self.lower_change, dtype=decision.dtype, device=decision.device)
@@ -170,7 +178,7 @@ class RecourseObjective:
             "immutable": self.beta * immutable_value,
             "bounds": self.gamma * bounds_value,
             "feasibility": (
-                self.feasibility_weight * self.feasibility_function(delta)
+                self.feasibility_weight * self.feasibility_function(features)
                 if self.feasibility_function is not None
                 else torch.zeros_like(risk)
             ),

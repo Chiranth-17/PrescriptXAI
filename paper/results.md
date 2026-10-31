@@ -4,7 +4,7 @@ Run `phase7-20261020T102540Z`; measured source `63c2ed445fba16c73a2771e184f635ab
 
 Study `configs\experiments\phase7-study.yaml`, SHA256 `67094790e414a57b3d6a403f3682bd3ebb1914be74584379c482ddfad1d48c5a`; saved summary SHA256 `e0de87c06b418be761142d259ccad8870b81232217b6d75303ee7a91957082fe`.
 
-FAST/full/all-alert populations; k_max=3, assumed K=1, D_max v1=5 and v2=8. Values are percentages with95% whole-engine bootstrap CIs (2000 draws, seed1729); the engine count beside each row applies to every interval. Five solver seeds repeat fixed predictors, not independent engines. E3 is the maximum available proxy evidence. All outcomes, including failures, remain in all-query denominators. T2 returned has its own denominator in the source data. Config-set identifiers below resolve to every exact committed config path/runtime hash in ../docs/results_provenance.json.
+FAST/full/all-alert populations; k_max=['3'], assumed K=['1'], D_max=['5.0', '8.0'] (registered versions {'v1': 5.0, 'v2': 8.0}). Values are percentages with 95% whole-engine bootstrap CIs (2000 requested draws, seeds [1729]); the engine count beside each row applies to every interval. 5 solver seeds [1729, 1730, 1731, 1732, 1733] repeat fixed predictors, not independent engines. E3 is the maximum available proxy evidence. All outcomes, including failures, remain in all-query denominators. T2 returned has its own denominator in the source data. Config-set identifiers below resolve to every exact committed config path/runtime hash in ../docs/results_provenance.json.
 
 | Model / protocol / population | Queries / seed observations / engines | Validity | T2 all | T2 returned | T3 | T4 | Joint | Config set |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
@@ -14,3 +14,21 @@ FAST/full/all-alert populations; k_max=3, assumed K=1, D_max v1=5 and v2=8. Valu
 | FD001 xgb v2 internal_heldout | 378/1890/15 | 55.82 [49.00, 62.50] | 98.94 [98.09, 99.74] | 98.94 [98.09, 99.74] | 100.00 [100.00, 100.00] | 94.44 [92.02, 96.74] | 52.91 [46.13, 59.61] | dace208feedc |
 | FD001 xgb v2 grouped_oof | 2378/11890/100 | 52.52 [49.30, 55.64] | 98.07 [97.00, 98.92] | 98.98 [98.45, 99.42] | 95.12 [92.01, 97.83] | 91.67 [89.45, 93.62] | 50.42 [47.29, 53.48] | 432c17f956cc |
 | FD001 xgb v2 official_test | 159/795/19 | 89.31 [83.57, 94.36] | 100.00 [100.00, 100.00] | 100.00 [100.00, 100.00] | 100.00 [100.00, 100.00] | 98.74 [96.57, 100.00] | 88.05 [82.03, 93.20] | bf715a849ba3 |
+| FD001 mlp v1 internal_heldout | 377/1885/15 | 54.38 [47.28, 60.79] | 46.95 [37.11, 55.58] | 46.95 [37.11, 55.58] | 100.00 [100.00, 100.00] | 94.43 [92.00, 96.71] | 38.20 [29.95, 45.17] | 7d114224c7f6 |
+| FD001 mlp v1 grouped_oof | 2472/12360/100 | 50.04 [47.08, 53.08] | 44.74 [40.45, 49.27] | 46.78 [42.80, 51.13] | 95.31 [92.25, 97.92] | 92.03 [89.91, 93.87] | 35.28 [32.02, 38.62] | 00ba5c6ad891 |
+| FD001 mlp v1 official_test | 170/850/19 | 91.18 [85.80, 96.20] | 78.82 [70.55, 85.20] | 78.82 [70.55, 85.20] | 100.00 [100.00, 100.00] | 99.41 [97.96, 100.00] | 77.65 [69.13, 84.47] | 130506d4a265 |
+| FD001 mlp v2 internal_heldout | 377/1885/15 | 54.38 [47.28, 60.79] | 99.47 [98.69, 100.00] | 99.47 [98.69, 100.00] | 100.00 [100.00, 100.00] | 94.43 [92.00, 96.71] | 51.19 [43.61, 58.30] | 166e2dfcfdf7 |
+| FD001 mlp v2 grouped_oof | 2472/12360/100 | 50.04 [47.08, 53.08] | 97.94 [96.82, 98.87] | 98.80 [98.24, 99.32] | 95.31 [92.25, 97.92] | 92.03 [89.91, 93.87] | 47.98 [45.05, 51.03] | 90039fe60b7e |
+| FD001 mlp v2 official_test | 170/850/19 | 91.18 [85.80, 96.20] | 99.41 [97.96, 100.00] | 99.41 [97.96, 100.00] | 100.00 [100.00, 100.00] | 99.41 [97.96, 100.00] | 90.59 [85.26, 95.56] | a81ee697efa0 |
+| FD001 lstm v1 internal_heldout | 350/1750/15 | 0.00 [0.00, 0.00] | 21.71 [15.34, 28.15] | 21.71 [15.34, 28.15] | 100.00 [100.00, 100.00] | 94.86 [92.37, 96.97] | 0.00 [0.00, 0.00] | 4438e5823357 |
+| FD001 lstm v1 grouped_oof | 2456/12280/100 | 0.00 [0.00, 0.00] | 22.88 [19.29, 26.41] | 23.72 [20.29, 27.14] | 95.28 [92.27, 97.90] | 91.94 [89.74, 93.82] | 0.00 [0.00, 0.00] | 55573371be19 |
+| FD001 lstm v1 official_test | 138/690/16 | 0.00 [0.00, 0.00] | 31.16 [19.54, 42.47] | 31.16 [19.54, 42.47] | 100.00 [100.00, 100.00] | 98.55 [96.55, 100.00] | 0.00 [0.00, 0.00] | 5b74978c24b0 |
+| FD001 lstm v2 internal_heldout | 350/1750/15 | 0.00 [0.00, 0.00] | 99.43 [98.59, 100.00] | 99.43 [98.59, 100.00] | 100.00 [100.00, 100.00] | 94.86 [92.37, 96.97] | 0.00 [0.00, 0.00] | 3fb276a97f70 |
+| FD001 lstm v2 grouped_oof | 2456/12280/100 | 0.00 [0.00, 0.00] | 97.68 [96.55, 98.67] | 98.54 [97.90, 99.14] | 95.28 [92.27, 97.90] | 91.94 [89.74, 93.82] | 0.00 [0.00, 0.00] | c2b3258f3cea |
+| FD001 lstm v2 official_test | 138/690/16 | 0.00 [0.00, 0.00] | 97.83 [93.86, 100.00] | 97.83 [93.86, 100.00] | 100.00 [100.00, 100.00] | 98.55 [96.55, 100.00] | 0.00 [0.00, 0.00] | fd6903baf944 |
+| FD002 xgb v1 internal_heldout | 911/4555/39 | 100.00 [100.00, 100.00] | 3.73 [2.72, 4.83] | 3.73 [2.72, 4.83] | 100.00 [100.00, 100.00] | 28.65 [20.09, 37.84] | 0.33 [0.00, 0.73] | a7522879e1bd |
+| FD002 xgb v1 grouped_oof | 5591/27955/260 | 100.00 [100.00, 100.00] | 3.13 [2.65, 3.64] | 3.13 [2.65, 3.64] | 100.00 [100.00, 100.00] | 31.30 [28.21, 34.61] | 0.07 [0.02, 0.15] | 7fdfd01db0aa |
+| FD002 xgb v1 official_test | 678/3390/65 | 100.00 [100.00, 100.00] | 4.57 [3.06, 6.30] | 4.57 [3.06, 6.30] | 100.00 [100.00, 100.00] | 33.33 [25.84, 41.04] | 0.44 [0.00, 1.02] | 2bcd60ad093c |
+| FD002 xgb v2 internal_heldout | 911/4555/39 | 100.00 [100.00, 100.00] | 10.87 [8.57, 13.21] | 10.87 [8.57, 13.21] | 100.00 [100.00, 100.00] | 28.65 [20.09, 37.84] | 0.55 [0.11, 1.07] | 3e5abf510017 |
+| FD002 xgb v2 grouped_oof | 5591/27955/260 | 100.00 [100.00, 100.00] | 10.96 [10.09, 11.78] | 10.96 [10.09, 11.78] | 100.00 [100.00, 100.00] | 31.30 [28.21, 34.61] | 0.66 [0.45, 0.90] | 9eb007b33342 |
+| FD002 xgb v2 official_test | 678/3390/65 | 100.00 [100.00, 100.00] | 13.86 [11.25, 16.45] | 13.86 [11.25, 16.45] | 100.00 [100.00, 100.00] | 33.33 [25.84, 41.04] | 1.18 [0.48, 1.96] | 58da936f3c43 |
