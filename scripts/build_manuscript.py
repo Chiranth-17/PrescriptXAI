@@ -360,6 +360,7 @@ def main():
     if summary.get("complete") is not True:
         raise ValueError("a complete saved study is required")
     appendix, selected = evidence_appendix(summary, metadata, assets)
+    appendix = "\n".join(line.rstrip() for line in appendix.splitlines()).rstrip() + "\n"
     if len(selected) != 24:
         raise ValueError("all24headline strata are required")
     Path("paper/appendix.md").write_text(appendix, encoding="utf-8")

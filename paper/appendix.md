@@ -247,7 +247,7 @@ Training source fa5adcbe914f95e6efe25f4edc8f8f50a234881a; training config SHA256
 
 Surrogate on observed held-out states: {"agreement_at_tau_danger": 0.9896373056994818, "agreement_at_tau_safe": 0.9850655288021944, "mae": 0.013378545890953901, "rank_correlation": 0.9674176955074236, "sample_count": 3281, "tau_danger": 0.8, "tau_safe": 0.2}. These states differ from optimized counterfactual candidates.
 
-v1/internal_heldout_all_alerts, 15 engines: candidate surrogate MAE 0.15 [0.13, 0.16]; false-safe share over all queries (%) 1.06 [0.00, 2.45]. v1/grouped_oof_all_alerts, 100 engines: candidate surrogate MAE 0.13 [0.12, 0.14]; false-safe share over all queries (%) 0.71 [0.36, 1.13]. v1/official_test_all_alerts, 19 engines: candidate surrogate MAE 0.15 [0.14, 0.17]; false-safe share over all queries (%) 3.14 [1.12, 5.48]. 
+v1/internal_heldout_all_alerts, 15 engines: candidate surrogate MAE 0.15 [0.13, 0.16]; false-safe share over all queries (%) 1.06 [0.00, 2.45]. v1/grouped_oof_all_alerts, 100 engines: candidate surrogate MAE 0.13 [0.12, 0.14]; false-safe share over all queries (%) 0.71 [0.36, 1.13]. v1/official_test_all_alerts, 19 engines: candidate surrogate MAE 0.15 [0.14, 0.17]; false-safe share over all queries (%) 3.14 [1.12, 5.48].
 
 Learned coupling residual calibration: 2649 rows / 16 engines, reference distribution healthy_to_moderate, RUL > 30, sigma multiplier 3.0. These validation engines are disjoint from coupling training but also determine residual thresholds; they are not untouched coupling test units.
 
@@ -268,7 +268,7 @@ Training source 473672b1b8103fb4468184145aa3bc2d82f63e8e; training config SHA256
 
 No distillation surrogate is used for this differentiable predictor; surrogate fidelity is not applicable.
 
-v1/internal_heldout_all_alerts, 15 engines: candidate surrogate MAE 0.00 [0.00, 0.00]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. v1/grouped_oof_all_alerts, 100 engines: candidate surrogate MAE 0.00 [0.00, 0.00]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. v1/official_test_all_alerts, 19 engines: candidate surrogate MAE 0.00 [0.00, 0.00]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. 
+v1/internal_heldout_all_alerts, 15 engines: candidate surrogate MAE 0.00 [0.00, 0.00]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. v1/grouped_oof_all_alerts, 100 engines: candidate surrogate MAE 0.00 [0.00, 0.00]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. v1/official_test_all_alerts, 19 engines: candidate surrogate MAE 0.00 [0.00, 0.00]; false-safe share over all queries (%) 0.00 [0.00, 0.00].
 
 Learned coupling residual calibration: 2649 rows / 16 engines, reference distribution healthy_to_moderate, RUL > 30, sigma multiplier 3.0. These validation engines are disjoint from coupling training but also determine residual thresholds; they are not untouched coupling test units.
 
@@ -289,7 +289,7 @@ Training source 473672b1b8103fb4468184145aa3bc2d82f63e8e; training config SHA256
 
 No distillation surrogate is used for this differentiable predictor; surrogate fidelity is not applicable.
 
-v1/internal_heldout_all_alerts, 15 engines: candidate surrogate MAE 0.00 [0.00, 0.00]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. v1/grouped_oof_all_alerts, 100 engines: candidate surrogate MAE 0.00 [0.00, 0.00]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. v1/official_test_all_alerts, 16 engines: candidate surrogate MAE 0.00 [0.00, 0.00]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. 
+v1/internal_heldout_all_alerts, 15 engines: candidate surrogate MAE 0.00 [0.00, 0.00]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. v1/grouped_oof_all_alerts, 100 engines: candidate surrogate MAE 0.00 [0.00, 0.00]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. v1/official_test_all_alerts, 16 engines: candidate surrogate MAE 0.00 [0.00, 0.00]; false-safe share over all queries (%) 0.00 [0.00, 0.00].
 
 Learned coupling residual calibration: 2649 rows / 16 engines, reference distribution healthy_to_moderate, RUL > 30, sigma multiplier 3.0. These validation engines are disjoint from coupling training but also determine residual thresholds; they are not untouched coupling test units.
 
@@ -310,7 +310,7 @@ Training source 0c0b6e1d37aafaed66cc61d9ac23f768c0529442; training config SHA256
 
 Surrogate on observed held-out states: {"agreement_at_tau_danger": 0.9778396706224267, "agreement_at_tau_safe": 0.9796560910632114, "mae": 0.023030330923476117, "rank_correlation": 0.9420333250312036, "sample_count": 8258, "tau_danger": 0.8, "tau_safe": 0.2}. These states differ from optimized counterfactual candidates.
 
-v1/internal_heldout_all_alerts, 39 engines: candidate surrogate MAE 0.15 [0.14, 0.17]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. v1/grouped_oof_all_alerts, 260 engines: candidate surrogate MAE 0.20 [0.19, 0.21]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. v1/official_test_all_alerts, 65 engines: candidate surrogate MAE 0.12 [0.11, 0.14]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. 
+v1/internal_heldout_all_alerts, 39 engines: candidate surrogate MAE 0.15 [0.14, 0.17]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. v1/grouped_oof_all_alerts, 260 engines: candidate surrogate MAE 0.20 [0.19, 0.21]; false-safe share over all queries (%) 0.00 [0.00, 0.00]. v1/official_test_all_alerts, 65 engines: candidate surrogate MAE 0.12 [0.11, 0.14]; false-safe share over all queries (%) 0.00 [0.00, 0.00].
 
 Learned coupling residual calibration: 6879 rows / 40 engines, reference distribution healthy_to_moderate, RUL > 30, sigma multiplier 3.0. These validation engines are disjoint from coupling training but also determine residual thresholds; they are not untouched coupling test units.
 
@@ -404,4 +404,3 @@ Reference classifications remain unresolved finite searches, not certified infea
 | FD001/xgb/v2 | 8 | 7 | 100.0 [100.0, 100.0] |
 
 The frozen second-seed replay is documented in docs/final_verification.md under run phase11-seed1730-20261028T030707Z and source63c2ed445fba16c73a2771e184f635abf76b4405. It completed 34,298 records / 64 groups. Comparisons against historical 1730 and 1729 each found zero mismatches at absolute tolerance 1e-6 / relative tolerance 1e-5, with discrete verdicts exact. All 576 whole-engine CI objects passed independent checks. This reused-engine replay is reproducibility evidence, not an independent generalization sample. Execution segments and host interruptions are disclosed in that verification record.
-

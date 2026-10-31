@@ -145973,9 +145973,9 @@
     "artifacts\\experiments\\phase7-20261020T102540Z\\summary.json": "e0de87c06b418be761142d259ccad8870b81232217b6d75303ee7a91957082fe",
     "artifacts\\experiments\\phase7-20261020T102540Z\\model_metadata.json": "1e84e30f852670292675d78cd11383e8d7845752cd35bf04d3ac2d1f4542b282",
     "artifacts\\phase7-models\\index.json": "eb5c309ef8fe8f73334280b5dfc2e6e3f0617455bc683b39aeb4fb1813428880",
-    "paper\\manuscript.md": "061f57af212584192b6beadb6d9c69457d813e2dd024312643fc018ab5840644"
+    "paper\\manuscript.md": "dabe0f6f39bdd4c962def6fb5dc15675013d5ef0713fcccb55d184cdacd2b08b"
   },
-  "publication_builder_git": "a22f547a235f463c7b2be8194966b77a37b7e12e",
-  "builder_sha256": "04be40cbaa288e44f86894df2546eb90296bb424fb6d027a1bba180b2f402b37",
+  "publication_builder_git": "762bd3bebd5d5aed0ce99205fecb4a5d9afbacda",
+  "builder_sha256": "9ace7fe416cd7b4be113cbc5874b928ed8ea24eef7ab3baa99a36c56de7858b2",
   "note": "Publication build only; saved measurements and original source identities retained."
 }

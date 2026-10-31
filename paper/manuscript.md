@@ -133,7 +133,3 @@ PrescriptXAI supplies a runnable and auditable integration of sparse recourse, e
 [8] T. Chen and C. Guestrin. XGBoost: A Scalable Tree Boosting System. KDD, 2016. DOI:10.1145/2939672.2939785. https://arxiv.org/abs/1603.02754
 
 [9] United Nations DESA. Sustainable Development Goal 9: Industry, Innovation and Infrastructure, targets 9.1 and 9.4. Accessed 30 October 2026. https://sdgs.un.org/goals/goal9
-
-
-
-

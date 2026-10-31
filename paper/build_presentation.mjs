@@ -203,5 +203,3 @@ export async function populate(p,root){
   }
   return {slideCount:p.slides.items.length,tableSlides:p.slides.items.map((s,i)=>s.tables.items.length?i+1:null).filter(Boolean),source:note};
 }
-
-
