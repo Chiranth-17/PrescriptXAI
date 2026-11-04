@@ -5,8 +5,11 @@ an independently verified2,589-case mismatch in the complete32,116-query run. Th
 five-case factorial diagnosis completed20calls/native0 and independently isolates calibration
 arithmetic for those examples. The proposed repair selects legacy math only for24exact
 audited model hashes; other missing versions keep currentmath with a warning. Explicit
-versions remain authoritative. Correctedfocused60tests pass; fullgate, independent repair
-review, full32,116replay, fixturepromotion andcleanclone verification remainpending.
+versions remain authoritative. Correctedfullgate passes608tests/66warnings/368.68s,
+Ruff/mypy65/strictdocs; coverage91.01097086233337/90.02333722287048/86.63671599718111%.
+Implementation source `decf66c5c87444e6a5f288b86162e49824d8276e`; configuration
+`configs/experiments/phase12-quality.yaml`. Independent24identity repair review passes.
+Full32,116replay, fixturepromotion andcleanclone verification remainpending.
 Phase12 is open and Phase13 has not started. [Repair policy and evidence](phase12_regression_repair.md).
 The [complete failed run](phase12_regression_failure.md) remains immutable. Automatic
 continuation was recreated after the user's continue; historical stop receipts are preserved.

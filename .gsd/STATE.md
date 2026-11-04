@@ -2,7 +2,7 @@
 phase: 12
 status: in_progress
 current_activity: exact-byte-calibration-compatibility-verification
-activity_status: corrected_software_gate_running
+activity_status: corrected_gate_passed_new_full_replay_pending
 ---
 # Resumed by explicit user continuation - 2026-11-05 IST
 
@@ -13,8 +13,11 @@ missingversion to1; sourcecommit alone insufficient; othermissing→2withwarning
 contract; explicitversionsauthoritative/newfits2. Inventory configs/experiments/phase12-calibration-migration-v1.yaml.
 Frozenbytes/NumPytruth/scientificsettings/publicschemas2.0.0 unchanged. Initialsuperseded
 policyfullgate595/66/322.44s passed. Correctedfocused60/10.38s plusRuff/mypy65pass;
-correctedfullgate running artifacts/phase12/calibration-migration-full-gate.* (discoverPIDs).
-Independentreview inprogress. Afterpassing softwaregate andpreregisteredcommit, run NEW
+correctedfullgate passed608/66/368.68s, all-checks381.0572805s, Ruff/mypy65/docs5.03s.
+Coverage91.01097086233337/90.02333722287048/86.63671599718111%; unchangedfloors.
+Repairsource decf66c5c87444e6a5f288b86162e49824d8276e. Independent24identity/source/
+publicloaderaudit passes; artifacts/phase12/calibration-migration-independent-audit/.
+Aftercleanpreregistration/reportcommit, run NEW
 separatelynamed full32116/24group/97input baseline with unchangedapprovedhelper/config.
 Neverresumecompletedfailedoutput; neverreplaceexpecteddata. Fullparity+independentaudit,
 actualfixture/fullreruntest/cleanclone/fullgate requiredbeforePhase12closure/Phase13.

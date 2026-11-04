@@ -10,7 +10,10 @@ with verified original fitting sources to v1. Explicit versions are authoritativ
 other missing metadata preserves priorv2 with warning/unverifiedcontract note. Source string
 alone never selectslegacy. Frozenfitbytes/trueNumPy/settings/publicschemas2.0.0 unchanged.
 Initial superseded broadpolicy gate595passed/66warnings/322.44s; correctedfocused60passed/10.38s,
-Ruff/mypy65pass; correctedfullgate/independentreview/newcomplete32116replay pending.
+Ruff/mypy65pass. Correctedfullgate passed608tests/66warnings/368.68s; overall381.0572805s;
+Ruff/mypy65/docs5.03s pass, coverage91.01097086233337/90.02333722287048/86.63671599718111%.
+Repairsource decf66c5c87444e6a5f288b86162e49824d8276e; phase12-quality.yaml floors retained.
+Independent24byteidentity/source/publicloader audit passes; full32116replay stillpending.
 Detailed policy/evidence:docs/phase12_regression_repair.md. Phase12 remainsopen;noPhase13.
 Automatic continuation prescriptxai-phases-12-20 was recreated after explicit user continuation;
 it inspects current receipts/processes and staysquiet for healthy unfinished runs. Verified

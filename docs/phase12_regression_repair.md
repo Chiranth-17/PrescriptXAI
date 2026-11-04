@@ -65,8 +65,9 @@ The initial, broader missing-metadata policy passed595tests/66warnings in322.44s
 strict mypy65 and strict docs. Its scoped/full/combined coverage was
 90.99184300744768% /90.0023386342376% /86.59720995938548%. Those checks preceded the
 independent review's artifact-ambiguity correction and do not verify the final policy.
-The corrected exact-byte migration, fresh software gate and complete32,116-query replay
-remain pending. No five-example pass closes that gate.
+The corrected exact-byte policy is implemented at source
+`decf66c5c87444e6a5f288b86162e49824d8276e`. Its new complete32,116-query replay
+is still required. No five-example pass closes that gate.
 
 Independent exact-byte review:24/24model hashes and fitting sources match both the original
 manifest and baseline inputs; all24unversioned raw objects resolve to v1 through the public
@@ -75,3 +76,20 @@ agree. Audit `artifacts/phase12/calibration-migration-independent-audit/audit.js
 `dbe3603521cd1ffbd5fdb04c3bf79952d8d88bd81f852fd81d66802676e1de48`.
 The reviewer gives conditional approval for the full replay only after a fresh passing
 software gate and clean preregistration commit. No full-population parity is established.
+
+## Corrected software gate
+
+Source `decf66c5c87444e6a5f288b86162e49824d8276e`; quality configuration
+`configs/experiments/phase12-quality.yaml`; migration configuration
+`configs/experiments/phase12-calibration-migration-v1.yaml` runtime SHA256
+`d61d25229e2d92d7624a6ab4793572c1a1f3322f28733f7c61ce2bfbd4fa859d`.
+`mingw32-make all-checks` exited0:608tests passed,66warnings,368.68seconds pytest,
+381.0572805seconds overall. Ruff passed, strict mypy65files passed, strict docs5.03seconds.
+Scoped coverage7715/8477=91.01097086233337%; full7715/8570=90.02333722287048%;
+combined9835/11352=86.63671599718111%. Both historical/current coverage gates pass,
+with unchanged rendering exclusion and no lowered floors. Focused60tests passed10.38seconds.
+Actual logs/receipts: `artifacts/phase12/calibration-migration-full-gate.log`,
+`calibration-migration-full-gate-status.json` and `calibration-migration-verified-coverage.json`.
+The audited implementation/config/test bytes match this commit. These are software checks,
+not regression parity, new quality estimates, isolated latency certification or Phase12closure.
+The next actual evaluation uses the original full registered baseline design and frozen inputs.
