@@ -2,6 +2,20 @@
 
 ## Phase12 diagnosis resumed - 2026-11-05 IST
 
+All20preregistered localization calls completed/native0; independent audit confirmed all20
+records/97inputs and5current reproductions. Historical calibration alone restores5/5selected
+counterexamples with either lift; graph alone restores0/5. This is local diagnosis only.
+The repair versions tensor arithmetic and migrates only24exact audited model-byte identities
+with verified original fitting sources to v1. Explicit versions are authoritative; new fits2;
+other missing metadata preserves priorv2 with warning/unverifiedcontract note. Source string
+alone never selectslegacy. Frozenfitbytes/trueNumPy/settings/publicschemas2.0.0 unchanged.
+Initial superseded broadpolicy gate595passed/66warnings/322.44s; correctedfocused60passed/10.38s,
+Ruff/mypy65pass; correctedfullgate/independentreview/newcomplete32116replay pending.
+Detailed policy/evidence:docs/phase12_regression_repair.md. Phase12 remainsopen;noPhase13.
+Automatic continuation prescriptxai-phases-12-20 was recreated after explicit user continuation;
+it inspects current receipts/processes and staysquiet for healthy unfinished runs. Verified
+session idle-sleep guard remainsactive; permanentpower/lidpolicies unchanged.
+
 User explicitly requested continuation after the regression stop. Proceed with controlled
 bug localization and repair; preserve all failed-run outcomes and fixedexpectedoutputs.
 The separately registered phase12-localization-v1 diagnostic tests5savedcounterexamples in

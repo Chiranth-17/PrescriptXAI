@@ -25,6 +25,8 @@ class ProbabilityCalibrator:
         self.slope: float | None = None
         self.intercept: float | None = None
         self.temperature: float | None = None
+        # Persist numerical behavior on every new fit; legacy loading uses verified provenance.
+        self.tensor_map_version = 2
 
     def fit(
         self, probabilities: NDArray[np.float64], labels: NDArray[np.int64]
@@ -82,11 +84,13 @@ class ProbabilityCalibrator:
                 if not fitted.success or not np.isfinite(fitted.fun):
                     raise ValueError(f"temperature calibration failed: {fitted.message}")
                 self.temperature = float(np.exp(fitted.x[0]))
+        self.tensor_map_version = 2
         return self
 
     def transform(self, probabilities: NDArray[np.float64]) -> NDArray[np.float64]:
         """Apply the fitted monotone calibration map."""
         raw = _validate_probabilities(probabilities)
+        self._validated_tensor_map_version()
         if self.method == "isotonic":
             if self.model is None:
                 raise ValueError("calibrator has not been fitted")
@@ -113,6 +117,9 @@ class ProbabilityCalibrator:
             (probabilities < 0) | (probabilities > 1)
         ).any():
             raise ValueError("probabilities must be finite and within [0, 1]")
+        version = self._validated_tensor_map_version()
+        if version == 1:
+            return self._legacy_transform_tensor(probabilities)
         # Match the reported NumPy map, including its endpoint rule. Computing in float64
         # represents 1-1e-12 even for float32 predictors; .to() preserves their gradients.
         raw = probabilities.to(dtype=torch.float64)
@@ -140,6 +147,46 @@ class ProbabilityCalibrator:
         y0, y1 = y[indices - 1], y[indices]
         fraction = (
             (raw - x0) / (x1 - x0).clamp_min(torch.finfo(raw.dtype).tiny)
+        ).clamp(0, 1)
+        return y0 + fraction * (y1 - y0)
+
+    def _validated_tensor_map_version(self) -> int:
+        version = getattr(self, "tensor_map_version", 2)
+        if type(version) is not int or version not in (1, 2):
+            raise ValueError("unsupported tensor calibration map version")
+        return version
+
+    def _legacy_transform_tensor(self, probabilities: torch.Tensor) -> torch.Tensor:
+        """Preserve audited historical artifacts' dtype, clipping and gradient arithmetic.
+
+        The public caller validates inputs before reaching this compatibility map. Final
+        model safety still uses the unchanged NumPy transform, never this search approximation.
+        """
+        bounded = probabilities.clamp(1e-7, 1 - 1e-7)
+        logits = torch.logit(bounded)
+        if self.method == "sigmoid":
+            if self.slope is None or self.intercept is None:
+                raise ValueError("calibrator has not been fitted")
+            return torch.sigmoid(self.slope * logits + self.intercept)
+        if self.method == "temperature":
+            if self.temperature is None:
+                raise ValueError("calibrator has not been fitted")
+            return torch.sigmoid(logits / self.temperature)
+        if self.model is None:
+            raise ValueError("calibrator has not been fitted")
+        x = torch.as_tensor(
+            self.model.X_thresholds_, dtype=probabilities.dtype, device=probabilities.device
+        )
+        y = torch.as_tensor(
+            self.model.y_thresholds_, dtype=probabilities.dtype, device=probabilities.device
+        )
+        if len(x) == 1:
+            return y[0].expand_as(probabilities) + probabilities * 0
+        indices = torch.searchsorted(x, bounded.contiguous()).clamp(1, len(x) - 1)
+        x0, x1 = x[indices - 1], x[indices]
+        y0, y1 = y[indices - 1], y[indices]
+        fraction = (
+            (bounded - x0) / (x1 - x0).clamp_min(torch.finfo(probabilities.dtype).eps)
         ).clamp(0, 1)
         return y0 + fraction * (y1 - y0)
 

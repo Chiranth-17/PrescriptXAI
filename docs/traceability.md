@@ -2,8 +2,11 @@
 
 **Phase12 R3 gate: Not met,5 November2026 IST.** All32,116queries were measured, but
 2,589cases differ from the frozen reference, including167Tier2 and35triage verdicts.
-See the [complete failure scope](phase12_regression_failure.md). Advancement stopped;
-no new golden fixture, clean-clone regression pass orPhase12 closure is claimed.
+See the [complete failure scope](phase12_regression_failure.md). The user resumed diagnosis;
+an independently reviewed exact-byte calibration repair is being verified. The selected
+five-example diagnosis restores5/5 with historical calibration; full-population parity remains
+unverified. See [repair scope](phase12_regression_repair.md). No new golden fixture,
+clean-clone regression pass, Phase12 closure or Phase13 advancement is claimed.
 The64synopsis rows below retain their named historical evidence scopes, not an assertion
 that the current-source solver reproduces every historical candidate.
 

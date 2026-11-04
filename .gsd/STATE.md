@@ -1,17 +1,25 @@
 ---
 phase: 12
 status: in_progress
-current_activity: regression-mismatch-diagnosis
-activity_status: resumed_for_diagnosis
+current_activity: exact-byte-calibration-compatibility-verification
+activity_status: corrected_software_gate_running
 ---
 # Resumed by explicit user continuation - 2026-11-05 IST
 
-User requested continue after the stop report. Resume controlled diagnosis/repair ofPhase12;
-keep original2589mismatchrun andexpectedsource63 unchanged. NoPhase13 beforefullgate.
-Register five-case2x2localization ofhistorical/currenttorchcalibration andseparate/sharedlift.
-All20calls required, diagnostic only, samefittedinputs/settings; noquality/latencyclaim.
-No existing experiment process remains. Sessionawakeguard remainsactive; runneralsoownsone.
-Priorstoptextbelowishistorical; heartbeatwasdeleted andnotyetrecreated.
+Phase12 only.20localization calls/native0 plus independent20record/97input audit isolate
+calibration arithmetic onfivecounterexamples; no fullpopulation parityclaim. Rootimplemented
+versioned maps retaining hardening. Only24exact audited historical model-byte hashes resolve
+missingversion to1; sourcecommit alone insufficient; othermissing→2withwarning/unverified
+contract; explicitversionsauthoritative/newfits2. Inventory configs/experiments/phase12-calibration-migration-v1.yaml.
+Frozenbytes/NumPytruth/scientificsettings/publicschemas2.0.0 unchanged. Initialsuperseded
+policyfullgate595/66/322.44s passed. Correctedfocused60/10.38s plusRuff/mypy65pass;
+correctedfullgate running artifacts/phase12/calibration-migration-full-gate.* (discoverPIDs).
+Independentreview inprogress. Afterpassing softwaregate andpreregisteredcommit, run NEW
+separatelynamed full32116/24group/97input baseline with unchangedapprovedhelper/config.
+Neverresumecompletedfailedoutput; neverreplaceexpecteddata. Fullparity+independentaudit,
+actualfixture/fullreruntest/cleanclone/fullgate requiredbeforePhase12closure/Phase13.
+Heartbeatprescriptxai-phases-12-20 recreated afterusercontinue; staysquiet whenhealthyunfinished.
+Verified sessionawakeguard active; inspectstatus+actualidentity, no permanentpolicychange.
 
 # Latest stop - 2026-11-05 IST
 

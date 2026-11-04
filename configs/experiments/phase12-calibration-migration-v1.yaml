@@ -1,0 +1,85 @@
+purpose: exact_byte_identity_migration_not_outcome_tuning
+legacy_tensor_map_version: 1
+unrecognized_unversioned_default: 2
+public_result_schema: 2.0.0
+method_ast_hashes:
+  0c0b6e1d37aafaed66cc61d9ac23f768c0529442: 8eaadfb76cb404fa14547432bb21a27a86888db21b9fb1fc9b6999471af60163
+  473672b1b8103fb4468184145aa3bc2d82f63e8e: 8eaadfb76cb404fa14547432bb21a27a86888db21b9fb1fc9b6999471af60163
+  4a8275a788c9998d80acf07f3e7e9dfe2fcbe179: 8eaadfb76cb404fa14547432bb21a27a86888db21b9fb1fc9b6999471af60163
+  4ffb038c579039b557b3e6695d429001a293f043: 8eaadfb76cb404fa14547432bb21a27a86888db21b9fb1fc9b6999471af60163
+  63c2ed445fba16c73a2771e184f635abf76b4405: 8eaadfb76cb404fa14547432bb21a27a86888db21b9fb1fc9b6999471af60163
+  fa5adcbe914f95e6efe25f4edc8f8f50a234881a: 8eaadfb76cb404fa14547432bb21a27a86888db21b9fb1fc9b6999471af60163
+artifacts:
+- path: artifacts/FD001-xgboost.joblib
+  sha256: cc3b3c2028a4d4a568cd554d1c2cf360bcd9fe237ecfd4afe5d628d3ca40d8bd
+  fitting_source: fa5adcbe914f95e6efe25f4edc8f8f50a234881a
+- path: artifacts/phase4-final/grouped-cv/fold-1/model.joblib
+  sha256: c52728e242d0c14b536eae5a8b579fa9003b6e25d9e28cb33c2c225ec0948732
+  fitting_source: 4a8275a788c9998d80acf07f3e7e9dfe2fcbe179
+- path: artifacts/phase4-final/grouped-cv/fold-2/model.joblib
+  sha256: 1cd9ba2cb4515108d6709566637658dfaff4130d897e35214cc1267c061acf09
+  fitting_source: 4a8275a788c9998d80acf07f3e7e9dfe2fcbe179
+- path: artifacts/phase4-final/grouped-cv/fold-3/model.joblib
+  sha256: 8ac30f13ea83291bb3240b66d4b36b985d8ca9d54ce9d0edc43286836f061a6f
+  fitting_source: 4a8275a788c9998d80acf07f3e7e9dfe2fcbe179
+- path: artifacts/phase4-final/grouped-cv/fold-4/model.joblib
+  sha256: ff39f9e7c567384abfb2866c2f688fe2622aead1ec11f67a5e8ef81e31fc6eb2
+  fitting_source: 4a8275a788c9998d80acf07f3e7e9dfe2fcbe179
+- path: artifacts/phase4-final/grouped-cv/fold-5/model.joblib
+  sha256: 0deaf3ecfbe3fe72dafe4f0b20453d374f31752653acb590a814df963a6e0fe1
+  fitting_source: 4a8275a788c9998d80acf07f3e7e9dfe2fcbe179
+- path: artifacts/phase7-models/FD001-lstm/fold-1/model.joblib
+  sha256: 93aa5d70bffc72fa08bf7fb97d4fbe3f780f1f98251239af0750f97ba645b0df
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD001-lstm/fold-2/model.joblib
+  sha256: 6321caec653f39b9455bf4f98743c32860019fdd020bfcb8c73e67fed46a2f2d
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD001-lstm/fold-3/model.joblib
+  sha256: 24175d136f50883eb6de94b4518c79d4d54653606daa6cf4c9c545eaa560be94
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD001-lstm/fold-4/model.joblib
+  sha256: d07410a4c3905907fe7aae1f452822940062de773f5f301cc1683b11873c52d1
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD001-lstm/fold-5/model.joblib
+  sha256: d5caef362ad819901c8fb294bb89d8d6553937529af9eaf6231d787de490ddbe
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD001-lstm/model.joblib
+  sha256: 70a9cef8682e80e605a0b7bbdc36b080f14e03c98b930d6c8b4156f65cf6a6f5
+  fitting_source: 473672b1b8103fb4468184145aa3bc2d82f63e8e
+- path: artifacts/phase7-models/FD001-mlp/fold-1/model.joblib
+  sha256: a8ef6ef286a0183cb2c3e849e8389cdaa30fa27d0b74300ded1114dfac39e115
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD001-mlp/fold-2/model.joblib
+  sha256: 6aef340db4b4ede98f7e00c04bb055ed523b348e6dca2557c6563e6a54f84072
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD001-mlp/fold-3/model.joblib
+  sha256: 0875168613600c6b4419353f030576324196524238f00690e240d44dcc68ff01
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD001-mlp/fold-4/model.joblib
+  sha256: fd2d57e20b5010eea9c2b52a49453aea5b73baf3854cba999c71a700c3c38776
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD001-mlp/fold-5/model.joblib
+  sha256: 41ca030f7ad766bb8b6a6c14a600f8419253ce59f5fbbc66db4e97233db525ed
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD001-mlp/model.joblib
+  sha256: 2f16756d78a176f9d003bc1133924097a38663e37107d5ae6232ac549ddb4b5f
+  fitting_source: 473672b1b8103fb4468184145aa3bc2d82f63e8e
+- path: artifacts/phase7-models/FD002-xgb/FD002-xgboost.joblib
+  sha256: 0c4bc911a5ce9117ac1e0759c8fe38579beb5e83330acac4a39029193de1db1d
+  fitting_source: 0c0b6e1d37aafaed66cc61d9ac23f768c0529442
+- path: artifacts/phase7-models/FD002-xgb/fold-1/model.joblib
+  sha256: b4dd48313de2f8f9e7534f7b158fd30a9b6e7b49671bed34bdcc70ffe5984f3a
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD002-xgb/fold-2/model.joblib
+  sha256: a3af5d05aed54ce453dc1063cbe2960a6609572b253d99aea9a6055e761b388a
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD002-xgb/fold-3/model.joblib
+  sha256: 98fcd4ecf5de50b59337854c22bdeec45ed551d06c51d5b44a31f2d4a454939b
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD002-xgb/fold-4/model.joblib
+  sha256: 53517dfe09f50874e1588a024890ba767552e67fcd7f194b347d3a509e9ac382
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+- path: artifacts/phase7-models/FD002-xgb/fold-5/model.joblib
+  sha256: fcc168c9ad8f264317c24213fb058d3aaf8e44724ad486c7b3668d91da76beda
+  fitting_source: 4ffb038c579039b557b3e6695d429001a293f043
+count: 24

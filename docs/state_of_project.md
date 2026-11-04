@@ -1,11 +1,15 @@
 # State of the project - Phase 12 in progress
 
-**Latest status,5 November2026 IST:** the complete32,116-query run saved all results but
-failed scientific parity in2,589cases, including167changed Tier2 verdicts and35changed
-triage outcomes. The user's explicit regression-change stop condition applies. Automatic
-continuation was deleted; no baseline fixture was promoted and Phase13 has not started.
-See the [preserved failure and diagnosis](phase12_regression_failure.md). The earlier
-prelaunch checkpoints below retain their historical scope and are not a regression pass.
+**Latest status,5 November2026 IST:** the user explicitly resumed diagnosis/repair after
+an independently verified2,589-case mismatch in the complete32,116-query run. The selected
+five-case factorial diagnosis completed20calls/native0 and independently isolates calibration
+arithmetic for those examples. The proposed repair selects legacy math only for24exact
+audited model hashes; other missing versions keep currentmath with a warning. Explicit
+versions remain authoritative. Correctedfocused60tests pass; fullgate, independent repair
+review, full32,116replay, fixturepromotion andcleanclone verification remainpending.
+Phase12 is open and Phase13 has not started. [Repair policy and evidence](phase12_regression_repair.md).
+The [complete failed run](phase12_regression_failure.md) remains immutable. Automatic
+continuation was recreated after the user's continue; historical stop receipts are preserved.
 
 Status date: 4 November 2026. The user supplied and authorized the complete
 [Phases 12-20 prompt](prompts/final_phases_12_to_20.md). Phase 12 adds no product features;

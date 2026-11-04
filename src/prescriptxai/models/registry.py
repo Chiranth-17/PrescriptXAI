@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import logging
 from dataclasses import dataclass
 from pathlib import Path
@@ -13,7 +14,12 @@ import pandas as pd
 import torch
 from numpy.typing import NDArray
 
-from prescriptxai.artifacts import ArtifactLoadError, load_trusted_joblib, validate_engine_ids
+from prescriptxai.artifacts import (
+    ArtifactLoadError,
+    load_trusted_joblib,
+    trusted_artifact_bytes,
+    validate_engine_ids,
+)
 from prescriptxai.data.preprocess import FittedFeatureScaler
 from prescriptxai.models.base import FailureModel
 from prescriptxai.models.calibration import ProbabilityCalibrator
@@ -22,6 +28,59 @@ from prescriptxai.models.xgb_model import XGBFailureModel
 
 LOGGER = logging.getLogger(__name__)
 _ARTIFACT_VERSION = 3
+
+# Audited pre-hardening fitted bytes only; fitting commit alone cannot prove map identity.
+# Provenance and source-method hashes: docs/phase12_regression_repair.md.
+_LEGACY_TENSOR_MAP_ARTIFACTS = {
+    "cc3b3c2028a4d4a568cd554d1c2cf360bcd9fe237ecfd4afe5d628d3ca40d8bd":
+        "fa5adcbe914f95e6efe25f4edc8f8f50a234881a",
+    "c52728e242d0c14b536eae5a8b579fa9003b6e25d9e28cb33c2c225ec0948732":
+        "4a8275a788c9998d80acf07f3e7e9dfe2fcbe179",
+    "1cd9ba2cb4515108d6709566637658dfaff4130d897e35214cc1267c061acf09":
+        "4a8275a788c9998d80acf07f3e7e9dfe2fcbe179",
+    "8ac30f13ea83291bb3240b66d4b36b985d8ca9d54ce9d0edc43286836f061a6f":
+        "4a8275a788c9998d80acf07f3e7e9dfe2fcbe179",
+    "ff39f9e7c567384abfb2866c2f688fe2622aead1ec11f67a5e8ef81e31fc6eb2":
+        "4a8275a788c9998d80acf07f3e7e9dfe2fcbe179",
+    "0deaf3ecfbe3fe72dafe4f0b20453d374f31752653acb590a814df963a6e0fe1":
+        "4a8275a788c9998d80acf07f3e7e9dfe2fcbe179",
+    "93aa5d70bffc72fa08bf7fb97d4fbe3f780f1f98251239af0750f97ba645b0df":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "6321caec653f39b9455bf4f98743c32860019fdd020bfcb8c73e67fed46a2f2d":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "24175d136f50883eb6de94b4518c79d4d54653606daa6cf4c9c545eaa560be94":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "d07410a4c3905907fe7aae1f452822940062de773f5f301cc1683b11873c52d1":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "d5caef362ad819901c8fb294bb89d8d6553937529af9eaf6231d787de490ddbe":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "70a9cef8682e80e605a0b7bbdc36b080f14e03c98b930d6c8b4156f65cf6a6f5":
+        "473672b1b8103fb4468184145aa3bc2d82f63e8e",
+    "a8ef6ef286a0183cb2c3e849e8389cdaa30fa27d0b74300ded1114dfac39e115":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "6aef340db4b4ede98f7e00c04bb055ed523b348e6dca2557c6563e6a54f84072":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "0875168613600c6b4419353f030576324196524238f00690e240d44dcc68ff01":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "fd2d57e20b5010eea9c2b52a49453aea5b73baf3854cba999c71a700c3c38776":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "41ca030f7ad766bb8b6a6c14a600f8419253ce59f5fbbc66db4e97233db525ed":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "2f16756d78a176f9d003bc1133924097a38663e37107d5ae6232ac549ddb4b5f":
+        "473672b1b8103fb4468184145aa3bc2d82f63e8e",
+    "0c4bc911a5ce9117ac1e0759c8fe38579beb5e83330acac4a39029193de1db1d":
+        "0c0b6e1d37aafaed66cc61d9ac23f768c0529442",
+    "b4dd48313de2f8f9e7534f7b158fd30a9b6e7b49671bed34bdcc70ffe5984f3a":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "a3af5d05aed54ce453dc1063cbe2960a6609572b253d99aea9a6055e761b388a":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "98fcd4ecf5de50b59337854c22bdeec45ed551d06c51d5b44a31f2d4a454939b":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "53517dfe09f50874e1588a024890ba767552e67fcd7f194b347d3a509e9ac382":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+    "fcc168c9ad8f264317c24213fb058d3aaf8e44724ad486c7b3668d91da76beda":
+        "4ffb038c579039b557b3e6695d429001a293f043",
+}
 
 
 @dataclass
@@ -171,16 +230,42 @@ def load_model_bundle(
     """Load a fitted model bundle and optionally enforce feature order."""
     if not path.is_file():
         raise FileNotFoundError(path)
-    loaded: Any = load_trusted_joblib(path, expected_sha256)
+    # Bind migration to the very bytes decoded, even when a caller supplied no fingerprint.
+    artifact_digest = expected_sha256
+    if artifact_digest is None:
+        artifact_digest = hashlib.sha256(trusted_artifact_bytes(path)).hexdigest()
+    loaded: Any = load_trusted_joblib(path, artifact_digest)
     if not isinstance(loaded, ModelBundle):
         raise ValueError("artifact does not contain a PrescriptXAI ModelBundle")
     try:
         _verify_model_structure(loaded, require_calibrated)
+        _resolve_calibration_arithmetic(loaded, artifact_digest)
     except (AttributeError, TypeError, KeyError, IndexError) as error:
         raise ArtifactLoadError("model artifact contains malformed fitted metadata") from error
     if expected_features is not None and expected_features != loaded.feature_names:
         raise ValueError("artifact feature order does not match the expected feature order")
     return loaded
+
+
+
+def _resolve_calibration_arithmetic(bundle: ModelBundle, artifact_digest: str) -> None:
+    """Migrate unversioned maps in memory using audited bytes, never observed outcomes."""
+    calibrator = bundle.calibrator
+    if calibrator is None or hasattr(calibrator, "tensor_map_version"):
+        return
+    legacy_source = _LEGACY_TENSOR_MAP_ARTIFACTS.get(artifact_digest)
+    if legacy_source is not None:
+        if bundle.git_commit != legacy_source:
+            raise ArtifactLoadError("legacy calibration artifact fitting provenance differs")
+        calibrator.tensor_map_version = 1
+        LOGGER.info("Resolved audited legacy calibration map v1 for artifact %s", artifact_digest)
+    else:
+        # Some post-hardening fits also lack a version. Keep their prior v2 behavior.
+        calibrator.tensor_map_version = 2
+        LOGGER.warning(
+            "Unversioned calibration artifact %s: preserving current map v2; "
+            "original numerical contract is unverified", artifact_digest
+        )
 
 
 def _verify_model_structure(bundle: ModelBundle, require_calibrated: bool) -> None:

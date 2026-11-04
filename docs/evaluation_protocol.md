@@ -538,3 +538,19 @@ exceptions stop the diagnostic with existing checkpoints preserved. No diagnosti
 population quality, latency, full regression, physical benefit or phase closure. Candidate
 remediation must preserve hardened invalid-input handling and true-model final scoring, and
 subsequently pass the complete registered32116-case regression with unchanged tolerance.
+
+## Phase12 compatibility repair verification
+
+After the20-call localization completed, the proposed repair versions differentiable
+calibrator arithmetic by verified artifact bytes: only the24 exact audited historical
+model hashes in configs/experiments/phase12-calibration-migration-v1.yaml resolve missing
+metadata to originalv1. Fitting source alone is insufficient. All other missing metadata
+preserves priorv2 with a loader warning that the original contract is unverified; explicit
+version1/2 remains authoritative and new constructions/fits recordv2. Fitted bytes and true
+NumPy calibration remain unchanged. Strict finite/shape/range guards and unknown-version
+rejection apply to both. This is backward compatibility, not outcome tuning of thresholds
+or search settings. Commit the repair and passing software gate before executing a new,
+separately named full phase12-baseline-v1 run. Use all32116cases/24groups and all97 frozen
+inputs, exact discrete outputs and absolute1e-6/relative0, preserving every outcome/timing.
+The original failed run remains immutable. Independent complete-record parity and subsequent
+clean-clone replay must pass before any fixture promotion or Phase12 closure.
