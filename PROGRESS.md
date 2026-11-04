@@ -1,5 +1,30 @@
 # PrescriptXAI Progress
 
+## Phases 12-20 authorized - Phase 12 in progress, 2026-11-04 IST
+
+The user supplied the complete prompt and authorized unattended implementation in order.
+The exact attachment is preserved at `docs/prompts/final_phases_12_to_20.md`, SHA256
+`a4f2d4d7e820bba4316606c7089ead7c7f994b9fd4c872765a5443a28223b983`.
+Rules 30-40 are appended to AGENTS.md. These phases supersede the earlier notes saying
+that no further numbered prompt exists. Historical phase closures and measurements remain intact.
+Work continues in the main checkout on `codex/phases-12-20`; the frozen source63 checkout
+remains untouched. Phase 12 adds no product features. Unfinished browser diagnostic prototypes
+are preserved byte-for-byte in ignored `artifacts/remediation/deferred-browser-probe/`, with
+their original paths and hashes. Their experiment never started; do not report UI timings.
+
+Phase 12 checks tags, reconciles all earlier open items, runs the full gate and registers the
+complete fixed-seed Phase 7 headline replay before measuring. Independent review confirms
+that the headline means FAST/all-alert populations, not the 60-state development sample.
+Tags phase1-closed through phase3-closed are absent; do not create unsupported historical tags.
+No Phase 12 closure or Phase 13 refactor is claimed before the complete gate and regression.
+A temporary Windows execution-state request keeps this Codex session awake, verified active;
+it changes no power plan and cannot override lid closure, explicit sleep or a shutdown.
+
+The existing optimization repair has software/unit-gradient evidence but still needs the
+complete outcome regression and serial latency measurements. Both remain explicit open items.
+The new generic framework, synthetic pump, onboarding, security, dashboard, deployment,
+per-machine evaluation and v1.0.0 release are queued in Phases 13-20, not implemented claims.
+
 ## Post-audit remediation - in progress, 2026-10-31 IST
 
 The user authorized trying to repair the 31 remaining audit exceptions. The Phase11

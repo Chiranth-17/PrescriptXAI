@@ -1,9 +1,26 @@
 ---
-phase: 11
-status: complete
-current_activity: post-audit-remediation
+phase: 12
+status: in_progress
+current_activity: reality-check-and-baseline-freeze
 activity_status: in_progress
 ---
+# Current execution - 2026-11-04 IST
+
+User supplied and authorized docs/prompts/final_phases_12_to_20.md (exact attachment
+SHA256 a4f2d4d7e820bba4316606c7089ead7c7f994b9fd4c872765a5443a28223b983).
+Execute all nine phases in order without routine confirmations, full gate before advancing.
+AGENTS rules30-40 now apply. MAIN branch codex/phases-12-20; explicit cwd required.
+Phase12 adds no features. Missing historical tags1-3 must be disclosed, never fabricated.
+Headline replay means all FAST alerts in all24reported groups on fixedseed1729, with no
+population cap; independently verify exact counts before preregistration and execution.
+Keep source63 measurements/config/assets and the frozen primary checkout unchanged.
+The pending browser prototypes were moved byte-identically to ignored
+artifacts/remediation/deferred-browser-probe/; their preservation.json records hashes/paths.
+No browser measurement occurred. Existing current-source full latency is still pending.
+Temporary sleep guard artifacts/remediation/unattended/keep-awake-status.json is active,
+pid21444 tied to this Codex session; discover process identity before changing it.
+Root implements; independent subagents audit only. See PROGRESS.md for newest status.
+
 # Phase 11 final audit — complete, 2026-10-30 IST
 
 ## Current authorized follow-up

@@ -31,4 +31,16 @@
 28. EVIDENCE FOR CLAIMS: a claim about consistency, fidelity or plausibility cites error or margin metrics (R2, residual std, share beyond threshold, D_M distributions), not the size of a change.
 29. TIER 1 IS WEAK ALONE: because the predictor can be driven near zero risk by moving proxy sensors, any report of validity is accompanied by plausibility, coupling checks and the evidence level reached.
 
+30. ADVISORY ONLY. The system never writes to a machine, PLC, historian or control system. Connectors are read-only. Every output is a recommendation that a human approves.
+31. MACHINE-AGNOSTIC CORE. src/prescriptxai/core contains no dataset, machine or sensor names. Machine knowledge lives in machine specs, adapters and the asset-class library. A test enforces this.
+32. TESTED-ONLY CLAIMS. Docs and UI name the machines the framework was tested on and mark each as real benchmark or synthetic. Never write "works on any machine".
+33. ENGINEER SIGN-OFF. Bounds, rate limits, failure definitions and the controllable/frozen split need a named engineer's sign-off (name, role, date) stored in the machine pack. Without it a machine runs in Alerts-only mode.
+34. FAIL SAFE. If data quality, input integrity, plausibility or any check fails, withhold the recommendation and say why. Never fall back to a weaker answer silently.
+35. EVIDENCE-GATED MODES. Alerts only, Advisory (shadow), Advisory (live). The readiness scorecard decides which are allowed; promotion is always manual. Thresholds live in config with their rationale.
+36. SECURITY BY DEFAULT. Authentication on, least privilege, no secrets in the repo, tamper-evident audit log, hashed machine packs.
+37. NO POOLED NUMBERS. Results are per machine. Every table carries machine id, spec hash, protocol version, run id, K and population.
+38. LABEL SYNTHETIC AND SIMULATED DATA everywhere: tables, charts, exports, UI. Simulated operator rows read "Simulated operator (demo)".
+39. STANDARDS ARE GUIDANCE. Mention ISO 13374, ISO 14224, ISO 17359, OPC UA and IEC 62443 only as alignment guidance. Never claim compliance or certification.
+40. REPRODUCIBLE RELEASES. A release builds from a clean clone and passes `make verify`.
+
 Send a short status with real numbers after every phase.
