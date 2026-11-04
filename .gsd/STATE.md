@@ -2,8 +2,17 @@
 phase: 12
 status: in_progress
 current_activity: regression-mismatch-diagnosis
-activity_status: stopped_per_user_prompt
+activity_status: resumed_for_diagnosis
 ---
+# Resumed by explicit user continuation - 2026-11-05 IST
+
+User requested continue after the stop report. Resume controlled diagnosis/repair ofPhase12;
+keep original2589mismatchrun andexpectedsource63 unchanged. NoPhase13 beforefullgate.
+Register five-case2x2localization ofhistorical/currenttorchcalibration andseparate/sharedlift.
+All20calls required, diagnostic only, samefittedinputs/settings; noquality/latencyclaim.
+No existing experiment process remains. Sessionawakeguard remainsactive; runneralsoownsone.
+Priorstoptextbelowishistorical; heartbeatwasdeleted andnotyetrecreated.
+
 # Latest stop - 2026-11-05 IST
 
 Actualrunphase12-baseline-20261104T173007Z completed32116queries/24groups but nativeexit1,

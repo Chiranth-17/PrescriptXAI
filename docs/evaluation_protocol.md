@@ -520,3 +520,21 @@ All previous metric definitions and whole-engine CI rules continue. No all-alert
 inferred from a first-alert or 12-state K diagnostic; no [1,1] empirical bootstrap endpoint is
 interpreted as certainty for new units. Maximum available evidence is E3 under documented proxy
 assumptions, with no causal intervention, real-machine safety or RUL-extension claim.
+
+## Phase12 resumed bug localization, phase12-localization-v1
+
+On5November2026 the user explicitly requested continuation after the regression stop.
+This authorizes diagnosis/repair, not advancement past the failing gate or replacement of
+expected outputs. Before execution, commit configs/experiments/phase12-localization-v1.yaml
+and scripts/diagnostics/phase12_localization.py. The diagnostic contains five fixed saved
+failure examples: both published MLP counterexamples, the first numeric-only XGBoost example
+and the first triage-changing example per protocol in the saved mismatch order. All five run
+in every combination of historical/current calibration arithmetic and separate/shared feature
+graphs:20calls, one numerical thread, frozen cases/configs/all97inputs, no fitting or tuning.
+Only the two named methods are substituted in a local diagnostic process, with both actual
+source snapshots and hashes retained. Production source and the source63 checkout are untouched.
+Full outputs/timings are transactionally saved, including model/validation failures. Unexpected
+exceptions stop the diagnostic with existing checkpoints preserved. No diagnostic result certifies
+population quality, latency, full regression, physical benefit or phase closure. Candidate
+remediation must preserve hardened invalid-input handling and true-model final scoring, and
+subsequently pass the complete registered32116-case regression with unchanged tolerance.

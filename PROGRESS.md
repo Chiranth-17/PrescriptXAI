@@ -1,5 +1,14 @@
 # PrescriptXAI Progress
 
+## Phase12 diagnosis resumed - 2026-11-05 IST
+
+User explicitly requested continuation after the regression stop. Proceed with controlled
+bug localization and repair; preserve all failed-run outcomes and fixedexpectedoutputs.
+The separately registered phase12-localization-v1 diagnostic tests5savedcounterexamples in
+all4combinations of calibration arithmetic andfeature-graph reuse (20calls). Frozen97inputs,
+scientificconfiguration andabsolute1e-6/relative0 stay unchanged. It is not the fullheadline
+evaluation or a phaseclosure substitute. Preregister helper/config/protocol before execution.
+
 ## Phase 12 stopped on scientific regression - 2026-11-05 IST
 
 The complete run `phase12-baseline-20261104T173007Z`, source4048ea5319f774f3925cec1ed4dfaddbb9d34840,
