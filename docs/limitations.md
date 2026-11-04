@@ -113,3 +113,33 @@ rescoring. Final acceptance always uses the original calibrated model, preventin
 acceptance; this does not certify that search found every feasible candidate. See surrogate
 error and false-safe metrics in the [Phase 7 report](phase7_changes.md). Finite reference
 searches remain unresolved unless the required production-superset test is met.
+
+## Phase 12 reality-check limitations
+
+The complete [open-item ledger](phase12_open_items.md) retains every earlier exception plus
+the new verification obligations. The initial 540-test software gate passed with unchanged
+coverage; the complete new regression and clean-clone check are still pending. Historical
+closure tags1-3 are absent and will not be manufactured. Later closure tags are verified.
+
+The headline fixed D_max=5/8, fitted from the existing training distribution, is not the
+strict empirical95th-percentile distance threshold of real low-risk states. Separate old
+quantile and healthy-reference ablations do not establish their combination. A new diagnostic
+must be preregistered and reported separately, without redefining either historical protocol.
+
+Historical constraint-first fallback rates are available in the Phase4 diagnosis. The Phase7
+observation schema did not persist its internal fallback flag, so a Phase7 fallback rate cannot
+be reconstructed from those different measurements. This is a logging/reporting gap, not zero
+fallback. The protocol-v2 K curve does exist for the paired12-query/10-engine diagnostic; its
+small, reused-engine scope is retained rather than presented as a full all-alert K experiment.
+
+Whole-engine empirical bootstrap intervals can equal[1,1] when every observed engine succeeds.
+They describe resampling this finite engine population; they do not guarantee population-wide
+certainty or future-unit reliability. No state-binomial interval is substituted for an engine
+interval. Undefined conditional denominators remain undefined, with their counts reported.
+
+The new machine-pack, sign-off, readiness and security requirements are not yet implemented
+by the frozen research baseline. In particular, the existing API can run without an API key
+when its environment key is absent; it does not satisfy authentication-on-by-default. Phase12
+starts no service or industrial advisory deployment. These obligations are assigned to
+Phases13-18 and remain explicit until their tests pass. No absent engineer/classmate identity,
+public repository, hosted CI evidence or real plant benefit is invented for a gate.

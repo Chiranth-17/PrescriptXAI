@@ -25,6 +25,33 @@ complete outcome regression and serial latency measurements. Both remain explici
 The new generic framework, synthetic pump, onboarding, security, dashboard, deployment,
 per-machine evaluation and v1.0.0 release are queued in Phases 13-20, not implemented claims.
 
+Initial Phase12 full `mingw32-make all-checks` exited0:540passed/66warnings/250.98s;
+Ruff clean, mypy65 clean, strict docs3.71s. Coverage remains90.94469499169239% scoped,
+89.95187228547951% full and86.52123791788597% branch-inclusive. Product sourcea6e6067;
+prompt/governance commitf36db81. Exact logs/exit metadata are under artifacts/phase12.
+The independent corpus audit confirms32116FAST/full cases in24reported groups atseed1729;
+preflight verifies97frozeninputfiles. No scientific solve or numerical-parity claim yet.
+The verification helper has25passingfocusedtests, including10corruption probes against an
+actual test-only solver result and exact full-payload resume preservation. Config/protocol/helper
+must be committed and independently accepted before the complete actual baseline run.
+
+The50-entryledger is docs/phase12_open_items.md/json:7Closed/8Open/35Accepted-with-reason,
+preservingall31earlierexceptions plus19additionalobligations. Current synopsis map35Met/
+18Partial/11Notmet; unchangedPhase11 snapshot is docs/traceability_phase11.md.
+Missingtags1-3, strict healthy-q95 plausibility, Phase7fallbacklogging and empiricalCI endpoint
+limits are disclosed. Existingv2Kcurve12queries/10engines is correctly scoped as diagnostic.
+Read docs/state_of_project.md for baseline evidence, open needs and the queued phase changes.
+
+Final prelaunch all-checks passed573tests/66warnings/240.99s, Ruff/mypy65/docs4.16s,
+overall251.9467118s, actualexit0. All33newhelperprobes pass. Coverage increased to
+90.95656301922621%scoped/89.96361075243573%full/86.5389731311519%branch-inclusive;
+new configs/experiments/phase12-quality.yaml ratchets these floors in Makefile without
+changing historical phase9 config/exclusions. IndependentcodeGO for helperSHA
+9969081fa976a1c86e294c31d30266ebf6b109a84421f47ee9257d6ab45c088b/configSHA
+be26bf6ce264db835d62a193bec19b4f7c7e5818a1e57a7c7097a9c4119a7978 is conditional
+on committing this complete registration before launch. No actualbaseline/cleanclone/closure
+claim yet. The runner keeps its own verified idle-sleep request and full transactional records.
+
 ## Post-audit remediation - in progress, 2026-10-31 IST
 
 The user authorized trying to repair the 31 remaining audit exceptions. The Phase11

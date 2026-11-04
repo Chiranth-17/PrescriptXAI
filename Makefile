@@ -15,6 +15,7 @@ test:
 cov:
 	uv run pytest --cov=prescriptxai --cov-report=term-missing --cov-report=json --cov-report=xml
 	uv run python scripts/quality/coverage_gate.py
+	uv run python scripts/quality/coverage_gate.py --config configs/experiments/phase12-quality.yaml
 
 data:
 	uv run prescriptxai data prepare --subset FD001

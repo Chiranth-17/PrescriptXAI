@@ -46,6 +46,8 @@ nav:
       - Complete targets and gaps: final_targets.md
       - Verification outputs: final_verification.md
       - Post-audit repairs: remediation_status.md
+      - Phase 12 project state: state_of_project.md
+      - Phase 12 open items: phase12_open_items.md
   - Defense questions: defense_qa.md
   - SDG 9: sdg9.md
   - API reference: api_reference.md

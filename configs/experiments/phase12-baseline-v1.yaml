@@ -1,0 +1,79 @@
+schema_version: 1
+purpose: complete_phase7_headline_scientific_regression_freeze_not_new_generalization
+historical_run: phase7-20261020T102540Z
+historical_source: 63c2ed445fba16c73a2771e184f635abf76b4405
+historical_database: artifacts/experiments/phase7-20261020T102540Z/records.sqlite3
+historical_manifest: artifacts/experiments/phase7-20261020T102540Z/manifest.json
+source_study: configs/experiments/phase7-study.yaml
+solver_seed: 1729
+mode: FAST
+variant: full
+populations:
+- internal_heldout_all_alerts
+- grouped_oof_all_alerts
+- official_test_all_alerts
+expected_queries: 32116
+expected_groups: 24
+group_counts:
+  FD001/lstm/v1/grouped_oof_all_alerts/fast/full: 2456
+  FD001/lstm/v1/internal_heldout_all_alerts/fast/full: 350
+  FD001/lstm/v1/official_test_all_alerts/fast/full: 138
+  FD001/lstm/v2/grouped_oof_all_alerts/fast/full: 2456
+  FD001/lstm/v2/internal_heldout_all_alerts/fast/full: 350
+  FD001/lstm/v2/official_test_all_alerts/fast/full: 138
+  FD001/mlp/v1/grouped_oof_all_alerts/fast/full: 2472
+  FD001/mlp/v1/internal_heldout_all_alerts/fast/full: 377
+  FD001/mlp/v1/official_test_all_alerts/fast/full: 170
+  FD001/mlp/v2/grouped_oof_all_alerts/fast/full: 2472
+  FD001/mlp/v2/internal_heldout_all_alerts/fast/full: 377
+  FD001/mlp/v2/official_test_all_alerts/fast/full: 170
+  FD001/xgb/v1/grouped_oof_all_alerts/fast/full: 2378
+  FD001/xgb/v1/internal_heldout_all_alerts/fast/full: 378
+  FD001/xgb/v1/official_test_all_alerts/fast/full: 159
+  FD001/xgb/v2/grouped_oof_all_alerts/fast/full: 2378
+  FD001/xgb/v2/internal_heldout_all_alerts/fast/full: 378
+  FD001/xgb/v2/official_test_all_alerts/fast/full: 159
+  FD002/xgb/v1/grouped_oof_all_alerts/fast/full: 5591
+  FD002/xgb/v1/internal_heldout_all_alerts/fast/full: 911
+  FD002/xgb/v1/official_test_all_alerts/fast/full: 678
+  FD002/xgb/v2/grouped_oof_all_alerts/fast/full: 5591
+  FD002/xgb/v2/internal_heldout_all_alerts/fast/full: 911
+  FD002/xgb/v2/official_test_all_alerts/fast/full: 678
+group_engine_counts:
+  FD001/lstm/v1/grouped_oof_all_alerts/fast/full: 100
+  FD001/lstm/v1/internal_heldout_all_alerts/fast/full: 15
+  FD001/lstm/v1/official_test_all_alerts/fast/full: 16
+  FD001/lstm/v2/grouped_oof_all_alerts/fast/full: 100
+  FD001/lstm/v2/internal_heldout_all_alerts/fast/full: 15
+  FD001/lstm/v2/official_test_all_alerts/fast/full: 16
+  FD001/mlp/v1/grouped_oof_all_alerts/fast/full: 100
+  FD001/mlp/v1/internal_heldout_all_alerts/fast/full: 15
+  FD001/mlp/v1/official_test_all_alerts/fast/full: 19
+  FD001/mlp/v2/grouped_oof_all_alerts/fast/full: 100
+  FD001/mlp/v2/internal_heldout_all_alerts/fast/full: 15
+  FD001/mlp/v2/official_test_all_alerts/fast/full: 19
+  FD001/xgb/v1/grouped_oof_all_alerts/fast/full: 100
+  FD001/xgb/v1/internal_heldout_all_alerts/fast/full: 15
+  FD001/xgb/v1/official_test_all_alerts/fast/full: 19
+  FD001/xgb/v2/grouped_oof_all_alerts/fast/full: 100
+  FD001/xgb/v2/internal_heldout_all_alerts/fast/full: 15
+  FD001/xgb/v2/official_test_all_alerts/fast/full: 19
+  FD002/xgb/v1/grouped_oof_all_alerts/fast/full: 260
+  FD002/xgb/v1/internal_heldout_all_alerts/fast/full: 39
+  FD002/xgb/v1/official_test_all_alerts/fast/full: 65
+  FD002/xgb/v2/grouped_oof_all_alerts/fast/full: 260
+  FD002/xgb/v2/internal_heldout_all_alerts/fast/full: 39
+  FD002/xgb/v2/official_test_all_alerts/fast/full: 65
+workers: 4
+cpu_threads: 1
+absolute_tolerance: 1.0e-06
+relative_tolerance: 0
+discrete_tiers_triage_counts: exact
+retention: every_original_query_failed_query_candidate_history_and_timing
+fitting: none_frozen_original_models_calibrators_scalers_coupling_covariances
+fixture: tests/regression/cmapss_baseline.parquet
+fixture_exception: explicit_user_requested_regression_outputs_only_no_weights_or_raw_archive
+evidence_limit: at_most_E3_under_proxy_assumptions_no_physical_or_RUL_claim
+timing_scope: parallel_quality_replay_not_isolated_latency
+historical_manifest_sha256: 4b4497f856f8af6bf5966942b488bbac0b0d0474645910777fa0762730d6da1d
+historical_cases_and_records_sha256: 1ef2f0e3cc5980c6ec9b9d3dcb6e86ec6d1abab400b2661e69bd7159b11e9497

@@ -460,3 +460,63 @@ its engine count and observations. All 2,000 required calls must finish before a
 latency claim. Numerical comparisons of the 60-state development overlap use the already
 registered atol1e-6/rtol1e-5 with exact discrete/tier outcomes; wall times, UUIDs and source
 metadata are not scientific comparison fields. No fresh-engine or physical/RUL claim follows.
+
+## Phase 12 complete headline regression freeze, phase12-baseline-v1
+
+The user supplied the actual Phases 12-20 prompt on 4 November 2026. This addendum,
+`configs/experiments/phase12-baseline-v1.yaml` and the diagnostic runner are committed
+before execution. This is software regression on already exposed public benchmark units,
+not another model-selection experiment or a fresh-generalization claim. Historical measurements
+and the source63 checkout are immutable. Public result/validation schemas remain 2.0.0.
+
+The full fixed-seed headline has 32,116 FAST/full queries in 24 logical groups: FD001 XGBoost,
+MLP and LSTM and FD002 XGBoost; D_max v1=5 and v2=8; every internal held-out, grouped OOF and
+official-test alert; solver seed1729. Group and engine counts are pinned in the new config.
+Development states, first-alert subsets and diagnostic caps are not substitutes. Original
+case IDs, effective configurations, real observed LSTM prefixes and fold-specific assets
+are taken from the original paired case/record store and fingerprinted before solving.
+
+The preflight corpus fingerprint is
+`1ef2f0e3cc5980c6ec9b9d3dcb6e86ec6d1abab400b2661e69bd7159b11e9497`;
+historical manifest SHA256 is
+`4b4497f856f8af6bf5966942b488bbac0b0d0474645910777fa0762730d6da1d`.
+All97 required model/calibrator/scaler/covariance/coupling/taxonomy inputs must match the
+historical hashes. No fitting, model selection, solver tuning, threshold/bound/mask/rate
+change or K change is permitted. Numerical settings remain K=1, k_max=3, tau_safe=.20,
+tau_danger=.80. The declared group protocol selects only its unchanged D_max artifact.
+
+Four workers with one numerical thread each execute the complete quality population.
+The runner holds and verifies a temporary Windows system execution-state request for its
+own lifetime and releases it afterward; no power plan/lid policy changes. The screen may
+turn off. Explicit sleep, lid closure, shutdown or power loss can still interrupt work.
+All failures, candidates and operational timings are saved; these concurrent quality timings
+cannot certify any serial latency budget. A checkout-wide lock prevents duplicate runners.
+Each result is committed transactionally, and resume requires matching source/config/input/
+runtime fingerprints, matching registered cases and exact saved-result identities. Completed
+payloads are preserved, including timings; resumed segments disclose registered uncommitted
+work that may be retried. Unexpected errors are preserved in logs/segment metadata and cannot
+produce a completion claim. Source/config/fitted hashes are checked again before export.
+
+Scientific comparison requires all group counts, identities, triage, action-feasibility and
+four check verdicts to match exactly, and all selected scientific floats to differ by at most
+absolute1e-6 with no relative tolerance. The stricter tolerance is the new user requirement,
+registered before this run; it is not described as the old audit tolerance. The full comparison
+field list and every unmodified full result are retained. Timings and execution provenance are
+preserved separately and are not scientific equality fields. Original serialized config hashes
+and actual runtime hashes remain distinct when portable path-separator mapping changes them;
+no numerical setting is changed by that mapping. A difference halts advancement for diagnosis.
+
+After complete execution and independent acceptance, the measured per-state regression corpus
+is stored at `tests/regression/cmapss_baseline.parquet`, with its baseline source, original
+source, case/config identities and full inputs/outputs. This is the specific user-authorized
+test-fixture exception to excluding generated results from Git; no fitted weight or raw archive
+is committed. The regression must actually rerun the complete corpus on a clean checkout with
+verified external assets, fail clearly if assets are unavailable, and retain its own source and
+comparison receipt. An earlier extraction, cache-only inspection, toy test or partial completion
+does not satisfy this gate. Original observations remain the reference rather than being
+silently replaced after a mismatch.
+
+All previous metric definitions and whole-engine CI rules continue. No all-alert outcome is
+inferred from a first-alert or 12-state K diagnostic; no [1,1] empirical bootstrap endpoint is
+interpreted as certainty for new units. Maximum available evidence is E3 under documented proxy
+assumptions, with no causal intervention, real-machine safety or RUL-extension claim.

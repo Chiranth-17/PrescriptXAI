@@ -1,0 +1,10 @@
+coverage:
+  required_scoped_line_percent: 90.95656301922621
+  rendering_exclusions:
+  - src/prescriptxai/dashboard/app.py
+  exclusion_reason: unchanged Phase9 rendering-only exclusion; entrypoint exercised
+    by AppTest
+  full_package_line_floor: 89.96361075243573
+  full_package_branch_inclusive_floor: 86.5389731311519
+rationale: Phase12 ratchet from actual full565-test gate; never lower or expand exclusions
+reference_source: a6e6067 product; Phase12 helper tests add real library-path coverage

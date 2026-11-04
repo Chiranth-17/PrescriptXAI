@@ -21,6 +21,25 @@ Temporary sleep guard artifacts/remediation/unattended/keep-awake-status.json is
 pid21444 tied to this Codex session; discover process identity before changing it.
 Root implements; independent subagents audit only. See PROGRESS.md for newest status.
 
+InitialPhase12fullgate passed540tests/66warnings/250.98s;65sourcefiles;mypy/Ruff/docs passed;
+coverage90.94469499169239/89.95187228547951/86.52123791788597 unchanged.
+Root-authoredledger50entries=7Closed/8Open/35Accepted; currenttraceability35Met/18Partial/
+11Notmet plus historicalPhase11snapshot. Preflight32116cases/24groups/97frozeninputs passed.
+Baseline helper25focusedtests passed; no actual headline run yet. Finish full updatedgate,
+independent prelaunch review and committed protocol/helper/config before running.
+Formalphase12baseline must solveall32116queries with absolute1e-6/relative0, exacttiers/counts;
+allfulloutcomes/timings preserved; fourworkers/oneCPUthread perworker are QUALITYtimings,
+never a new serial budget verdict. Exportfixtures only aftercomplete actualparity; cleanclone
+regression/fullgate stillrequired. No Phase13implementation beforePhase12closure.
+
+Finalprelaunchfullgate573passed/66warnings/240.99s;Ruff/mypy65/docs4.16s;overall251.9467118s;
+coverage90.95656301922621/89.96361075243573/86.5389731311519 (newratchet Makefilepolicy).
+All33helperprobes pass; independentconditionalGO exacthelper9969081fa976a1c86e294c31d30266ebf6b109a84421f47ee9257d6ab45c088b,
+configbe26bf6ce264db835d62a193bec19b4f7c7e5818a1e57a7c7097a9c4119a7978.
+Commit registration+protocol beforeactualrun. Ignoredlaunchwrapper artifacts/phase12/launch-baseline.ps1
+is saved/syntaxchecked, notlaunched atthischeckpoint. It verifiesclean source/hashes/nootherprocess,
+createsnew output, capturesrealexit/completecounts/hash, neverclaimsphaseclosure.
+
 # Phase 11 final audit — complete, 2026-10-30 IST
 
 ## Current authorized follow-up

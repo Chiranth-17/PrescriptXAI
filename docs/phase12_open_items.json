@@ -1,0 +1,472 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-04",
+  "phase12_complete": false,
+  "author": "Root implementation owner; independently checked evidence",
+  "independent_review_source": "f36db81671dcfeb32ea8b41f17eb921aa344f67c",
+  "independent_receipt_sha256": "d95f4e441923b54b2a81793d78dc232ab6d878732f2bd479126b06176937fd69",
+  "counts": {
+    "Accepted-with-reason": 35,
+    "Open": 8,
+    "Closed": 7
+  },
+  "items": [
+    {
+      "id": "P01",
+      "requirement": "Research question: sparse actionable physically plausible interventions",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Statistical/proxy results retained; actual actuator response and target gaps remain.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P02",
+      "requirement": "Safely restore ongoing production",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "No real-machine intervention during production.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P03",
+      "requirement": "Literal synopsis objective",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Actual scaled control-space adaptation is explicit; no raw full-state/global-optimum equivalence claim.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P04",
+      "requirement": "Four tiers guarantee no surrogate exploitation",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "True-model rescore and specified checks exist; no universal physical/causal completeness guarantee.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P05",
+      "requirement": "Industrial live 21-sensor telemetry ingestion",
+      "status": "Open",
+      "owner": "Phase13 adapters",
+      "evidence": "Dataset/single-state interfaces exist; no demonstrated industrial connector.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P06",
+      "requirement": "Optimization upper budget 1.80s",
+      "status": "Open",
+      "owner": "Phase19 isolated performance",
+      "evidence": "Computation reuse fixed; full current-source timing still required. Historical misses remain.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P07",
+      "requirement": "Browser UI upper budget 250ms",
+      "status": "Open",
+      "owner": "Phase17 dashboard",
+      "evidence": "Only narrower server-construction evidence exists.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P08",
+      "requirement": "Full UI/network total upper budget 2.2s",
+      "status": "Open",
+      "owner": "Phase17 dashboard",
+      "evidence": "Full browser interaction remains unmeasured; backend measurement is separate.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P09",
+      "requirement": "Validity target 95%",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Complete measured target/CI/gap matrix retained; no model/threshold tuning to conceal misses.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P10",
+      "requirement": "Tier2 plausibility target 90%",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Both denominators and protocols retained; population-dependent misses remain.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P11",
+      "requirement": "Model-risk-drop target 0.60",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Precise values and signed gaps expose near-threshold misses. No physical-risk reduction inferred.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P12",
+      "requirement": "Simulated trajectory health",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "No validated dynamic-response evidence.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P13",
+      "requirement": "Literal fuel/fan/bypass/bleed actuator taxonomy",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Public channels are proxies; direct commands/actuator telemetry absent.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P14",
+      "requirement": "Ambient temperature/pressure taxonomy",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Generic freezing exists; requested environmental telemetry absent.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P15",
+      "requirement": "Dependent physical core-speed mapping",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Configured mapping difference disclosed; frozen policy not silently redefined.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P16",
+      "requirement": "SDG9.4 motivation plus measured contribution",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Motivation explained; field resource efficiency unmeasured.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P17",
+      "requirement": "SDG9.1 motivation plus measured contribution",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Motivation explained; field infrastructure benefit unmeasured.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P18",
+      "requirement": "Equipment lifespan extension",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "No intervention/lifespan ground truth.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P19",
+      "requirement": "Avoided premature disposal",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "No lifecycle/disposal field evaluation.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P20",
+      "requirement": "Emergency downtime savings",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "No operational/economic baseline or deployment study.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P21",
+      "requirement": "Manuscript preparation plus submission",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Complete verified draft/PDF now exists; submission/peer review absent.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P22",
+      "requirement": "Production library plus public GitHub",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Local tested MIT software exists; no production certification or public remote.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P23",
+      "requirement": "Presentation deck plus real demo",
+      "status": "Closed",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Actual editable 26-slide deck plus preserved real walkthrough and captures.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P24",
+      "requirement": "Optional dynamic validation / E4-E5",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Conservative simulator default remains disabled.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P25",
+      "requirement": "Replicated physical illustrative cruise intervention",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Synopsis percentages remain illustrative, not observed hardware outcomes.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P26",
+      "requirement": "Measured SDG9.4 field contribution",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "No field efficiency study.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P27",
+      "requirement": "Measured SDG9.1 field contribution",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "No field infrastructure study.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P28",
+      "requirement": "Completed paper submission / peer review",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Research draft is not an external submission or review outcome.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P29",
+      "requirement": "Published public GitHub repository",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "No authenticated repository destination/publication evidence. Prepare a local release; do not guess an owner.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P30",
+      "requirement": "Authored editable presentation",
+      "status": "Closed",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Reviewed actual PPTX, native objects and complete sources above.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "P31",
+      "requirement": "Strict once-ever test/fresh-engine provenance",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Fit isolation supported; previous public-engine exposure cannot be undone retroactively.",
+      "source": "docs/remediation_status.md"
+    },
+    {
+      "id": "A01",
+      "requirement": "Missing historical closure tags1-3",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "git tag --list contains phase4..11 only. Prior phases have documented implementation/checks but missing tags cannot be fabricated as contemporaneous closure evidence. Phase12 must disclose R1 exception.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A02",
+      "requirement": "Strict95th-percentile real-low-risk plausibility",
+      "status": "Open",
+      "owner": "Phase19 separate diagnostic",
+      "evidence": "Current fixedDmax5/8 and all-training-cycle covariance are explicitly not this metric. q.95 empirical and healthy_to_moderate are separate Phase7 variants, not combined and not necessarily predicted-low-risk. Add separately registered reporting diagnostic or accept with explanation; never redefine historical v1/v2.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A03",
+      "requirement": "Constraint-first fallback reporting",
+      "status": "Open",
+      "owner": "Phase13/19 logging diagnostic",
+      "evidence": "Historical Phase4 fallback rates exist: v1all53/378=.1402116402116402 CI[.10741002922908295,.17604228688701115],N15; v2all14/378=.037037037037037035 CI[.021220159151193633,.05509641873278237],N15. Phase7 ExperimentObservation and report metric definitions omit internal engineering_only_fallback; cannot claim measured Phase7 fallback rate from these legacy results.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A04",
+      "requirement": "Intervals at100%",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "A whole-engine empirical percentile bootstrap degenerates to[1,1] if every sampled engine has all successes. This is observed-sample degeneracy, not certainty of future population success. Do not substitute state-binomial exact intervals (AGENTS22). Add explicit caveat; no unmeasured failure rate.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A05",
+      "requirement": "Protocolv2 validity-versusK",
+      "status": "Closed",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Phase7 FD001/xgb/v2 paired_internal_diagnostic/FAST/seed1729 has12queries/10engines atK1,2,3,5,10. Validities1/3,11/12,11/12,1,1 with whole-engineCI. They are a diagnostic sample, not all-alert K-generalization or physical intervention horizons.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A06",
+      "requirement": "Committed Phase7 preregistration",
+      "status": "Closed",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Git merge-base --is-ancestor0c0b6e1 63c2ed4 exits0. Full prereg0c0b6e1d37aafaed66cc61d9ac23f768c0529442 precedes measured63c2ed445fba16c73a2771e184f635abf76b4405. Strict once-ever/fresh-engine history remains separate P31.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A07",
+      "requirement": "Whole-engine CIs and denominators",
+      "status": "Closed",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Current headline/final-target matrix identifiesN, all-query failures, conditional-return denominators; Phase11 independent576objects verified. Historical Phase4 target erratum remains visible. Newly added diagnostics still need same policy.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A08",
+      "requirement": "Oracle-superset rule",
+      "status": "Closed",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Saved reference.json has48leverage entries/40oracles. All40have production_reproduced=True,verified_search_superset=True,global_infeasibility_certified=False. Classifications all unresolved_finite_search, never truly infeasible.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A09",
+      "requirement": "Run labels",
+      "status": "Closed",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Phase7 report tables have preceding run/source/studySHA/protocol/K/k/Dmax/population labels; final_targets uses resolvable config sets. Metadata/source-inventory tables are not performance populations. Newmachine/spec_hash labels do not retroactively exist; add atPhase13 rather than invent hashes.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A10",
+      "requirement": "Full baseline fixture plus clean-clone regression",
+      "status": "Open",
+      "owner": "Phase12 baseline owner",
+      "evidence": "Phase12R3 new requirement, not yet fulfilled at audit snapshot. Headline fixedseed1729 means all32116 FAST cases in24groups; no development/firstalert cap. Ignored models/rawdata need documented clean-clone provisioning, never silent skip or fabricated fixture.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A11",
+      "requirement": "Current-source solver equivalence after sharedlift",
+      "status": "Open",
+      "owner": "Phase12 baseline owner",
+      "evidence": "a6e6067 code has unit/gradient evidence and540test gate but full real outcome comparison pending. Root must compare actual records/tier verdicts, not infer bitwise solver equivalence from gradient tests.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A12",
+      "requirement": "Contaminated dev latency baseline",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "120calls completed,0errors; ModernStandby overlaps fourFASTcalls containing5286.748923s of5402.478527s FASTsum. Preserve allsamples; no causal steady-state speedup claim.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A13",
+      "requirement": "Poor coupling fits and noncausal propagation",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Original FD001 sensor3/sensor6 weak fits; Phase5 sensor6 calibrationR2=.031962,sharebeyondlimit=.029068. FD002 negative coupling margins remain. A fit threshold or real physics claim cannot be manufactured.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A14",
+      "requirement": "Frozen LSTMrecourse failure",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "All reported LSTM headline validity0 under genuine-prefix/latest-step-only action. Missing early histories counted unavailable, not padded. No global infeasibility inference.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A15",
+      "requirement": "Surrogate fidelity/search completeness",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "True predictor rescoring protects model acceptance; substantial surrogateMAE and false-safe candidates are reported. Finite search need not find every feasible candidate; do not promise global minimum.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A16",
+      "requirement": "Historical Phase5 paired OOF missing coverage",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Phase5 old paired sample lacks11saved records and full2378alert pairing. Phase7 later fullOOF results exist, but cannot create missing historical before-candidates; do not carry old sample as current all-alert deficiency.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A17",
+      "requirement": "HostedCI/GPU evidence",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Local CPU gates are measured. No authenticated hostedCI run or GPU execution receipt; optional GPU absent is not pass. HostedCI becomes Phase18 task.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A18",
+      "requirement": "Software stress/security scope",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "Phase9 10000calls use only two identical safe vectors; no optimizer memory/unbounded-uptime certification. Trusted pickle roots/hash checks are not a sandbox; advisory scans are limited scope.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    },
+    {
+      "id": "A19",
+      "requirement": "Native PowerPoint interoperability",
+      "status": "Accepted-with-reason",
+      "owner": "Documented evidence limit / future research",
+      "evidence": "26slide exportedPPTX/native object/session render checks passed; nativePowerPoint interoperability was not executed. Deck itself exists and originalabsence isclosed.",
+      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+    }
+  ],
+  "new_rules_baseline_gaps": [
+    {
+      "rule": 30,
+      "status": "Partial",
+      "evidence": "No industrial writeback in current reference implementation; human approval lifecycle not yet implemented (Phase16)."
+    },
+    {
+      "rule": 31,
+      "status": "Not met",
+      "evidence": "No generic core directory/MachineSpec; pipeline/evaluation use engine/C-MAPSS identifiers. Phase13 planned."
+    },
+    {
+      "rule": 32,
+      "status": "Partial",
+      "evidence": "Docs identify C-MAPSS proxy scope; synthetic pump not yetimplemented/tested; cannot copy final viva paragraph as present-tense achievement."
+    },
+    {
+      "rule": 33,
+      "status": "Not met",
+      "evidence": "No engineer-signoff machine pack/Alerts-only gating. Benchmark historical evaluations remain research evidence; do not deploy advisory mode."
+    },
+    {
+      "rule": 34,
+      "status": "Partial",
+      "evidence": "Existing validation rejects acceptance but returns failed diagnostic candidates; no generic data-quality/input-integrity withholding engine. Phase13/16 needed."
+    },
+    {
+      "rule": 35,
+      "status": "Not met",
+      "evidence": "No readinessscorecard/manual promotion modes. Phase15 planned."
+    },
+    {
+      "rule": 36,
+      "status": "Partial",
+      "evidence": "API RequestGuard checks key only if environmentvalue exists; no default-auth/RBAC/hashchain. Existing size/finite validation/CORS/trusted-artifact controls remain useful but not full new security gate."
+    },
+    {
+      "rule": 37,
+      "status": "Partial",
+      "evidence": "Existing results stratified dataset/model; no registeredMachineSpec/spec_hash field yet. Phase13 migration required with freeze governance."
+    },
+    {
+      "rule": 38,
+      "status": "Partial",
+      "evidence": "Synthetic softwarefixture studies are disclosed; generic simulatedoperator store/exclusion mechanism not yetimplemented."
+    },
+    {
+      "rule": 39,
+      "status": "Not assessed",
+      "evidence": "No standards compliance claim inspected here; alignment tables are a futurePhase19 deliverable. Do not claim complete ruleaudit from this ledger audit."
+    },
+    {
+      "rule": 40,
+      "status": "Partial",
+      "evidence": "Localsource/wheel/Docker cleaninstall checks exist, but no makeverify target or generic cleanclone demo. Phase18/20 queued."
+    }
+  ]
+}
