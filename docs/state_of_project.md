@@ -1,5 +1,12 @@
 # State of the project - Phase 12 in progress
 
+**Latest status,5 November2026 IST:** the complete32,116-query run saved all results but
+failed scientific parity in2,589cases, including167changed Tier2 verdicts and35changed
+triage outcomes. The user's explicit regression-change stop condition applies. Automatic
+continuation was deleted; no baseline fixture was promoted and Phase13 has not started.
+See the [preserved failure and diagnosis](phase12_regression_failure.md). The earlier
+prelaunch checkpoints below retain their historical scope and are not a regression pass.
+
 Status date: 4 November 2026. The user supplied and authorized the complete
 [Phases 12-20 prompt](prompts/final_phases_12_to_20.md). Phase 12 adds no product features;
 its full scientific regression and clean-clone verification are still pending.

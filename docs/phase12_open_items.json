@@ -336,16 +336,16 @@
       "requirement": "Full baseline fixture plus clean-clone regression",
       "status": "Open",
       "owner": "Phase12 baseline owner",
-      "evidence": "Phase12R3 new requirement, not yet fulfilled at audit snapshot. Headline fixedseed1729 means all32116 FAST cases in24groups; no development/firstalert cap. Ignored models/rawdata need documented clean-clone provisioning, never silent skip or fabricated fixture.",
-      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+      "evidence": "Complete run phase12-baseline-20261104T173007Z/source4048ea5 saved32116queries/24groups but exited1 on2589scientific mismatches. No fixture promoted or clean-clone pass; advancement stopped under the actual orchestrator.",
+      "source": "docs/phase12_regression_failure.md"
     },
     {
       "id": "A11",
       "requirement": "Current-source solver equivalence after sharedlift",
       "status": "Open",
       "owner": "Phase12 baseline owner",
-      "evidence": "a6e6067 code has unit/gradient evidence and540test gate but full real outcome comparison pending. Root must compare actual records/tier verdicts, not infer bitwise solver equivalence from gradient tests.",
-      "source": "docs/phase7_changes.md; docs/final_verification.md; docs/limitations.md"
+      "evidence": "Measured comparison failed:167Tier2 and35triage changes;748risk_after differences beyond absolute1e-6. Unit-gradient equivalence is not solver parity; causal revision remains unisolated.",
+      "source": "docs/phase12_regression_failure.md"
     },
     {
       "id": "A12",
@@ -468,5 +468,15 @@
       "status": "Partial",
       "evidence": "Localsource/wheel/Docker cleaninstall checks exist, but no makeverify target or generic cleanclone demo. Phase18/20 queued."
     }
-  ]
+  ],
+  "phase12_gate": {
+    "status": "Not met",
+    "run_id": "phase12-baseline-20261104T173007Z",
+    "source": "4048ea5319f774f3925cec1ed4dfaddbb9d34840",
+    "queries": 32116,
+    "mismatches": 2589,
+    "actual_exit": 1,
+    "advancement": "stopped_per_user_orchestrator",
+    "automatic_continuation": "deleted"
+  }
 }

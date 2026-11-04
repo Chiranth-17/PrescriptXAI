@@ -1,5 +1,25 @@
 # PrescriptXAI Progress
 
+## Phase 12 stopped on scientific regression - 2026-11-05 IST
+
+The complete run `phase12-baseline-20261104T173007Z`, source4048ea5319f774f3925cec1ed4dfaddbb9d34840,
+saved all32,116queries/24groups but exited1:2,589cases differ from frozen source63 at the
+registered absolute1e-6/relative0 comparison. Tier2 differs167cases; joint/triage35cases;
+risk_after beyondtolerance748cases; directsupport471cases. These overlapping counts are
+regression differences, not pooled model-performance results. No fixture was promoted,
+no phase12-closed tag exists and Phase13 has not started. Allcases/results/timings remain
+preserved; hashes and full scope are in docs/phase12_regression_failure.md.
+
+The actual user orchestrator says STOP when the C-MAPSS regression changes. Advancement is
+stopped and the continuation heartbeat was deleted. Independent full-record audit exited0,
+reproducing2589mismatches exactly,0input/identityerrors,all97frozeninputs checked,bothSQLite
+integrityOK,all evidencefiles unchanged. AuditJSON SHA66d63a595db0327d6e7185055cd6da1beb0cdbf4acfa44d6b3928425132968f4;
+scientific_parity=false. No source rollback, tolerance relaxation, retraining or rebaselining is authorized
+by this failed gate. The original historical records/source63 checkout are unchanged.
+Software prelaunch573tests passed, but scientific regression did not. Query execution
+completion alone is not phase closure. See the failure report for the proposed controlled
+diagnostic; the cause has not yet been isolated to a particular revision.
+
 ## Phases 12-20 authorized - Phase 12 in progress, 2026-11-04 IST
 
 The user supplied the complete prompt and authorized unattended implementation in order.

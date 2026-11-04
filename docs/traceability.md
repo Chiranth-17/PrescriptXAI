@@ -1,5 +1,12 @@
 # Synopsis traceability - Phase 12 baseline in progress
 
+**Phase12 R3 gate: Not met,5 November2026 IST.** All32,116queries were measured, but
+2,589cases differ from the frozen reference, including167Tier2 and35triage verdicts.
+See the [complete failure scope](phase12_regression_failure.md). Advancement stopped;
+no new golden fixture, clean-clone regression pass orPhase12 closure is claimed.
+The64synopsis rows below retain their named historical evidence scopes, not an assertion
+that the current-source solver reproduces every historical candidate.
+
 This current map uses **Met / Partial / Not met** as requested in the new prompt.
 The [unchanged Phase 11 snapshot](traceability_phase11.md) preserves its historical statuses.
 The completed research draft and authored slide deck were independently verified after that

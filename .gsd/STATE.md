@@ -1,9 +1,23 @@
 ---
 phase: 12
 status: in_progress
-current_activity: reality-check-and-baseline-freeze
-activity_status: in_progress
+current_activity: regression-mismatch-diagnosis
+activity_status: stopped_per_user_prompt
 ---
+# Latest stop - 2026-11-05 IST
+
+Actualrunphase12-baseline-20261104T173007Z completed32116queries/24groups but nativeexit1,
+2589scientificmismatches versusoriginalsource63. Tier2=167changed; joint/triage=35changed;
+risk_after>abs1e-6=748changed. No fixture/complete marker orphase12closure. Do NOT resume
+this completed-mismatch run, relabelnewcandidatesasexpected, relax tolerance or advancePhase13.
+Current measuredsource4048ea5319f774f3925cec1ed4dfaddbb9d34840. Allresult/timingpayloads
+preserved; docs/phase12_regression_failure.md records scope andhashes. Independentcomplete
+audit finishednative0,exact2589mismatches/0inputidentityerrors/97inputs/bothintegrityOK/filesunchanged,
+scientificparityfalse. AuditJSON66d63a595db0327d6e7185055cd6da1beb0cdbf4acfa44d6b3928425132968f4.
+Userorchestrator explicitlySTOPSonCMAPSSregressionchange, so automatic
+continuationprescriptxai-phases-12-20 wasdeleted. Rootmayfinishdiagnosis/report only.
+Newwork beyondthat requires resolvingtheexplicitstop, not an inventedphaseclosure.
+
 # Current execution - 2026-11-04 IST
 
 User supplied and authorized docs/prompts/final_phases_12_to_20.md (exact attachment
