@@ -1,0 +1,80 @@
+# Phase 12 closure diagnosis: all 712 mismatches
+
+User authorization: explicit Phase12 closure prompt on6November2026 IST. This resumes
+controlled diagnosis after147d846; it does not waive any closure gate. Saved records,
+fixtures, scientific settings and existing headline tables remain unchanged.
+
+## Preregistered diagnostic matrix
+
+Configuration: `configs/experiments/phase12-closure-712-v1.yaml`.
+Runner: `scripts/diagnostics/phase12_closure.py`.
+Population: every one of the712IDs in the SHA-pinned repaired-run mismatch file, seed1729,
+alloriginalFAST/full configurations/populations/units/protocols, including unsuccessfulqueries.
+No THOROUGH case is substituted for a FAST case. No fitted artifact or setting is changed.
+
+First export a712-row classification table, a long field-difference table (including timing
+observations) and both-candidate rescoring table. Record exact control support and direct
+values separately from propagated dependent readings. Every verdict/triage flip includes
+both saved validation reports' measurements, limits and margins plus risk-gate, safe-risk,
+improvement and sparsity predicates. An absolute margin of1e-6 in each margin's native units
+is flagged descriptively as borderline. It never changes a verdict, rounds data or relaxes
+a threshold; zero-limit engineering checks may legitimately be flagged frequently.
+
+Rescore both historical and repaired candidates with the production true calibrated model
+and an audit scorer assembled from fitted scaler statistics, primary XGBoost class1prediction
+and independently written calibration arithmetic. This audit scorer uses no surrogate or
+search. Compare each score to its saved value. Agreement excludes scoring as the immediate
+source of those saved-candidate differences; it does not identify which search change caused them.
+
+Run all712queries twice in a shared interpreter and twice in separate fresh interpreters,
+under each of one numerical thread and the operator environment's default thread settings.
+Fresh means a new process for each complete712-query pass; no model/cache state crosses
+passes. Shared means both passes in the same process. This yields8completepasses/5696search
+calls in6worker-process launches, run sequentially. All returned outcomes, errors and timings
+are checkpointed. Log PID, runtime, native thread pools, Torch intra/inter-op counts,
+deterministic-policy flag and thread environment. XGBoost's fittedn_jobs remains unchanged.
+Compare all conditions to the first one-thread shared pass, historical record and repaired
+record with exact structural values and absolute1e-6/relative0. Count completeness is checked
+before a diagnostic completion receipt. These selected failure cases are not new headline
+quality estimates or isolated latency measurements. Timing differences are retained and
+classified but are not scientific-equality failures.
+
+## Static independent evidence
+
+Independent read-only audit found no wall-clock search termination: timing calls report
+durations; search uses finite iteration/grid/support budgets and documented objective or
+feasibility stops. All133installed distributions match versions present inuv.lock; historical
+and current recorded core numerical/model versions match. Application version and Windows
+build differ. This does not establish binary/kernel math identity or experimentally prove
+any root cause. Evidence: `artifacts/phase12/closure-clock-lock-audit/audit.json`, SHA256
+`7a6edf80464726113ed5af8afcea43703609ec0428ce2f3ba3f3eb096c47ad22`.
+
+## Required continuation and fixture policy
+
+No scoring/search root cause is claimed before these experiments. A demonstrated cause
+must be fixed and tested before any new headline measurement. Fix seeds, deterministic
+math settings or tie-breaking only from evidence; preserve scientific bounds, rates,
+thresholds, populations and definitions. Search budgets use iteration counts; wall-clock
+is reporting only. Do not overwrite previous protocol results. Recompute corrected headline
+results under a new run ID and show old/new tables with whole-engine bootstrap CIs and
+engine counts. Existing results can be marked superseded only with the demonstrated reason.
+
+Promotion requires two consecutive COMPLETE full-corpus corrected reruns with identical
+discrete outputs, documented numeric tolerance and an independent audit reporting zero
+unexplained mismatches. Existing abs1e-6/rtol0 remains the diagnostic comparison; any future
+numeric-policy proposal needs a numerical-error justification, never target fitting. Public
+schemas2.0.0 remain frozen. Fullsoftwaregate, cleanclone regression, state/ledger/traceability
+updates, conventionalcommit and phase12-closed tag are pending. No Phase13work starts yet.
+
+## Prelaunch review
+
+Nine focused helper tests passed in7.12seconds and Ruff passes. Independent review confirms
+observation identity/settings checks before every save, effective threadpool capture after
+first solve and completion, strict design/count checks and source/config/runtime identity
+checks. Review receipt `artifacts/phase12/closure-clock-lock-audit/diagnostic-final-review.json`,
+SHA256 `a0181d1f32def149e29c05d406d59e0820e5d55c94a66a14570968a5cecbe4cf`.
+Approved helper SHA256 `400cf1f96d7e52e207ef3ec262ff0662835a2b0341b0f5d4c9cfbeeefd070191`;
+config SHA256 `0734fe7c3ff3a625413bc954f617af0de52e0e6fc0edcb831511782fb1efb5c1`.
+A fresh full software gate against the final committed helper/tests remains required before
+actual diagnostic execution. The earlier gate collected before the four additional helper
+tests is not the final gate. No classification result or measured root cause is claimed yet.

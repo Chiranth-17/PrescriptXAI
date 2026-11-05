@@ -554,3 +554,17 @@ separately named full phase12-baseline-v1 run. Use all32116cases/24groups and al
 inputs, exact discrete outputs and absolute1e-6/relative0, preserving every outcome/timing.
 The original failed run remains immutable. Independent complete-record parity and subsequent
 clean-clone replay must pass before any fixture promotion or Phase12 closure.
+
+
+## Explicit 712-case closure diagnosis, 6 November 2026
+
+The user authorized classification, repeatability/thread/process experiments and same-candidate
+production/audit rescoring after the147d846stop. Preregister
+`configs/experiments/phase12-closure-712-v1.yaml` and
+`docs/phase12_closure_diagnostics.md` before executing its8complete712-case passes.
+All original saved settings and scientific inputs remain frozen, with separate diagnostic
+outputs and native receipts. Known712reference differences are the diagnostic population,
+not a reason to discard results or immediately stop the requested diagnosis. Unexpected
+input/source changes or unresolved experiment failures still stop dependent work.
+No previous headline number, saved record or fixture is edited. Corrected headlines and
+fixture promotion require the newly requested full two-run reproducibility/independent gate.

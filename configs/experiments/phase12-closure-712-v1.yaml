@@ -1,0 +1,127 @@
+purpose: explicit_user_712_mismatch_closure_diagnostics_not_headline_replacement
+historical_database: artifacts/experiments/phase7-20261020T102540Z/records.sqlite3
+repaired_database: artifacts/phase12/phase12-repaired-20261104T231405Z/records.sqlite3
+mismatches: artifacts/phase12/phase12-repaired-20261104T231405Z/historical-comparison.json
+expected_cases: 712
+expected_search_calls: 5696
+repeats: 2
+process_scopes:
+- shared_same_process_for_both_passes
+- fresh_independent_process_per_pass
+thread_modes:
+- one
+- operator_environment_default
+order: lexicographic_case_id
+absolute_tolerance: 1.0e-06
+relative_tolerance: 0
+borderline_absolute_margin: 1.0e-06
+borderline_rationale: descriptive flag in native margin units; never changes a verdict
+  or rounds a measurement
+timing: retained but excluded from scientific equality; no latency certification
+scoring: both original and repaired saved candidates; production primary XGB scaler/calibrator
+  versus independently assembled scaler+primary classifier+calibration arithmetic
+scientific_settings: all saved settings seed and fitted bytes unchanged; no training
+  or tuning
+immutable_files:
+  artifacts/FD001-xgboost.joblib: cc3b3c2028a4d4a568cd554d1c2cf360bcd9fe237ecfd4afe5d628d3ca40d8bd
+  artifacts/phase4-final/grouped-cv/fold-1/model.joblib: c52728e242d0c14b536eae5a8b579fa9003b6e25d9e28cb33c2c225ec0948732
+  artifacts/phase4-final/grouped-cv/fold-2/model.joblib: 1cd9ba2cb4515108d6709566637658dfaff4130d897e35214cc1267c061acf09
+  artifacts/phase4-final/grouped-cv/fold-3/model.joblib: 8ac30f13ea83291bb3240b66d4b36b985d8ca9d54ce9d0edc43286836f061a6f
+  artifacts/phase4-final/grouped-cv/fold-4/model.joblib: ff39f9e7c567384abfb2866c2f688fe2622aead1ec11f67a5e8ef81e31fc6eb2
+  artifacts/phase4-final/grouped-cv/fold-5/model.joblib: 0deaf3ecfbe3fe72dafe4f0b20453d374f31752653acb590a814df963a6e0fe1
+  artifacts/phase7-models/FD001-lstm/coupling.joblib: d5ed51ef500eed32331e4769d860fddd4d795fedc02c19cab338af9e798f18e4
+  artifacts/phase7-models/FD001-lstm/fold-1/coupling.joblib: f217550740d6d6f71ce37f254a33e0749ef721fa902b0b06eafb0160983e87cc
+  artifacts/phase7-models/FD001-lstm/fold-1/mahalanobis-v1.joblib: db4ed5a8b49b3f4e335ac5e25db2771ce71b438ee217b74ae0375774c30561fe
+  artifacts/phase7-models/FD001-lstm/fold-1/mahalanobis-v2.joblib: c8e3c716a377e5c47a57d150624df795cffb1bad8ea0bfbe93f6d258eb15588a
+  artifacts/phase7-models/FD001-lstm/fold-1/model.joblib: 93aa5d70bffc72fa08bf7fb97d4fbe3f780f1f98251239af0750f97ba645b0df
+  artifacts/phase7-models/FD001-lstm/fold-2/coupling.joblib: f77b38991aadd070f04ea7c8d7063dae9cb9c76b79eb2497c91122e049b55c94
+  artifacts/phase7-models/FD001-lstm/fold-2/mahalanobis-v1.joblib: 390d070083cdd0c2de248a24fc11a1f5f4bbef212ce21a1d9359c4a6a62151be
+  artifacts/phase7-models/FD001-lstm/fold-2/mahalanobis-v2.joblib: fc29184f9c629e1a31cccbfe80624cecdf5bcec8fd51d5ac06a10b0b4ff26139
+  artifacts/phase7-models/FD001-lstm/fold-2/model.joblib: 6321caec653f39b9455bf4f98743c32860019fdd020bfcb8c73e67fed46a2f2d
+  artifacts/phase7-models/FD001-lstm/fold-3/coupling.joblib: a6bda2a39582b29534249f66db9c1d937e235cbf0cfa2fe7a7bbb9ba9fd0424a
+  artifacts/phase7-models/FD001-lstm/fold-3/mahalanobis-v1.joblib: 34c4feb8dc52dd1a7738c1a313492309d4b453f43f8ccd237914a5882e36301e
+  artifacts/phase7-models/FD001-lstm/fold-3/mahalanobis-v2.joblib: 0e595833677f625fe5da0b0a222234a76294c5de6cecaa06987b0da0b1a41c11
+  artifacts/phase7-models/FD001-lstm/fold-3/model.joblib: 24175d136f50883eb6de94b4518c79d4d54653606daa6cf4c9c545eaa560be94
+  artifacts/phase7-models/FD001-lstm/fold-4/coupling.joblib: 5bfb22dcbc7f2c66ba419ab3ab6389db30493c804978e9262bd97f88a16b66fb
+  artifacts/phase7-models/FD001-lstm/fold-4/mahalanobis-v1.joblib: 4c78bdd094c11ad7b4da7becc9510b13ebc17a8016382c1fd624486e878ca110
+  artifacts/phase7-models/FD001-lstm/fold-4/mahalanobis-v2.joblib: e2e003ff162cc312c79b372456651ec4b9916e597f6a4707d7934da7162faccf
+  artifacts/phase7-models/FD001-lstm/fold-4/model.joblib: d07410a4c3905907fe7aae1f452822940062de773f5f301cc1683b11873c52d1
+  artifacts/phase7-models/FD001-lstm/fold-5/coupling.joblib: 1b1ae5ae04862fe819e2b9b171ce37dfe939101752c46b9690747dd18759b4bf
+  artifacts/phase7-models/FD001-lstm/fold-5/mahalanobis-v1.joblib: 3b511c754e960469da0f56f2a4ee5ac8d86d14d9251873eca1de1241896b7650
+  artifacts/phase7-models/FD001-lstm/fold-5/mahalanobis-v2.joblib: 3a76f91c78878d96ee1dca6dfe32c5cc7432410e83eeba42d05dba933ec4bc80
+  artifacts/phase7-models/FD001-lstm/fold-5/model.joblib: d5caef362ad819901c8fb294bb89d8d6553937529af9eaf6231d787de490ddbe
+  artifacts/phase7-models/FD001-lstm/mahalanobis-v1.joblib: 4ff167c75b8f9448cdcbdab318a63af4a87dbac833bc46439c7e537211f24545
+  artifacts/phase7-models/FD001-lstm/mahalanobis-v2.joblib: bd530398a6aa5181630a708879be5e15e6ddd7f4c3d2fe2d8a1568b0cbe9e82e
+  artifacts/phase7-models/FD001-lstm/model.joblib: 70a9cef8682e80e605a0b7bbdc36b080f14e03c98b930d6c8b4156f65cf6a6f5
+  artifacts/phase7-models/FD001-mlp/coupling.joblib: d5ed51ef500eed32331e4769d860fddd4d795fedc02c19cab338af9e798f18e4
+  artifacts/phase7-models/FD001-mlp/fold-1/coupling.joblib: f217550740d6d6f71ce37f254a33e0749ef721fa902b0b06eafb0160983e87cc
+  artifacts/phase7-models/FD001-mlp/fold-1/mahalanobis-v1.joblib: db4ed5a8b49b3f4e335ac5e25db2771ce71b438ee217b74ae0375774c30561fe
+  artifacts/phase7-models/FD001-mlp/fold-1/mahalanobis-v2.joblib: c8e3c716a377e5c47a57d150624df795cffb1bad8ea0bfbe93f6d258eb15588a
+  artifacts/phase7-models/FD001-mlp/fold-1/model.joblib: a8ef6ef286a0183cb2c3e849e8389cdaa30fa27d0b74300ded1114dfac39e115
+  artifacts/phase7-models/FD001-mlp/fold-2/coupling.joblib: f77b38991aadd070f04ea7c8d7063dae9cb9c76b79eb2497c91122e049b55c94
+  artifacts/phase7-models/FD001-mlp/fold-2/mahalanobis-v1.joblib: 390d070083cdd0c2de248a24fc11a1f5f4bbef212ce21a1d9359c4a6a62151be
+  artifacts/phase7-models/FD001-mlp/fold-2/mahalanobis-v2.joblib: fc29184f9c629e1a31cccbfe80624cecdf5bcec8fd51d5ac06a10b0b4ff26139
+  artifacts/phase7-models/FD001-mlp/fold-2/model.joblib: 6aef340db4b4ede98f7e00c04bb055ed523b348e6dca2557c6563e6a54f84072
+  artifacts/phase7-models/FD001-mlp/fold-3/coupling.joblib: a6bda2a39582b29534249f66db9c1d937e235cbf0cfa2fe7a7bbb9ba9fd0424a
+  artifacts/phase7-models/FD001-mlp/fold-3/mahalanobis-v1.joblib: 34c4feb8dc52dd1a7738c1a313492309d4b453f43f8ccd237914a5882e36301e
+  artifacts/phase7-models/FD001-mlp/fold-3/mahalanobis-v2.joblib: 0e595833677f625fe5da0b0a222234a76294c5de6cecaa06987b0da0b1a41c11
+  artifacts/phase7-models/FD001-mlp/fold-3/model.joblib: 0875168613600c6b4419353f030576324196524238f00690e240d44dcc68ff01
+  artifacts/phase7-models/FD001-mlp/fold-4/coupling.joblib: 5bfb22dcbc7f2c66ba419ab3ab6389db30493c804978e9262bd97f88a16b66fb
+  artifacts/phase7-models/FD001-mlp/fold-4/mahalanobis-v1.joblib: 4c78bdd094c11ad7b4da7becc9510b13ebc17a8016382c1fd624486e878ca110
+  artifacts/phase7-models/FD001-mlp/fold-4/mahalanobis-v2.joblib: e2e003ff162cc312c79b372456651ec4b9916e597f6a4707d7934da7162faccf
+  artifacts/phase7-models/FD001-mlp/fold-4/model.joblib: fd2d57e20b5010eea9c2b52a49453aea5b73baf3854cba999c71a700c3c38776
+  artifacts/phase7-models/FD001-mlp/fold-5/coupling.joblib: 1b1ae5ae04862fe819e2b9b171ce37dfe939101752c46b9690747dd18759b4bf
+  artifacts/phase7-models/FD001-mlp/fold-5/mahalanobis-v1.joblib: 3b511c754e960469da0f56f2a4ee5ac8d86d14d9251873eca1de1241896b7650
+  artifacts/phase7-models/FD001-mlp/fold-5/mahalanobis-v2.joblib: 3a76f91c78878d96ee1dca6dfe32c5cc7432410e83eeba42d05dba933ec4bc80
+  artifacts/phase7-models/FD001-mlp/fold-5/model.joblib: 41ca030f7ad766bb8b6a6c14a600f8419253ce59f5fbbc66db4e97233db525ed
+  artifacts/phase7-models/FD001-mlp/mahalanobis-v1.joblib: 4ff167c75b8f9448cdcbdab318a63af4a87dbac833bc46439c7e537211f24545
+  artifacts/phase7-models/FD001-mlp/mahalanobis-v2.joblib: bd530398a6aa5181630a708879be5e15e6ddd7f4c3d2fe2d8a1568b0cbe9e82e
+  artifacts/phase7-models/FD001-mlp/model.joblib: 2f16756d78a176f9d003bc1133924097a38663e37107d5ae6232ac549ddb4b5f
+  artifacts/phase7-models/FD001-xgb/coupling.joblib: d5ed51ef500eed32331e4769d860fddd4d795fedc02c19cab338af9e798f18e4
+  artifacts/phase7-models/FD001-xgb/fold-1/coupling.joblib: f217550740d6d6f71ce37f254a33e0749ef721fa902b0b06eafb0160983e87cc
+  artifacts/phase7-models/FD001-xgb/fold-1/mahalanobis-v1.joblib: db4ed5a8b49b3f4e335ac5e25db2771ce71b438ee217b74ae0375774c30561fe
+  artifacts/phase7-models/FD001-xgb/fold-1/mahalanobis-v2.joblib: c8e3c716a377e5c47a57d150624df795cffb1bad8ea0bfbe93f6d258eb15588a
+  artifacts/phase7-models/FD001-xgb/fold-2/coupling.joblib: f77b38991aadd070f04ea7c8d7063dae9cb9c76b79eb2497c91122e049b55c94
+  artifacts/phase7-models/FD001-xgb/fold-2/mahalanobis-v1.joblib: 390d070083cdd0c2de248a24fc11a1f5f4bbef212ce21a1d9359c4a6a62151be
+  artifacts/phase7-models/FD001-xgb/fold-2/mahalanobis-v2.joblib: fc29184f9c629e1a31cccbfe80624cecdf5bcec8fd51d5ac06a10b0b4ff26139
+  artifacts/phase7-models/FD001-xgb/fold-3/coupling.joblib: a6bda2a39582b29534249f66db9c1d937e235cbf0cfa2fe7a7bbb9ba9fd0424a
+  artifacts/phase7-models/FD001-xgb/fold-3/mahalanobis-v1.joblib: 34c4feb8dc52dd1a7738c1a313492309d4b453f43f8ccd237914a5882e36301e
+  artifacts/phase7-models/FD001-xgb/fold-3/mahalanobis-v2.joblib: 0e595833677f625fe5da0b0a222234a76294c5de6cecaa06987b0da0b1a41c11
+  artifacts/phase7-models/FD001-xgb/fold-4/coupling.joblib: 5bfb22dcbc7f2c66ba419ab3ab6389db30493c804978e9262bd97f88a16b66fb
+  artifacts/phase7-models/FD001-xgb/fold-4/mahalanobis-v1.joblib: 4c78bdd094c11ad7b4da7becc9510b13ebc17a8016382c1fd624486e878ca110
+  artifacts/phase7-models/FD001-xgb/fold-4/mahalanobis-v2.joblib: e2e003ff162cc312c79b372456651ec4b9916e597f6a4707d7934da7162faccf
+  artifacts/phase7-models/FD001-xgb/fold-5/coupling.joblib: 1b1ae5ae04862fe819e2b9b171ce37dfe939101752c46b9690747dd18759b4bf
+  artifacts/phase7-models/FD001-xgb/fold-5/mahalanobis-v1.joblib: 3b511c754e960469da0f56f2a4ee5ac8d86d14d9251873eca1de1241896b7650
+  artifacts/phase7-models/FD001-xgb/fold-5/mahalanobis-v2.joblib: 3a76f91c78878d96ee1dca6dfe32c5cc7432410e83eeba42d05dba933ec4bc80
+  artifacts/phase7-models/FD001-xgb/mahalanobis-v1.joblib: b8ba25fc73a8286d787dc43824e0de6a5516e18e0735cd50b53435dddf2a076d
+  artifacts/phase7-models/FD001-xgb/mahalanobis-v2.joblib: da9cde08cd294fe777ed212abc2cd76a627ea4c0dac84b720c9491bf58473adc
+  artifacts/phase7-models/FD002-xgb/FD002-xgboost.joblib: 0c4bc911a5ce9117ac1e0759c8fe38579beb5e83330acac4a39029193de1db1d
+  artifacts/phase7-models/FD002-xgb/coupling.joblib: c28e1b6a39646b97551442b40b404ec5e0a1cd52b2db59033583666dee3dfae8
+  artifacts/phase7-models/FD002-xgb/fold-1/coupling.joblib: adbef5809ede7fde2bfe049c4101f2d408f84717bf1b14a5fd869edd8ff70958
+  artifacts/phase7-models/FD002-xgb/fold-1/mahalanobis-v1.joblib: 915032da7129daa822ffe4ca7ae4192f730ccd324f8842920764379c65db92bb
+  artifacts/phase7-models/FD002-xgb/fold-1/mahalanobis-v2.joblib: dfa3031444398bba8d91c5ff2475c3e5a3ce09d9a752f33eca6b2b810e1ff8e8
+  artifacts/phase7-models/FD002-xgb/fold-1/model.joblib: b4dd48313de2f8f9e7534f7b158fd30a9b6e7b49671bed34bdcc70ffe5984f3a
+  artifacts/phase7-models/FD002-xgb/fold-2/coupling.joblib: 760aac6b6429777db211d3356c559bc2162f874d8eb84fefa61f4e66ed55b30a
+  artifacts/phase7-models/FD002-xgb/fold-2/mahalanobis-v1.joblib: 82122c1a3e80d8c61761ab00c429647b5043dbe3895bcc0030a8e0e578eb7ab8
+  artifacts/phase7-models/FD002-xgb/fold-2/mahalanobis-v2.joblib: 18a6aabeb1c397d5fb66c47a18d7ec9bd7412a7fd6dfe146fd831df17d6dabd0
+  artifacts/phase7-models/FD002-xgb/fold-2/model.joblib: a3af5d05aed54ce453dc1063cbe2960a6609572b253d99aea9a6055e761b388a
+  artifacts/phase7-models/FD002-xgb/fold-3/coupling.joblib: 9c96492d753d6f4ea4b41e36b35c852df1755d27fe60a3254c3e1057ee2a38b6
+  artifacts/phase7-models/FD002-xgb/fold-3/mahalanobis-v1.joblib: 454d08446d5f5e61ed8030f469dae195e541981f988120c458ae5348c95b6e54
+  artifacts/phase7-models/FD002-xgb/fold-3/mahalanobis-v2.joblib: 3a703eae25b542035ab515d94327db6829675e0d5dc7b24ed1e08864d89c487b
+  artifacts/phase7-models/FD002-xgb/fold-3/model.joblib: 98fcd4ecf5de50b59337854c22bdeec45ed551d06c51d5b44a31f2d4a454939b
+  artifacts/phase7-models/FD002-xgb/fold-4/coupling.joblib: 7b2cf03cb5ee42e93c9df1568907e589c5131047ec50227b65c03ead3523f2a9
+  artifacts/phase7-models/FD002-xgb/fold-4/mahalanobis-v1.joblib: cf678b4f4b150cbbe17474f92c2ad54aee35903447eae26c26c09bdbc8298c6d
+  artifacts/phase7-models/FD002-xgb/fold-4/mahalanobis-v2.joblib: fe008b1a8681d59861e30f0f7c805d5bbe4ae7fb0848579696e4b1295ac13045
+  artifacts/phase7-models/FD002-xgb/fold-4/model.joblib: 53517dfe09f50874e1588a024890ba767552e67fcd7f194b347d3a509e9ac382
+  artifacts/phase7-models/FD002-xgb/fold-5/coupling.joblib: cf50e81a2fd19fb95bb66ae2a929f8f785b9da5b1e8fd8a82aaef1bc0c8d769f
+  artifacts/phase7-models/FD002-xgb/fold-5/mahalanobis-v1.joblib: f839a3a9c24bf9f908761216c96d31a45dfd9460bf0a2ead3b5005f4287ea080
+  artifacts/phase7-models/FD002-xgb/fold-5/mahalanobis-v2.joblib: d0add8ef741d3db412250f92791bc2f2d1bd238e35125427b8aeaf40a5d46cce
+  artifacts/phase7-models/FD002-xgb/fold-5/model.joblib: fcc168c9ad8f264317c24213fb058d3aaf8e44724ad486c7b3668d91da76beda
+  artifacts/phase7-models/FD002-xgb/mahalanobis-v1.joblib: 182947abbb56047c49c3b5da3f2e4cf77cb84c1ff2c29206ca21e228d2a0c14e
+  artifacts/phase7-models/FD002-xgb/mahalanobis-v2.joblib: db008571a589fb2da73f1eb8dcf29dbb435f39fd7ecb1a58e2ec3ef98055183c
+  configs/features.yaml: e60c06899f736079b46e3eb5394b884312b786d22f69fda8e94a543a707604f2
+  artifacts/phase12/phase12-repaired-20261104T231405Z/records.sqlite3: b9643edaab8df034346ca3ca4cec0e093a036d39204f34b0c5e1800b8ee810aa
+  artifacts/phase12/phase12-repaired-20261104T231405Z/manifest.json: d2ab9a3f6fb0b8b26ead9902c86c0eb2ee578db1fe94c6911602d9c6587aca77
+  artifacts/phase12/phase12-repaired-20261104T231405Z/historical-comparison.json: 980a336e6b69e90266269db0255a9f5c93cd8d09c892cb4ec215e1468e446d91
+  artifacts/experiments/phase7-20261020T102540Z/records.sqlite3: 2adfed3dcdb35f0ae6e6639379797250deb0d4f7206e4716de7a9c3c0fb39396
+  uv.lock: 215a3b22fa03eaef4852211b2d4961733e2aaf508a075f88e7a3ba6c2540ea8a

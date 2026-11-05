@@ -1,5 +1,13 @@
 # PrescriptXAI Progress
 
+## Phase12 closure diagnosis authorized - 2026-11-06 IST
+
+Explicituserprompt resumes712-case diagnosis. Rootpreparingcompleteclassification/scoring
+and8passes (shared/fresh interpreters ×one/defaultthreads ×tworepeats),5696actualqueries,
+with frozeninputs/settings andindependentprelaunchreview. No newrootcause/headline/fixture
+claim. Newheadlinesandtwofullreproducible runs+independentaudit requiredforclosure.
+Protocol docs/phase12_closure_diagnostics.md; savedrecords andoldnumbers unchanged.
+
 ## Phase 12 repaired replay stopped - 2026-11-06 IST
 
 Run phase12-repaired-20261104T231405Z/source a6c906cb7bf5dd91184316a0910c31e75826085f

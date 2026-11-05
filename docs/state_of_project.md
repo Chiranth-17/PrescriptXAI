@@ -1,5 +1,10 @@
 # State of the project - Phase 12 in progress
 
+**New user authorization,6November2026:** resume complete712-case classification and
+controlled repeatability/thread/process/scoring diagnosis. No root cause is established yet.
+All previous records, headline tables andfixtures remain unchanged. See
+[closure diagnostic protocol](phase12_closure_diagnostics.md). Phase12remainsopen.
+
 **Latest status, 6 November 2026 IST:** the repaired complete replay saved all32,116results
 but fails parity in712cases, including15Tier2 and3triage verdicts. Nativeexit1; nofixture,
 Phase12closure orPhase13. Both executionsegments and the originalfailedrun are preserved.

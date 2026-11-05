@@ -1,9 +1,19 @@
 ---
 phase: 12
-status: stopped_regression_mismatch
-current_activity: exact-byte-calibration-compatibility-verification
-activity_status: stopped_on_712_remaining_mismatches
+status: in_progress
+current_activity: user_authorized_712_closure_diagnosis
+activity_status: preregistering_diagnostics
 ---
+# Explicit closure task resumed - 2026-11-06 IST
+
+User authorized complete712classification, two repeats/shared+fresh processes/one+default
+threads, independent saved-candidate rescoring, evidence-based fix, newheadline/CIs andtwo
+fullconsecutive reproducibilityruns beforepromotion/phase12closure. Savedrecords, original
+headline numbers andfixtures unchanged. Protocol configs/experiments/phase12-closure-712-v1.yaml;
+details docs/phase12_closure_diagnostics.md. Root implements; agents audit only. Register
+runner/config andpasssoftwarechecks BEFOREactual8passes/5696calls. Stoptextbelowhistorical;
+currentuserauthorization resumesthis diagnosis, neverwaivesgate. NoPhase13yet.
+
 # Latest scientific stop - 2026-11-06 IST
 
 Same repairedrun phase12-repaired-20261104T231405Z/source a6c906cb7bf5dd91184316a0910c31e75826085f
