@@ -1,5 +1,22 @@
 # PrescriptXAI Progress
 
+## Phase 12 repaired replay stopped - 2026-11-06 IST
+
+Run phase12-repaired-20261104T231405Z/source a6c906cb7bf5dd91184316a0910c31e75826085f
+completed all32,116queries/24groups but nativeexit1:712scientific mismatches remain.
+Runner comparison:51risk_after,15Tier2,3joint/triage,34sparsity changes; overlappingcounts.
+No fixture/complete marker/phase12tag; noPhase13. Originalsource63 andbothfailedruns preserved.
+Two disclosed executionsegments:23,185savedbeforeuserpause +8,931newafterverifiedresume;
+fouruncommittedqueries eligibleforretry; no completedpayload/timingreplacement.
+Independentcomparisonconfirms44structural/668numeric-only,allXGB:FD002700/FD00112;
+maxabsrisk_after0.1691702562816351. All23185pausedpayloads/timings and23189cases exact;
+97inputs/source/config/runtime match; bothSQLiteintegrityOK. Finalindependentauditnative0/all18consistencychecks true/scientificparityfalse.
+JSON artifacts/phase12/repaired-complete-independent-audit/audit.json
+SHA d60436ce072ff8529ff3a8d5573a6e4b76c19dfce58460ef442a903ddeeac42d.
+OrchestratorSTOPapplies; heartbeatdeleted. No newsolve,
+sourcefix or target/tolerancechange. See docs/phase12_repaired_regression_failure.md.
+Earlier608softwaretests remaina softwarepass, notfull scientificparity orPhase12closure.
+
 ## Phase12 diagnosis resumed - 2026-11-05 IST
 
 All20preregistered localization calls completed/native0; independent audit confirmed all20

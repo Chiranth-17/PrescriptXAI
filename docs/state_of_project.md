@@ -1,6 +1,14 @@
 # State of the project - Phase 12 in progress
 
-**Latest status,5 November2026 IST:** the user explicitly resumed diagnosis/repair after
+**Latest status, 6 November 2026 IST:** the repaired complete replay saved all32,116results
+but fails parity in712cases, including15Tier2 and3triage verdicts. Nativeexit1; nofixture,
+Phase12closure orPhase13. Both executionsegments and the originalfailedrun are preserved.
+Automaticcontinuation was deleted under the explicit regression-stop rule. Independent
+complete-record audit finishednative0:44structural/668numeric-only; inputs and preserved
+pausepayloads exact, bothDBintegrityOK; scientificparityfalse. [Current failure scope](phase12_repaired_regression_failure.md).
+The earlier software checks and local five-case diagnosis below retain their limited scopes.
+
+**Earlier checkpoint,5 November2026 IST:** the user explicitly resumed diagnosis/repair after
 an independently verified2,589-case mismatch in the complete32,116-query run. The selected
 five-case factorial diagnosis completed20calls/native0 and independently isolates calibration
 arithmetic for those examples. The proposed repair selects legacy math only for24exact

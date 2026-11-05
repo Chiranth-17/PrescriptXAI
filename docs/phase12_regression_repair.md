@@ -1,5 +1,10 @@
 # Phase 12 calibration compatibility repair - verification pending
 
+**6 November 2026 update:** the complete repaired replay finished all32,116queries but
+still differs in712cases, including15Tier2 and3triage verdicts. The full gate remains
+failed. See the [complete repaired replay failure](phase12_repaired_regression_failure.md).
+The local diagnosis and software checks below retain their original limited scopes.
+
 The user explicitly resumed work after the regression stop on5November2026. The failed
 32,116-query run and its complete mismatch/audit evidence remain unchanged. Phase12 is
 still open; Phase13 has not started. The expected outputs and absolute1e-6/relative0

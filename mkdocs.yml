@@ -50,6 +50,7 @@ nav:
       - Phase 12 open items: phase12_open_items.md
       - Phase 12 regression failure: phase12_regression_failure.md
       - Phase 12 regression repair: phase12_regression_repair.md
+      - Phase 12 repaired replay failure: phase12_repaired_regression_failure.md
   - Defense questions: defense_qa.md
   - SDG 9: sdg9.md
   - API reference: api_reference.md

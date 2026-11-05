@@ -1,12 +1,10 @@
 # Synopsis traceability - Phase 12 baseline in progress
 
-**Phase12 R3 gate: Not met,5 November2026 IST.** All32,116queries were measured, but
-2,589cases differ from the frozen reference, including167Tier2 and35triage verdicts.
-See the [complete failure scope](phase12_regression_failure.md). The user resumed diagnosis;
-an independently reviewed exact-byte calibration repair is being verified. The selected
-five-example diagnosis restores5/5 with historical calibration; full-population parity remains
-unverified. See [repair scope](phase12_regression_repair.md). No new golden fixture,
-clean-clone regression pass, Phase12 closure or Phase13 advancement is claimed.
+**Phase12 R3 gate: Not met, 6 November 2026 IST.** The repaired replay measured all32,116
+queries but retains712mismatches, including15Tier2 and3triage changes. See the
+[current failure scope](phase12_repaired_regression_failure.md). The older2,589mismatchrun
+and [local calibration diagnosis](phase12_regression_repair.md) remain historical evidence.
+No fixture, clean-clone regression pass, Phase12closure orPhase13 advancement is claimed.
 The64synopsis rows below retain their named historical evidence scopes, not an assertion
 that the current-source solver reproduces every historical candidate.
 

@@ -1,9 +1,23 @@
 ---
 phase: 12
-status: in_progress
+status: stopped_regression_mismatch
 current_activity: exact-byte-calibration-compatibility-verification
-activity_status: corrected_gate_passed_new_full_replay_pending
+activity_status: stopped_on_712_remaining_mismatches
 ---
+# Latest scientific stop - 2026-11-06 IST
+
+Same repairedrun phase12-repaired-20261104T231405Z/source a6c906cb7bf5dd91184316a0910c31e75826085f
+finished32116/24groups butnativeexit1 with712scientificdifferences:51risk_after,15Tier2,
+3joint/triage and34sparsity. Originalthresholds/models/settings/expectations/tolerance unchanged.
+Nofixture/completeJSON/phase12closure/Phase13. Bothfailedruns andsource63preserved.
+Operatorpause+resumedsegment preserved23185+8931results; fouruncommittedqueriesmayretry;
+compatibilityandrawpayloadhash checks passed. Fullindependentrecordaudit finishednative0/all18consistencychecks true/scientificparityfalse.
+712=44structural+668numeric-only/allXGB; all23185pausepayloads/timings+23189cases preserved.
+BothDBintegrityOK/97inputsandallcaseidentitiesexact; auditJSONd60436ce072ff8529ff3a8d5573a6e4b76c19dfce58460ef442a903ddeeac42d.
+OrchestratorSTOPappliesagain; heartbeatdeleted. Do NOTresume this completedmismatch output,
+replacegoldenexpectations,relax1e-6/rtol0oradvance. Currenttask is audit/report only until stopresolved.
+Details docs/phase12_repaired_regression_failure.md; preservation artifacts/phase12/repaired-failed-run-preservation.json.
+
 # Resumed by explicit user continuation - 2026-11-05 IST
 
 Phase12 only.20localization calls/native0 plus independent20record/97input audit isolate
