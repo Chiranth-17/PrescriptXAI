@@ -2,8 +2,48 @@
 phase: 12
 status: in_progress
 current_activity: user_authorized_712_closure_diagnosis
-activity_status: preregistering_diagnostics
+activity_status: preregistered_arithmetic_factorial_pending_full_gate
 ---
+
+## Independent matrix audit and next registered diagnosis - 6 November 2026 IST
+
+Independent audit confirms all5696scientific outputs match the repaired records EXACTLY,
+not only within1e-6, with no process/thread support/tier/triage flips. All712historical
+differences remain. All102registered inputs and67measured source/helper/config hashes,
+SQLite integrity and native exits pass. Audit SHA256
+`90c07c693f77dc79d9bd8ffdc9b8c0073218f2519b387a20adf1525334219540`;
+ignored evidence `artifacts/phase12/closure-repeat-independent-audit/report.json`.
+This does not establish the cause of historical differences or authorize a new golden.
+
+Root registered a four-arm graph/scaler implementation factorial on all712cases:
+`configs/experiments/phase12-arithmetic-v1.yaml`,2848actualsearch calls and5696saved-candidate
+surrogate scores. Hypotheses remain unproven. Exact current-arm controls must reproduce
+previous repaired outputs before causal interpretation; every saved observation/input/hash
+is retained. Focused13helper tests pass/5.63s and Ruff passes; independent finalreview and
+fresh fullsoftwaregate are required before launch. See the closure diagnostic protocol.
+No production/scientific setting, fitted artifact, historical result, headline or fixture
+was changed. Phase12 remains open; noPhase13 implementation or closure tag.
+
+## Updated roadmap and completed diagnosis matrix - 6 November 2026 IST
+
+The user supplied the complete [Phases 12–19 request](../docs/prompts/final_prompts_12_to_19.md),
+attachment SHA256 `60d427244acc99ff1c6206aff69ffd533ed1bf2a9656006dd5d196d35018717f`.
+This supersedes the prior roadmap: final evaluation, pilot guide, audit and v1.0.0 release
+are in Phase19. No separate Phase20 is scheduled. Rules30–40 follow this attachment;
+missing human sign-offs, interviews, design reference or external receipts must be labeled
+Partial/Not met rather than fabricated. NoPhase13 implementation before Phase12 closure.
+
+Diagnostic `closure-712-20261106-v1`, measured source
+`2f31e51d56bd85100859bd2a64fa9480ae24e592`, completed5696calls (8×712), nativeexit0.
+All8passes reproduce repaired saved outputs within abs1e-6/rtol0; every pass retains712
+historical mismatches. Real thread contrast: one-thread pools1/Torch1 versus defaults
+OpenBLAS16/Torch8. Independent complete-record review is pending. Primary-model scores
+agree exactly for1424savedcandidates; this does not independently clear surrogate scoring.
+Classification:36changed direct supports,668same supports/different direct values,
+8identical candidates with surrogate-only differences. Search root cause remains unproven.
+Fresh prelaunch gate617tests/66warnings/219.55s, Ruff/mypy65/strictdocs pass/native0.
+Old headlines, fitted bytes, saved records and fixtures are unchanged. No phase closure.
+
 # Explicit closure task resumed - 2026-11-06 IST
 
 User authorized complete712classification, two repeats/shared+fresh processes/one+default

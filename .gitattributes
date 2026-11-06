@@ -4,3 +4,4 @@
 *.jpg binary
 *.jpeg binary
 *.parquet binary
+docs/prompts/final_prompts_12_to_19.md -text

@@ -78,3 +78,44 @@ config SHA256 `0734fe7c3ff3a625413bc954f617af0de52e0e6fc0edcb831511782fb1efb5c1`
 A fresh full software gate against the final committed helper/tests remains required before
 actual diagnostic execution. The earlier gate collected before the four additional helper
 tests is not the final gate. No classification result or measured root cause is claimed yet.
+
+## Controlled graph/scaler factorial after the complete repeatability matrix
+
+The eight complete712-case passes finished5696search calls/native0 at measured source
+`2f31e51d56bd85100859bd2a64fa9480ae24e592`. At abs1e-6/rtol0, all passes match the
+repaired records and one another, and all retain712historical differences. This supports
+repeatability in the tested environment, not a proof that all historical differences are
+explained. Independent complete-record review remains pending.
+
+New diagnosis: `configs/experiments/phase12-arithmetic-v1.yaml` and
+`scripts/diagnostics/phase12_arithmetic.py`. Hypotheses are implementation differences,
+not stochastic drift: (a) shared versus separate feature-lift autograd graphs, and (b)
+the scaler's explicit C-order copy versus historical StandardScaler memory layout. The
+latter may change floating-point reduction order in batched surrogate scoring even when
+scaled logical values agree. Neither is a proven root cause before the experiment.
+
+Run a full2×2factorial: current, historical graph only, historical scaler only, both.
+Each arm reruns all712cases, total2848search calls, one numerical thread. All weights,
+scientific limits, thresholds, seed1729, solver settings, populations and input bytes
+stay fixed. Only the two stated implementation paths vary. Extract historical solve
+and scaler code from frozen git source63c2ed445fba16c73a2771e184f635abf76b4405 into
+new diagnostic output; never edit the historical checkout or saved artifacts. Current
+objective's legacy default callback interface remains the separate-graph path; the
+historical solve method is the only optimizer difference between these source versions.
+
+Before search, score both saved candidates for all712cases in their original two-row
+before/after batch using both scaler layouts and production versus extracted historical
+tensor calibration methods (5696score rows). Log logical scaler error, contiguity,
+tensor stride, raw surrogate and calibrated surrogate error against saved values. Primary
+true-model scoring was independently checked separately; this matrix investigates the
+remaining surrogate branch. These observations must distinguish layout effects from
+calibration effects and search effects. Calibrators retain the audited version migration.
+
+Every actual search observation is validated against its original case before inserting
+into a new append-only-keyed diagnostic database. Preserve errors and timings. Require
+exact4×712counts, full score counts, before/after code/config/helper/input/control-DB
+hashes, a native exit receipt and independent audit. No implicit resume/replacement of
+partial factorial arms. Diagnostic timings do not certify latency. No production change,
+headline update, fixture promotion or Phase12closure follows merely from native0.
+Register and independently review this helper/config and pass the fresh software gate
+before launching. The new Phases12–19 roadmap is governance only; noPhase13feature is added.

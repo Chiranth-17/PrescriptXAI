@@ -1,0 +1,24 @@
+purpose: diagnostic_only_complete_graph_scaler_factorial_not_headline_or_fixture
+historical_source: 63c2ed445fba16c73a2771e184f635abf76b4405
+prior_design: configs/experiments/phase12-closure-712-v1.yaml
+repeat_database: artifacts/phase12/closure-712-20261106-v1/repeat-records.sqlite3
+repeat_database_sha256: 2cbe5006293798acc6b2b0372d694341bcb39f98d80f62b64f82e625b81ec73d
+expected_cases: 712
+expected_search_calls: 2848
+expected_score_rows: 5696
+absolute_tolerance: 1.0e-06
+relative_tolerance: 0
+threads: 1
+arms:
+  current:
+    graph: shared
+    scaler: current_C_copy
+  historical_graph:
+    graph: separate
+    scaler: current_C_copy
+  historical_scaler:
+    graph: shared
+    scaler: historical_StandardScaler
+  historical_both:
+    graph: separate
+    scaler: historical_StandardScaler
