@@ -1,5 +1,31 @@
 # PrescriptXAI Progress
 
+## Arithmetic experiment interruption and explicit segmented continuation - 7 November 2026 IST
+
+The original arithmetic process disappeared without a native completion receipt or traceback.
+Last saved log2026-11-06T18:01:56UTC; current712 plus historical_graph47 =759records.
+The former runner/Codex processes are absent and a new Codex app-server binary/session is
+present. Termination cause is unverified; no reboot is recorded. All original102inputs,
+production code/config/helper/snapshot hashes match; SQLite integrity passes. Byte hashes
+for every retained payload INCLUDING timings and all evidence files are preserved in
+`artifacts/phase12/arithmetic-interruption-preservation.json`.
+
+Explicit continuation registration: `configs/experiments/phase12-arithmetic-resume-v1.yaml`,
+runner `scripts/diagnostics/phase12_arithmetic_resume.py`. Same diagnostic experiment,
+not a new population or a replacement: retain759completed records and original scoring
+CSV/manifests/logs. Validate all identities/payload hashes before continuation. Run712fresh
+current controls in a separate controls.sqlite3 and require EXACT scientific agreement
+before appending2089missing intervention records. These additional controls are disclosed,
+not counted as new headline observations. Original experiment total remains4×712=2848.
+Record a new execution segment with distinct source, runtime, effective threads and native
+exit/completion receipt; never describe it as an uninterrupted process. No implicit retry
+or overwrite of a retained result. Refuse changed inputs/runtime or an existing segment.
+Full software gate and independent prelaunch review must pass before execution. If they
+pass, keep the same frozen scientific settings/tolerance/models and complete the full
+factorial plus independent audit before any production repair/fixture/headline decision.
+Phase12 remains open; noPhase13features or closure tags. Historical results stay immutable.
+
+
 ## Independent matrix audit and next registered diagnosis - 6 November 2026 IST
 
 Independent audit confirms all5696scientific outputs match the repaired records EXACTLY,
@@ -1520,3 +1546,8 @@ artifacts/phase9/final-*,nightly-selection.*,performance-v1/. Implementation che
 42c7800,bf50dff,2fd1055,583b2fc; closuretagphase9-closed follows verified fullgate. Generateddata/
 fittedartifacts remainignored. Phase7/8 historicaltargets/records untouched. CompletePhase10
 starts immediately after tagverification, without a confirmation; no Phase11/PartB invented.
+
+Resume prelaunch review adds47historical_graph warmup rechecks in a separate table,
+requiring exact retained scientific outputs before continuing case48. Total extra checks
+=712current controls+47arm rechecks; remaining appended records=2089. Focused continuation
+guard tests6passed/6.77s; Ruffclean. Fullgate and independentreview remain pending.

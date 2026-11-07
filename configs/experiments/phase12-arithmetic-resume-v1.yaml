@@ -1,0 +1,9 @@
+original_output: artifacts/phase12/arithmetic-712-20261106-v1
+segment_output: artifacts/phase12/arithmetic-resume-20261107-v1
+preservation: artifacts/phase12/arithmetic-interruption-preservation.json
+preservation_sha256: acae7709b831dc8d2a073d86aca75559f8fd8573364bc7bc69550a1091f42c36
+same_experiment: arithmetic-712-20261106-v1
+additional_fresh_control_calls: 712
+remaining_factorial_calls: 2089
+no_completed_result_replacement: true
+additional_retained_arm_recheck_calls: 47
