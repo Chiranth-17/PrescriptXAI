@@ -1,9 +1,45 @@
 ---
 phase: 12
 status: in_progress
-current_activity: user_authorized_712_closure_diagnosis
-activity_status: corrected_full_pair_complete_independent_audit_and_clean_clone_pending
+current_activity: clean_clone_full_corpus_regression
+activity_status: independent_full_pair_pass_fixture_promoted_impact_unchanged_clean_clone_pending
 ---
+
+## Independent full-pair PASS and fixture promotion - 8 November 2026 IST
+
+Independent audit `corrected-pair-independent-audit/report.json` SHA256
+`6efa7a8304c277562bde0822cd1b148c94dc62cbabe8945ff6fd606736e33861` passed all64,232
+new observations, all32,116 cases per run, all97 external input bytes and66 source/helper
+files. A/history, B/history and A/B scientific outputs and complete validation/settings
+match EXACTLY, including floats; maximum measured scientific/margin difference0.
+No unexplained mismatch, support/tier/triage flip or case/config hash change remains.
+All negative queries stay included:696 infeasible intervals and78 mandatory-sparsity
+failures per run. Those78 retain withheld nearest diagnostics above k_max, returned=false,
+action_feasible=false/joint=false/ESCALATE, exactly as historical. The auditor corrected
+and preserved preliminary reviewer assumptions about Windows path normalization and
+these rejected diagnostics; no production result was changed to satisfy the audit.
+
+The approved complete A export is now promoted to `tests/regression/cmapss_baseline.parquet`,
+59,294,365bytes, SHA256 `382bbf1fac0f0a467e252772b8a47c94e9460bc9bb02196d312e6ac401cb3f15`.
+Its adjacent committed manifest records all97 external hashes and both completion/audit
+proofs. No fitted weights or raw archives are added. Actual clean-clone replay/full gate
+remains pending; promotion alone is not Phase12 closure.
+
+Complete impact run `phase12-impact-20261108-v1`, config committed before aggregation,
+analysis source `0d0e6db33bdc47b87ffcd601985eda910fccaf3d`, native0, all24 groups and32,116
+queries per run: every historical/A/B estimate, whole-engine CI and denominator/count
+matches exactly. Report JSON SHA256 `31707dc3e8687e2db8db6764439fcdaaeba6693bf951cad6fa807ae09379bc7f`.
+Full side-by-side tables: [headline impact](../docs/phase12_headline_impact.md). This restores the
+original reference, with no new performance or fresh-generalization claim. Only failed
+intermediate Phase12 arithmetic results are superseded for headline use; all archives
+remain immutable. Borderline export includes304,146 run/predicate rows over three
+identical corpora, including structural zero check margins; no verdict is rounded or
+changed. Aggregate Tier4 margin is within1e-6 for13,538 cases per corpus.
+
+A separate clean clone with its own locked133-package environment is prepared outside
+the protected historical checkout. Independent final tool/fixture review, actual complete
+clean-clone replay and full software/coverage gate remain pending. Phase12 remains open;
+noPhase13 or phase12-closed tag. Ledger A11 closes on independent full parity:8 Closed/7 Open/35 Accepted-with-reason; A10 stays Open for the pending clean-clone gate. Objective statuses remain unchanged.
 
 ## Corrected full pair complete - 8 November 2026 IST
 

@@ -1,21 +1,28 @@
 {
   "schema_version": 1,
   "latest_diagnostic_update": {
-    "date": "2026-11-07",
-    "arithmetic_complete_audit_sha256": "e7fa55021c67e3718d82c839eb12c7df1d0463ea1e0ed237d3b7a047d357bb4f",
-    "selected_cases_exactly_recovered": 712,
-    "full_corpus_pair_clean_clone_and_fixture_gates": "pending",
-    "ledger_status_counts_changed": false
+    "date": "2026-11-08",
+    "pair_audit_sha256": "6efa7a8304c277562bde0822cd1b148c94dc62cbabe8945ff6fd606736e33861",
+    "full_cases_each_exactly_recovered": 32116,
+    "pair_native_exits": [
+      0,
+      0
+    ],
+    "fixture_promoted": true,
+    "headline_estimates_CIs_denominators_changed_groups": 0,
+    "clean_clone_full_replay_gate": "pending",
+    "ledger_status_counts_changed": true,
+    "change": "A11 closed with complete independent pair proof; A10 remains Open until actual clean-clone full gate"
   },
-  "date": "2026-11-04",
+  "date": "2026-11-08",
   "phase12_complete": false,
   "author": "Root implementation owner; independently checked evidence",
   "independent_review_source": "f36db81671dcfeb32ea8b41f17eb921aa344f67c",
   "independent_receipt_sha256": "d95f4e441923b54b2a81793d78dc232ab6d878732f2bd479126b06176937fd69",
   "counts": {
     "Accepted-with-reason": 35,
-    "Open": 8,
-    "Closed": 7
+    "Open": 7,
+    "Closed": 8
   },
   "items": [
     {
@@ -343,16 +350,16 @@
       "requirement": "Full baseline fixture plus clean-clone regression",
       "status": "Open",
       "owner": "Phase12 baseline owner",
-      "evidence": "Complete run phase12-baseline-20261104T173007Z/source4048ea5 saved32116queries/24groups but exited1 on2589scientific mismatches. No fixture promoted or clean-clone pass; advancement stopped under the actual orchestrator.",
-      "source": "docs/phase12_regression_failure.md"
+      "evidence": "Both corrected source3441 runs completed32116/24/native0 and independent full audit6efa7a83 proves exact parity. A fixture382bbf1f promoted with97assetbytehashes; actual complete clean-clone replay/fullgate remains pending. Historical failed runs remain preserved.",
+      "source": "docs/phase12_full_regression.md"
     },
     {
       "id": "A11",
       "requirement": "Current-source solver equivalence after sharedlift",
-      "status": "Open",
-      "owner": "Phase12 baseline owner",
-      "evidence": "Measured comparison failed:167Tier2 and35triage changes;748risk_after differences beyond absolute1e-6. Unit-gradient equivalence is not solver parity; causal revision remains unisolated.",
-      "source": "docs/phase12_regression_failure.md"
+      "status": "Closed",
+      "owner": "Root implementation owner; independent full-pair audit",
+      "evidence": "Closed for audited source3441e259b7b57c5ca4b8981298deb24acb1c0ae0: graph/layout factorial explains all712; two consecutive complete32116 reruns and independent audit6efa7a83 show EXACT historical and pair full scientific/settings/validation equality, zero unexplained. Full regression continues under A10; no scientific settings/tolerance relaxed.",
+      "source": "docs/phase12_arithmetic_repair.md"
     },
     {
       "id": "A12",
@@ -423,7 +430,7 @@
     {
       "rule": 30,
       "status": "Partial",
-      "evidence": "No industrial writeback in current reference implementation; human approval lifecycle not yet implemented (Phase16)."
+      "evidence": "No industrial writeback in current reference implementation; human approval lifecycle not yet implemented (Phase15)."
     },
     {
       "rule": 31,
@@ -443,7 +450,7 @@
     {
       "rule": 34,
       "status": "Partial",
-      "evidence": "Existing validation rejects acceptance but returns failed diagnostic candidates; no generic data-quality/input-integrity withholding engine. Phase13/16 needed."
+      "evidence": "Existing validation rejects acceptance but returns failed diagnostic candidates; no generic data-quality/input-integrity withholding engine. Phase15 withholding and Phase16 hardening needed."
     },
     {
       "rule": 35,
@@ -453,17 +460,17 @@
     {
       "rule": 36,
       "status": "Partial",
-      "evidence": "API RequestGuard checks key only if environmentvalue exists; no default-auth/RBAC/hashchain. Existing size/finite validation/CORS/trusted-artifact controls remain useful but not full new security gate."
+      "evidence": "No pooled performance: existing results are separate by dataset/model/protocol/population; new impact retains all24groups separately. MachineSpec/spec_hash migration remains Phase13."
     },
     {
       "rule": 37,
       "status": "Partial",
-      "evidence": "Existing results stratified dataset/model; no registeredMachineSpec/spec_hash field yet. Phase13 migration required with freeze governance."
+      "evidence": "Synthetic software fixtures are disclosed; generic simulated-operator store/default exclusion is Phase17 and not yet implemented."
     },
     {
       "rule": 38,
       "status": "Partial",
-      "evidence": "Synthetic softwarefixture studies are disclosed; generic simulatedoperator store/exclusion mechanism not yetimplemented."
+      "evidence": "Legacy API auth remains optional; default authentication/RBAC/hashchain require Phases15-16. Existing size/finite validation/CORS/trusted-artifact checks are narrower evidence."
     },
     {
       "rule": 39,
@@ -473,17 +480,38 @@
     {
       "rule": 40,
       "status": "Partial",
-      "evidence": "Localsource/wheel/Docker cleaninstall checks exist, but no makeverify target or generic cleanclone demo. Phase18/20 queued."
+      "evidence": "Localsource/wheel/Docker cleaninstall checks exist, but no makeverify target or generic cleanclone demo. Phase18/19 queued."
     }
   ],
   "phase12_gate": {
-    "status": "Not met",
-    "run_id": "phase12-baseline-20261104T173007Z",
-    "source": "4048ea5319f774f3925cec1ed4dfaddbb9d34840",
-    "queries": 32116,
-    "mismatches": 2589,
-    "actual_exit": 1,
-    "advancement": "stopped_per_user_orchestrator",
-    "automatic_continuation": "deleted"
-  }
+    "status": "In progress",
+    "paired_runs": [
+      "phase12-corrected-20261107-a",
+      "phase12-corrected-20261107-b"
+    ],
+    "source": "3441e259b7b57c5ca4b8981298deb24acb1c0ae0",
+    "queries_each": 32116,
+    "unexplained_mismatches": 0,
+    "pair_actual_exits": [
+      0,
+      0
+    ],
+    "independent_pair_audit": "PASS",
+    "headline_impact": "24groups all old/A/B estimates CIs/counts identical",
+    "clean_clone_full_replay": "pending",
+    "advancement": "Phase13 prohibited until actual Phase12 closure",
+    "phase12_closed": false
+  },
+  "historical_gate_receipts": [
+    {
+      "status": "Not met",
+      "run_id": "phase12-baseline-20261104T173007Z",
+      "source": "4048ea5319f774f3925cec1ed4dfaddbb9d34840",
+      "queries": 32116,
+      "mismatches": 2589,
+      "actual_exit": 1,
+      "advancement": "stopped_per_user_orchestrator",
+      "automatic_continuation": "deleted"
+    }
+  ]
 }

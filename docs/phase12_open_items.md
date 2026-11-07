@@ -1,5 +1,13 @@
 # Phase 12 open-item ledger
 
+8 November 2026: complete independent full-pair audit PASS (SHA256
+`6efa7a8304c277562bde0822cd1b148c94dc62cbabe8945ff6fd606736e33861`). All32116cases
+per run reproduce historical/full outputs exactly. A11 closes with that scoped proof;
+A10 remains Open until actual clean-clone full regression/gate passes. Fixture promoted,
+97 external hashes required, all24 old/A/B headline CIs/counts unchanged. Current counts:
+**8 Closed / 7 Open / 35 Accepted-with-reason**. Phase12 remains open. Older dated updates
+below are retained as history; current item rows and structured JSON are updated.
+
 7 November 2026 diagnostic update: the complete independent arithmetic audit recovers all
 selected 712 historical scientific outputs exactly. Root's graph/layout repair is registered
 for two complete 32,116-query runs. This resolves the selected diagnostic explanation only;
@@ -11,7 +19,7 @@ Status date: 4 November 2026. Phase 12 is in progress. This administrative ledge
 original exception plus the additional current checks; overlapping obligations remain separate.
 Closed means evidence now exists for that obligation. Accepted-with-reason records a scoped
 limitation, not a successful result. Open means implementation or verification remains.
-The current ledger has **7 Closed / 8 Open / 35 Accepted-with-reason** across 50 entries.
+The current ledger has **8 Closed / 7 Open / 35 Accepted-with-reason** across 50 entries.
 
 Root adopted these dispositions after reviewing the independent read-only audit. The source
 receipt SHA256 is `d95f4e441923b54b2a81793d78dc232ab6d878732f2bd479126b06176937fd69`; its snapshot source is
@@ -59,8 +67,8 @@ receipt SHA256 is `d95f4e441923b54b2a81793d78dc232ab6d878732f2bd479126b06176937f
 | A07 | Whole-engine CIs and denominators | Closed | Documented evidence limit / future research | Current headline/final-target matrix identifiesN, all-query failures, conditional-return denominators; Phase11 independent576objects verified. Historical Phase4 target erratum remains visible. Newly added diagnostics still need same policy. |
 | A08 | Oracle-superset rule | Closed | Documented evidence limit / future research | Saved reference.json has48leverage entries/40oracles. All40have production_reproduced=True,verified_search_superset=True,global_infeasibility_certified=False. Classifications all unresolved_finite_search, never truly infeasible. |
 | A09 | Run labels | Closed | Documented evidence limit / future research | Phase7 report tables have preceding run/source/studySHA/protocol/K/k/Dmax/population labels; final_targets uses resolvable config sets. Metadata/source-inventory tables are not performance populations. Newmachine/spec_hash labels do not retroactively exist; add atPhase13 rather than invent hashes. |
-| A10 | Full baseline fixture plus clean-clone regression | Open | Phase12 baseline owner | New run phase12-baseline-20261104T173007Z/source4048ea5 saved all32116queries/24groups but exited1 on2589mismatches. No fixture promoted or clean-clone pass. See phase12_regression_failure.md; advancement stopped under the actual user prompt. |
-| A11 | Current-source solver equivalence after sharedlift | Open | Phase12 baseline owner | Complete measured comparison failed:167Tier2 and35triage verdict changes,748risk_after differences beyondabsolute1e-6. Earlier gradient tests did not establish solver parity. Attribution to a particular revision remains unproved; no expected-output replacement or relaxed tolerance. |
+| A10 | Full baseline fixture plus clean-clone regression | Open | Phase12 baseline owner | Both corrected source3441 runs completed32116/24/native0 and independent full audit6efa7a83 proves exact parity. A fixture382bbf1f promoted with97assetbytehashes; actual complete clean-clone replay/fullgate remains pending. Historical failed runs remain preserved. |
+| A11 | Current-source solver equivalence after sharedlift | Closed | Root / independent full-pair audit | Closed for audited source3441e259b7b57c5ca4b8981298deb24acb1c0ae0: graph/layout factorial explains all712; two consecutive complete32116 reruns and independent audit6efa7a83 show EXACT historical and pair full scientific/settings/validation equality, zero unexplained. Full regression continues under A10; no scientific settings/tolerance relaxed. |
 | A12 | Contaminated dev latency baseline | Accepted-with-reason | Documented evidence limit / future research | 120calls completed,0errors; ModernStandby overlaps fourFASTcalls containing5286.748923s of5402.478527s FASTsum. Preserve allsamples; no causal steady-state speedup claim. |
 | A13 | Poor coupling fits and noncausal propagation | Accepted-with-reason | Documented evidence limit / future research | Original FD001 sensor3/sensor6 weak fits; Phase5 sensor6 calibrationR2=.031962,sharebeyondlimit=.029068. FD002 negative coupling margins remain. A fit threshold or real physics claim cannot be manufactured. |
 | A14 | Frozen LSTMrecourse failure | Accepted-with-reason | Documented evidence limit / future research | All reported LSTM headline validity0 under genuine-prefix/latest-step-only action. Missing early histories counted unavailable, not padded. No global infeasibility inference. |
@@ -77,17 +85,17 @@ industrial use. No network service or industrial advisory deployment is started 
 
 | Rule | Baseline status | Evidence / planned phase |
 |---|---|---|
-| 30 | Partial | No industrial writeback in current reference implementation; human approval lifecycle not yet implemented (Phase16). |
+| 30 | Partial | No industrial writeback in current reference implementation; human approval lifecycle not yet implemented (Phase15). |
 | 31 | Not met | No generic core directory/MachineSpec; pipeline/evaluation use engine/C-MAPSS identifiers. Phase13 planned. |
 | 32 | Partial | Docs identify C-MAPSS proxy scope; synthetic pump not yetimplemented/tested; cannot copy final viva paragraph as present-tense achievement. |
 | 33 | Not met | No engineer-signoff machine pack/Alerts-only gating. Benchmark historical evaluations remain research evidence; do not deploy advisory mode. |
-| 34 | Partial | Existing validation rejects acceptance but returns failed diagnostic candidates; no generic data-quality/input-integrity withholding engine. Phase13/16 needed. |
+| 34 | Partial | Existing validation rejects acceptance but returns failed diagnostic candidates; no generic data-quality/input-integrity withholding engine. Phase15 withholding and Phase16 hardening needed. |
 | 35 | Not met | No readinessscorecard/manual promotion modes. Phase15 planned. |
-| 36 | Partial | API RequestGuard checks key only if environmentvalue exists; no default-auth/RBAC/hashchain. Existing size/finite validation/CORS/trusted-artifact controls remain useful but not full new security gate. |
-| 37 | Partial | Existing results stratified dataset/model; no registeredMachineSpec/spec_hash field yet. Phase13 migration required with freeze governance. |
-| 38 | Partial | Synthetic softwarefixture studies are disclosed; generic simulatedoperator store/exclusion mechanism not yetimplemented. |
+| 36 | Partial | No pooled results: all24 impact groups stay separate. MachineSpec/spec_hash migration remains Phase13. |
+| 37 | Partial | Synthetic software fixtures disclosed; simulated-operator labeling/default exclusions remain Phase17 work. |
+| 38 | Partial | Existing legacy auth is optional. Default auth/RBAC/hashchain need Phases15-16; current input/trust controls are narrower evidence. |
 | 39 | Not assessed | No standards compliance claim inspected here; alignment tables are a futurePhase19 deliverable. Do not claim complete ruleaudit from this ledger audit. |
-| 40 | Partial | Localsource/wheel/Docker cleaninstall checks exist, but no makeverify target or generic cleanclone demo. Phase18/20 queued. |
+| 40 | Partial | Localsource/wheel/Docker cleaninstall checks exist, but no makeverify target or generic cleanclone demo. Phase18/19 queued. |
 
 ## Numerical evidence scope
 
