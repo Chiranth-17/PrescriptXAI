@@ -115,6 +115,10 @@ class RecourseOptimizer:
         actual calibrated estimator; only that score can set ``model_valid``.
         """
         started_ns = perf_counter_ns()
+        # Loaded models do not run training's determinism setup. This process-wide policy
+        # can be tightened by a request, never disabled by a concurrent opt-out request.
+        if config.model.torch_deterministic:
+            torch.use_deterministic_algorithms(True)
         timing: dict[str, float] = {}
         state = {name: float(value) for name, value in x.items()}
         _validate_state(state, self.bundle.feature_names)
@@ -450,12 +454,16 @@ class RecourseOptimizer:
             support_upper = upper_array[support_positions]
             feature_function = build_feature_function(support_positions)
 
-            def risk_function(features: torch.Tensor) -> torch.Tensor:
+            # Keep separate lifts for risk and feedback. Sharing their autograd graph
+            # changes floating-point gradient accumulation and the L-BFGS-B trajectory;
+            # the complete Phase 12 factorial recovered all historical candidates here.
+            def risk_function(local_delta: torch.Tensor) -> torch.Tensor:
+                features = feature_function(local_delta)
                 return self.bundle.torch_forward(features.float()).reshape(-1)[0]
 
-            def feasibility_function(features: torch.Tensor) -> torch.Tensor:
+            def feasibility_function(local_delta: torch.Tensor) -> torch.Tensor:
                 assert manifold_penalty is not None
-                return manifold_penalty(features)
+                return manifold_penalty(feature_function(local_delta))
 
             objective = RecourseObjective(
                 risk_function,
@@ -473,7 +481,6 @@ class RecourseOptimizer:
                 device=device,
                 feasibility_function=feasibility_function if manifold_penalty is not None else None,
                 feasibility_weight=feedback_weight,
-                feature_function=feature_function,
             )
             if initial_delta is None:
                 first = np.clip(np.zeros(len(support)), support_lower, support_upper)

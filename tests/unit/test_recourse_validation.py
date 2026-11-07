@@ -40,6 +40,27 @@ from prescriptxai.validation.tier3_engineering import validate_engineering
 from prescriptxai.validation.tier4_coupling import validate_sensor_coupling
 
 
+@pytest.mark.parametrize("deterministic", [True, False])
+@pytest.mark.parametrize("initial_policy", [True, False])
+def test_loaded_model_search_honors_configured_deterministic_math(
+    deterministic: bool, initial_policy: bool,
+) -> None:
+    """Inference on a loaded model must not depend on a previous training process's flag."""
+    prior = torch.are_deterministic_algorithms_enabled()
+    bundle, taxonomy, _ = make_recourse_fixture()
+    config = load_config(Path("configs/default.yaml"))
+    config.model.torch_deterministic = deterministic
+    try:
+        torch.use_deterministic_algorithms(initial_policy)
+        result = RecourseOptimizer(bundle, taxonomy).solve(
+            {"actuator": 2.0, "sensor": 2.0}, config
+        )
+        assert result.model_valid
+        assert torch.are_deterministic_algorithms_enabled() is (initial_policy or deterministic)
+    finally:
+        torch.use_deterministic_algorithms(prior)
+
+
 @pytest.mark.parametrize("l1_mode", ["smooth", "split"])
 @pytest.mark.parametrize("prediction_loss", ["hinge", "squared_hinge"])
 @pytest.mark.parametrize("feedback_weight", [0.0, 7.0])

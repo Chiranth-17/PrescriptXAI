@@ -1,5 +1,12 @@
 {
   "schema_version": 1,
+  "latest_diagnostic_update": {
+    "date": "2026-11-07",
+    "arithmetic_complete_audit_sha256": "e7fa55021c67e3718d82c839eb12c7df1d0463ea1e0ed237d3b7a047d357bb4f",
+    "selected_cases_exactly_recovered": 712,
+    "full_corpus_pair_clean_clone_and_fixture_gates": "pending",
+    "ledger_status_counts_changed": false
+  },
   "date": "2026-11-04",
   "phase12_complete": false,
   "author": "Root implementation owner; independently checked evidence",

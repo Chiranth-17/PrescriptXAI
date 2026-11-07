@@ -1,5 +1,14 @@
 # Phase 12 closure diagnosis: all 712 mismatches
 
+## Latest verified result - 7 November 2026 IST
+
+The complete factorial and independent audit pass. Both historical arithmetic factors
+restore all 712 scientific outputs exactly, including all 704 changed candidates and
+eight originally scoring-only discrepancies. Every 2,848 record, controls/rechecks and
+retained timing/input hash passed. See [cause, repair and remaining gates](phase12_arithmetic_repair.md).
+The sections below preserve registration and diagnostic history. Production review,
+fresh gate, two full 32,116-query reruns and Phase 12 closure remain pending.
+
 User authorization: explicit Phase12 closure prompt on6November2026 IST. This resumes
 controlled diagnosis after147d846; it does not waive any closure gate. Saved records,
 fixtures, scientific settings and existing headline tables remain unchanged.

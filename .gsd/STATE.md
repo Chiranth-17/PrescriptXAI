@@ -2,9 +2,20 @@
 phase: 12
 status: in_progress
 current_activity: user_authorized_712_closure_diagnosis
-activity_status: interrupted_arithmetic_registering_segmented_resume
+activity_status: audited_arithmetic_repair_pending_full_corpus_pair
 ---
 
+
+## Audited arithmetic repair - 7 November 2026 IST
+
+Independent complete factorial audit PASS, SHA256
+e7fa55021c67e3718d82c839eb12c7df1d0463ea1e0ed237d3b7a047d357bb4f.
+Both historical arithmetic paths reproduce all 712 scientific outputs exactly.
+All 2,848 observations, 712 controls, 47 rechecks and original 759 payload/timing hashes pass.
+Production repair restores separate graphs and scaler layout, with configured deterministic
+search policy. See docs/phase12_arithmetic_repair.md. Independent code review, fresh gate,
+two complete 32,116-query runs, CIs, full audit, fixture/clean-clone closure remain pending.
+Old headlines/fixtures/ledger counts unchanged. No Phase 13 or Phase 12 closure tag.
 
 ## Arithmetic experiment interruption and explicit segmented continuation - 7 November 2026 IST
 

@@ -1,5 +1,12 @@
 # Phase 12 open-item ledger
 
+7 November 2026 diagnostic update: the complete independent arithmetic audit recovers all
+selected 712 historical scientific outputs exactly. Root's graph/layout repair is registered
+for two complete 32,116-query runs. This resolves the selected diagnostic explanation only;
+the full-corpus/fixture/clean-clone obligations remain open. Counts below are unchanged.
+Evidence and limits: [arithmetic repair](phase12_arithmetic_repair.md), audit SHA256
+e7fa55021c67e3718d82c839eb12c7df1d0463ea1e0ed237d3b7a047d357bb4f.
+
 Status date: 4 November 2026. Phase 12 is in progress. This administrative ledger preserves every
 original exception plus the additional current checks; overlapping obligations remain separate.
 Closed means evidence now exists for that obligation. Accepted-with-reason records a scoped

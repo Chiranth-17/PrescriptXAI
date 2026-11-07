@@ -1,5 +1,17 @@
 # State of the project - Phase 12 in progress
 
+## Audited arithmetic repair - 7 November 2026 IST
+
+Independent factorial audit passed every 2,848 record and preservation check. Combined
+historical graph and scaler layout recover all 712 historical outputs exactly, resolving
+the selected diagnostic mismatches. Audit SHA256:
+e7fa55021c67e3718d82c839eb12c7df1d0463ea1e0ed237d3b7a047d357bb4f.
+Root's production repair and deterministic policy are documented in
+[the arithmetic repair](phase12_arithmetic_repair.md). The corrected-pair registration
+requires two consecutive full 32,116-query runs after independent review and a fresh gate.
+Those runs, headline CIs, fixture promotion, clean-clone regression and final closure remain
+pending. Old results and ledger counts remain unchanged. Phase 12 remains open.
+
 ## Arithmetic experiment interruption and explicit segmented continuation - 7 November 2026 IST
 
 The original arithmetic process disappeared without a native completion receipt or traceback.

@@ -1,5 +1,16 @@
 # Synopsis traceability - Phase 12 baseline in progress
 
+## Audited arithmetic repair - 7 November 2026 IST
+
+Reproducibility diagnosis: independent 2,848-record factorial audit confirms exact recovery
+of all selected 712 historical scientific outputs with separate feature graphs and preserved
+scaler layout. Evidence SHA256 e7fa55021c67e3718d82c839eb12c7df1d0463ea1e0ed237d3b7a047d357bb4f.
+Implementation: data/preprocess.py and recourse/optimizer.py; tests:
+test_phase9_scaling_parity.py and test_recourse_validation.py; details:
+[arithmetic repair](phase12_arithmetic_repair.md). The corrected-pair configuration registers
+two full 32,116-query runs. Full-corpus evidence, CIs, fixture and clean-clone gates remain
+pending; objective/ledger statuses and historical headline values remain unchanged.
+
 ## Arithmetic experiment interruption and explicit segmented continuation - 7 November 2026 IST
 
 The original arithmetic process disappeared without a native completion receipt or traceback.

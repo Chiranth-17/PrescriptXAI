@@ -1,5 +1,22 @@
 # Evaluation protocol — Phase 5 validation revision
 
+## Phase 12 corrected reproducibility pair - 7 November 2026 IST
+
+The independent complete graph/scaler factorial audit passed, restoring all selected 712
+historical scientific outputs exactly (audit SHA256
+e7fa55021c67e3718d82c839eb12c7df1d0463ea1e0ed237d3b7a047d357bb4f).
+`configs/experiments/phase12-corrected-pair-v1.yaml` registers two consecutive complete
+32,116-query/24-group reruns using the unchanged baseline execution design and all frozen
+fitted inputs. The production repair preserves scaler memory layout and separate feature
+graphs; configured deterministic algorithms are enabled for loaded-model search. This
+policy guard was not the inferred factorial cause and must pass full-corpus parity.
+See [the repair and full gate requirements](phase12_arithmetic_repair.md).
+All original metric definitions, populations, settings, absolute1e-6/relative0 comparison,
+engine-bootstrap intervals and failed-query denominators remain. Historical records and
+headlines are immutable. No fixture promotion until both runs and an independent complete
+comparison pass with zero unexplained differences. Clean-clone full regression is a further
+mandatory gate; Phase 12 remains open and these reused engines supply no new generalization.
+
 Status: frozen by committing this document and `configs/experiments/phase5-validation-v{1,2}.yaml`
 before any Phase 5 real-data measurement. The run records that commit and both config hashes.
 This revision consolidates validation; it does not select or retrain a predictor using recourse.

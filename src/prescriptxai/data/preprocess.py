@@ -78,9 +78,10 @@ class FittedFeatureScaler:
             raise ValueError("features must be finite")
         if getattr(self.scaler, "n_features_in_", None) != len(self.feature_names):
             raise ValueError("scaler has not been fitted for the configured feature width")
-        # Same dense float64 operations/order as StandardScaler.transform. The named-frame
-        # and finite-value checks above already cover its repeated array validation.
-        scaled = values.copy()
+        # Preserve StandardScaler's layout as well as subtraction/division order. A C-order
+        # copy of a column-major batch changes downstream float32 tensor reductions even
+        # when the scaled values are identical (Phase 12 arithmetic factorial).
+        scaled = values.copy(order="K")
         if self.scaler.with_mean:
             scaled -= self.scaler.mean_
         if self.scaler.with_std:

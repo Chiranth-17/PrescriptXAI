@@ -1,5 +1,18 @@
 # PrescriptXAI Progress
 
+## Audited arithmetic cause and production repair - 7 November 2026 IST
+
+Independent complete factorial audit PASS: both historical arithmetic paths reproduce
+all 712 historical scientific outputs EXACTLY, including candidates and threshold margins.
+All 2,848 records, 712 fresh controls, 47 rechecks and retained 759 payload/timing hashes
+passed. Audit SHA256: e7fa55021c67e3718d82c839eb12c7df1d0463ea1e0ed237d3b7a047d357bb4f.
+Root restores separate feature graphs and scaler memory order, retains hardening and
+honors the existing deterministic-math configuration for loaded-model search.
+See `docs/phase12_arithmetic_repair.md` and the corrected-pair experiment registration.
+Independent production review, fresh full gate and both full 32,116-query runs are pending.
+Headlines, CIs, fixtures and ledger counts remain unchanged. Full-corpus independent audit,
+clean-clone regression and closure gates remain pending. Phase 12 is open; no Phase 13.
+
 ## Arithmetic experiment interruption and explicit segmented continuation - 7 November 2026 IST
 
 The original arithmetic process disappeared without a native completion receipt or traceback.
