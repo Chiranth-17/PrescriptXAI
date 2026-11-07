@@ -1,5 +1,26 @@
 # Evaluation protocol — Phase 5 validation revision
 
+## Complete impact and actual regression registration - 8 November 2026 IST
+
+`configs/experiments/phase12-impact-v1.yaml` registers the complete original32,116-query,
+24-group old/new analysis before aggregation. No sampling of the diagnostic712 is used
+for headline numbers. Whole-engine bootstrap: seed1729,2000replicates,95% confidence,
+same metric definitions and every failed-query denominator. Each dataset/model/protocol/
+population remains separate, with effective config hashes, K,k_max,D_max and engine N.
+Earlier failed Phase12 intermediate arithmetic results may be superseded only by the
+demonstrated graph/layout repair; immutable original Phase7 results are the reference.
+
+After independent all-record pair GO, the full derived fixture and byte-hash manifest
+will support `tests/regression/test_cmapss_baseline.py`. Every invocation must solve
+all32116cases through the actual production runner; missing external fitted bytes fail.
+Discrete fields including solver settings/counters, supports, verdicts and triage are
+exact; floats use unchanged abs1e-6/rtol0. Numeric validation measurements/limits/margins,
+check identities/verdicts and assumptions are compared. Variable timings and rounded
+diagnostic/explanation prose are retained in the archive but omitted from parity.
+Borderline tier margins are flagged at1e-6 native units without changing verdicts.
+This replay is a quality/reproducibility gate, not a serial latency certification or a
+fresh-engine generalization experiment. See [execution details](phase12_full_regression.md).
+
 ## Phase 12 corrected reproducibility pair - 7 November 2026 IST
 
 The independent complete graph/scaler factorial audit passed, restoring all selected 712

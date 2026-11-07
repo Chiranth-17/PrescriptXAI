@@ -102,7 +102,7 @@ source = ["prescriptxai"]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 86.07837763770897
+fail_under = 86.64259927797833
 precision = 12
 
 [tool.ruff]

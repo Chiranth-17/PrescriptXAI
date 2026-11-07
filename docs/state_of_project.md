@@ -1,5 +1,15 @@
 # State of the project - Phase 12 in progress
 
+## Corrected complete pair - 8 November 2026 IST
+
+Both repaired full runs finished native0 with32,116queries/24groups and zero runner
+historical mismatches at abs1e-6/rtol0. Measured source3441e259b7b57c5ca4b8981298deb24acb1c0ae0;
+A finished14:02:09UTC, B22:00:06UTC on7November. Independent full-record/pair audit remains
+pending; its97input/source pin passed. No fixture promotion or phase closure yet.
+The [actual full regression](phase12_full_regression.md) and complete old/new engine-bootstrap
+impact are being registered. Clean-clone full execution and final ledger/gate are pending.
+Objective and ledger statuses remain unchanged until those actual gates pass.
+
 ## Audited arithmetic repair - 7 November 2026 IST
 
 Independent factorial audit passed every 2,848 record and preservation check. Combined

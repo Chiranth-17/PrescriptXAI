@@ -2,8 +2,17 @@
 phase: 12
 status: in_progress
 current_activity: user_authorized_712_closure_diagnosis
-activity_status: audited_arithmetic_repair_pending_full_corpus_pair
+activity_status: corrected_full_pair_complete_independent_audit_and_clean_clone_pending
 ---
+
+## Corrected full pair complete - 8 November 2026 IST
+
+Both source3441 runs completed 32,116 queries/24 groups/native0/zero runner historical
+mismatches. B finished 7 November22:00:06UTC. Independent all-record/hash/pair audit is
+pending; source and all97input byte pins passed. Root is registering actual mandatory
+full-corpus regression and whole-engine impact generation. No fixture promotion before
+independent GO. Actual clean-clone full replay/gate, complete CIs, ledger closeout and
+phase12-closed remain pending; noPhase13. See docs/phase12_full_regression.md.
 
 
 ## Audited arithmetic repair - 7 November 2026 IST

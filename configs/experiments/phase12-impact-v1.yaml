@@ -1,0 +1,40 @@
+schema_version: 1
+purpose: complete_old_new_headline_arithmetic_repair_impact_not_new_generalization
+run_id: phase12-impact-20261108-v1
+baseline_design: configs/experiments/phase12-baseline-v1.yaml
+corrected_source: 3441e259b7b57c5ca4b8981298deb24acb1c0ae0
+historical_source: 63c2ed445fba16c73a2771e184f635abf76b4405
+historical_database: artifacts/experiments/phase7-20261020T102540Z/records.sqlite3
+corrected_runs:
+  - artifacts/phase12/phase12-corrected-20261107-a
+  - artifacts/phase12/phase12-corrected-20261107-b
+independent_audit: artifacts/phase12/corrected-pair-independent-audit/report.json
+population_policy: all_32116_registered_queries_all_24_groups_no_selected712_headline
+headline_safe_threshold: 0.20
+bootstrap:
+  cluster: whole_engine
+  seed: 1729
+  replicates: 2000
+  confidence: 0.95
+metrics:
+  - validity
+  - plausibility_all
+  - plausibility_returned
+  - tier3
+  - tier4
+  - joint_tiers
+  - joint
+  - NO_INTERVENTION
+  - RECOVERABLE
+  - PARTIAL
+  - ESCALATE
+  - risk_reduction
+  - sparsity_all
+  - sparsity_returned
+borderline_absolute_margin: 1.0e-6
+borderline_policy: native_predicate_units_no_rounding_no_verdict_change
+grouping: separate_dataset_model_protocol_population_no_pooled_performance
+timing_scope: no_serial_latency_certification_from_parallel_quality_runs
+supersession: intermediate_failed_phase12_arithmetic_results_only_after_demonstrated_cause
+historical_results: immutable_phase7_reference_is_reproduced_not_replaced
+evidence_limit: E1_validity_separate_E2_distribution_and_E3_proxy_assumptions_no_physical_claim

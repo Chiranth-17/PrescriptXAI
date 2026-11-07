@@ -1,5 +1,14 @@
 # Synopsis traceability - Phase 12 baseline in progress
 
+## Complete corrected reruns - 8 November 2026 IST
+
+Reproducibility runner evidence now covers both consecutive32,116-query/24-group runs
+at source3441e259b7b57c5ca4b8981298deb24acb1c0ae0, native0 and zero historical mismatches.
+Independent complete-record parity, complete old/new engine CIs, promoted regression and
+clean-clone actual full gate remain pending. Implementation/test registration:
+[full regression](phase12_full_regression.md). No objective or ledger count is changed by
+runner completion alone. Historical reports remain immutable; noPhase13 or closure tag.
+
 ## Audited arithmetic repair - 7 November 2026 IST
 
 Reproducibility diagnosis: independent 2,848-record factorial audit confirms exact recovery

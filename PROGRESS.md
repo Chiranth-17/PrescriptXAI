@@ -1,5 +1,25 @@
 # PrescriptXAI Progress
 
+## Corrected full pair complete; regression closure pending - 8 November 2026 IST
+
+Source `3441e259b7b57c5ca4b8981298deb24acb1c0ae0` completed two consecutive
+32,116-query/24-group runs, native exit 0 and zero runner historical mismatches each.
+A finished 7 November 14:02:09 UTC; B finished 22:00:06 UTC. All original 97 registered
+inputs were retained. A complete SHA256 `c3343d3c112bed4303f1408f1293a95c75750dbfd1011d1e8872c7214af7d242`;
+B `ae7cfa84fe8cc02b3ca4de118b58a39123717de8007ec0888f065fb819e03271`.
+The independent complete pair audit is pending; its source/input pin passed. No fixture
+has been promoted and no headline/clean-clone/Phase12 closure is claimed.
+
+Root added a mandatory full-corpus replay test and a saved-record whole-engine impact
+generator. `phase12-impact-v1.yaml` registers all original groups and bootstrap settings
+before aggregation. The replay uses genuine saved inputs with required external fitted
+bytes: absent or changed inputs fail; no skip, reduced corpus or cached receipt can pass.
+Five focused guard tests pass (5.28 s); Ruff and strict mypy (65 source files) pass.
+The actual complete regression/full gate must next pass from a new clean clone after
+independent approval and fixture promotion. Coverage floors now preserve the last actual
+652-test gate: scoped 91.01415094339623%, full 90.02682841479063%, combined 86.64259927797833%.
+Historical results/failed-run archives and timings remain immutable. No Phase13 or closure tag.
+
 ## Audited arithmetic cause and production repair - 7 November 2026 IST
 
 Independent complete factorial audit PASS: both historical arithmetic paths reproduce
