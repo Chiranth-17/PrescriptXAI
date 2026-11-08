@@ -10,9 +10,12 @@
     ],
     "fixture_promoted": true,
     "headline_estimates_CIs_denominators_changed_groups": 0,
-    "clean_clone_full_replay_gate": "pending",
+    "clean_clone_full_replay_gate": "attempt1 regression32116/24/native0/exact; full gate native2 packaging failure, missing CSV skip and archive coverage gap; explicit provisioning fix registered",
     "ledger_status_counts_changed": true,
-    "change": "A11 closed with complete independent pair proof; A10 remains Open until actual clean-clone full gate"
+    "change": "A11 closed with complete independent pair proof; A10 remains Open until actual clean-clone full gate",
+    "clean_clone_attempt1_regression_native_exit": 0,
+    "clean_clone_attempt1_full_gate_native_exit": 2,
+    "clean_clone_fix_registration": "configs/experiments/phase12-clean-clone-gate-attempt2-v1.yaml"
   },
   "date": "2026-11-08",
   "phase12_complete": false,

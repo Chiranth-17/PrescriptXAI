@@ -1,0 +1,51 @@
+schema_version: 1
+run_id: clean-clone-gate-20261108-v2
+purpose: Explicit first root-cause fix and second full software-gate attempt; gate attempt number
+  is not a scientific protocol version.
+previous_attempt:
+  source: bac3d653c9bde86588dd7878a0c30fd47e617015
+  full_gate_native_exit: 2
+  tests_passed: 656
+  tests_failed: 1
+  tests_skipped: 1
+  regression_queries: 32116
+  regression_groups: 24
+  regression_native_exit: 0
+  regression_exact_different_cases: 0
+  preservation: artifacts/phase12/clean-clone-gate-attempt1-preservation/preservation.json
+scientific_inputs_manifest: tests/regression/cmapss_baseline.json
+scientific_inputs_count: 97
+supplemental_required_inputs:
+  src/prescriptxai/resources/features.yaml:
+    sha256: e60c06899f736079b46e3eb5394b884312b786d22f69fda8e94a543a707604f2
+    bytes: 8959
+    reason: Canonical packaged taxonomy bytes; copies exactly to initialized workspaces, same Git
+      blob as HEAD.
+  data/processed/FD001_train.csv:
+    sha256: a70b93fee93168570c6ad33fc2dfbed364801462c0f7428e9e8485a1f7f7ea73
+    bytes: 8569910
+    reason: Genuine original processed FD001 training data for the existing real-data taxonomy test;
+      never fit headline artifacts.
+  data/raw/CMAPSSData.zip:
+    sha256: c9c5dec12a945a82e8bb4446589d7fb3cc057b5e5d81fa1a12e25ee9912ad3b2
+    bytes: 12429152
+    reason: Genuine original archive for the existing default dashboard AppTest ZIP telemetry route.
+byte_restoration_policy: 'For tracked taxonomy and packaged resource only: require git hash-object
+  --path matches HEAD blob before copying exact registered historical bytes; refresh index stat and
+  require index tree equals HEAD tree and clean Git. No YAML value or behavior changes.'
+command: mingw32-make all-checks
+prelaunch_diagnostics: Focused packaging, genuine CSV taxonomy and real default dashboard AppTest;
+  then all software tests except the mandatory full-corpus test as a disclosed diagnostic only. Never
+  substitute these for the actual full gate.
+full_gate_policy: Fresh clone, own locked133-package venv, fresh all32116 actual query replay in the
+  default suite; missing inputs fail prelaunch, no skip/cache/reduced population; preserve every output
+  and all failed attempt evidence.
+coverage_floors:
+  scoped_line_percent: 91.01415094339623
+  full_line_percent: 90.02682841479063
+  branch_inclusive_percent: 86.64259927797833
+latency: Parallel quality evidence only; no serial latency certification.
+scientific_change: 'None: fixed models, populations, settings, seeds, tolerances, thresholds, bounds,
+  rates and verdicts unchanged.'
+independent_review: Saved attempt1 evidence audit and independent attempt2 prelaunch GO required;
+  no Phase12 closure before actual full gate and final evidence audit.

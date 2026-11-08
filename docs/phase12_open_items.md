@@ -1,5 +1,7 @@
 # Phase 12 open-item ledger
 
+Attempt1 update: actual32,116/24 regression native0/exact, wider gate native2 with656 passed/1 failed/1 skipped. Packaging byte consistency and missing real CSV/archive provisioning are being fixed under `configs/experiments/phase12-clean-clone-gate-attempt2-v1.yaml`. A10 remains Open and counts unchanged; see [full regression](phase12_full_regression.md).
+
 8 November 2026: complete independent full-pair audit PASS (SHA256
 `6efa7a8304c277562bde0822cd1b148c94dc62cbabe8945ff6fd606736e33861`). All32116cases
 per run reproduce historical/full outputs exactly. A11 closes with that scoped proof;

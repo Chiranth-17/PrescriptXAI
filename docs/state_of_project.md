@@ -1,5 +1,35 @@
 # State of the project - Phase 12 in progress
 
+## Clean-clone attempt1 regression PASS; full software gate FAIL - 8 November 2026 IST
+
+Source `bac3d653c9bde86588dd7878a0c30fd47e617015` completed the genuine clean-clone
+32,116-query/24-group regression with native exit0 at05:55:00UTC. Both the mismatch
+list and exact-float difference list are empty. The wider `all-checks` gate ended
+05:56:16UTC with native exit2:656 passed,1 failed,1 skipped,66 warnings in26,623.24s.
+A packaged taxonomy CRLF mismatch failed the workspace initialization test; omitted
+FD001 training CSV caused the existing real-data test to skip. The omitted genuine
+raw archive bypassed the default dashboard ZIP route, losing2 covered lines/1 branch:
+combined coverage86.6161838513692%, below the retained86.64259927797833% floor.
+Strict documentation and subsequent coverage gates were not reached. Scientific replay
+success does not certify the whole software gate. Phase12/A10 remain open; noPhase13/tag.
+
+All failed clone outputs, including every query and timing, remain intact. Seventeen
+originals and exact copies are pinned in
+`artifacts/phase12/clean-clone-gate-attempt1-preservation/preservation.json`.
+Independent saved-evidence audit pin passed all97 inputs,67 source/helper files and
+17 preservation pairs (pin SHA256 `85de007857ae4faa4997baa2dc41a39e34f5d4689d56c76b15a4c147defa797a`).
+Full independent science audit is pending. The failed v1 clone is immutable.
+
+The explicit first root-cause fix is provisioning in a NEW v2 clone: restore the exact
+registered historical bytes for both tracked taxonomy and packaged duplicate, prove
+canonical Git blobs/index tree unchanged, and provide the genuine hash-pinned CSV/archive
+outside Git. Registration: `configs/experiments/phase12-clean-clone-gate-attempt2-v1.yaml`.
+No production, test, threshold, tolerance, model or population change is needed. Focused
+checks and a disclosed software-only diagnostic precede independent prelaunch review;
+then a separately recorded `mingw32-make all-checks` must genuinely replay all32,116 again.
+No passed receipt or cached result replaces the actual test. Floors are never lowered;
+quality timings do not certify serial latency. Ledger counts stay8 Closed/7 Open/35 Accepted.
+
 ## Independent full-pair PASS and fixture promotion - 8 November 2026 IST
 
 Independent audit `corrected-pair-independent-audit/report.json` SHA256
