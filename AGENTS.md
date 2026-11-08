@@ -31,15 +31,12 @@
 28. EVIDENCE FOR CLAIMS: a claim about consistency, fidelity or plausibility cites error or margin metrics (R2, residual std, share beyond threshold, D_M distributions), not the size of a change.
 29. TIER 1 IS WEAK ALONE: because the predictor can be driven near zero risk by moving proxy sensors, any report of validity is accompanied by plausibility, coupling checks and the evidence level reached.
 
-30. ADVISORY ONLY. The system recommends; a human decides. It never writes to a machine, PLC, historian or control system. All connectors are read-only.
-31. MACHINE-AGNOSTIC CORE. src/prescriptxai/core has no dataset, machine or sensor names. Machine details live in spec files, adapters and the asset library. A test enforces it.
-32. TESTED-ONLY CLAIMS. Name the machines tested and mark each real-benchmark or synthetic. Never write "works on any machine", "proven", "certified" or "extends engine life".
-33. ENGINEER SIGN-OFF. Bounds, step limits, failure definition and the controllable/frozen split need a named engineer's confirmation (name, role, date). Without it a machine runs in Alerts-only mode.
-34. FAIL SAFE. If data quality, input integrity, plausibility or any check fails, withhold the recommendation and say why.
-35. EVIDENCE-GATED MODES. Alerts only, Advisory (shadow), Advisory (live). A readiness scorecard decides which are allowed. Promotion is manual, demotion can be automatic.
-36. NO POOLED NUMBERS. Results are per machine. Every table carries machine id, spec hash, protocol version, run id, K and population.
-37. LABEL SYNTHETIC AND SIMULATED DATA everywhere: tables, charts, exports, UI.
-38. SECURITY BY DEFAULT. Authentication on, least-privilege roles, no secrets in the repo, tamper-evident audit log.
-39. STANDARDS ARE GUIDANCE ONLY (ISO 13374, ISO 14224, ISO 17359, OPC UA, IEC 62443). Never claim compliance.
-40. REPRODUCIBLE. Results are deterministic: fixed seeds, iteration budgets for search (wall-clock only for reporting). Every release passes `make verify` from a clean clone.
+30. ADVISORY ONLY. The system recommends; a human decides. It never writes to a machine or control system.
+31. MACHINE-AGNOSTIC CORE. src/prescriptxai/core has no dataset, machine or sensor names. Machine details live in spec files and adapters. A test enforces it.
+32. TESTED-ONLY CLAIMS. Name the machines tested. Never write "works on any machine", "proven", "certified" or "extends engine life".
+33. FAIL SAFE. If data is bad or a check fails, show "Recommendation withheld: <reason>".
+34. LABEL SYNTHETIC AND SIMULATED DATA everywhere (tables, charts, exports, UI).
+35. DETERMINISTIC AND TIERED TESTS. Fixed seeds; iteration budgets for search (wall-clock only for reporting). `make check` is fast; the full regression runs only before a tag. Do not run the full regression more than once per phase unless production source changed.
+36. NO POOLED NUMBERS. Results are per machine, with machine id, spec hash, protocol version, run id, K and population on every table.
+37. LIMITS NEED AN ENGINEER. Bounds, step limits and the failure definition have an "engineer confirmed by / date" field in the machine spec. Empty means the machine runs in Alerts-only mode.
 Send a short status with real numbers after every phase.

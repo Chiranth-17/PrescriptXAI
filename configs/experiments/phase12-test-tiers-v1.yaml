@@ -1,0 +1,58 @@
+schema_version: 1
+purpose: User-authorized post-gate test tiering; no new Phase12 full replay or scientific change
+gate_source: 2d8e8d4137d567de2c3b7eb04894890795025f16
+gate_complete_sha256: 636b94be36e85fae71511055f2bb7f10aa3fc23347ece14e117eb019da05b8ae
+gate_end_utc: '2026-11-08T15:23:04.4991084Z'
+fixture_manifest: tests/regression/cmapss_baseline.json
+known_differences: tests/regression/known_diffs.json
+absolute_tolerance: 1.0e-06
+relative_tolerance: 0
+borderline_absolute_margin: 1.0e-06
+selection:
+  seed: 1729
+  mandatory_diagnostic_ids: artifacts/phase12/phase12-repaired-20261104T231405Z/historical-comparison.json
+  mandatory_count: 712
+  include_all_borderline_cases: true
+  borderline_predicates: every native_margins predicate, including nested checks and triage; structural
+    zeros retained
+  per_stratum: 4
+  strata:
+  - mode
+  - population
+  - status
+  - risk_band
+  risk_band_edges:
+  - 0.0
+  - 0.2
+  - 0.8
+  - 0.9
+  - 1.0
+  ordering: seeded SHA256 rank within each stratum; final IDs lexicographic
+  selection_is_not_evaluation: Fixed verification population only; no changed scientific population or
+    fitted artifacts
+cache:
+  database: artifacts/regression-cache/records.sqlite3
+  key_fields:
+  - all actual src/prescriptxai/**/*.py bytes including added files
+  - unchanged phase12_baseline.py executor and phase12_regression.py scientific comparison/fixture contracts
+  - actual embedded case configuration and observed data/history via case JSON hash
+  - all97 external byte hashes and committed baseline design hash
+  - exact numerical runtime excluding evolving localpackage metadata
+  - case_id
+  - workers4/cpu_threads1 policy
+  reuse: Only an exact key and payload SHA256 match; validate every reused record against its genuine
+    case and known-difference policy; report reused/recomputed separately. Never relabel cached evidence
+    as a new solve.
+  initial_import: Only the completed genuine32116 clean-clone gate after independent saved-record/native/input/source
+    audit GO. Pin origin database/manifest/complete/native/comparison/audit hashes in committed import
+    registration.
+  resume: Explicit compatible partial execution evidence with exact same context and source/input/runtime
+    checks. Preserve old partials/timings and record a new segment, no silent retry.
+  missing_inputs: Fail before cache lookup/deserialization. Never skip, refit, toy substitute or fabricate
+    a completion.
+coverage_floors:
+  scoped: 91.01415094339623
+  full: 90.02682841479063
+  combined: 86.64259927797833
+latency: These are software/quality/cache-verification timings only, never serial recourse-latency certification.
+phase12_complete: false

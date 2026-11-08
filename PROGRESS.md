@@ -1,5 +1,36 @@
 # PrescriptXAI Progress
 
+## Actual clean-clone full gate PASS; solo Step1 begins - 8 November 2026 IST
+
+The genuine gate at source `2d8e8d4137d567de2c3b7eb04894890795025f16` ended
+15:23:04UTC (20:53:04IST) with native0:659 passed,66 warnings,31,774.76s.
+All32,116 cases/24 groups completed with native0 and empty mismatch AND exact-float
+lists. Regression completion SHA256 `636b94be36e85fae71511055f2bb7f10aa3fc23347ece14e117eb019da05b8ae`;
+comparison SHA256 `f62191d21f11203576b0567ecdd3220dce42c0281eac66f6cf2813f1fb8c904d`.
+Both coverage gates passed at the unchanged floors; Ruff/mypy65 and strictdocs5.80s
+passed. Parallel quality timings do not certify serial latency. The v3 clone, all
+observations, timings and failed attempts remain immutable. Independent final gate
+pin passed100inputs/67codehelpers/68evidencefiles, SHA256
+`149a1c6c11e868f56184a9b8e7261f548c6acd3e429ebe52fd36abf619201295`;
+complete saved-record audit is running, so Phase12/A10 remain open.
+
+The newest [solo roadmap](docs/prompts/final_solo_prompts.md) supersedes the larger roadmap:
+Step1 Phase12 close/test tiering, Step2 generic Phase13, Step3 solo Phase17 dashboard
+and objectives acceptance, Step4 security-lite Phase16, Step5 packaging-lite Phase18,
+Step6 final audit/report/viva/release Phase19. Connectors, approval/audit-chain,
+onboarding, drift, registry, pump simulator and second real machine are designed but
+not built. Existing real evidence and safety limits remain; no invented human/design
+confirmation. No new full32116 replay is authorized for Step1.
+
+Register exact-key resumable verification and the fixed mandatory712/all-borderline/
+seeded-strata subset in `configs/experiments/phase12-test-tiers-v1.yaml` before generation.
+Known differences are not invented: the historical712 are already completely explained,
+with full-corpus exact recovery. The fast subset necessarily includes at least13,538
+borderline cases, so cold recomputation cannot honestly be promised below10minutes.
+A preference for strict exact-key subset reuse was requested while independent work
+continues. Every target will disclose reused/recomputed counts and its actual timing.
+No phase12-closed tag until final independent gate and tiering checks pass.
+
 ## Coverage reporter equality fix - 8 November 2026 IST
 
 The first provisioning fix in v2 passed all657 software diagnostic tests (66 warnings,
