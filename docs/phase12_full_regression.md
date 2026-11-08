@@ -1,5 +1,29 @@
 # Phase 12 complete regression and impact registration
 
+## Coverage reporter equality fix - 8 November 2026 IST
+
+The first provisioning fix in v2 passed all657 software diagnostic tests (66 warnings,
+310.62s), including every previously failed/skipped path. True coverage returned exactly
+to91.01415094339623% scoped /90.02682841479063% full /86.64259927797833% combined.
+The diagnostic nevertheless exited1: the installed coverage plugin compares the total
+rounded to12 decimal places with the unrounded86.64259927797833% floor. At exact equality,
+86.642599277978 is incorrectly judged lower. This is a reporting precision defect;
+no covered lines or branches were lost. All v2 receipts and exact coverage counts remain
+in `artifacts/phase12/clean-clone-attempt2-diagnostics/failure-preservation.json`; no actual
+full gate or full replay was launched in v2, and that clone is preserved.
+
+The second root-cause fix increases report precision to17 while retaining every exact
+coverage floor. A regression test uses the installed coverage comparison to require that
+equality passes and even the next representable float below the floor fails. No metric,
+coverage exclusion, scientific tolerance, model, bound, population or verdict changes.
+The updated attempt2 registration uses a NEW v3 clone with the same97+3 genuine inputs,
+its own locked environment, focused/complete software diagnostics, strict docs and an
+independent prelaunch GO before the next actual full32116 replay/gate. If this second
+root-cause fix fails, preserve the result and stop for review; no silent third fix/retry.
+Phase12 remains open with unchanged ledger counts. The independently audited attempt1
+scientific replay is exact over all32116 cases and101382 borderline rows; final audit
+SHA256 `3a43f1cbdbad9e19022bad3a48b1fdccdf5cb68fd5ccac1694635b37a04b88a7`.
+
 ## Clean-clone attempt1 regression PASS; full software gate FAIL - 8 November 2026 IST
 
 Source `bac3d653c9bde86588dd7878a0c30fd47e617015` completed the genuine clean-clone

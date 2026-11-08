@@ -15,7 +15,8 @@
     "change": "A11 closed with complete independent pair proof; A10 remains Open until actual clean-clone full gate",
     "clean_clone_attempt1_regression_native_exit": 0,
     "clean_clone_attempt1_full_gate_native_exit": 2,
-    "clean_clone_fix_registration": "configs/experiments/phase12-clean-clone-gate-attempt2-v1.yaml"
+    "clean_clone_fix_registration": "configs/experiments/phase12-clean-clone-gate-attempt2-v1.yaml",
+    "clean_clone_fix_status": "First provisioning diagnostic657tests pass/truefloorsrestored but native1 false equality at reporterprecision12; secondrootcausefix precision17/floorsunchanged registered for newv3; no secondactualfullgate launched"
   },
   "date": "2026-11-08",
   "phase12_complete": false,

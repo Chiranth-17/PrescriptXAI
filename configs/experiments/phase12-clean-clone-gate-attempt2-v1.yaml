@@ -1,7 +1,7 @@
 schema_version: 1
-run_id: clean-clone-gate-20261108-v2
-purpose: Explicit first root-cause fix and second full software-gate attempt; gate attempt number
-  is not a scientific protocol version.
+run_id: clean-clone-gate-20261108-v3
+purpose: Second root-cause fix, for the second ACTUAL full-gate attempt; v2 setup diagnostic preserved,
+  no full replay/gate was launched there. Gate attempt numbering is not a scientific protocol version.
 previous_attempt:
   source: bac3d653c9bde86588dd7878a0c30fd47e617015
   full_gate_native_exit: 2
@@ -49,3 +49,14 @@ scientific_change: 'None: fixed models, populations, settings, seeds, tolerances
   rates and verdicts unchanged.'
 independent_review: Saved attempt1 evidence audit and independent attempt2 prelaunch GO required;
   no Phase12 closure before actual full gate and final evidence audit.
+report_precision_fix:
+  previous: 12
+  current: 17
+  reason: coverage.results.should_fail_under rounds total but compares against unrounded floor; equality
+    was falsely rejected at12 decimals. All exact floors remain unchanged; next float below still
+    fails.
+  preserved_diagnostic: artifacts/phase12/clean-clone-attempt2-diagnostics/failure-preservation.json
+  source: 3a059f36f327ce3243e3754e8cf12247f1be0453
+  tests_passed: 657
+  native_exit: 1
+  genuine_full_regression_executed: false
