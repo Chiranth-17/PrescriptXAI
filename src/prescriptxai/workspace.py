@@ -40,7 +40,7 @@ def launch_dashboard(settings: Path, host: str, port: int) -> int:
         raise ValueError("install prescriptxai[dashboard] before running dashboard")
     if not 1 <= port <= 65535:
         raise ValueError("dashboard port must be between 1 and 65535")
-    entrypoint = files("prescriptxai").joinpath("dashboard", "app.py")
+    entrypoint = files("prescriptxai").joinpath("dashboard", "simulator_app.py")
     environment = os.environ.copy()
     environment["PRESCRIPTXAI_DASHBOARD_CONFIG"] = str(settings.resolve())
     return subprocess.run(

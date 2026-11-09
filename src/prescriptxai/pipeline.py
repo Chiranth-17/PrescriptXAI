@@ -682,6 +682,72 @@ class PrescriptXAI:
             surrogate,
         )
 
+    def control_bounds(self) -> dict[str, tuple[float, float]]:
+        """Return fitted raw bounds for the active adjustable measurements."""
+        taxonomy = self.engine.taxonomy
+        names = taxonomy.active_controllable_feature_names(self.engine.model.feature_names)
+        specs = taxonomy.feature_by_name()
+        limits = {}
+        for name in names:
+            bounds = specs[name].bounds
+            if bounds.minimum is not None and bounds.maximum is not None:
+                limits[name] = (bounds.minimum, bounds.maximum)
+        return limits
+
+    def _control_state(
+        self, state: dict[str, float], controls: Mapping[str, float]
+    ) -> tuple[dict[str, float], tuple[str, ...]]:
+        if self.engine.taxonomy.coupling is not None and self.engine.coupling is None:
+            raise ArtifactError(
+                "configured coupling model is unavailable; controls cannot be previewed"
+            )
+        actions = self.engine.taxonomy.active_controllable_feature_names(
+            self.engine.model.feature_names
+        )
+        if set(controls) - set(actions):
+            raise FeatureError("only configured controllable proxies may be edited")
+        if any(isinstance(value, (bool, np.bool_)) for value in controls.values()):
+            raise InputError("boolean controls are not physical measurements")
+        if any(isinstance(value, (complex, np.complexfloating)) for value in controls.values()):
+            raise InputError("complex controls are not real physical measurements")
+        try:
+            proposed = {**state, **{name: float(value) for name, value in controls.items()}}
+        except (TypeError, ValueError, OverflowError) as error:
+            raise InputError("controls must be finite raw-unit numbers") from error
+        if not np.isfinite(list(proposed.values())).all():
+            raise InputError("controls must be finite raw-unit numbers")
+        self._check_numeric_range(proposed)
+        return proposed, actions
+
+    @_artifact_boundary
+    def simulate_risk(
+        self,
+        x_raw: Mapping[str, float],
+        context: InputContext,
+        controls: Mapping[str, float],
+    ) -> tuple[Assessment, bool]:
+        """Score what-if settings without optimizing or issuing a prescription."""
+        state, observed = self._normalize(x_raw, context, complete=True)
+        candidate = state
+        if controls:
+            proposed, _ = self._control_state(state, controls)
+            if check_bound_violations(proposed, self.engine.taxonomy, features=tuple(controls)):
+                raise InputError("settings exceed the configured slider bounds")
+            candidate = apply_coupling_for_bundle(
+                proposed, self.engine.coupling, reference_state=state
+            )
+        assessment = self.assess(candidate, observed, "fast")
+        bundle = self.engine.model
+        scaled = bundle.scaler.transform(pd.DataFrame([candidate])[list(bundle.feature_names)])
+        validator = self.engine.mahalanobis
+        frozen_settings = (
+            np.asarray([[state[f"op_setting_{index}"] for index in range(1, 4)]])
+            if validator.clusterer is not None
+            else None
+        )
+        usual = validator.validate(scaled[0], frozen_operating_settings=frozen_settings).valid
+        return assessment, not usual
+
     @_artifact_boundary
     def validate_controls(
         self,
@@ -703,26 +769,7 @@ class PrescriptXAI:
         selected_mode = mode if mode is not None else self.config.pipeline.default_mode
         if not isinstance(selected_mode, str) or selected_mode not in {"fast", "thorough"}:
             raise InputError("mode must be fast or thorough")
-        if self.engine.taxonomy.coupling is not None and self.engine.coupling is None:
-            raise ArtifactError(
-                "configured coupling model is unavailable; controls cannot be previewed"
-            )
-        actions = self.engine.taxonomy.active_controllable_feature_names(
-            self.engine.model.feature_names
-        )
-        if set(controls) - set(actions):
-            raise FeatureError("only configured controllable proxies may be edited")
-        if any(isinstance(value, (bool, np.bool_)) for value in controls.values()):
-            raise InputError("boolean controls are not physical measurements")
-        if any(isinstance(value, (complex, np.complexfloating)) for value in controls.values()):
-            raise InputError("complex controls are not real physical measurements")
-        try:
-            proposed = {**state, **{name: float(value) for name, value in controls.items()}}
-        except (TypeError, ValueError, OverflowError) as error:
-            raise InputError("controls must be finite raw-unit numbers") from error
-        if not np.isfinite(list(proposed.values())).all():
-            raise InputError("controls must be finite raw-unit numbers")
-        self._check_numeric_range(proposed)
+        proposed, actions = self._control_state(state, controls)
         ingestion = (perf_counter_ns() - started) / 1e6
         config = self.config.model_copy(deep=True)
         config.recourse.search_mode = selected_mode

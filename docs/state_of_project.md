@@ -1,5 +1,13 @@
 # State of the project - Phase 13 closed
 
+## Phase 17 dashboard in progress (10 November 2026 IST)
+
+The [local acceptance report](acceptance_report.md) records the machine-scoped
+simulator verification and remaining objectives. The registered FD001 archive
+runs in Alerts-only mode. The case study is based on the preserved archive
+and a committed selection rule. Design-reference and participant evidence
+are pending.
+
 ## Current status (10 November 2026 IST)
 
 Phase 13 machine specs, adapters, quality gates and named interfaces are

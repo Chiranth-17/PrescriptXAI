@@ -1,0 +1,33 @@
+schema_version: 1
+machine_id: cmapss_fd001
+spec_hash: 72d91ddb5ab7b415044060847c5934d7ce45b53e346600494f4d792c59dfff0d
+population: test
+source_scope:
+  dataset: FD001
+  model: xgb
+  protocol: v1
+  population: official_test_all_alerts
+  variant: full
+  mode: FAST
+saved_run: phase7-20261020T102540Z
+saved_results_sha256: d4ffef41bccc178c7021320b318f225c75fdcf140e87a2bc34749cb18a5ab51f
+selection_config: configs/experiments/phase17-dashboard-v1.yaml
+selection_config_sha256: 679e5f88abddf11474055f324ccd216b2c3758aed301d0a5a162f2329b5a48b3
+selection_source: 18f60c6fcec38bf6ceb607b9c128b331cfad85b6
+scenarios:
+- name: Case study (selected by rule)
+  unit: '82'
+  time: 156
+  case_id: 1ef4b7eaa432e65652ef94fb1dd2f27736051b7ecd4ce7b57cb3da32fbeb794c
+- name: Replay example 2
+  unit: '31'
+  time: 190
+  case_id: 0051ac34c69222b87cbd74e406631a66b3c208496c885c67460d77774c540b78
+- name: Replay example 3
+  unit: '76'
+  time: 205
+  case_id: 0e009eaacafb082b50497b7ab35ddf8b4c8d000755cb6ef5efdab14ad3b80217
+- name: Replay example 4
+  unit: '76'
+  time: 201
+  case_id: 0204ff470966c9107659167a64343b466bf635dfee5438681ddca1be8e1cf1b9

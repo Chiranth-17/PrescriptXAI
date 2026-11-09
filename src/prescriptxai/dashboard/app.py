@@ -23,11 +23,12 @@ from prescriptxai.dashboard.pages import PAGES, about_page, evidence_page, fleet
 from prescriptxai.dashboard.state import load_settings, select_session
 
 
-def main() -> None:
+def main(*, advanced: bool = False) -> None:
     """Run the local operator workflow without training, mutable thresholds or sample results."""
     started = perf_counter()
     loading_seconds = 0.0
-    st.set_page_config(page_title="PrescriptXAI", page_icon="⚙", layout="wide")
+    if not advanced:
+        st.set_page_config(page_title="PrescriptXAI", page_icon="⚙", layout="wide")
     st.title("PrescriptXAI · Maintenance Decision Support")
     st.warning(
         "Model-based validity is not physical validity. No RUL extension is claimed on "
@@ -38,9 +39,11 @@ def main() -> None:
         "Configured controllable channels are C-MAPSS telemetry proxies, not verified "
         "actuator commands. Bounds, rates and intervention horizon K are assumptions."
     )
-    if "pending_fleet_engine" in st.session_state:
+    if not advanced and "pending_fleet_engine" in st.session_state:
         st.session_state["page"] = PAGES[0]
-    page = st.sidebar.radio("Page", PAGES, key="page")
+    page = st.sidebar.radio(
+        "Page", PAGES[1:] if advanced else PAGES, key="advanced-page" if advanced else "page"
+    )
     if page == PAGES[4]:
         about_page()
         return
@@ -128,7 +131,9 @@ def main() -> None:
         st.session_state["selected_observation"] = (engine_id, cycle)
         model = {"xgboost": "xgb", "torch": "mlp", "lstm": "lstm"}[str(info["model_choice"])]
         if page == PAGES[1]:
-            selected = fleet_page(backend, frame, cycle, info, mode)
+            selected = fleet_page(
+                backend, frame, cycle, info, mode, allow_recommendation=not advanced
+            )
             if selected is not None:
                 st.session_state["pending_fleet_engine"] = selected
                 st.session_state["pending_fleet_cycle"] = cycle
@@ -167,4 +172,5 @@ def main() -> None:
         )
 
 
-main()
+if __name__ == "__main__":
+    main()

@@ -29,6 +29,8 @@ def fleet_page(
     cycle: int,
     info: dict[str, Any],
     mode: Literal["fast", "thorough"],
+    *,
+    allow_recommendation: bool = True,
 ) -> int | None:
     """Rank every observed engine, retaining engines unavailable at the exact chosen cycle."""
     st.header("Fleet Overview")
@@ -65,6 +67,8 @@ def fleet_page(
         hide_index=True,
         width="stretch",
     )
+    if not allow_recommendation:
+        return None
     candidates = [int(v) for v in ranking.loc[ranking.risk.notna(), "engine_id"]]
     if not candidates:
         st.info("No assessable engines at this cycle, including required genuine history.")

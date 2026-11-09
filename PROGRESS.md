@@ -1,5 +1,22 @@
 # PrescriptXAI Progress
 
+## Phase 17 dashboard implementation (10 November 2026 IST)
+
+The machine-scoped Streamlit simulator is available through `make dashboard`.
+It loads the retained FD001 archive and fitted model, previews calibrated risk
+for control edits, restores settings from the URL and keeps the earlier
+analysis under Advanced. The registered archive has no engineer confirmation,
+so it stays in Alerts-only mode. Four presets were selected by a rule
+committed at `18f60c6`. The case study rendered at 87.7% for unit 82, cycle 156.
+
+The focused verification passed 70 tests in 33.23 seconds. Ruff, mypy over 80
+source files, strict docs and the two-width Chromium check passed.
+
+The [acceptance report](docs/acceptance_report.md) separates local verification
+from the remaining dashboard functionality and gates. The design mock and two
+classmate sessions are pending. The full dashboard gate and Step 3B acceptance
+remain open.
+
 ## Phase 13 closure (10 November 2026 IST)
 
 Verification used source `f0e4043cee665792be00ffdad5a1eea0bd60b00a`

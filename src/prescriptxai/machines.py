@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from collections.abc import Callable
 from contextlib import closing
 from dataclasses import dataclass
 from hashlib import file_digest, sha256
@@ -199,6 +200,7 @@ def _decision(
     bundle: ModelBundle,
     validator: MahalanobisValidator,
     coupling: SensorCouplingModel | None,
+    runtime_identity: str | None = None,
 ) -> MachineDecision:
     verify_validator_compatibility(validator, bundle, config)
     taxonomy = machine_taxonomy(spec).with_resolved_bounds(
@@ -213,6 +215,7 @@ def _decision(
         bundle.feature_names,
         protocol,
         history_rows=max(0, int(getattr(bundle.estimator, "window", 1)) - 1),
+        runtime_identity=runtime_identity,
     )
 
 
@@ -231,7 +234,13 @@ def scope_archive_runtime(
         if field in metrics and metrics[field] != expected:
             raise ValueError(f"retained model {field} differs from this machine spec")
     return _decision(
-        spec, protocol, config, model, runtime.engine.mahalanobis, runtime.engine.coupling
+        spec,
+        protocol,
+        config,
+        model,
+        runtime.engine.mahalanobis,
+        runtime.engine.coupling,
+        runtime.engine.artifact_identity,
     )
 
 
@@ -320,7 +329,8 @@ def load_machine_decision(
         if "coupling.joblib" in hashes
         else None
     )
-    return _decision(spec, protocol, config, bundle, validator, coupling)
+    identity = sha256(json.dumps(complete, sort_keys=True).encode()).hexdigest()
+    return _decision(spec, protocol, config, bundle, validator, coupling, identity)
 
 
 def record_feedback(
@@ -340,13 +350,14 @@ def resolve_machine_decision(
     machine_id: str,
     protocol: str,
     artifact_root: Path = Path("artifacts/machines"),
-    legacy: PrescriptXAI | None = None,
+    legacy: PrescriptXAI | Callable[[], PrescriptXAI] | None = None,
 ) -> MachineDecision:
     """Resolve a named fit or a compatible retained archive runtime."""
     spec = registry.get(machine_id)
     directory = _artifact_directory(spec, protocol, artifact_root)
     if spec.dataset.adapter == "cmapss" and not directory.exists() and legacy is not None:
-        return scope_archive_runtime(spec, protocol, legacy)
+        runtime = legacy() if callable(legacy) else legacy
+        return scope_archive_runtime(spec, protocol, runtime)
     return load_machine_decision(spec, protocol, artifact_root)
 
 

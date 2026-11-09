@@ -23,6 +23,16 @@ class MachineAssessment(Assessment):
     synthetic: bool
 
 
+class SimulatedRisk(BaseModel):
+    """Input-bound prediction and a statistical context flag for simulated settings."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    assessment: MachineAssessment
+    input_hash: str = Field(pattern=HASH_PATTERN)
+    unusual: bool
+
+
 class MachineRecourseResult(_RecourseFields):
     """A decision with explicit machine, spec and protocol provenance."""
 

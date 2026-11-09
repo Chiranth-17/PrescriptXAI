@@ -11,9 +11,15 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from prescriptxai.adapters.registry import MachineRegistry
 from prescriptxai.core.decision import MachineDecision
-from prescriptxai.machine_schema import FeedbackRecord, MachineAssessment, MachineRecourseResult
+from prescriptxai.machine_schema import (
+    FeedbackRecord,
+    MachineAssessment,
+    MachineRecourseResult,
+    SimulatedRisk,
+)
 from prescriptxai.machines import machine_summary, record_feedback, resolve_machine_decision
 from prescriptxai.pipeline import PrescriptXAI
+from prescriptxai.scenarios import Scenario, scenario_presets
 from prescriptxai.schemas import _reject_nonreal_measurement
 
 
@@ -40,6 +46,27 @@ class MachineControlsRequest(MachineWindowRequest):
     """An observed window and the controls to validate."""
 
     controls: dict[str, float]
+
+
+class SimulatorRiskRequest(MachineWindowRequest):
+    """A local what-if risk request for one named machine."""
+
+    machine_id: str
+    controls: dict[str, float] = Field(default_factory=dict)
+
+
+class SimulatorPrescriptionRequest(MachineWindowRequest):
+    """A request to publish a result for the currently shown recorded state."""
+
+    machine_id: str
+    input_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class SimulatorPrescription(BaseModel):
+    """A named decision with the hash of the observation that produced it."""
+
+    input_hash: str
+    decision: MachineRecourseResult
 
 
 class MachineFeedbackRequest(MachineWindowRequest):
@@ -74,6 +101,46 @@ def machine_router(
     @router.get("/machines")
     def machines() -> list[dict[str, object]]:
         return [machine_summary(spec) for spec in registry.list()]
+
+    @router.get("/machines/{machine_id}/spec")
+    def machine_spec(machine_id: str) -> dict[str, object]:
+        try:
+            return registry.get(machine_id).model_dump(mode="json")
+        except KeyError as error:
+            raise HTTPException(404, "unknown machine") from error
+        except ValueError as error:
+            raise HTTPException(422, str(error)) from error
+
+    @router.get("/machines/{machine_id}/scenarios", response_model=list[Scenario])
+    def machine_scenarios(machine_id: str) -> list[Scenario]:
+        try:
+            spec = registry.get(machine_id)
+            return scenario_presets(registry, machine_id, "test", spec.spec_hash)
+        except KeyError as error:
+            raise HTTPException(404, "unknown machine") from error
+        except (OSError, ValueError) as error:
+            raise HTTPException(422, str(error)) from error
+
+    @router.post("/simulate/risk", response_model=SimulatedRisk)
+    def simulate_risk(request: SimulatorRiskRequest) -> SimulatedRisk:
+        service = selected(request.machine_id, request)
+        try:
+            return service.simulate_risk(pd.DataFrame(request.rows), request.controls)
+        except ValueError as error:
+            raise HTTPException(422, str(error)) from error
+
+    @router.post("/simulate/prescribe", response_model=SimulatorPrescription)
+    def simulate_prescribe(request: SimulatorPrescriptionRequest) -> SimulatorPrescription:
+        service = selected(request.machine_id, request)
+        rows = pd.DataFrame(request.rows)
+        try:
+            input_hash = service.input_hash(rows, {})
+            if input_hash != request.input_hash:
+                raise HTTPException(409, "Recorded conditions have changed")
+            result = service.recommend(rows, "fast")
+        except ValueError as error:
+            raise HTTPException(422, str(error)) from error
+        return SimulatorPrescription(input_hash=input_hash, decision=result)
 
     @router.post("/machines/{machine_id}/assess", response_model=MachineAssessment)
     def assess(machine_id: str, request: MachineWindowRequest) -> MachineAssessment:

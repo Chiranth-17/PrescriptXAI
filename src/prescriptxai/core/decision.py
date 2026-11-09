@@ -2,14 +2,21 @@
 
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping
 from datetime import UTC, datetime
+from hashlib import sha256
 from typing import Literal, Protocol
 
 import pandas as pd
 
 from prescriptxai.core.data_quality import RecommendationWithheld, require_clean_window
-from prescriptxai.machine_schema import FeedbackRecord, MachineAssessment, MachineRecourseResult
+from prescriptxai.machine_schema import (
+    FeedbackRecord,
+    MachineAssessment,
+    MachineRecourseResult,
+    SimulatedRisk,
+)
 from prescriptxai.machine_spec import MachineSpec
 from prescriptxai.schemas import Assessment, Explanation, InputContext, RecourseResult
 
@@ -28,6 +35,17 @@ class DecisionRuntime(Protocol):
         self, x_raw: Mapping[str, float], context: InputContext, mode: SearchMode | None
     ) -> RecourseResult:
         """Run the bounded search and independent checks."""
+
+    def control_bounds(self) -> dict[str, tuple[float, float]]:
+        """Return the active slider bounds."""
+
+    def simulate_risk(
+        self,
+        x_raw: Mapping[str, float],
+        context: InputContext,
+        controls: Mapping[str, float],
+    ) -> tuple[Assessment, bool]:
+        """Score the simulated settings and flag unusual combinations."""
 
     def validate_controls(
         self,
@@ -49,6 +67,7 @@ class MachineDecision:
         features: tuple[str, ...],
         protocol_version: str,
         history_rows: int = 0,
+        runtime_identity: str | None = None,
     ) -> None:
         if protocol_version not in spec.validation.plausibility:
             raise ValueError(f"unknown protocol version: {protocol_version}")
@@ -57,6 +76,7 @@ class MachineDecision:
         self.features = features
         self.history_rows = history_rows
         self.protocol_version = protocol_version
+        self.runtime_identity = runtime_identity
 
     def _observed(self, window: pd.DataFrame) -> tuple[dict[str, float], InputContext]:
         require_clean_window(window, self.spec)
@@ -83,12 +103,52 @@ class MachineDecision:
         """Score the checked observation without publishing a prescription."""
         state, context = self._observed(window)
         observed = self._runtime.assess(state, context, mode)
+        return self._assessment(observed)
+
+    def _assessment(self, observed: Assessment) -> MachineAssessment:
         return MachineAssessment(
             **observed.model_dump(),
             machine_id=self.spec.machine_id,
             spec_hash=self.spec.spec_hash,
             protocol_version=self.protocol_version,
             synthetic=self.spec.synthetic,
+        )
+
+    def input_hash(self, window: pd.DataFrame, controls: Mapping[str, float]) -> str:
+        """Bind a result to the current canonical observations and simulated settings."""
+        self._observed(window)
+        return self._hash_window(window, controls)
+
+    def _hash_window(self, window: pd.DataFrame, controls: Mapping[str, float]) -> str:
+        columns = ["time_index", *(feature.id for feature in self.spec.measurement_features)]
+        if "unit_id" in window:
+            columns.insert(0, "unit_id")
+        payload = json.dumps(
+            {
+                "machine": self.spec.machine_id,
+                "spec": self.spec.spec_hash,
+                "protocol": self.protocol_version,
+                "runtime": self.runtime_identity,
+                "observations": window.loc[:, columns].to_dict(orient="records"),
+                "controls": dict(controls),
+            },
+            sort_keys=True,
+            allow_nan=False,
+        )
+        return sha256(payload.encode()).hexdigest()
+
+    def control_bounds(self) -> dict[str, tuple[float, float]]:
+        """Return active controls with raw-unit limits from the loaded fit."""
+        return self._runtime.control_bounds()
+
+    def simulate_risk(self, window: pd.DataFrame, controls: Mapping[str, float]) -> SimulatedRisk:
+        """Score settings as a simulation, including for an unconfirmed machine."""
+        state, context = self._observed(window)
+        assessment, unusual = self._runtime.simulate_risk(state, context, controls)
+        return SimulatedRisk(
+            assessment=self._assessment(assessment),
+            input_hash=self._hash_window(window, controls),
+            unusual=unusual,
         )
 
     def recommend(

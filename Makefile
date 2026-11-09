@@ -32,7 +32,7 @@ evaluate:
 	uv run prescriptxai evaluate
 
 dashboard:
-	uv run streamlit run src/prescriptxai/dashboard/app.py
+	uv run prescriptxai dashboard
 
 api:
 	uv run prescriptxai serve
