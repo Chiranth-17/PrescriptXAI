@@ -6,7 +6,12 @@ from collections.abc import Mapping
 from html import escape
 
 from prescriptxai.dashboard.simulator_prescription import prescription_checks
-from prescriptxai.machine_schema import FeedbackRecord, MachineRecourseResult, SimulatedRisk
+from prescriptxai.machine_schema import (
+    FeedbackRecord,
+    MachineRecourseResult,
+    ReplayFollowUp,
+    SimulatedRisk,
+)
 from prescriptxai.machine_spec import MachineSpec
 
 
@@ -17,7 +22,7 @@ def scenario_report(
     settings: Mapping[str, float],
     preview: SimulatedRisk,
     result: MachineRecourseResult | None,
-    feedback: FeedbackRecord | None,
+    feedback: tuple[FeedbackRecord, ReplayFollowUp] | None,
 ) -> str:
     """Use plain escaped text and export only what the active view can publish."""
     score = preview.assessment
@@ -45,16 +50,41 @@ def scenario_report(
             f"<p>Run {escape(result.run_id)}. Predicted risk with prescription: "
             f"{result.risk_after:.1%}.</p><ul>{actions}</ul><ul>{checks}</ul>"
         )
-        if feedback is not None and feedback.result_run_id == result.run_id:
-            label = (
-                "Simulated operator (demo)"
-                if feedback.source == "simulated_operator"
-                else "Operator (this session)"
-            )
-            follow_up = (
-                f"<p>{label}. Adherence: {feedback.adherence:.0%}. "
-                f"Predicted risk with applied settings: {feedback.applied_risk:.1%}.</p>"
-            )
+        if feedback is not None:
+            record, scope = feedback
+            if (
+                record.result_run_id == result.run_id
+                and record.machine_id == spec.machine_id
+                and record.spec_hash == spec.spec_hash
+                and record.protocol_version == score.protocol_version
+                and record.synthetic == spec.synthetic
+                and scope.input_hash == preview.input_hash
+                and scope.unit == unit
+                and scope.time == time
+            ):
+                label = (
+                    "Simulated operator (demo)"
+                    if record.source == "simulated_operator"
+                    else "Operator (this session)"
+                )
+                applied = "".join(
+                    f"<li>{escape(features[name].label)}: {value:g} "
+                    f"{escape(features[name].unit)}</li>"
+                    for name, value in record.applied.items()
+                )
+                passed = record.applied_tier_passes.values()
+                reason = f"<p>Reported reason: {escape(scope.reason)}</p>" if scope.reason else ""
+                choice = (
+                    f"<p>Reported choice: {escape(scope.stated_choice)}</p>"
+                    if scope.stated_choice
+                    else ""
+                )
+                follow_up = (
+                    f"<p>{label}. Adherence: {record.adherence:.0%}. "
+                    f"Predicted risk with applied settings: {record.applied_risk:.1%}. "
+                    f"Applied settings passed {sum(passed)} of {len(passed)} checks.</p>"
+                    f"{choice}{reason}<ul>{applied}</ul>"
+                )
     return (
         '<!doctype html><html lang="en"><meta charset="utf-8">'
         "<title>PrescriptXAI scenario report</title>"

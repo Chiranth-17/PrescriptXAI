@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from contextlib import closing
 from dataclasses import dataclass
 from hashlib import file_digest, sha256
@@ -21,7 +21,7 @@ from prescriptxai.constraints.taxonomy import FeatureSpec, FeatureTaxonomy, buil
 from prescriptxai.core.data_quality import require_clean_window
 from prescriptxai.core.decision import MachineDecision
 from prescriptxai.data.splits import EngineSplits
-from prescriptxai.machine_schema import FeedbackRecord
+from prescriptxai.machine_schema import FeedbackRecord, ReplayFollowUp
 from prescriptxai.machine_spec import MachineSpec
 from prescriptxai.models.registry import ModelBundle, load_model_bundle, save_model_bundle
 from prescriptxai.models.train import TrainingResult, fit_partitioned_risk_model
@@ -336,13 +336,33 @@ def load_machine_decision(
 def record_feedback(
     record: FeedbackRecord, path: Path = Path("artifacts/machines/feedback.sqlite3")
 ) -> None:
-    """Append one complete feedback record transactionally to the local log."""
+    """Append one compatible feedback record transactionally to the local log."""
+    record_feedback_batch([(record, None)], path)
+
+
+def record_feedback_batch(
+    records: Sequence[tuple[FeedbackRecord, ReplayFollowUp | None]],
+    path: Path = Path("artifacts/machines/feedback.sqlite3"),
+) -> None:
+    """Commit the replay context and every checked outcome in one transaction."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with closing(sqlite3.connect(path)) as database, database:
         database.execute(
             "CREATE TABLE IF NOT EXISTS feedback (id INTEGER PRIMARY KEY, payload TEXT NOT NULL)"
         )
-        database.execute("INSERT INTO feedback(payload) VALUES (?)", (record.model_dump_json(),))
+        database.execute(
+            "CREATE TABLE IF NOT EXISTS replay_followup "
+            "(feedback_id INTEGER PRIMARY KEY REFERENCES feedback(id), payload TEXT NOT NULL)"
+        )
+        for record, details in records:
+            cursor = database.execute(
+                "INSERT INTO feedback(payload) VALUES (?)", (record.model_dump_json(),)
+            )
+            if details is not None:
+                database.execute(
+                    "INSERT INTO replay_followup(feedback_id, payload) VALUES (?, ?)",
+                    (cursor.lastrowid, details.model_dump_json()),
+                )
 
 
 def read_feedback(
@@ -352,6 +372,22 @@ def read_feedback(
     *,
     include_simulated: bool = False,
 ) -> list[FeedbackRecord]:
+    """Read compatible feedback records for the active scope."""
+    return [
+        record
+        for record, _ in read_feedback_log(
+            spec, protocol, path, include_simulated=include_simulated
+        )
+    ]
+
+
+def read_feedback_log(
+    spec: MachineSpec,
+    protocol: str,
+    path: Path = Path("artifacts/machines/feedback.sqlite3"),
+    *,
+    include_simulated: bool = False,
+) -> list[tuple[FeedbackRecord, ReplayFollowUp | None]]:
     """Read one exact machine/spec/protocol log, excluding demo sources by default."""
     if protocol not in spec.validation.plausibility:
         raise ValueError(f"unknown protocol version: {protocol}")
@@ -359,8 +395,17 @@ def read_feedback(
         return []
     spec_hash = spec.spec_hash
     with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)) as database:
+        sidecar = database.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'replay_followup'"
+        ).fetchone()
+        query = (
+            "SELECT f.payload, r.payload FROM feedback f "
+            "LEFT JOIN replay_followup r ON r.feedback_id = f.id ORDER BY f.id"
+            if sidecar
+            else "SELECT payload, NULL FROM feedback ORDER BY id"
+        )
         records = []
-        for (payload,) in database.execute("SELECT payload FROM feedback ORDER BY id"):
+        for payload, extra in database.execute(query):
             record = FeedbackRecord.model_validate_json(payload)
             if (
                 record.machine_id == spec.machine_id
@@ -369,7 +414,8 @@ def read_feedback(
                 and record.synthetic == spec.synthetic
                 and (include_simulated or record.source == "operator")
             ):
-                records.append(record)
+                details = ReplayFollowUp.model_validate_json(extra) if extra is not None else None
+                records.append((record, details))
     return records
 
 

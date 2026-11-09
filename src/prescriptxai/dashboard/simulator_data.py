@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from random import Random
 
 import pandas as pd
 import streamlit as st
@@ -86,3 +87,51 @@ def sequential_risks(
         applied[name] = value
         risks.append(decision.simulate_risk(window, applied).assessment.risk)
     return tuple(risks)
+
+
+def simulated_settings(
+    original: Mapping[str, float],
+    prescription: Mapping[str, float],
+    seed: int,
+    count: int,
+) -> list[dict[str, float]]:
+    """Draw reproducible compliance fractions and interpolate named applied settings."""
+    generator = Random(seed)
+    return [
+        {
+            name: original[name] + fraction * (value - original[name])
+            for name, value in prescription.items()
+        }
+        for fraction in (generator.random() for _ in range(count))
+    ]
+
+
+def replay_trend(
+    decision: MachineDecision,
+    observations: pd.DataFrame,
+    unit: str,
+    time: float,
+    applied: Mapping[str, float],
+    steps: int,
+) -> pd.DataFrame:
+    """Re-score recorded future inputs, keeping observations separate from predicted risk."""
+    rows = observations.loc[observations["unit_id"].map(str) == unit].sort_values("time_index")
+    future = rows.loc[rows["time_index"] > time].head(steps)
+    records = []
+    for _, row in future.iterrows():
+        cycle = float(row["time_index"])
+        window = rows.loc[rows["time_index"] <= cycle]
+        before = decision.simulate_risk(window, {}).assessment
+        after = decision.simulate_risk(window, applied).assessment
+        records.append(
+            {
+                "Recorded time": cycle,
+                "Recorded settings (model prediction)": before.risk,
+                "Applied settings (model prediction)": after.risk,
+                "Safe level": before.tau_safe,
+                "Alert level": before.tau_danger,
+                "Recorded remaining life": row.get("remaining_life"),
+                "Recorded event": row.get("event"),
+            }
+        )
+    return pd.DataFrame(records)

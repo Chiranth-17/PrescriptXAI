@@ -95,3 +95,22 @@ class FeedbackRecord(BaseModel):
     action_adherence: dict[str, float]
     applied_risk: float = Field(ge=0, le=1)
     applied_tier_passes: dict[str, bool]
+
+
+class ReplayFollowUp(BaseModel):
+    """Versioned replay context stored beside a compatible feedback record."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True, allow_inf_nan=False)
+
+    schema_version: Literal[1] = 1
+    input_hash: str = Field(pattern=HASH_PATTERN)
+    unit: str = Field(min_length=1)
+    time: float
+    risk_before: float = Field(ge=0, le=1)
+    prescription_risk: float = Field(ge=0, le=1)
+    config_hash: str = Field(min_length=1)
+    stated_choice: Literal["Followed as recommended", "Followed partly", "Not followed"] | None = (
+        None
+    )
+    reason: str | None = Field(default=None, max_length=500)
+    demo_seed: int | None = None

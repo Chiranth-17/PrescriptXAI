@@ -14,6 +14,76 @@ const origin = new URL(address).origin;
 const { chromium } = createRequire(import.meta.url)(modulePath);
 const browser = await chromium.launch({ headless: true, executablePath });
 const results = [];
+
+async function presetAccess(button) {
+  return button.evaluate((element) => {
+    const numbers = (color) => color.match(/[\d.]+/g).map(Number);
+    const luminance = ([r, g, b]) =>
+      [r, g, b].map((v) => {
+        const value = v / 255;
+        return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      }).reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
+    let surface = element;
+    let background;
+    while (surface && !background) {
+      const rgb = numbers(getComputedStyle(surface).backgroundColor);
+      if (rgb.length === 3 || rgb[3] === 1) background = rgb;
+      surface = surface.parentElement;
+    }
+    const style = getComputedStyle(element);
+    const levels = [luminance(numbers(style.color)), luminance(background || [255, 255, 255])];
+    return {
+      buttonHeight: element.getBoundingClientRect().height,
+      contrast: (Math.max(...levels) + 0.05) / (Math.min(...levels) + 0.05),
+      focusVisible: document.activeElement === element && element.matches(":focus-visible")
+        && style.outlineStyle !== "none" && parseFloat(style.outlineWidth) >= 2,
+    };
+  });
+}
+async function keyboardSettings(page, originalRisk) {
+  const controls = page.locator(
+    '[data-testid="stSlider"] input[type="range"]:not([aria-label="Recorded time"])'
+  );
+  const value = page.locator('[data-testid="stMetricValue"]').first();
+  const edits = [];
+  for (let index = 0; index < await controls.count(); index++) {
+    const control = controls.nth(index);
+    const { now, maximum } = await control.evaluate((element) => ({
+      now: Number(element.value),
+      maximum: Number(element.max),
+    }));
+    const before = new URL(page.url()).searchParams.get("settings");
+    const key = now === maximum ? "Home" : "End";
+    await control.press(key);
+    try {
+      await page.waitForFunction((previous) =>
+        new URL(location.href).searchParams.get("settings") !== previous
+        && document.querySelector('[data-testid="stApp"]')?.getAttribute("data-test-script-state") === "notRunning",
+      before, { timeout: 5000 });
+    } catch (error) {
+      const state = await control.evaluate((element) => ({
+        markup: element.outerHTML, focused: document.activeElement === element,
+        input: new URL(location.href).searchParams.get("settings"),
+      }));
+      throw new Error("Keyboard did not update the slider: " + JSON.stringify(state), { cause: error });
+    }
+    const risk = await value.innerText();
+    const settings = new URL(page.url()).searchParams.get("settings");
+    edits.push({ settings, risk });
+    if (risk !== originalRisk) {
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.waitForFunction((expected) =>
+        document.querySelector('[data-testid="stMetricValue"]')?.textContent === expected,
+      risk);
+      if (new URL(page.url()).searchParams.get("settings") !== settings) {
+        throw new Error("Reloaded link did not restore the keyboard settings");
+      }
+      return { edits, restored: true };
+    }
+  }
+  throw new Error("No keyboard-edited control changed the displayed risk");
+}
+
 try {
   for (const [name, width, height] of [["desktop", 1360, 900], ["phone", 390, 844]]) {
     const context = await browser.newContext({ viewport: { width, height }, colorScheme: "light" });
@@ -35,7 +105,12 @@ try {
     await page.getByText("Predicted risk now", { exact: true }).waitFor();
     const preset = page.getByRole("button", { name: "Case study (selected by rule)" });
     const before = new URL(page.url()).searchParams.get("unit");
-    await preset.click();
+    await preset.focus();
+    const accessibility = await presetAccess(preset);
+    if (accessibility.buttonHeight < 44 || accessibility.contrast < 4.5 || !accessibility.focusVisible) {
+      throw new Error("Preset accessibility failed: " + JSON.stringify(accessibility));
+    }
+    await preset.press("Enter");
     await page.waitForFunction((unit) => {
       const current = new URL(location.href).searchParams.get("unit");
       return current && current !== unit
@@ -80,13 +155,14 @@ try {
         || report.includes("Predicted risk with prescription:")) {
       throw new Error("Downloaded scenario does not match the Alerts-only view");
     }
+    const keyboard = await keyboardSettings(page, risk);
     if (errors.length || external.length) {
       throw new Error(JSON.stringify({ errors, external }));
     }
     const reportSha256 = createHash("sha256").update(report).digest("hex");
     results.push({
       name, viewport: { width, height }, captureHeight, bounds, risk, sha256, file,
-      reportFile, reportSha256,
+      reportFile, reportSha256, accessibility, keyboard,
     });
     await context.close();
   }

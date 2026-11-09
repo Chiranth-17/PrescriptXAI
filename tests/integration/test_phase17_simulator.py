@@ -17,11 +17,16 @@ from prescriptxai.adapters.cmapss import CmapssAdapter
 from prescriptxai.adapters.registry import DEFAULT_MACHINE, MachineRegistry
 from prescriptxai.api import create_app
 from prescriptxai.core.data_quality import RecommendationWithheld
-from prescriptxai.core.decision import MachineDecision
+from prescriptxai.core.decision import MachineDecision, action_adherence
 from prescriptxai.dashboard.objectives import METRICS
 from prescriptxai.dashboard.prescription_job import PrescriptionJob
 from prescriptxai.dashboard.scenario_report import scenario_report
-from prescriptxai.dashboard.simulator_data import parse_settings, sequential_risks
+from prescriptxai.dashboard.simulator_data import (
+    parse_settings,
+    replay_trend,
+    sequential_risks,
+    simulated_settings,
+)
 from prescriptxai.dashboard.state import load_settings
 from prescriptxai.machine_schema import MachineRecourseResult
 from prescriptxai.machines import scope_archive_runtime
@@ -341,3 +346,57 @@ def test_feedback_summary_scopes_an_empty_log(
     )
     assert client.get("/feedback/summary", params={"machine_id": "unregistered"}).status_code == 404
     assert not (tmp_path / "feedback.sqlite3").exists()
+
+
+def test_followup_labels_and_reproducible_demo_settings() -> None:
+    """Check configured boundaries and verify demos stay within the interpolation endpoints."""
+    config = load_settings(Path("configs/dashboard.yaml")).follow_up
+    assert config.adherence_label(config.followed_at) == "Followed as recommended"
+    assert config.adherence_label(config.partial_at) == "Followed partly"
+    assert config.adherence_label(config.partial_at - 0.01) == "Not followed"
+    assert config.adherence_label(config.followed_at - 0.01) == "Followed partly"
+    original, recommendation = {"a": 10.0, "b": 20.0}, {"a": 8.0, "b": 24.0}
+    assert action_adherence(original, recommendation, recommendation) == {"a": 1.0, "b": 1.0}
+    assert action_adherence(original, recommendation, {"a": 12.0, "b": 16.0}) == {
+        "a": 0.0,
+        "b": 0.0,
+    }
+    assert action_adherence(original, recommendation, {"a": 9.0, "b": 22.0}) == {
+        "a": 0.5,
+        "b": 0.5,
+    }
+    demo = simulated_settings(original, recommendation, config.demo_seed, config.demo_count)
+    assert demo == simulated_settings(original, recommendation, config.demo_seed, config.demo_count)
+    assert demo != simulated_settings(
+        original, recommendation, config.demo_seed + 1, config.demo_count
+    )
+    for applied in demo:
+        assert 8.0 <= applied["a"] <= 10.0 and 20.0 <= applied["b"] <= 24.0
+        values = action_adherence(original, recommendation, applied)
+        assert values["a"] == pytest.approx(values["b"])
+
+
+def test_followup_trend_uses_only_actual_later_windows(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+) -> None:
+    """Check later same-unit timestamps, archived labels and genuine recalibrated risks."""
+    decision, _, rows = replay
+    unit = str(rows["unit_id"].iloc[0])
+    track = rows.loc[rows["unit_id"].map(str) == unit].sort_values("time_index")
+    start = float(track["time_index"].iloc[0])
+    control, (lower, _) = next(iter(decision.control_bounds().items()))
+    applied = {control: lower}
+    trend = replay_trend(decision, rows, unit, start, applied, 3)
+    expected = track.iloc[1:4]
+    assert trend["Recorded time"].tolist() == expected["time_index"].tolist()
+    assert trend["Recorded remaining life"].tolist() == expected["remaining_life"].tolist()
+    for row in trend.to_dict(orient="records"):
+        window = _window(rows, unit, str(row["Recorded time"]))
+        before = decision.simulate_risk(window, {}).assessment
+        after = decision.simulate_risk(window, applied).assessment
+        assert row["Recorded settings (model prediction)"] == before.risk
+        assert row["Applied settings (model prediction)"] == after.risk
+        assert row["Safe level"] == before.tau_safe
+        assert row["Alert level"] == before.tau_danger
+    assert replay_trend(decision, rows, unit, float(track["time_index"].max()), applied, 30).empty
+    assert not decision.spec.confirmation.confirmed

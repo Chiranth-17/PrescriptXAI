@@ -5,6 +5,12 @@ timeout_seconds: 120
 telemetry_path: data/raw/CMAPSSData.zip
 telemetry_population: test
 report_directory: artifacts/experiments/phase7-20261020T102540Z
+follow_up:
+  followed_at: 0.80
+  partial_at: 0.40
+  trend_steps: 30
+  demo_seed: 1729
+  demo_count: 5
 profiles:
   FD001:
     XGBoost / v1: configs/experiments/phase7-FD001-xgb-v1.yaml

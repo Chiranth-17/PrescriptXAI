@@ -6,6 +6,7 @@ import json
 import os
 from collections.abc import Callable
 from concurrent.futures import CancelledError
+from math import isclose
 from pathlib import Path
 from threading import Event
 from time import perf_counter
@@ -28,11 +29,14 @@ from prescriptxai.dashboard.simulator_data import (
     parse_settings,
     simulator_decision,
 )
-from prescriptxai.dashboard.simulator_prescription import render_recommendation
+from prescriptxai.dashboard.simulator_followup import render_follow_up
+from prescriptxai.dashboard.simulator_prescription import (
+    prescription_checks,
+    render_recommendation,
+)
 from prescriptxai.dashboard.state import load_settings
-from prescriptxai.machine_schema import FeedbackRecord, MachineRecourseResult, SimulatedRisk
+from prescriptxai.machine_schema import MachineRecourseResult, ReplayFollowUp, SimulatedRisk
 from prescriptxai.machine_spec import MachineSpec
-from prescriptxai.machines import record_feedback
 from prescriptxai.pipeline import ArtifactError
 from prescriptxai.scenarios import Scenario, scenario_presets
 
@@ -49,6 +53,15 @@ STYLE = """
 [data-testid="stAppDeployButton"] { display: none; }
 [data-testid="stMetricValue"] { font-family: ui-monospace, Consolas, monospace; }
 [data-testid="stSlider"] { min-height: 64px; }
+.stApp :is(button, [role="slider"], [role="combobox"]):focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 3px;
+}
+@media (prefers-color-scheme: dark) {
+  .stApp :is(button, [role="slider"], [role="combobox"]):focus-visible {
+    outline-color: #9ac0ff;
+  }
+}
 @media (max-width: 600px) {
   [data-testid="stMainBlockContainer"] { padding-inline: 1rem; }
   [data-testid="stHeading"] h1 { font-size: 2rem; }
@@ -146,6 +159,39 @@ def _wait_for_prescription(job: PrescriptionJob) -> None:
     st.info("Calculating…")
 
 
+def _manual_comparison(
+    decision: MachineDecision,
+    window: pd.DataFrame,
+    preview: SimulatedRisk,
+    controls: dict[str, float],
+) -> None:
+    reference = cast(
+        tuple[str, MachineRecourseResult] | None, st.session_state.get("simulator_reference")
+    )
+    if reference is None or reference[0] != decision.input_hash(window, {}):
+        st.session_state.pop("simulator_reference", None)
+        st.info("Restore recorded settings to calculate a prescription for comparison.")
+        return
+    try:
+        applied = decision.validate_controls(window, controls, "fast")
+    except ValueError:
+        st.info("These edited settings could not be checked for comparison.")
+        return
+    if not isclose(applied.risk_after, preview.assessment.risk, rel_tol=0, abs_tol=1e-9):
+        st.info("The independent checks could not be reconciled with this risk preview.")
+        return
+    for label, result in (
+        ("Your edited settings", applied),
+        ("Prescription for the recorded settings", reference[1]),
+    ):
+        checks = prescription_checks(result)
+        passed = sum(value for _, value in checks)
+        st.write(
+            f"{label} · {result.risk_after:.1%} predicted risk · {passed} of {len(checks)} checks"
+        )
+    st.caption("The prescription is a reference for the recorded settings only.")
+
+
 def _prescription(
     decision: MachineDecision,
     window: pd.DataFrame,
@@ -161,11 +207,12 @@ def _prescription(
         job = None
     if not decision.spec.confirmation.confirmed:
         _cancel_prescription()
+        st.session_state.pop("simulator_reference", None)
         st.info("Recommendation withheld: Alerts only: limits not yet confirmed by an engineer")
         return None
     if controls:
         _cancel_prescription()
-        st.info("Return to recorded settings to request a prescription.")
+        _manual_comparison(decision, window, preview, controls)
         return None
     if not preview.assessment.alert:
         _cancel_prescription()
@@ -197,36 +244,8 @@ def _prescription(
         st.warning(str(error))
         return None
     render_recommendation(decision, window, result, report_directory)
+    st.session_state["simulator_reference"] = (input_hash, result)
     return result
-
-
-def _follow_up(
-    decision: MachineDecision,
-    window: pd.DataFrame,
-    result: MachineRecourseResult | None,
-) -> FeedbackRecord | None:
-    if result is None or not result.action_features:
-        st.caption("A current prescription is needed to record applied settings.")
-        return None
-    labels = {feature.id: feature.label for feature in decision.spec.measurement_features}
-    limits = decision.control_bounds()
-    applied = {}
-    for name in result.action_features:
-        lower, upper = limits[name]
-        applied[name] = st.slider(
-            f"Applied {labels[name]}",
-            lower,
-            upper,
-            result.new_state[name],
-            key=f"applied:{result.run_id}:{name}",
-        )
-    if st.button("Record this follow-up"):
-        feedback = decision.feedback(window, result, applied)
-        record_feedback(feedback)
-        st.success(f"Recorded locally · Adherence {feedback.adherence:.0%}")
-        st.metric("Predicted risk with applied settings", f"{feedback.applied_risk:.1%}")
-        return feedback
-    return None
 
 
 def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
@@ -257,7 +276,15 @@ def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
     conditions, predictions = st.columns([1, 1])
     with conditions, st.container(border=True):
         st.subheader("1. Set the conditions")
+        st.markdown("**Situation (fixed)**")
         unit, time, window = _location(spec.machine_id, frame, preset)
+        with st.expander("Fixed context"):
+            for feature in spec.measurement_features:
+                if feature.role == "frozen":
+                    st.write(
+                        f"{feature.label} · {float(window[feature.id].iloc[-1]):g} {feature.unit}"
+                    )
+        st.markdown("**Current adjustable settings**")
         selection = json.dumps((spec.spec_hash, decision.runtime_identity, unit, time, revision))
         restore = (
             st.query_params.get("settings", "")
@@ -298,7 +325,19 @@ def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
             )
     with st.container(border=True):
         st.subheader("4. Was it followed?")
-        feedback = _follow_up(decision, window, result)
+        scope = (
+            ReplayFollowUp(
+                input_hash=preview.input_hash,
+                unit=unit,
+                time=time,
+                risk_before=result.risk_before,
+                prescription_risk=result.risk_after,
+                config_hash=result.config_hash,
+            )
+            if result is not None
+            else None
+        )
+        feedback = render_follow_up(decision, window, frame, result, scope, settings.follow_up)
     current = {
         name: controls.get(name, float(window[name].iloc[-1])) for name in decision.control_bounds()
     }
@@ -334,6 +373,7 @@ def main() -> None:
             requested = machines[0]
         if workspace == "Advanced":
             _cancel_prescription()
+            st.session_state.pop("simulator_reference", None)
             advanced_pages(advanced=True, spec=specs[requested])
             return
         st.title("PrescriptXAI Operations Dashboard")
@@ -347,6 +387,7 @@ def main() -> None:
         _simulator(specs[machine], registry)
     except (ArtifactError, OSError, ValueError, KeyError, TypeError) as error:
         _cancel_prescription()
+        st.session_state.pop("simulator_reference", None)
         message = str(error)
         st.error(
             message

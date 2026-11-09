@@ -22,6 +22,16 @@ already underway may finish after cancellation. Their results are discarded.
 The new focused verification passed 75 tests in 38.11 seconds, including 13
 simulator tests. Ruff, mypy over 84 source files and strict docs passed.
 
+The follow-up checkpoint adds a live applied-setting check, adherence
+labels from dashboard configuration, a same-unit recorded replay trend and
+seeded demo logging with opt-in display. A separately labeled comparison
+can use a prescription for the exact recorded window on a confirmed
+machine. The FD001 replay remains Alerts-only while its limits await
+confirmation. Chromium checked a keyboard edit from 87.7% to 92.1% at both
+viewport widths and restored the edit from the URL. The 77-test focused
+suite passed in 41.38 seconds, with 15 simulator tests, Ruff, mypy over 85
+source files and strict docs.
+
 The [acceptance report](docs/acceptance_report.md) separates local verification
 from the remaining dashboard functionality and gates. The design mock and two
 classmate sessions are pending. The full dashboard gate and Step 3B acceptance

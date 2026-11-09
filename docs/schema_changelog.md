@@ -1,5 +1,15 @@
 # Public schema history
 
+## Phase 17 replay follow-up context
+
+The local SQLite log can now associate an optional version 1 replay context
+record with an existing feedback row. The context stores the input hash,
+recorded unit and time, model configuration, reported choice and optional
+reason, and demo seed when applicable. Existing feedback records, their API
+response schema, and decision and validation schemas retain their versions.
+A database with only the original feedback table remains readable.
+
+
 ## 3.0.0 — Phase 13 named-machine decisions
 
 The machine-prefixed HTTP routes and machine-aware CLI use version 3. The

@@ -7,7 +7,7 @@ guided this implementation. Direct comparison with the reference is pending.
 | Element | Current implementation | Verification |
 | --- | --- | --- |
 | Desktop and phone layout | Bordered cards for conditions, risk, prescription and follow-up. Cards stack on narrow screens. | Rendered at 1,360 and 390 CSS pixels. |
-| Typography and theme | Streamlit with a system font stack and monospace risk values. | Browser captures use the light theme. Contrast and keyboard verification are pending. |
+| Typography and theme | Streamlit with a system font stack and monospace risk values. | Light-theme Chromium checked keyboard focus and edit restoration. The tested preset measured 14.24:1 contrast and 44 CSS pixels. Full contrast coverage remains pending. |
 | Risk and advisory status | Predicted risk from the fitted model, with text for the risk band and an Alerts-only notice. | The case study renders at 87.7% for FD001 unit 82, cycle 156. |
 | Advanced views | Fleet, Diagnostics, Evaluation and About remain accessible under Advanced. | Covered by the simulator integration tests. |
 

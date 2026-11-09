@@ -2,13 +2,14 @@
 phase: 13
 status: complete
 current_activity: solo_step3_dashboard
-activity_status: phase17_prescription_and_report_local_verification
+activity_status: phase17_followup_and_keyboard_local_verification
 ---
 
 ## Solo Step 3 in progress (10 November 2026 IST)
 
 The machine-scoped simulator has local FD001 risk, stale-input, Alerts-only
-and browser evidence, with input-bound scheduling and scoped export. See the [acceptance report](../docs/acceptance_report.md).
+and browser evidence, with input-bound scheduling, scoped follow-up and export.
+See the [acceptance report](../docs/acceptance_report.md).
 The dashboard and Step 3B remain open. The published design reference and
 participant sessions are pending.
 

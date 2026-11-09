@@ -233,6 +233,31 @@ class EvaluationConfig(BaseModel):
         return self
 
 
+class FollowUpSettings(BaseModel):
+    """Presentation and demo settings for locally replayed operator feedback."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True, allow_inf_nan=False)
+
+    followed_at: float = Field(default=0.80, gt=0, le=1)
+    partial_at: float = Field(default=0.40, ge=0, lt=1)
+    trend_steps: int = Field(default=30, ge=1, le=30)
+    demo_seed: int = Field(default=1729, ge=0)
+    demo_count: int = Field(default=5, ge=1, le=30)
+
+    @model_validator(mode="after")
+    def ordered_labels(self) -> "FollowUpSettings":
+        """Keep adherence categories disjoint and ordered."""
+        if self.partial_at >= self.followed_at:
+            raise ValueError("partial_at must be below followed_at")
+        return self
+
+    def adherence_label(self, score: float) -> str:
+        """Describe the measured agreement with the recommended settings."""
+        if score >= self.followed_at:
+            return "Followed as recommended"
+        return "Followed partly" if score >= self.partial_at else "Not followed"
+
+
 class LatencyBudgetConfig(BaseModel):
     """Synopsis latency targets, in milliseconds, mapped to measured stages."""
 

@@ -12,6 +12,7 @@ import pandas as pd
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
+from prescriptxai.config import FollowUpSettings
 from prescriptxai.schemas import RecourseRequest
 
 
@@ -51,6 +52,7 @@ class DashboardSettings(BaseModel):
     telemetry_population: Literal["train", "test"] = "test"
     report_directory: Path = Path("artifacts/experiments/phase7-20261020T102540Z")
     profiles: dict[str, dict[str, Path]]
+    follow_up: FollowUpSettings = Field(default_factory=FollowUpSettings)
 
 
 def load_settings(path: Path) -> DashboardSettings:

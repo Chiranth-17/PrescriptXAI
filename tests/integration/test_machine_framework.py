@@ -29,6 +29,7 @@ from prescriptxai.data.preprocess import add_training_labels
 from prescriptxai.machine_schema import (
     FeedbackRecord,
     MachineRecourseResult,
+    ReplayFollowUp,
     migrate_recourse_result,
 )
 from prescriptxai.machine_spec import MachineSpec, load_machine_spec
@@ -39,7 +40,9 @@ from prescriptxai.machines import (
     machine_settings,
     machine_taxonomy,
     read_feedback,
+    read_feedback_log,
     record_feedback,
+    record_feedback_batch,
     save_machine_fit,
     scope_archive_runtime,
 )
@@ -503,6 +506,29 @@ def test_synthetic_feedback_uses_actual_validation(
     with sqlite3.connect(log) as db:
         payload = db.execute("SELECT payload FROM feedback").fetchone()[0]
     assert FeedbackRecord.model_validate_json(payload) == feedback
+    legacy = tmp_path / "legacy.sqlite3"
+    with sqlite3.connect(legacy) as db:
+        db.execute("CREATE TABLE feedback (id INTEGER PRIMARY KEY, payload TEXT NOT NULL)")
+        db.execute("INSERT INTO feedback(payload) VALUES (?)", (payload,))
+    assert read_feedback_log(service.spec, "v1", legacy, include_simulated=True) == [
+        (feedback, None)
+    ]
+    details = ReplayFollowUp(
+        input_hash=service.input_hash(rows, {}),
+        unit="test-fixture",
+        time=9.0,
+        risk_before=scoped.risk_before,
+        prescription_risk=scoped.risk_after,
+        config_hash=scoped.config_hash,
+        demo_seed=1729,
+    )
+    record_feedback_batch([(feedback, details)], legacy)
+    assert read_feedback_log(service.spec, "v1", legacy) == []
+    assert read_feedback_log(service.spec, "v1", legacy, include_simulated=True) == [
+        (feedback, None),
+        (feedback, details),
+    ]
+
     assert read_feedback(service.spec, "v1", log) == []
     assert read_feedback(service.spec, "v1", log, include_simulated=True) == [feedback]
     record_feedback(feedback.model_copy(update={"spec_hash": "0" * 64}), log)
