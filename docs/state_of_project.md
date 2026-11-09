@@ -3,7 +3,7 @@
 ## Current status (9 November 2026 IST)
 
 Phase 13 machine specs, adapters, quality gates and named interfaces are in
-verification. The 19-test framework suite passed for the retained FD001
+verification. The 40-test framework suite passed for the retained FD001
 benchmark and the generated synthetic contract. Both named specs remain
 Alerts-only while engineering confirmation is absent. The exact historical
 regression on this source is pending. See [machine setup](adding_a_machine.md)

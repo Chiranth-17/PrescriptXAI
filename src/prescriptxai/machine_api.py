@@ -11,10 +11,10 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from prescriptxai.adapters.registry import MachineRegistry
 from prescriptxai.core.decision import MachineDecision
-from prescriptxai.machine_schema import FeedbackRecord, MachineRecourseResult
+from prescriptxai.machine_schema import FeedbackRecord, MachineAssessment, MachineRecourseResult
 from prescriptxai.machines import machine_summary, record_feedback, resolve_machine_decision
 from prescriptxai.pipeline import PrescriptXAI
-from prescriptxai.schemas import Assessment, _reject_nonreal_measurement
+from prescriptxai.schemas import _reject_nonreal_measurement
 
 
 class MachineWindowRequest(BaseModel):
@@ -75,8 +75,8 @@ def machine_router(
     def machines() -> list[dict[str, object]]:
         return [machine_summary(spec) for spec in registry.list()]
 
-    @router.post("/machines/{machine_id}/assess", response_model=Assessment)
-    def assess(machine_id: str, request: MachineWindowRequest) -> Assessment:
+    @router.post("/machines/{machine_id}/assess", response_model=MachineAssessment)
+    def assess(machine_id: str, request: MachineWindowRequest) -> MachineAssessment:
         service = selected(machine_id, request)
         try:
             return service.assess(pd.DataFrame(request.rows), request.mode)

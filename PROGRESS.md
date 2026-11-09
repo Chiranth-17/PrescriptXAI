@@ -14,9 +14,12 @@ FAST and THOROUGH search offline and verifies measured applied-control feedback.
 The named routes withhold advice for both unconfirmed specs.
 See [machine setup](docs/adding_a_machine.md).
 
-The 19-test framework suite, Ruff, mypy and strict docs passed. The registered
-software diagnostic and full C-MAPSS regression are pending. The phase remains
-open and the next roadmap step awaits the release gate.
+The first software diagnostic passed 692 tests but missed the retained coverage
+floors. Branch-inclusive coverage was 85.75931463670896%. The focused suite now
+passes 40 tests covering named CLI flows, malformed policies and windows, official
+archive labels, API refusal paths and artifact replacement. Named scores include
+machine provenance and the synthetic label. The software diagnostic recheck and
+full C-MAPSS regression are pending. The phase remains open.
 
 ## Phase 12 closed under solo Step 1 (9 November 2026 IST)
 

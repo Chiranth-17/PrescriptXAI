@@ -12,9 +12,10 @@ import pandas as pd
 import pytest
 import yaml
 from fastapi.testclient import TestClient
-from typer.testing import CliRunner
+from typer.testing import CliRunner, Result
 
 from prescriptxai.adapters.base import DatasetAdapter
+from prescriptxai.adapters.cmapss import CmapssAdapter
 from prescriptxai.adapters.registry import DEFAULT_MACHINE, MachineRegistry
 from prescriptxai.adapters.tabular import TabularAdapter
 from prescriptxai.api import create_app
@@ -22,7 +23,7 @@ from prescriptxai.cli import app
 from prescriptxai.config import load_config
 from prescriptxai.constraints.taxonomy import load_taxonomy
 from prescriptxai.core.data_quality import RecommendationWithheld, check_window
-from prescriptxai.core.decision import action_adherence
+from prescriptxai.core.decision import MachineDecision, action_adherence
 from prescriptxai.data.cmapss import load_cmapss_archive
 from prescriptxai.data.preprocess import add_training_labels
 from prescriptxai.machine_schema import (
@@ -34,6 +35,8 @@ from prescriptxai.machine_spec import MachineSpec, load_machine_spec
 from prescriptxai.machines import (
     FittedMachine,
     fit_machine,
+    load_machine_decision,
+    machine_settings,
     machine_taxonomy,
     record_feedback,
     save_machine_fit,
@@ -254,6 +257,15 @@ def test_toy_training_scoring_and_fail_closed_recommendation(
     with pytest.raises(RecommendationWithheld, match="out_of_range"):
         service.recommend(high.assign(feed=100))
     assert action_adherence({"feed": 9.0}, {"feed": 5.0}, {"feed": 7.0}) == {"feed": 0.5}
+    with pytest.raises(ValueError, match="unknown protocol"):
+        MachineDecision(toy.spec, service._runtime, service.features, "missing")
+    with pytest.raises(ValueError, match="unknown protocol"):
+        machine_settings(toy.spec, trained.config, "missing")
+    sequence = MachineDecision(toy.spec, service._runtime, service.features, "v1", history_rows=2)
+    with pytest.raises(RecommendationWithheld, match="missing history"):
+        sequence.assess(high.iloc[-1:])
+    _, context = sequence._observed(high)
+    assert len(context.history) == 2
 
 
 def test_spec_validation_rejects_ambiguous_inputs(toy: DatasetAdapter) -> None:
@@ -317,6 +329,15 @@ def test_toy_offline_solver_validation_and_schema(
         synthetic=True,
     )
     assert migrate_recourse_result(scoped.model_dump(mode="json")) == scoped
+    service = trained_toy.decision()
+    assert service._checked_result(fast) == scoped
+    explanation = service._explanation(scoped)
+    assert explanation.actions[0].startswith("Decrease Feed setting")
+    assert explanation.verdict["joint"]
+    with pytest.raises(RecommendationWithheld, match="Alerts only"):
+        service.explain_result(scoped)
+    with pytest.raises(RecommendationWithheld, match="withheld"):
+        service._checked_result(runtime.validate_controls(state, {"feed": 9.0}, None, "fast"))
     frozen = json.loads(
         (ROOT / "docs/schemas/RecourseResult-2.0.0.json").read_text(encoding="utf-8")
     )
@@ -346,7 +367,49 @@ def test_named_api_uses_toy_runtime(
     rows = toy.load().query("unit_id == 'unit-17'").iloc[-3:].to_dict(orient="records")
     response = client.post("/machines/toy/assess", json={"rows": rows})
     assert response.status_code == 200, response.text
-    assert response.json()["risk"] == trained_toy.decision().assess(pd.DataFrame(rows)).risk
+    score = response.json()
+    assert score["risk"] == trained_toy.decision().assess(pd.DataFrame(rows)).risk
+    assert score["spec_hash"] == toy.spec.spec_hash and score["synthetic"] is True
+    assert score["machine_id"] == "toy" and score["protocol_version"] == "v1"
+    assert client.post("/machines/unknown/assess", json={"rows": rows}).status_code == 404
+    assert (
+        client.post(
+            "/machines/toy/assess",
+            json={"rows": rows, "protocol_version": "unknown"},
+        ).status_code
+        == 503
+    )
+    assert (
+        client.post(
+            "/machines/toy/assess",
+            json={"rows": [{"time_index": 1, "feed": 100, "ambient": 0.1}]},
+        ).status_code
+        == 422
+    )
+    assert (
+        client.post(
+            "/machines/toy/validate-controls",
+            json={"rows": rows, "controls": {"feed": True}},
+        ).status_code
+        == 422
+    )
+    preview = client.post(
+        "/machines/toy/validate-controls",
+        json={"rows": rows, "controls": {"feed": 5}},
+    )
+    assert preview.status_code == 422 and "Alerts only" in preview.json()["detail"]
+    scoped = trained_toy.decision()._scoped(
+        trained_toy.decision()._runtime.recommend({"feed": 9.0, "ambient": 0.1}, None, "fast")
+    )
+    follow_up = client.post(
+        "/machines/toy/feedback",
+        json={
+            "rows": rows,
+            "result": scoped.model_dump(mode="json"),
+            "applied": {"feed": 5},
+        },
+    )
+    assert follow_up.status_code == 422 and "Alerts only" in follow_up.json()["detail"]
     response = client.post("/machines/toy/recommend", json={"rows": rows})
     assert response.status_code == 422 and "limits not yet confirmed" in response.json()["detail"]
     rows[-1]["feed"] = 100.0
@@ -445,3 +508,147 @@ def test_synthetic_feedback_uses_actual_validation(
         service._measure_feedback(
             rows, scoped.model_copy(update={"machine_id": "other"}), applied, "simulated_operator"
         )
+
+
+@pytest.mark.parametrize(
+    ("section", "changes", "message"),
+    [
+        ("failure", {"tau_safe": 0.9}, "less than"),
+        ("dataset", {"unit_column": "tick"}, "distinct"),
+        ("dataset", {"subset": "FD001"}, "subset"),
+        ("dataset", {"split_fractions": [0.1, 0.1, 0.1]}, "sum"),
+        ("dataset", {"remaining_life_column": None}, "label source"),
+        ("validation", {"plausibility": {"v1": 0}}, "plausibility limit"),
+        ("quality", {"stuck_features": ["unknown"]}, "stuck checks"),
+    ],
+)
+def test_nested_policy_errors(
+    toy: DatasetAdapter,
+    section: str,
+    changes: dict[str, object],
+    message: str,
+) -> None:
+    """Reject invalid threshold, labeling, window and split policies at load time."""
+    document = toy.spec.model_dump(mode="python")
+    document[section].update(changes)
+    with pytest.raises(ValueError, match=message):
+        MachineSpec.model_validate(document)
+
+
+@pytest.mark.parametrize(
+    ("changes", "message"),
+    [
+        ({"step_limit": None}, "requires a step limit"),
+        ({"role": "frozen"}, "has a control policy"),
+        ({"legacy_group": "context"}, "legacy group disagree"),
+        ({"bounds": {"minimum": 0, "maximum": float("inf")}}, "bounds must be finite"),
+        ({"id": "time_index"}, "metadata field"),
+    ],
+)
+def test_invalid_feature_policy(
+    toy: DatasetAdapter,
+    changes: dict[str, object],
+    message: str,
+) -> None:
+    """Reject unsafe bounds, missing rates and metadata collisions."""
+    document = toy.spec.model_dump(mode="python")
+    first, second = document["features"]
+    document["features"] = [{**first, **changes}, second]
+    with pytest.raises(ValueError, match=message):
+        MachineSpec.model_validate(document)
+
+
+@pytest.mark.parametrize(
+    ("rows", "code"),
+    [
+        (pd.DataFrame(), "missing_value"),
+        (pd.DataFrame([[1, 2]], columns=["time_index", "time_index"]), "missing_value"),
+        (pd.DataFrame({"time_index": [1, 2], "unit_id": ["a", "b"]}), "missing_value"),
+        (pd.DataFrame({"feed": [1], "ambient": [0.1]}), "missing_value"),
+        (
+            pd.DataFrame({"time_index": [float("inf")], "feed": [1], "ambient": [0.1]}),
+            "nonfinite_value",
+        ),
+        (pd.DataFrame({"time_index": [1], "feed": [True], "ambient": [0.1]}), "nonfinite_value"),
+    ],
+)
+def test_window_structure(toy: DatasetAdapter, rows: pd.DataFrame, code: str) -> None:
+    """Identify invalid window structure before scoring."""
+    assert check_window(rows, toy.spec)[0].code == code
+
+
+def test_named_cli_runs_data_to_score(
+    toy: DatasetAdapter,
+    trained_toy: FittedMachine,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Run local named commands against real synthetic rows and fitted artifacts."""
+    monkeypatch.chdir(toy.path.parent)
+    config = tmp_path / "config.yaml"
+    config.write_text(yaml.safe_dump(trained_toy.config.model_dump(mode="json")), encoding="utf-8")
+    window = tmp_path / "window.json"
+    window.write_text('{"time_index": 9, "feed": 9, "ambient": 0.1}', encoding="utf-8")
+    runner = CliRunner()
+
+    def invoke(*command: str) -> Result:
+        return runner.invoke(app, ["--machine", "toy", *command])
+
+    ready = invoke("data", "prepare", "--config", str(config))
+    assert ready.exit_code == 0, ready.output
+    prepared = json.loads(ready.stdout)
+    assert prepared["rows"] == 180 and sum(prepared["units_per_partition"]) == 18
+    download = invoke("data", "download", "--config", str(config))
+    assert download.exit_code != 0 and "provide local tabular" in download.output
+    trained = invoke("train", "--config", str(config))
+    assert trained.exit_code == 0, trained.output
+    info = invoke("info")
+    assert info.exit_code == 0 and json.loads(info.stdout)["alerts_only"]
+    result = invoke("assess", str(window))
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout)["synthetic"]
+    withheld = invoke("recommend", str(window))
+    assert withheld.exit_code != 0 and "Alerts only" in withheld.output
+    bad_window = tmp_path / "invalid.json"
+    bad_window.write_text("[]", encoding="utf-8")
+    invalid = invoke("assess", str(bad_window))
+    assert invalid.exit_code != 0 and "nonempty list" in invalid.output
+    missing = invoke("assess")
+    assert missing.exit_code != 0 and "provide a JSON window" in missing.output
+    unsupported = invoke("batch")
+    assert unsupported.exit_code != 0 and "requires the legacy workflow" in unsupported.output
+    bad_machine = runner.invoke(app, ["--machine", "missing", "info"])
+    assert bad_machine.exit_code != 0 and "unknown machine" in bad_machine.output
+
+
+def test_official_test_labels_use_archive_remaining_life() -> None:
+    """Use official remaining life rather than labeling truncated trajectories as failures."""
+    archive = MachineRegistry(ROOT / "configs/machines", ROOT).open(DEFAULT_MACHINE)
+    assert isinstance(archive, CmapssAdapter)
+    rows = archive.load_official()
+    last = rows.groupby("unit_id", sort=False).tail(1)
+    legacy = load_cmapss_archive(archive.path, "FD001")
+    assert last["remaining_life"].tolist() == legacy.test_rul["rul"].tolist()
+    assert (rows["failure_label"] == (rows["remaining_life"] <= archive.spec.failure.horizon)).all()
+
+
+def test_artifact_fingerprints_refuse_modified_or_partial_fit(
+    trained_toy: FittedMachine,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Preserve the loaded-model boundary when a fitted file is replaced."""
+    monkeypatch.setenv("PRESCRIPTXAI_TRUSTED_ARTIFACT_ROOTS", str(tmp_path))
+    directory = save_machine_fit(trained_toy, tmp_path)
+    assert load_machine_decision(trained_toy.spec, "v1", tmp_path).spec == trained_toy.spec
+    manifest = directory / "complete.json"
+    saved = json.loads(manifest.read_text(encoding="utf-8"))
+    malformed = {**saved, "files": {}}
+    manifest.write_text(json.dumps(malformed), encoding="utf-8")
+    with pytest.raises(ValueError, match="manifest is incomplete"):
+        load_machine_decision(trained_toy.spec, "v1", tmp_path)
+    manifest.write_text(json.dumps(saved), encoding="utf-8")
+    with (directory / "model.joblib").open("ab") as stream:
+        stream.write(b"changed")
+    with pytest.raises(ValueError, match="changed after fingerprinting"):
+        load_machine_decision(trained_toy.spec, "v1", tmp_path)

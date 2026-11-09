@@ -8,10 +8,19 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from prescriptxai.machine_spec import MACHINE_ID_PATTERN
-from prescriptxai.schemas import RecourseResult, _RecourseFields
+from prescriptxai.schemas import Assessment, RecourseResult, _RecourseFields
 
 LEGACY_MACHINE_ID = "cmapss_fd001"
 HASH_PATTERN = r"^[0-9a-f]{64}$"
+
+
+class MachineAssessment(Assessment):
+    """Observed risk with the provenance needed to label the score."""
+
+    machine_id: str = Field(pattern=MACHINE_ID_PATTERN)
+    spec_hash: str = Field(pattern=HASH_PATTERN)
+    protocol_version: str
+    synthetic: bool
 
 
 class MachineRecourseResult(_RecourseFields):

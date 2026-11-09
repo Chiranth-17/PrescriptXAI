@@ -9,7 +9,7 @@ from typing import Literal, Protocol
 import pandas as pd
 
 from prescriptxai.core.data_quality import RecommendationWithheld, require_clean_window
-from prescriptxai.machine_schema import FeedbackRecord, MachineRecourseResult
+from prescriptxai.machine_schema import FeedbackRecord, MachineAssessment, MachineRecourseResult
 from prescriptxai.machine_spec import MachineSpec
 from prescriptxai.schemas import Assessment, Explanation, InputContext, RecourseResult
 
@@ -79,10 +79,17 @@ class MachineDecision:
         if not self.spec.confirmation.confirmed:
             raise RecommendationWithheld("Alerts only: limits not yet confirmed by an engineer")
 
-    def assess(self, window: pd.DataFrame, mode: SearchMode | None = None) -> Assessment:
+    def assess(self, window: pd.DataFrame, mode: SearchMode | None = None) -> MachineAssessment:
         """Score the checked observation without publishing a prescription."""
         state, context = self._observed(window)
-        return self._runtime.assess(state, context, mode)
+        observed = self._runtime.assess(state, context, mode)
+        return MachineAssessment(
+            **observed.model_dump(),
+            machine_id=self.spec.machine_id,
+            spec_hash=self.spec.spec_hash,
+            protocol_version=self.protocol_version,
+            synthetic=self.spec.synthetic,
+        )
 
     def recommend(
         self, window: pd.DataFrame, mode: SearchMode | None = None
@@ -90,7 +97,9 @@ class MachineDecision:
         """Withhold advice if quality, confirmation or a required check fails."""
         state, context = self._observed(window)
         self._publishable()
-        result = self._runtime.recommend(state, context, mode)
+        return self._checked_result(self._runtime.recommend(state, context, mode))
+
+    def _checked_result(self, result: RecourseResult) -> MachineRecourseResult:
         if result.alert and not (result.validation_report.joint and result.action_feasible):
             reasons = ", ".join(result.validation_report.failing_tiers)
             raise RecommendationWithheld(reasons or "no feasible adjustment passed all checks")
@@ -118,9 +127,12 @@ class MachineDecision:
         """Render measured actions using the declared feature labels and wording."""
         self._verify_provenance(result)
         self._publishable()
+        return self._explanation(result)
+
+    def _explanation(self, result: MachineRecourseResult) -> Explanation:
         features = {feature.id: feature for feature in self.spec.measurement_features}
         actions = []
-        for name in result.action_features:
+        for name in result.action_features if result.status == "RECOVERABLE" else ():
             feature = features[name]
             delta = result.delta_per_feature[name].raw_delta
             template = self.spec.sentences.increase if delta >= 0 else self.spec.sentences.decrease
