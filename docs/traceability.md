@@ -1,4 +1,14 @@
-# Synopsis traceability - Phase 12 baseline in progress
+# Synopsis traceability - Phase 12 baseline closed
+
+## Phase 12 closeout (9 November 2026 IST)
+
+A10 is closed with the independently audited clean-clone gate and measured tiered
+verification. The 24 historical headline groups retain exactly the same estimates,
+whole-engine confidence intervals and denominators. The present verification
+covers the registered C-MAPSS corpus and leaves the synopsis objective statuses
+unchanged. See [full regression evidence](phase12_full_regression.md),
+[headline impact](phase12_headline_impact.md) and the [ledger](phase12_open_items.md).
+Sections below are dated history.
 
 ## Independent full-pair PASS and fixture promotion - 8 November 2026 IST
 

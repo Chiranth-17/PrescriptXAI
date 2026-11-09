@@ -1,5 +1,39 @@
 # Phase 12 complete regression and impact registration
 
+## Verified closeout (9 November 2026 IST)
+
+The genuine clean-clone gate at `2d8e8d4137d567de2c3b7eb04894890795025f16`
+passed with native exit 0, 659 tests, zero skips, 66 warnings, both coverage
+checks and strict docs. The fresh regression covered 32,116 cases in 24 groups
+and matched the saved reference exactly. Independent review
+`artifacts/phase12/clean-clone-final-gate-independent-audit/report.json`
+has SHA-256 `1d3d19be5cdeab647294de0c819cb47be206cedbb5b15e639f84c821ac7b570a`.
+The historical failed attempts and original diagnostics remain preserved.
+
+The tiered release on `f765e03f5f62c29716b9746a7eb110a7fcc987eb` used the
+approved exact-key reuse policy from `configs/experiments/phase12-test-tiers-v1.yaml`.
+Its receipt is `artifacts/quality/release-20261109T115504983727Z-46948/complete.json`
+with SHA-256 `bb2c72e42a313e18fa887fd00ee92b4063258a165db4bae94fa2b6f9ccbbb505`.
+The subset reused 15,525 observations. The full tier reused 32,116 across all
+24 groups. Both recorded zero recomputations, exact-float differences or accepted
+exceptions. The full-tier command was run in reuse-only mode for Step 1.
+See [measured verification timings](testing.md).
+
+The first cache import rejected an empty SQLite WAL sidecar. The second rejected
+checkout newline differences. The third admitted all 32,116 observations after
+the importer checked the closed snapshot and raw origin pins, then verified canonical
+Python source, raw input bytes and runtime equivalence. Its native exit was 0 and the
+receipt `artifacts/phase12/solo-cache-import-attempt3.json` has SHA-256
+`feac358968d16c6258d005e3b056a98ad69d9c35d89807491c806b254d651b89`.
+The first tiered release attempt stopped at check because the application config
+loader read the new gate environment variables. Moving the gate controls to the
+`PSX_QUALITY_` namespace resolved the collision.
+
+A10 closes on the genuine clean-clone gate and the verified tiered release.
+See the [ledger](phase12_open_items.md), [diagnostic classification](phase12_solo_classification.md)
+and [unchanged headline results](phase12_headline_impact.md). Sections below
+document the earlier runs and decisions.
+
 ## Actual clean-clone full gate PASS; solo Step1 begins - 8 November 2026 IST
 
 The genuine gate at source `2d8e8d4137d567de2c3b7eb04894890795025f16` ended

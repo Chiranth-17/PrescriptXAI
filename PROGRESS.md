@@ -1,5 +1,27 @@
 # PrescriptXAI Progress
 
+## Phase 12 closed under solo Step 1 (9 November 2026 IST)
+
+The independent clean-clone audit verified exact historical agreement for all 32,116
+cases across 24 groups. The historical full gate ran fresh queries on source
+`2d8e8d4137d567de2c3b7eb04894890795025f16` and passed all 659 tests. The intermediate
+failed repair had 15 unique Tier 2 flips, including all three triage flips. The
+graph and memory-layout diagnosis explains all 712 selected cases. All 24 headline
+estimates, whole-engine confidence intervals and denominators are unchanged.
+See the [classification](docs/phase12_solo_classification.md) and
+[headline impact](docs/phase12_headline_impact.md).
+
+The tiered release gate passed on source `f765e03f5f62c29716b9746a7eb110a7fcc987eb`.
+It reused all 15,525 subset observations and all 32,116 full-tier observations by
+exact key, with zero recomputations. The software check passed 674 tests and met
+all coverage floors. The check took 655.03 seconds, 55.03 seconds over the
+ten-minute target. The full tier took 264.02 seconds and the release gate took
+924.61 seconds. See [verification targets](docs/testing.md) and
+[full regression evidence](docs/phase12_full_regression.md).
+
+A10 closes. The ledger has 9 Closed, 6 Open and 35 Accepted-with-reason entries.
+Phase 13 is next under the [solo roadmap](docs/prompts/final_solo_prompts.md).
+
 ## Actual clean-clone full gate PASS; solo Step1 begins - 8 November 2026 IST
 
 The genuine gate at source `2d8e8d4137d567de2c3b7eb04894890795025f16` ended

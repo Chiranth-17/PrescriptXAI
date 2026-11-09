@@ -1,9 +1,20 @@
 ---
 phase: 12
-status: in_progress
-current_activity: solo_step1_test_tiering_and_final_gate_audit
-activity_status: actual_full_gate_native0_final_audit_and_fast_tiering_pending
+status: complete
+current_activity: solo_step2_generic_framework
+activity_status: ready_after_phase12_closure
 ---
+
+## Solo Step 1 complete (9 November 2026 IST)
+
+The independently audited clean-clone gate passed its genuine 32,116-case replay
+across 24 groups. The separate tiered release on `f765e03f5f62c29716b9746a7eb110a7fcc987eb`
+passed with 15,525 subset and 32,116 full-tier exact-key reuses, zero recomputations,
+674 passing tests, both coverage gates and strict docs. The check ran 55.03 seconds
+over its ten-minute target. A10 is closed and the ledger has 9 Closed, 6 Open and
+35 Accepted-with-reason entries. Phase 13 generic framework is next.
+See [regression evidence](../docs/phase12_full_regression.md) and
+[the solo roadmap](../docs/prompts/final_solo_prompts.md).
 
 ## Actual clean-clone full gate PASS; solo Step1 begins - 8 November 2026 IST
 

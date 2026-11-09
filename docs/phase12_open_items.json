@@ -18,15 +18,15 @@
     "clean_clone_fix_registration": "configs/experiments/phase12-clean-clone-gate-attempt2-v1.yaml",
     "clean_clone_fix_status": "First provisioning diagnostic657tests pass/truefloorsrestored but native1 false equality at reporterprecision12; secondrootcausefix precision17/floorsunchanged registered for newv3; no secondactualfullgate launched"
   },
-  "date": "2026-11-08",
-  "phase12_complete": false,
+  "date": "2026-11-09",
+  "phase12_complete": true,
   "author": "Root implementation owner; independently checked evidence",
   "independent_review_source": "f36db81671dcfeb32ea8b41f17eb921aa344f67c",
   "independent_receipt_sha256": "d95f4e441923b54b2a81793d78dc232ab6d878732f2bd479126b06176937fd69",
   "counts": {
     "Accepted-with-reason": 35,
-    "Open": 7,
-    "Closed": 8
+    "Open": 6,
+    "Closed": 9
   },
   "items": [
     {
@@ -352,9 +352,9 @@
     {
       "id": "A10",
       "requirement": "Full baseline fixture plus clean-clone regression",
-      "status": "Open",
+      "status": "Closed",
       "owner": "Phase12 baseline owner",
-      "evidence": "Both corrected source3441 runs completed32116/24/native0 and independent full audit6efa7a83 proves exact parity. A fixture382bbf1f promoted with97assetbytehashes; actual complete clean-clone replay/fullgate remains pending. Historical failed runs remain preserved.",
+      "evidence": "Independent audit 1d3d19be verifies the native-0 clean-clone gate and exact 32,116-case replay across 24 groups. Tiered release bb2c72e4 passed with zero recomputations. Historical failed runs remain preserved.",
       "source": "docs/phase12_full_regression.md"
     },
     {
@@ -488,7 +488,7 @@
     }
   ],
   "phase12_gate": {
-    "status": "In progress",
+    "status": "Passed",
     "paired_runs": [
       "phase12-corrected-20261107-a",
       "phase12-corrected-20261107-b"
@@ -502,9 +502,11 @@
     ],
     "independent_pair_audit": "PASS",
     "headline_impact": "24groups all old/A/B estimates CIs/counts identical",
-    "clean_clone_full_replay": "pending",
-    "advancement": "Phase13 prohibited until actual Phase12 closure",
-    "phase12_closed": false
+    "clean_clone_full_replay": "Native 0, 32,116 fresh cases across 24 groups, exact historical agreement",
+    "advancement": "Solo Step 2 Phase 13 is next",
+    "phase12_closed": true,
+    "independent_clean_clone_audit_sha256": "1d3d19be5cdeab647294de0c819cb47be206cedbb5b15e639f84c821ac7b570a",
+    "tiered_release_sha256": "bb2c72e42a313e18fa887fd00ee92b4063258a165db4bae94fa2b6f9ccbbb505"
   },
   "historical_gate_receipts": [
     {

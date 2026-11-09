@@ -1,8 +1,14 @@
 # Phase 12 open-item ledger
 
-Attempt1 update: actual32,116/24 regression native0/exact, wider gate native2 with656 passed/1 failed/1 skipped. Packaging byte consistency and missing real CSV/archive provisioning are being fixed under `configs/experiments/phase12-clean-clone-gate-attempt2-v1.yaml`. A10 remains Open and counts unchanged; see [full regression](phase12_full_regression.md).
+**Current status, 9 November 2026.** Phase 12 is closed. A10 closes on the
+independently audited genuine clean-clone gate and the passing tiered release.
+The ledger has **9 Closed / 6 Open / 35 Accepted-with-reason** across 50 entries.
+The release reused all 32,116 full-tier observations by exact key with zero
+recomputations. See [full regression evidence](phase12_full_regression.md).
 
-8 November 2026: complete independent full-pair audit PASS (SHA256
+Historical attempt 1 update: actual32,116/24 regression native0/exact, wider gate native2 with656 passed/1 failed/1 skipped. Packaging byte consistency and missing real CSV/archive provisioning are being fixed under `configs/experiments/phase12-clean-clone-gate-attempt2-v1.yaml`. A10 remains Open and counts unchanged; see [full regression](phase12_full_regression.md).
+
+Historical 8 November 2026 update: complete independent full-pair audit PASS (SHA256
 `6efa7a8304c277562bde0822cd1b148c94dc62cbabe8945ff6fd606736e33861`). All32116cases
 per run reproduce historical/full outputs exactly. A11 closes with that scoped proof;
 A10 remains Open until actual clean-clone full regression/gate passes. Fixture promoted,
@@ -17,11 +23,10 @@ the full-corpus/fixture/clean-clone obligations remain open. Counts below are un
 Evidence and limits: [arithmetic repair](phase12_arithmetic_repair.md), audit SHA256
 e7fa55021c67e3718d82c839eb12c7df1d0463ea1e0ed237d3b7a047d357bb4f.
 
-Status date: 4 November 2026. Phase 12 is in progress. This administrative ledger preserves every
+This administrative ledger preserves every
 original exception plus the additional current checks; overlapping obligations remain separate.
 Closed means evidence now exists for that obligation. Accepted-with-reason records a scoped
 limitation, not a successful result. Open means implementation or verification remains.
-The current ledger has **8 Closed / 7 Open / 35 Accepted-with-reason** across 50 entries.
 
 Root adopted these dispositions after reviewing the independent read-only audit. The source
 receipt SHA256 is `d95f4e441923b54b2a81793d78dc232ab6d878732f2bd479126b06176937fd69`; its snapshot source is
@@ -69,7 +74,7 @@ receipt SHA256 is `d95f4e441923b54b2a81793d78dc232ab6d878732f2bd479126b06176937f
 | A07 | Whole-engine CIs and denominators | Closed | Documented evidence limit / future research | Current headline/final-target matrix identifiesN, all-query failures, conditional-return denominators; Phase11 independent576objects verified. Historical Phase4 target erratum remains visible. Newly added diagnostics still need same policy. |
 | A08 | Oracle-superset rule | Closed | Documented evidence limit / future research | Saved reference.json has48leverage entries/40oracles. All40have production_reproduced=True,verified_search_superset=True,global_infeasibility_certified=False. Classifications all unresolved_finite_search, never truly infeasible. |
 | A09 | Run labels | Closed | Documented evidence limit / future research | Phase7 report tables have preceding run/source/studySHA/protocol/K/k/Dmax/population labels; final_targets uses resolvable config sets. Metadata/source-inventory tables are not performance populations. Newmachine/spec_hash labels do not retroactively exist; add atPhase13 rather than invent hashes. |
-| A10 | Full baseline fixture plus clean-clone regression | Open | Phase12 baseline owner | Both corrected source3441 runs completed32116/24/native0 and independent full audit6efa7a83 proves exact parity. A fixture382bbf1f promoted with97assetbytehashes; actual complete clean-clone replay/fullgate remains pending. Historical failed runs remain preserved. |
+| A10 | Full baseline fixture plus clean-clone regression | Closed | Phase12 baseline owner | The audited clean-clone gate passed all 32,116 cases and 659 tests. The tiered release passed using exact-key reuse. Historical failed runs remain preserved. |
 | A11 | Current-source solver equivalence after sharedlift | Closed | Root / independent full-pair audit | Closed for audited source3441e259b7b57c5ca4b8981298deb24acb1c0ae0: graph/layout factorial explains all712; two consecutive complete32116 reruns and independent audit6efa7a83 show EXACT historical and pair full scientific/settings/validation equality, zero unexplained. Full regression continues under A10; no scientific settings/tolerance relaxed. |
 | A12 | Contaminated dev latency baseline | Accepted-with-reason | Documented evidence limit / future research | 120calls completed,0errors; ModernStandby overlaps fourFASTcalls containing5286.748923s of5402.478527s FASTsum. Preserve allsamples; no causal steady-state speedup claim. |
 | A13 | Poor coupling fits and noncausal propagation | Accepted-with-reason | Documented evidence limit / future research | Original FD001 sensor3/sensor6 weak fits; Phase5 sensor6 calibrationR2=.031962,sharebeyondlimit=.029068. FD002 negative coupling margins remain. A fit threshold or real physics claim cannot be manufactured. |

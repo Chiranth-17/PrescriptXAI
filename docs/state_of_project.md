@@ -1,4 +1,18 @@
-# State of the project - Phase 12 in progress
+# State of the project - Phase 12 closed
+
+## Current status (9 November 2026 IST)
+
+Phase 12 is closed. The [clean-clone gate and tiered verification](phase12_full_regression.md)
+passed and [A10 is closed](phase12_open_items.md). The 24 headline groups retain their
+historical estimates, confidence intervals and counts. The intermediate mismatch
+classification accounts for all 712 selected cases and leaves zero unexplained
+differences. See the [classification](phase12_solo_classification.md) and
+[headline comparison](phase12_headline_impact.md).
+
+The warm software check took 655.03 seconds against a ten-minute target.
+The [verification tiers](testing.md) report cached and recomputed cases separately.
+The [solo roadmap](prompts/final_solo_prompts.md) advances to Phase 13.
+Sections below are dated history.
 
 ## Actual clean-clone full gate PASS; solo Step1 begins - 8 November 2026 IST
 
