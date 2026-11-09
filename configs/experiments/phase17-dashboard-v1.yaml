@@ -1,0 +1,16 @@
+schema_version: 1
+saved_results: artifacts/experiments/phase7-20261020T102540Z/records.jsonl
+saved_run: phase7-20261020T102540Z
+machine_id: cmapss_fd001
+dataset: FD001
+model: xgb
+protocol: v1
+population: official_test_all_alerts
+variant: full
+mode: FAST
+archive_id_offset: 10000
+case_study:
+  first_alert: true
+  min_changed_features: 2
+  target_risk: 0.88
+example_statuses: [RECOVERABLE, PARTIAL, ESCALATE]
