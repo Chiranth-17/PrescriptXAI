@@ -1,25 +1,45 @@
 # PrescriptXAI Progress
 
-## Phase 13 generic framework in verification (9 November 2026 IST)
+## Phase 13 closure (10 November 2026 IST)
 
-The versioned FD001 spec preserves the existing feature units, bounds and rate
-policies, thresholds, coupling rules, intervention horizon and mode budgets.
-Named CLI and API requests use the machine spec, canonical telemetry windows,
-quality checks and a v3 decision with machine and protocol provenance. The
-compatibility endpoints retain the v2 schema used by historical runs.
+Verification used source `f0e4043cee665792be00ffdad5a1eea0bd60b00a`
+and `configs/experiments/phase13-framework-verification-v1.yaml`.
+The 40 framework tests cover the named C-MAPSS FD001 archive and the
+test-only synthetic toy. The toy takes 90 lines of YAML and a generated CSV.
+The machine specs keep Alerts-only mode while engineer confirmation is absent.
 
-The synthetic test machine is provisioned with a generated CSV and YAML.
-It trains and scores using the shared numerical runtime, exercises genuine
-FAST and THOROUGH search offline and verifies measured applied-control feedback.
-The named routes withhold advice for both unconfirmed specs.
-See [machine setup](docs/adding_a_machine.md).
+The original fresh `make check` passed 714 tests, both coverage gates and
+all 15,525 subset comparisons in 11,276.20 seconds. The full stage reused
+those subset observations and saved the 16,591 remaining observations in
+a closed segment in 14,551.96 seconds. Windows returned status 3221225794 from the final Git
+source check and the original gate stopped before completing. The failed
+receipt and both original databases are preserved.
 
-The first software diagnostic passed 692 tests but missed the retained coverage
-floors. Branch-inclusive coverage was 85.75931463670896%. The focused suite now
-passes 40 tests covering named CLI flows, malformed policies and windows, official
-archive labels, API refusal paths and artifact replacement. Named scores include
-machine provenance and the synthetic label. The software diagnostic recheck and
-full C-MAPSS regression are pending. The phase remains open.
+Recovery verified the source, inputs, runtime, registered case IDs and
+closed segment, then readmitted the 16,591 observations after exact
+comparison against the frozen fixture. The separate reuse-only release
+passed with native exit 0. It verified all 32,116 unique observations
+across 24 groups with zero new solves, exact-float differences or known
+difference exceptions. Reuse-only `make check` took 325.97 seconds,
+the full comparison took 93.54 seconds and strict docs took 4.87 seconds.
+Total gate time was 424.66 seconds. These are release verification timings.
+
+The recovery passed 714 tests with one intentionally deselected full
+marker, 67 warnings and zero skips. Ruff passed and mypy checked 77 source files. Coverage was 91.13379903277807% scoped line, 90.23196424771228%
+full-package line and 86.9164916814731% combined. Each exceeded its
+retained Phase 12 floor.
+
+Recovery evidence is under
+`artifacts/phase13/framework-release-20261110-recovery-v1/`. The admission
+SHA-256 is `4c938e6633a8b889feedbba3dce027733da8559683aadd66f9b39c41a2c65148`.
+The final runner receipt is
+`artifacts/quality/release-20261109T202335700407Z-48444/complete.json`
+with SHA-256 `e34b0e286b31215e369b7e4c79a49d0565ea5d8fa2fadcb9d8f688f9eccd98a2`.
+The independent GO receipt in the recovery directory has SHA-256
+`49eda2f3f06199746a22fb3fc0e979e5a3a5b23406ab06cec715f181a09c40eb`.
+
+The [solo roadmap](docs/prompts/final_solo_prompts.md) advances to Step 3,
+the dashboard. Historical phase tags 1–3 are absent.
 
 ## Phase 12 closed under solo Step 1 (9 November 2026 IST)
 

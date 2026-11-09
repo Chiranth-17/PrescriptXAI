@@ -1,13 +1,17 @@
-# State of the project - Phase 13 in verification
+# State of the project - Phase 13 closed
 
-## Current status (9 November 2026 IST)
+## Current status (10 November 2026 IST)
 
-Phase 13 machine specs, adapters, quality gates and named interfaces are in
-verification. The 40-test framework suite passed for the retained FD001
-benchmark and the generated synthetic contract. Both named specs remain
-Alerts-only while engineering confirmation is absent. The exact historical
-regression on this source is pending. See [machine setup](adding_a_machine.md)
-and the [solo roadmap](prompts/final_solo_prompts.md).
+Phase 13 machine specs, adapters, quality gates and named interfaces are
+closed. The independent audit verified the source-bound exact regression
+over 32,116 cases across 24 groups. The recovery release passed 714 tests,
+both coverage gates and strict docs. The original execution and its
+post-compute interruption are documented in `PROGRESS.md`.
+
+The 40 framework tests cover the retained FD001 benchmark and the 90-line
+synthetic toy spec. Both named specs remain Alerts-only while engineering
+confirmation is absent. The [solo roadmap](prompts/final_solo_prompts.md)
+advances to the Step 3 dashboard. See [machine setup](adding_a_machine.md).
 
 ## Phase 12 closure (9 November 2026 IST)
 

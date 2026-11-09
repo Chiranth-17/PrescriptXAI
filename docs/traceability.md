@@ -1,4 +1,20 @@
-# Synopsis traceability - Phase 12 baseline closed
+# Synopsis traceability - Phase 13 closed
+
+## Phase 13 closeout (10 November 2026 IST)
+
+The named machine framework connects the synopsis interfaces to the FD001
+archive and a separately labeled test-only synthetic machine. The tests
+exercise machine specs, adapters, data quality withholding, the versioned
+decision interface and the advisory feedback path. Both specs remain
+Alerts-only pending engineer confirmation. See [machine setup](adding_a_machine.md)
+and the [schema changelog](schema_changelog.md).
+
+The independently audited recovery gate verified the same 32,116
+registered C-MAPSS observations across 24 groups with exact comparison
+and zero known-difference exceptions. Implementation traceability and
+timings are recorded in `PROGRESS.md`, with the benchmark objective
+evidence and status in the existing [evaluation](evaluation_protocol.md)
+and [headline reports](phase12_headline_impact.md).
 
 ## Phase 12 closeout (9 November 2026 IST)
 
