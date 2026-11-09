@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import sqlite3
 from pathlib import Path
+from statistics import mean
 from typing import Literal
 
 import pandas as pd
@@ -17,7 +19,12 @@ from prescriptxai.machine_schema import (
     MachineRecourseResult,
     SimulatedRisk,
 )
-from prescriptxai.machines import machine_summary, record_feedback, resolve_machine_decision
+from prescriptxai.machines import (
+    machine_summary,
+    read_feedback,
+    record_feedback,
+    resolve_machine_decision,
+)
 from prescriptxai.pipeline import PrescriptXAI
 from prescriptxai.scenarios import Scenario, scenario_presets
 from prescriptxai.schemas import _reject_nonreal_measurement
@@ -75,6 +82,12 @@ class MachineFeedbackRequest(MachineWindowRequest):
     result: MachineRecourseResult
     applied: dict[str, float]
     source: Literal["operator", "simulated_operator"] = "operator"
+
+
+class SimulatorFeedbackRequest(MachineFeedbackRequest):
+    """Machine-selected feedback through the simulator endpoint."""
+
+    machine_id: str
 
 
 def machine_router(
@@ -181,5 +194,55 @@ def machine_router(
             raise HTTPException(422, str(error)) from error
         record_feedback(record, artifact_root / "feedback.sqlite3")
         return record
+
+    @router.post("/feedback", response_model=FeedbackRecord)
+    def simulator_feedback(request: SimulatorFeedbackRequest) -> FeedbackRecord:
+        return feedback(request.machine_id, request)
+
+    @router.get("/feedback/summary")
+    def feedback_summary(
+        machine_id: str, protocol_version: str = "v1", include_simulated: bool = False
+    ) -> dict[str, object]:
+        try:
+            spec = registry.get(machine_id)
+            records = read_feedback(
+                spec,
+                protocol_version,
+                artifact_root / "feedback.sqlite3",
+                include_simulated=include_simulated,
+            )
+        except KeyError as error:
+            raise HTTPException(404, "unknown machine") from error
+        except ValueError as error:
+            raise HTTPException(422, str(error)) from error
+        except (OSError, sqlite3.Error) as error:
+            raise HTTPException(503, "local feedback log unavailable") from error
+        groups = []
+        for source, label in (
+            ("operator", "Operator (this session)"),
+            ("simulated_operator", "Simulated operator (demo)"),
+        ):
+            if source == "simulated_operator" and not include_simulated:
+                continue
+            selected_records = [record for record in records if record.source == source]
+            groups.append(
+                {
+                    "source": source,
+                    "label": label,
+                    "count": len(selected_records),
+                    "mean_adherence": (
+                        mean(record.adherence for record in selected_records)
+                        if selected_records
+                        else None
+                    ),
+                }
+            )
+        return {
+            "machine_id": spec.machine_id,
+            "spec_hash": spec.spec_hash,
+            "protocol_version": protocol_version,
+            "synthetic": spec.synthetic,
+            "groups": groups,
+        }
 
     return router

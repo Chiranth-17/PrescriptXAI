@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Callable
+from concurrent.futures import CancelledError
 from pathlib import Path
+from threading import Event
 from time import perf_counter
 from typing import cast
 from urllib.parse import urlencode
@@ -16,14 +19,18 @@ from prescriptxai.adapters.registry import MachineRegistry
 from prescriptxai.core.data_quality import RecommendationWithheld
 from prescriptxai.core.decision import MachineDecision
 from prescriptxai.dashboard.app import main as advanced_pages
+from prescriptxai.dashboard.backend import computation_pool
 from prescriptxai.dashboard.data import file_identity
+from prescriptxai.dashboard.prescription_job import PrescriptionJob
+from prescriptxai.dashboard.scenario_report import scenario_report
 from prescriptxai.dashboard.simulator_data import (
     observed_rows,
     parse_settings,
     simulator_decision,
 )
+from prescriptxai.dashboard.simulator_prescription import render_recommendation
 from prescriptxai.dashboard.state import load_settings
-from prescriptxai.machine_schema import MachineRecourseResult, SimulatedRisk
+from prescriptxai.machine_schema import FeedbackRecord, MachineRecourseResult, SimulatedRisk
 from prescriptxai.machine_spec import MachineSpec
 from prescriptxai.machines import record_feedback
 from prescriptxai.pipeline import ArtifactError
@@ -126,30 +133,17 @@ def _risk_panel(preview: SimulatedRisk, elapsed: float) -> None:
         )
 
 
-def _render_recommendation(decision: MachineDecision, result: MachineRecourseResult) -> None:
-    features = {feature.id: feature for feature in decision.spec.measurement_features}
-    explanation = decision.explain_result(result)
-    if not result.alert:
-        st.info("No action needed at the current alert threshold.")
-        return
-    st.metric("Predicted risk with the prescription", f"{result.risk_after:.1%}")
-    st.caption(f"{len(result.action_features)} of {decision.spec.k_max} allowed changes")
-    for name, reason in zip(result.action_features, explanation.actions, strict=True):
-        feature = features[name]
-        st.markdown(
-            f"**{feature.label}** · {result.original_state[name]:.6g} → "
-            f"{result.new_state[name]:.6g} {feature.unit}"
-        )
-        st.caption(reason)
-    report = result.validation_report
-    for label, passed in (
-        ("Predicted safe", report.model_valid),
-        ("Looks like normal behaviour", report.plausible),
-        ("Within control limits", report.tier3_engineering.passed),
-        ("Sensors stay consistent", report.tier4_sensor_coupling.passed),
-    ):
-        st.write(f"{'Pass' if passed else 'Fail'} · {label}")
-    st.caption("Model-based checks. Changes are advisory.")
+def _cancel_prescription() -> None:
+    job = cast(PrescriptionJob | None, st.session_state.pop("simulator_job", None))
+    if job is not None:
+        job.cancel()
+
+
+@st.fragment(run_every=0.15)
+def _wait_for_prescription(job: PrescriptionJob) -> None:
+    if st.session_state.get("simulator_job") is not job or job.future.done():
+        st.rerun()
+    st.info("Calculating…")
 
 
 def _prescription(
@@ -157,45 +151,63 @@ def _prescription(
     window: pd.DataFrame,
     preview: SimulatedRisk,
     controls: dict[str, float],
+    worker: Callable[[], MachineDecision],
+    report_directory: Path,
 ) -> MachineRecourseResult | None:
+    input_hash = preview.input_hash
+    job = cast(PrescriptionJob | None, st.session_state.get("simulator_job"))
+    if job is not None and job.input_hash != input_hash:
+        _cancel_prescription()
+        job = None
     if not decision.spec.confirmation.confirmed:
+        _cancel_prescription()
         st.info("Recommendation withheld: Alerts only: limits not yet confirmed by an engineer")
         return None
     if controls:
+        _cancel_prescription()
         st.info("Return to recorded settings to request a prescription.")
         return None
-    input_hash = preview.input_hash
-    saved = cast(tuple[str, MachineRecourseResult] | None, st.session_state.get("simulator_result"))
-    if saved is not None and saved[0] != input_hash:
-        del st.session_state["simulator_result"]
-        saved = None
-    if preview.assessment.alert and st.button("Calculate prescription"):
-        st.session_state.pop("simulator_result", None)
-        try:
-            with st.spinner("Calculating…"):
-                result = decision.recommend(window, "fast")
-        except RecommendationWithheld as error:
-            st.warning(str(error))
-            return None
-        saved = (input_hash, result)
-        st.session_state["simulator_result"] = saved
-    if saved is not None:
-        result = saved[1]
-        _render_recommendation(decision, result)
-        return result
     if not preview.assessment.alert:
+        _cancel_prescription()
         st.info("No action needed at the current alert threshold.")
-    return None
+        return None
+    if job is None:
+        snapshot = window.copy(deep=True)
+
+        def solve(cancelled: Event) -> MachineRecourseResult:
+            isolated = worker()
+            if isolated.input_hash(snapshot, {}) != input_hash:
+                raise RecommendationWithheld("The model or recorded conditions changed")
+            if cancelled.is_set():
+                raise CancelledError()
+            return isolated.recommend(snapshot, "fast")
+
+        job = PrescriptionJob.start(computation_pool(), input_hash, solve)
+        st.session_state["simulator_job"] = job
+    if not job.future.done():
+        _wait_for_prescription(job)
+        return None
+    try:
+        result = job.future.result()
+    except CancelledError:
+        _cancel_prescription()
+        st.info("Calculation cancelled.")
+        return None
+    except RecommendationWithheld as error:
+        st.warning(str(error))
+        return None
+    render_recommendation(decision, window, result, report_directory)
+    return result
 
 
 def _follow_up(
     decision: MachineDecision,
     window: pd.DataFrame,
     result: MachineRecourseResult | None,
-) -> None:
+) -> FeedbackRecord | None:
     if result is None or not result.action_features:
         st.caption("A current prescription is needed to record applied settings.")
-        return
+        return None
     labels = {feature.id: feature.label for feature in decision.spec.measurement_features}
     limits = decision.control_bounds()
     applied = {}
@@ -213,6 +225,8 @@ def _follow_up(
         record_feedback(feedback)
         st.success(f"Recorded locally · Adherence {feedback.adherence:.0%}")
         st.metric("Predicted risk with applied settings", f"{feedback.applied_risk:.1%}")
+        return feedback
+    return None
 
 
 def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
@@ -274,10 +288,27 @@ def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
             _risk_panel(preview, (perf_counter() - started) * 1000)
         with st.container(border=True):
             st.subheader("3. Prescription")
-            result = _prescription(decision, window, preview, controls)
+            result = _prescription(
+                decision,
+                window,
+                preview,
+                controls,
+                lambda: simulator_decision(registry, spec.machine_id, settings, isolated=True),
+                settings.report_directory,
+            )
     with st.container(border=True):
         st.subheader("4. Was it followed?")
-        _follow_up(decision, window, result)
+        feedback = _follow_up(decision, window, result)
+    current = {
+        name: controls.get(name, float(window[name].iloc[-1])) for name in decision.control_bounds()
+    }
+    st.download_button(
+        "Download scenario report",
+        scenario_report(spec, unit, time, current, preview, result, feedback),
+        "prescriptxai-scenario.html",
+        "text/html",
+        on_click="ignore",
+    )
     with st.expander("About this view and how it was checked"):
         st.write("SDG 9 · Advisory maintenance replay and model-based checks.")
         st.write(spec.data_source)
@@ -302,6 +333,7 @@ def main() -> None:
         if requested not in specs:
             requested = machines[0]
         if workspace == "Advanced":
+            _cancel_prescription()
             advanced_pages(advanced=True, spec=specs[requested])
             return
         st.title("PrescriptXAI Operations Dashboard")
@@ -314,6 +346,7 @@ def main() -> None:
         )
         _simulator(specs[machine], registry)
     except (ArtifactError, OSError, ValueError, KeyError, TypeError) as error:
+        _cancel_prescription()
         message = str(error)
         st.error(
             message

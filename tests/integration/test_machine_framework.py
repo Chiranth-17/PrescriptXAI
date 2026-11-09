@@ -38,6 +38,7 @@ from prescriptxai.machines import (
     load_machine_decision,
     machine_settings,
     machine_taxonomy,
+    read_feedback,
     record_feedback,
     save_machine_fit,
     scope_archive_runtime,
@@ -502,6 +503,12 @@ def test_synthetic_feedback_uses_actual_validation(
     with sqlite3.connect(log) as db:
         payload = db.execute("SELECT payload FROM feedback").fetchone()[0]
     assert FeedbackRecord.model_validate_json(payload) == feedback
+    assert read_feedback(service.spec, "v1", log) == []
+    assert read_feedback(service.spec, "v1", log, include_simulated=True) == [feedback]
+    record_feedback(feedback.model_copy(update={"spec_hash": "0" * 64}), log)
+    assert read_feedback(service.spec, "v1", log, include_simulated=True) == [feedback]
+    with pytest.raises(ValueError, match="unknown protocol"):
+        read_feedback(service.spec, "different", log, include_simulated=True)
     with pytest.raises(ValueError, match="observed values differ"):
         service._measure_feedback(rows.assign(feed=8), scoped, applied, "simulated_operator")
     with pytest.raises(ValueError, match="provenance"):

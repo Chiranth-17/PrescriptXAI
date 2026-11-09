@@ -48,9 +48,9 @@ def profile_identity(path: Path) -> str:
 
 
 @st.cache_resource(show_spinner=False, max_entries=8)
-def direct_service(path: str, identity: str) -> PrescriptXAI:
+def direct_service(path: str, identity: str, *, isolated: bool = False) -> PrescriptXAI:
     """Cache thread-safe loaded resources by actual content identity, never fit a model."""
-    del identity  # Included in the resource key; public factory independently verifies bytes.
+    del identity, isolated  # Both participate in the cache key.
     try:
         return PrescriptXAI.from_config(path)
     except ArtifactError as error:

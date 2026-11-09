@@ -44,7 +44,8 @@ try {
     const cards = ["1. Set the conditions", "2. Predicted risk", "3. Prescription", "4. Was it followed?"];
     for (const title of cards) await page.getByRole("heading", { name: title, exact: true }).waitFor();
     await page.getByText("Alerts only: limits not yet confirmed by an engineer", { exact: true }).waitFor();
-    if (await page.getByRole("button", { name: "Calculate prescription" }).count()) {
+    if (await page.getByText("Predicted risk with the prescription", { exact: true }).count()
+        || await page.getByRole("button", { name: "Record this follow-up" }).count()) {
       throw new Error("An unconfirmed machine offered a prescription");
     }
     const bounds = await page.evaluate(() => ({
@@ -67,7 +68,26 @@ try {
     await page.screenshot({ path: file, fullPage: true });
     const sha256 = createHash("sha256").update(await fs.readFile(file)).digest("hex");
     const risk = await page.locator('[data-testid="stMetricValue"]').first().innerText();
-    results.push({ name, viewport: { width, height }, captureHeight, bounds, risk, sha256, file });
+    const downloadReady = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Download scenario report" }).click();
+    const download = await downloadReady;
+    const reportFile = path.join(output, name + "-scenario.html");
+    await download.saveAs(reportFile);
+    const report = await fs.readFile(reportFile, "utf8");
+    if (!report.includes("Alerts only: limits not yet confirmed by an engineer.")
+        || !report.includes("Predicted risk now: " + risk)
+        || !report.includes("Synthetic or sample machine data")
+        || report.includes("Predicted risk with prescription:")) {
+      throw new Error("Downloaded scenario does not match the Alerts-only view");
+    }
+    if (errors.length || external.length) {
+      throw new Error(JSON.stringify({ errors, external }));
+    }
+    const reportSha256 = createHash("sha256").update(report).digest("hex");
+    results.push({
+      name, viewport: { width, height }, captureHeight, bounds, risk, sha256, file,
+      reportFile, reportSha256,
+    });
     await context.close();
   }
 } finally {

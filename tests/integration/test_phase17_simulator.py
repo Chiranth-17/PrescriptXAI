@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import json
+from concurrent.futures import CancelledError, ThreadPoolExecutor
+from itertools import pairwise
 from pathlib import Path
+from threading import Event
 
 import pandas as pd
 import pytest
@@ -13,12 +16,17 @@ from streamlit.testing.v1 import AppTest
 from prescriptxai.adapters.cmapss import CmapssAdapter
 from prescriptxai.adapters.registry import DEFAULT_MACHINE, MachineRegistry
 from prescriptxai.api import create_app
+from prescriptxai.core.data_quality import RecommendationWithheld
 from prescriptxai.core.decision import MachineDecision
 from prescriptxai.dashboard.objectives import METRICS
-from prescriptxai.dashboard.simulator_data import parse_settings
+from prescriptxai.dashboard.prescription_job import PrescriptionJob
+from prescriptxai.dashboard.scenario_report import scenario_report
+from prescriptxai.dashboard.simulator_data import parse_settings, sequential_risks
 from prescriptxai.dashboard.state import load_settings
+from prescriptxai.machine_schema import MachineRecourseResult
 from prescriptxai.machines import scope_archive_runtime
 from prescriptxai.pipeline import InputError, PrescriptXAI
+from prescriptxai.scenarios import scenario_presets
 
 APP = Path("src/prescriptxai/dashboard/simulator_app.py").resolve()
 
@@ -222,3 +230,114 @@ def test_scorecard_numbers_come_from_saved_engine_intervals() -> None:
                 assert row["p95 (ms)"] == saved["p95_ms"]
                 assert row["CI lower"] == saved["p95_engine_ci"]["lower"]
                 assert row["CI upper"] == saved["p95_engine_ci"]["upper"]
+
+
+def test_prescription_jobs_discard_superseded_work(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+) -> None:
+    """Cancel queued work, discard a running response, and preserve real publication policy."""
+    decision, _, rows = replay
+    window = rows.iloc[:2]
+    before = decision.input_hash(window, {})
+    after = decision.input_hash(rows.iloc[:1], {})
+    entered, release = Event(), Event()
+
+    def check_policy(_: Event) -> MachineRecourseResult:
+        entered.set()
+        assert release.wait(5)
+        return decision.recommend(window, "fast")
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        running = PrescriptionJob.start(executor, before, check_policy)
+        try:
+            assert entered.wait(5)
+            queued = PrescriptionJob.start(executor, before, check_policy)
+            queued.cancel()
+            running.cancel()
+            current = PrescriptionJob.start(
+                executor, after, lambda _: decision.recommend(rows.iloc[:1], "fast")
+            )
+        finally:
+            release.set()
+        assert current.input_hash != running.input_hash
+        with pytest.raises(CancelledError):
+            queued.future.result(timeout=5)
+        with pytest.raises(CancelledError):
+            running.future.result(timeout=5)
+        with pytest.raises(RecommendationWithheld, match="limits not yet confirmed"):
+            current.future.result(timeout=5)
+
+
+def test_waterfall_replays_saved_case_with_real_predictor(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+) -> None:
+    """Recompute attribution for a historical candidate without publishing it as advice."""
+    decision, _, rows = replay
+    case = scenario_presets(MachineRegistry(), DEFAULT_MACHINE, "test", decision.spec.spec_hash)[0]
+    source = load_settings(Path("configs/dashboard.yaml")).report_directory / "records.jsonl"
+    with source.open(encoding="utf-8") as file:
+        saved = next(json.loads(line) for line in file if case.case_id in line)
+    window = _window(rows, case.unit, str(case.time))
+    names = sorted(
+        set(saved["changed_features"]) & decision.control_bounds().keys(),
+        key=lambda name: (-abs(saved["candidate"][name] - saved["original"][name]), name),
+    )
+    controls = {name: saved["candidate"][name] for name in names}
+    assert len(controls) >= 2
+    risks = sequential_risks(decision, window, controls)
+    assert len(risks) == len(controls) + 1
+    assert risks[0] == pytest.approx(saved["risk_before"], abs=1e-9, rel=0)
+    assert risks[-1] == pytest.approx(saved["risk_after"], abs=1e-9, rel=0)
+    assert sum(before - after for before, after in pairwise(risks)) == pytest.approx(
+        saved["risk_before"] - saved["risk_after"], abs=1e-9, rel=0
+    )
+    assert not decision.spec.confirmation.confirmed
+
+
+def test_scenario_report_keeps_alerts_only_and_escapes_content(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+) -> None:
+    """Export actual selected risk, machine provenance and the withheld state offline."""
+    decision, _, rows = replay
+    window = rows.iloc[:2]
+    control, (lower, _) = next(iter(decision.control_bounds().items()))
+    edits = {control: lower}
+    prediction = decision.simulate_risk(window, edits)
+    html = scenario_report(decision.spec, "<script>", 2.0, edits, prediction, None, None)
+    assert "<script>" not in html and "&lt;script&gt;" in html
+    assert "Alerts only: limits not yet confirmed by an engineer" in html
+    assert f"Predicted risk now: {prediction.assessment.risk:.1%}" in html
+    assert prediction.input_hash in html
+    assert decision.spec.spec_hash in html
+    assert prediction.assessment.config_hash in html
+    assert "Synthetic or sample machine data" in html
+
+
+def test_feedback_summary_scopes_an_empty_log(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    tmp_path: Path,
+) -> None:
+    """Read scoped source groups without creating a database or requiring a fitted solve."""
+    decision, runtime, _ = replay
+    client = TestClient(create_app(runtime, machine_artifacts=tmp_path))
+    query = {"machine_id": DEFAULT_MACHINE}
+    default = client.get("/feedback/summary", params=query)
+    assert default.status_code == 200
+    body = default.json()
+    assert body["spec_hash"] == decision.spec.spec_hash and body["synthetic"]
+    assert body["groups"] == [
+        {
+            "source": "operator",
+            "label": "Operator (this session)",
+            "count": 0,
+            "mean_adherence": None,
+        }
+    ]
+    opt_in = client.get("/feedback/summary", params={**query, "include_simulated": "true"})
+    assert opt_in.json()["groups"][-1]["label"] == "Simulated operator (demo)"
+    assert (
+        client.get("/feedback/summary", params={**query, "protocol_version": "bad"}).status_code
+        == 422
+    )
+    assert client.get("/feedback/summary", params={"machine_id": "unregistered"}).status_code == 404
+    assert not (tmp_path / "feedback.sqlite3").exists()

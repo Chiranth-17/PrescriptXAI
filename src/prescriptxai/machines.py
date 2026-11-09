@@ -345,6 +345,34 @@ def record_feedback(
         database.execute("INSERT INTO feedback(payload) VALUES (?)", (record.model_dump_json(),))
 
 
+def read_feedback(
+    spec: MachineSpec,
+    protocol: str,
+    path: Path = Path("artifacts/machines/feedback.sqlite3"),
+    *,
+    include_simulated: bool = False,
+) -> list[FeedbackRecord]:
+    """Read one exact machine/spec/protocol log, excluding demo sources by default."""
+    if protocol not in spec.validation.plausibility:
+        raise ValueError(f"unknown protocol version: {protocol}")
+    if not path.exists():
+        return []
+    spec_hash = spec.spec_hash
+    with closing(sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)) as database:
+        records = []
+        for (payload,) in database.execute("SELECT payload FROM feedback ORDER BY id"):
+            record = FeedbackRecord.model_validate_json(payload)
+            if (
+                record.machine_id == spec.machine_id
+                and record.spec_hash == spec_hash
+                and record.protocol_version == protocol
+                and record.synthetic == spec.synthetic
+                and (include_simulated or record.source == "operator")
+            ):
+                records.append(record)
+    return records
+
+
 def resolve_machine_decision(
     registry: MachineRegistry,
     machine_id: str,

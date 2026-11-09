@@ -14,6 +14,14 @@ and first-alert estimates, engine intervals, and separately scoped serial
 latency. The focused verification passed 71 tests in 33.19 seconds. Ruff,
 mypy over 81 source files, strict docs and the two-width Chromium check passed.
 
+The next checkpoint adds input-bound FAST scheduling, a measured risk waterfall
+for publishable results, timing and risk-drop badges, scoped feedback queries
+and an HTML scenario download. Browser run v5 checked both widths and verified
+the downloaded report against the 87.7% Alerts-only case study. Numerical calls
+already underway may finish after cancellation. Their results are discarded.
+The new focused verification passed 75 tests in 38.11 seconds, including 13
+simulator tests. Ruff, mypy over 84 source files and strict docs passed.
+
 The [acceptance report](docs/acceptance_report.md) separates local verification
 from the remaining dashboard functionality and gates. The design mock and two
 classmate sessions are pending. The full dashboard gate and Step 3B acceptance

@@ -30,7 +30,11 @@ def observed_rows(machine_id: str, spec_hash: str, population: str, identity: st
 
 
 def simulator_decision(
-    registry: MachineRegistry, machine_id: str, settings: DashboardSettings
+    registry: MachineRegistry,
+    machine_id: str,
+    settings: DashboardSettings,
+    *,
+    isolated: bool = False,
 ) -> MachineDecision:
     """Load the named fit or the first compatible configured archive profile."""
     spec = registry.get(machine_id)
@@ -44,7 +48,10 @@ def simulator_decision(
         return resolve_machine_decision(registry, machine_id, protocol)
 
     def legacy() -> PrescriptXAI:
-        return direct_service(str(profile), profile_identity(profile))
+        identity = profile_identity(profile)
+        if isolated:
+            return direct_service(str(profile), identity, isolated=True)
+        return direct_service(str(profile), identity)
 
     return resolve_machine_decision(registry, machine_id, protocol, legacy=legacy)
 
@@ -67,3 +74,15 @@ def parse_settings(serialized: str, limits: Mapping[str, tuple[float, float]]) -
             raise ValueError("The link includes a setting outside its allowed range")
         values[name] = float(value)
     return values
+
+
+def sequential_risks(
+    decision: MachineDecision, window: pd.DataFrame, ordered_controls: Mapping[str, float]
+) -> tuple[float, ...]:
+    """Score successive prefixes from the same observed window and coupling reference."""
+    risks = [decision.simulate_risk(window, {}).assessment.risk]
+    applied = {}
+    for name, value in ordered_controls.items():
+        applied[name] = value
+        risks.append(decision.simulate_risk(window, applied).assessment.risk)
+    return tuple(risks)
