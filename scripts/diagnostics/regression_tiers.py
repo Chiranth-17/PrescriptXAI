@@ -248,13 +248,14 @@ class EvidenceCache:
     def add_origin(self, value: dict) -> str:
         key = digest(value)
         payload = json.dumps(value, sort_keys=True, allow_nan=False)
+        signature = self.sign(value)
         previous = self.connection.execute(
-            "SELECT payload FROM origins WHERE id=?", (key,)
+            "SELECT payload,signature FROM origins WHERE id=?", (key,)
         ).fetchone()
-        if previous and previous[0] != payload:
-            raise ValueError("Origin identity collision")
+        if previous and (previous[0] != payload or not hmac.compare_digest(previous[1], signature)):
+            raise ValueError("Existing origin integrity failure")
         self.connection.execute(
-            "INSERT OR IGNORE INTO origins VALUES (?,?,?)", (key, payload, self.sign(value))
+            "INSERT OR IGNORE INTO origins VALUES (?,?,?)", (key, payload, signature)
         )
         return key
 
@@ -393,7 +394,14 @@ def read_policy(cases: dict, expected: dict, tier: str) -> tuple[list[str], dict
     return sorted(cases) if tier == "full" else registered, policy, hashes
 
 
+def require_closed_database(path: Path) -> None:
+    wal = path.with_name(path.name + "-wal")
+    if wal.exists() and wal.stat().st_size:
+        raise ValueError(f"Database has pending WAL data: {path}")
+
+
 def database_rows(path: Path):
+    require_closed_database(path)
     with closing(
         sqlite3.connect(path.resolve().as_uri() + "?mode=ro&immutable=1", uri=True)
     ) as connection:
@@ -442,8 +450,7 @@ def checkpoint_evidence(output: Path, descriptor: dict) -> tuple[dict, set[str]]
     ):
         raise ValueError("Checkpoint requires one closed execution segment")
     database = paths[-1]
-    if database.with_name(database.name + "-wal").exists():
-        raise ValueError("Checkpoint database still has a WAL")
+    require_closed_database(database)
     with closing(
         sqlite3.connect(database.resolve().as_uri() + "?mode=ro&immutable=1", uri=True)
     ) as conn:
@@ -519,8 +526,7 @@ def import_gate(run: Path, cache_path: Path) -> dict:
         for name, item in registration["files"].items()
     }
     verify_files({str(paths[name]): item["sha256"] for name, item in registration["files"].items()})
-    if paths["database"].with_name(paths["database"].name + "-wal").exists():
-        raise ValueError("The audited origin database must have no pending WAL")
+    require_closed_database(paths["database"])
     complete = json.loads(paths["complete"].read_text(encoding="utf-8"))
     comparison = json.loads(paths["comparison"].read_text(encoding="utf-8"))
     origin_manifest = json.loads(paths["manifest"].read_text(encoding="utf-8"))
@@ -599,6 +605,7 @@ def import_gate(run: Path, cache_path: Path) -> dict:
                     complete=True,
                 )
                 verify_unchanged(manifest)
+                require_closed_database(paths["database"])
                 verify_files(
                     {
                         str(paths[name]): item["sha256"]
