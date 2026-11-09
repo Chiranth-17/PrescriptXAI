@@ -15,7 +15,7 @@ The Phase 13 toy remains a framework test fixture.
 | Sparsity, risk-drop badges and waterfall | Sparsity caption implemented | Full badges and measured attribution pending | Partial |
 | Timing and performance | Local risk timing in the risk card | Controlled latency and full stage budgets pending | Partial |
 | Applied outcome, trend and feedback | Applied settings can be rechecked and logged for a confirmed prescription | Full workflow, trend and simulated operators pending | Partial |
-| Synopsis scorecard | Retained Advanced evaluation pages | Machine-scoped objective reconciliation pending | Partial |
+| Synopsis scorecard | Machine-scoped Advanced page with saved FAST alert and first-alert results | AppTest compares each displayed metric and serial latency interval with its saved source | Passed locally for archived results |
 | Design and usability | Local desktop and phone captures | Published mock and two participant sessions pending | Partial |
 
 The four scenario presets were generated from the saved
@@ -26,10 +26,33 @@ generation at `18f60c6fcec38bf6ceb607b9c128b331cfad85b6`. Its SHA-256 is
 The saved source results SHA-256 is
 `d4ffef41bccc178c7021320b318f225c75fdcf140e87a2bc34749cb18a5ab51f`.
 
+## Archived objectives and gaps
+
+The Advanced scorecard loads the retained Phase 7 summary from the configured
+report directory. Its all-alert and first-alert columns use the same FAST
+mode. Each interval preserves the number of engines and the denominator.
+The historical labels retain the source and config hashes. The current
+machine spec hash is shown separately because the study predates named
+machine specs. Missing first-alert metrics remain absent.
+
+For example, the default archived FD001 LSTM v1 official-test group had
+0.0% calibrated model validity against a 95% design target and 31.2%
+all-query plausibility against 90%. Mean predicted risk dropped 11.2 points
+against a 60-point design target. Those all-alert estimates use 16 engines
+and 690 observations, including the original saved seeds. The first-alert
+stratum uses 16 engines and 80 observations. These are historical benchmark
+gaps for that model and population. The live simulator case study uses a
+separately selected FD001 XGBoost v1 profile.
+
+The saved FAST serial optimization p95 was 2,339.1 ms against a 1,800 ms
+budget and the backend pipeline p95 was 2,348.2 ms against 2,200 ms.
+These are separate measurements from the development population. Browser
+rendering was unmeasured in that serial report.
+
 ## Local verification
 
-The focused suite passed 70 tests in 33.23 seconds, including eight simulator
-tests. Ruff, mypy over 80 source files, and the strict documentation build
+The focused suite passed 71 tests in 33.19 seconds, including nine simulator
+tests. Ruff, mypy over 81 source files, and the strict documentation build
 also passed. The full quality gate and the controlled latency suite were
 outside this checkpoint.
 

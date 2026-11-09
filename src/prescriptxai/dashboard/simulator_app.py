@@ -294,20 +294,22 @@ def main() -> None:
     )
     st.html(STYLE)
     workspace = st.sidebar.radio("Workspace", ("Simulator", "Advanced"))
-    if workspace == "Advanced":
-        advanced_pages(advanced=True)
-        return
-    st.title("PrescriptXAI Operations Dashboard")
-    st.caption("Explore recorded conditions and predicted risk in an advisory simulator.")
     try:
         registry = MachineRegistry()
         specs = {spec.machine_id: spec for spec in registry.list()}
         machines = list(specs)
         requested = st.query_params.get("machine", machines[0])
+        if requested not in specs:
+            requested = machines[0]
+        if workspace == "Advanced":
+            advanced_pages(advanced=True, spec=specs[requested])
+            return
+        st.title("PrescriptXAI Operations Dashboard")
+        st.caption("Explore recorded conditions and predicted risk in an advisory simulator.")
         machine = st.selectbox(
             "Machine",
             machines,
-            index=machines.index(requested) if requested in machines else 0,
+            index=machines.index(requested),
             format_func=lambda name: specs[name].display_name,
         )
         _simulator(specs[machine], registry)

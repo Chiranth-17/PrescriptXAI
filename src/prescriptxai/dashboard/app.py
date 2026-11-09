@@ -18,12 +18,14 @@ from prescriptxai.dashboard.backend import (
     profile_identity,
 )
 from prescriptxai.dashboard.data import file_identity, observed_state, telemetry
+from prescriptxai.dashboard.objectives import objectives_page
 from prescriptxai.dashboard.operator import operator_console
 from prescriptxai.dashboard.pages import PAGES, about_page, evidence_page, fleet_page
 from prescriptxai.dashboard.state import load_settings, select_session
+from prescriptxai.machine_spec import MachineSpec
 
 
-def main(*, advanced: bool = False) -> None:
+def main(*, advanced: bool = False, spec: MachineSpec | None = None) -> None:
     """Run the local operator workflow without training, mutable thresholds or sample results."""
     started = perf_counter()
     loading_seconds = 0.0
@@ -41,9 +43,10 @@ def main(*, advanced: bool = False) -> None:
     )
     if not advanced and "pending_fleet_engine" in st.session_state:
         st.session_state["page"] = PAGES[0]
-    page = st.sidebar.radio(
-        "Page", PAGES[1:] if advanced else PAGES, key="advanced-page" if advanced else "page"
-    )
+    pages = PAGES[1:] if advanced else PAGES
+    if spec is not None:
+        pages = (*pages, "Objectives scorecard")
+    page = st.sidebar.radio("Page", pages, key="advanced-page" if advanced else "page")
     if page == PAGES[4]:
         about_page()
         return
@@ -51,6 +54,9 @@ def main(*, advanced: bool = False) -> None:
         settings = load_settings(
             Path(os.environ.get("PRESCRIPTXAI_DASHBOARD_CONFIG", "configs/dashboard.yaml"))
         )
+        if page == "Objectives scorecard" and spec is not None:
+            objectives_page(spec, settings.report_directory)
+            return
         subset = st.sidebar.selectbox("Subset", list(settings.profiles), key="subset")
         profile = st.sidebar.selectbox(
             "Model / protocol", list(settings.profiles[subset]), key="profile"

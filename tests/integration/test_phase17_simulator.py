@@ -14,7 +14,9 @@ from prescriptxai.adapters.cmapss import CmapssAdapter
 from prescriptxai.adapters.registry import DEFAULT_MACHINE, MachineRegistry
 from prescriptxai.api import create_app
 from prescriptxai.core.decision import MachineDecision
+from prescriptxai.dashboard.objectives import METRICS
 from prescriptxai.dashboard.simulator_data import parse_settings
+from prescriptxai.dashboard.state import load_settings
 from prescriptxai.machines import scope_archive_runtime
 from prescriptxai.pipeline import InputError, PrescriptXAI
 
@@ -165,3 +167,58 @@ def test_presets_and_advanced_navigation() -> None:
     page.sidebar.radio[1].set_value("About and Limitations")
     page.run()
     assert any("About" in header.value for header in page.header)
+
+
+def test_scorecard_numbers_come_from_saved_engine_intervals() -> None:
+    """Compare each displayed measurement, target and interval with its saved source."""
+    settings = load_settings(Path("configs/dashboard.yaml"))
+    summary = json.loads((settings.report_directory / "summary.json").read_text(encoding="utf-8"))
+    page = AppTest.from_file(str(APP), default_timeout=45)
+    page.run()
+    page.sidebar.radio[0].set_value("Advanced")
+    page.run()
+    page.sidebar.radio[1].set_value("Objectives scorecard")
+    page.run()
+    assert not page.exception and not page.error and not page.warning[1:]
+    assert "Objectives scorecard" in [heading.value for heading in page.header]
+    group = page.selectbox[0].value
+    data = summary["groups"][group]
+    populations = {
+        "All alerts": {name: metric["ci"] for name, metric in data["metrics"].items()},
+        "First alert": data["strata"]["first_alert_versus_all_same_mode"]["first_alert"],
+    }
+    targets = summary["manifest"]["configuration"]["targets"]
+    metric_columns = {
+        "Measured": "estimate",
+        "CI lower": "lower",
+        "CI upper": "upper",
+        "Engines": "engine_count",
+        "Denominator": "denominator",
+    }
+    labels = {label: name for name, label in METRICS.items()}
+    table = page.dataframe[0].value
+    assert set(table["Population"]) == populations.keys()
+    assert len(table) == sum(len(values.keys() & METRICS.keys()) for values in populations.values())
+    for row in table.to_dict(orient="records"):
+        name = labels[row["Objective"]]
+        ci = populations[row["Population"]][name]
+        for column, key in metric_columns.items():
+            assert row[column] == ci[key]
+        if name in targets:
+            assert row["Target"] == targets[name]
+        else:
+            assert pd.isna(row["Target"])
+    stages_by_mode = summary["latency"]["modes"]
+    for displayed, stages in zip(page.dataframe[1:], stages_by_mode.values(), strict=True):
+        assert len(displayed.value) == len(stages)
+        for row in displayed.value.to_dict(orient="records"):
+            saved = stages[row["Stage"]]
+            assert row["Upper budget (ms)"] == saved["upper_budget_ms"]
+            assert row["Engines"] == saved["engine_count"]
+            if saved["p95_ms"] is None:
+                assert pd.isna(row["p95 (ms)"])
+                assert row["Finding"] == "Unmeasured"
+            else:
+                assert row["p95 (ms)"] == saved["p95_ms"]
+                assert row["CI lower"] == saved["p95_engine_ci"]["lower"]
+                assert row["CI upper"] == saved["p95_engine_ci"]["upper"]

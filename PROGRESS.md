@@ -9,8 +9,10 @@ analysis under Advanced. The registered archive has no engineer confirmation,
 so it stays in Alerts-only mode. Four presets were selected by a rule
 committed at `18f60c6`. The case study rendered at 87.7% for unit 82, cycle 156.
 
-The focused verification passed 70 tests in 33.23 seconds. Ruff, mypy over 80
-source files, strict docs and the two-width Chromium check passed.
+Advanced now includes a machine-scoped scorecard with saved FAST all-alert
+and first-alert estimates, engine intervals, and separately scoped serial
+latency. The focused verification passed 71 tests in 33.19 seconds. Ruff,
+mypy over 81 source files, strict docs and the two-width Chromium check passed.
 
 The [acceptance report](docs/acceptance_report.md) separates local verification
 from the remaining dashboard functionality and gates. The design mock and two
