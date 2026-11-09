@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "source": "2d8e8d4137d567de2c3b7eb04894890795025f16",
+  "audit_path": "artifacts/phase12/clean-clone-final-gate-independent-audit/report.json",
+  "audit_sha256": "1d3d19be5cdeab647294de0c819cb47be206cedbb5b15e639f84c821ac7b570a",
+  "files": {
+    "database": {
+      "base": "run",
+      "relative_path": "replay/records.sqlite3",
+      "sha256": "c0d582425f0113d32aad61a0cb29b5b9726a39a2906edd06d8624f7330baeed7"
+    },
+    "manifest": {
+      "base": "run",
+      "relative_path": "manifest.json",
+      "sha256": "f1785f240d232e82d4b5bbd84ae8403e5eb391636c7e21202bc583055babc932"
+    },
+    "replay_manifest": {
+      "base": "run",
+      "relative_path": "replay/manifest.json",
+      "sha256": "b8d777746c97cce17d8e6e5d5d06e0a164fe958f9442adce28272b16659e8b2b"
+    },
+    "complete": {
+      "base": "run",
+      "relative_path": "complete.json",
+      "sha256": "636b94be36e85fae71511055f2bb7f10aa3fc23347ece14e117eb019da05b8ae"
+    },
+    "comparison": {
+      "base": "run",
+      "relative_path": "comparison.json",
+      "sha256": "f62191d21f11203576b0567ecdd3220dce42c0281eac66f6cf2813f1fb8c904d"
+    },
+    "segments": {
+      "base": "run",
+      "relative_path": "replay/segments.json",
+      "sha256": "02bee16af434b5c4575e18f1e29a9dbec045daf37095043b69319339231bf945"
+    },
+    "native_exit": {
+      "base": "run_parent",
+      "relative_path": "regression-20261108T063754997635Z-17084.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    "gate_native_exit": {
+      "base": "checkout",
+      "relative_path": "artifacts/phase12/clean-clone-gate-20261108-v3.exit",
+      "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354"
+    },
+    "gate_tracker": {
+      "base": "checkout",
+      "relative_path": "artifacts/phase12/clean-clone-gate-20261108-v3.active-run.json",
+      "sha256": "e517656d4b7167b557945c4a0a7989d47a0ab3cfacb45af17bc2901736492590"
+    },
+    "fixture": {
+      "base": "origin_checkout",
+      "relative_path": "tests/regression/cmapss_baseline.parquet",
+      "sha256": "382bbf1fac0f0a467e252772b8a47c94e9460bc9bb02196d312e6ac401cb3f15"
+    },
+    "fixture_manifest": {
+      "base": "origin_checkout",
+      "relative_path": "tests/regression/cmapss_baseline.json",
+      "sha256": "3b7be8df5acd30169dc1c0149d7ec3a29664fcb79423032508458c25fa1f108c"
+    }
+  }
+}

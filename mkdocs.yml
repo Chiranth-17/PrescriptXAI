@@ -31,6 +31,7 @@ extra_javascript:
 nav:
   - Start: index.md
   - Reproduction and deployment: reproducibility.md
+  - Verification targets: testing.md
   - Architecture: architecture.md
   - Mathematics: math.md
   - Evidence:

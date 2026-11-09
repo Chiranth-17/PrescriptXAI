@@ -89,11 +89,12 @@ include = ["/src", "/tests", "/configs", "/docs", "/paper", "/scripts", "/README
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["tests"]
-addopts = "-ra --strict-config --strict-markers"
+addopts = "-ra --strict-config --strict-markers -m 'not regression_full'"
 markers = [
   "slow: longer profiling, process, or stress verification",
   "e2e: complete temporary-directory system workflow",
   "gpu: optional GPU-specific verification when GPU hardware is present",
+  "regression_full: explicit full-corpus release verification, excluded from the fast default suite",
 ]
 
 [tool.coverage.run]

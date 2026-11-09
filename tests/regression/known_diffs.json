@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "absolute_tolerance": 0.000001,
+  "relative_tolerance": 0,
+  "entries": [],
+  "reason": "All 712 historical mismatches are causally explained and all 32116 genuine cases recover historical results exactly. No accepted scientific differences remain."
+}

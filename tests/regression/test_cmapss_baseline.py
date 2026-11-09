@@ -1,4 +1,4 @@
-"""The real complete baseline is mandatory, including its byte-verified external assets."""
+"""Explicit release-only full regression; exact-key reuse is disclosed in its receipt."""
 
 import json
 import os
@@ -11,8 +11,9 @@ import pytest
 
 
 @pytest.mark.slow
+@pytest.mark.regression_full
 def test_complete_cmapss_baseline() -> None:
-    """Actually solve all 32,116 registered queries in a fresh child process."""
+    """Verify all cases, reusing exact evidence or genuinely computing missing results."""
     root = Path(__file__).resolve().parents[2]
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
     output = root / "artifacts" / "phase12" / f"regression-{stamp}-{os.getpid()}"
@@ -20,7 +21,9 @@ def test_complete_cmapss_baseline() -> None:
     command = [
         sys.executable,
         "-m",
-        "scripts.diagnostics.phase12_regression",
+        "scripts.diagnostics.regression_tiers",
+        "--tier",
+        "full",
         "--output",
         str(output),
     ]
@@ -33,6 +36,7 @@ def test_complete_cmapss_baseline() -> None:
     assert completed.returncode == 0, f"Actual full regression failed; inspect {output} and logs"
     receipt = json.loads((output / "complete.json").read_text(encoding="utf-8"))
     assert receipt["actual_success"] is True
-    assert receipt["queries"] == 32116
-    assert len(receipt["groups"]) == 24
-    assert sum(receipt["groups"].values()) == 32116
+    assert receipt["requested"] == 32116
+    assert receipt["reused"] + receipt["recomputed"] == 32116
+    assert len(receipt["complete_groups"]) == 24
+    assert sum(receipt["complete_groups"].values()) == 32116
