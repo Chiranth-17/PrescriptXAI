@@ -108,10 +108,22 @@ def runtime_build() -> dict:
     }
 
 
-def execution_context(manifest: dict, build: dict) -> dict:
+def python_source_hashes(root: Path, raw_hashes: dict[str, str]) -> dict[str, str]:
+    """Check raw evidence before applying Python's CRLF newline equivalence."""
+    canonical = {}
+    for name, raw_hash in raw_hashes.items():
+        path = root / name
+        source = path.read_bytes()
+        if path.suffix != ".py" or hashlib.sha256(source).hexdigest() != raw_hash:
+            raise ValueError(f"Python source differs from the pinned bytes: {name}")
+        canonical[name] = hashlib.sha256(source.replace(b"\r\n", b"\n")).hexdigest()
+    return canonical
+
+
+def execution_context(manifest: dict, build: dict, root: Path = Path(".")) -> dict:
     return {
-        "schema_version": 1,
-        "code_hashes": manifest["code_hashes"],
+        "schema_version": 2,
+        "code_hashes": python_source_hashes(root, manifest["code_hashes"]),
         "input_hashes": manifest["reference"]["input_hashes"],
         "design_sha256": manifest["reference"]["design_sha256"],
         "runtime_build": build,
@@ -437,7 +449,7 @@ def checkpoint_evidence(output: Path, descriptor: dict) -> tuple[dict, set[str]]
         or inner["requested_ids"] != sorted(requested)
         or inner["source"] != descriptor["source"]
         or inner["tier_context"] != descriptor["context"]
-        or inner["code_hashes"] != descriptor["context"]["code_hashes"]
+        or inner["code_hashes"] != descriptor["source_byte_hashes"]
         or inner["reference"]["input_hashes"] != descriptor["context"]["input_hashes"]
         or inner["reference"]["design_sha256"] != descriptor["context"]["design_sha256"]
         or inner["policy_hashes"] != descriptor["policy_hashes"]
@@ -567,15 +579,13 @@ def import_gate(run: Path, cache_path: Path) -> dict:
     )
     if origin_manifest["runtime"] != recorded_runtime:
         raise ValueError("Origin runtime differs from its saved run manifest")
-    for name, sha in origin_manifest["code_hashes"].items():
-        verify_files({str(clone / name): sha})
     verify_files(
         {
             str(clone / name): sha
             for name, sha in origin_manifest["reference"]["input_hashes"].items()
         }
     )
-    origin_context = execution_context(origin_manifest, origin_build)
+    origin_context = execution_context(origin_manifest, origin_build, clone)
     context = execution_context(manifest, build)
     if origin_context != context:
         raise ValueError("Origin execution/build context differs; never restamp saved results")
@@ -651,6 +661,7 @@ def run_tier(
     descriptor = {
         "schema_version": 1,
         "source": manifest["source"],
+        "source_byte_hashes": manifest["code_hashes"],
         "context": context,
         "tier": tier,
         "ids": ids,

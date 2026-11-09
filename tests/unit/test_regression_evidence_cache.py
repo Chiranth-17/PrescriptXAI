@@ -14,6 +14,7 @@ from scripts.diagnostics.regression_tiers import (
     compare,
     digest,
     known_policy,
+    python_source_hashes,
     run_tier,
     verify_resume,
 )
@@ -237,3 +238,16 @@ def test_checkpoint_refuses_foreign_execution_manifest(tmp_path: Path) -> None:
         path.write_text(json.dumps(value), encoding="utf-8")
     with pytest.raises(ValueError, match="Checkpoint execution manifest"):
         checkpoint_evidence(tmp_path, descriptor)
+
+
+def test_python_newline_equivalence_still_requires_raw_origin_pin(tmp_path: Path) -> None:
+    """Accept Python newline equivalence only after checking the original bytes."""
+    path = tmp_path / "worker.py"
+    original = b"value = 2\r\n"
+    lf = b"value = 2\n"
+    path.write_bytes(original)
+    pinned = {"worker.py": hashlib.sha256(original).hexdigest()}
+    assert python_source_hashes(tmp_path, pinned) == {"worker.py": hashlib.sha256(lf).hexdigest()}
+    path.write_bytes(lf)
+    with pytest.raises(ValueError, match="pinned bytes"):
+        python_source_hashes(tmp_path, pinned)
