@@ -34,10 +34,10 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     environment = os.environ.copy()
     if args.reuse_only:
-        environment["PRESCRIPTXAI_REGRESSION_REUSE_ONLY"] = "1"
+        environment["PSX_QUALITY_REGRESSION_REUSE_ONLY"] = "1"
     source = source_revision()
     context_sha = None
-    environment["PRESCRIPTXAI_SUBSET_RECEIPT"] = str((output / "subset-location.json").resolve())
+    environment["PSX_QUALITY_SUBSET_RECEIPT"] = str((output / "subset-location.json").resolve())
     total, stages = time.perf_counter(), []
     for target in ("check", "regression-full", "docs"):
         command = [make, target] + (["REUSE_ONLY=1"] if args.reuse_only else [])

@@ -23,7 +23,7 @@ def test_fixed_cmapss_subset_has_exact_compatible_evidence() -> None:
         "--output",
         str(output),
     ]
-    if os.environ.get("PRESCRIPTXAI_REGRESSION_REUSE_ONLY") == "1":
+    if os.environ.get("PSX_QUALITY_REGRESSION_REUSE_ONLY") == "1":
         command.append("--reuse-only")
     with (
         output.with_suffix(".stdout.log").open("x", encoding="utf-8") as stdout,
@@ -37,6 +37,6 @@ def test_fixed_cmapss_subset_has_exact_compatible_evidence() -> None:
     assert receipt["actual_success"] is True
     assert receipt["requested"] == len(ids)
     assert receipt["reused"] + receipt["recomputed"] == len(ids)
-    if receipt_path := os.environ.get("PRESCRIPTXAI_SUBSET_RECEIPT"):
+    if receipt_path := os.environ.get("PSX_QUALITY_SUBSET_RECEIPT"):
         with Path(receipt_path).open("x", encoding="utf-8") as stream:
             json.dump({"path": str(output / "complete.json")}, stream)

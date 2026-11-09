@@ -1,7 +1,7 @@
 .PHONY: install lint typecheck test cov data train evaluate dashboard api docs clean all-checks check regression-full release-gate
 
 ifeq ($(REUSE_ONLY),1)
-export PRESCRIPTXAI_REGRESSION_REUSE_ONLY = 1
+export PSX_QUALITY_REGRESSION_REUSE_ONLY = 1
 endif
 
 install:
