@@ -379,12 +379,12 @@ class Explanation(BaseModel):
     warnings: tuple[str, ...]
 
 
-class RecourseResult(BaseModel):
+class _RecourseFields(BaseModel):
     """Serialized recourse decision with raw-unit changes and per-tier evidence."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    schema_version: Literal["2.0.0"] = "2.0.0"
+    schema_version: str
     original_state: dict[str, float]
     new_state: dict[str, float]
     delta_per_feature: dict[str, FeatureDelta]
@@ -511,7 +511,7 @@ class RecourseResult(BaseModel):
         return result
 
     @model_validator(mode="after")
-    def states_and_deltas_are_consistent(self) -> "RecourseResult":
+    def states_and_deltas_are_consistent(self) -> "_RecourseFields":
         """Require each reported delta to connect the same named raw-unit states."""
         if set(self.original_state) != set(self.new_state):
             raise ValueError("original_state and new_state must have identical feature names")
@@ -592,6 +592,12 @@ class RecourseResult(BaseModel):
         if not changed.issubset(self.delta_per_feature):
             raise ValueError("every changed feature must have a raw delta")
         return self
+
+
+class RecourseResult(_RecourseFields):
+    """Serialized recourse decision with raw-unit changes and per-tier evidence."""
+
+    schema_version: Literal["2.0.0"] = "2.0.0"
 
 
 class TierPayload(BaseModel):

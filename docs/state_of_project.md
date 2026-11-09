@@ -1,6 +1,15 @@
-# State of the project - Phase 12 closed
+# State of the project - Phase 13 in verification
 
 ## Current status (9 November 2026 IST)
+
+Phase 13 machine specs, adapters, quality gates and named interfaces are in
+verification. The 19-test framework suite passed for the retained FD001
+benchmark and the generated synthetic contract. Both named specs remain
+Alerts-only while engineering confirmation is absent. The exact historical
+regression on this source is pending. See [machine setup](adding_a_machine.md)
+and the [solo roadmap](prompts/final_solo_prompts.md).
+
+## Phase 12 closure (9 November 2026 IST)
 
 Phase 12 is closed. The [clean-clone gate and tiered verification](phase12_full_regression.md)
 passed and [A10 is closed](phase12_open_items.md). The 24 headline groups retain their

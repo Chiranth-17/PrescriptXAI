@@ -1,0 +1,905 @@
+{
+  "$defs": {
+    "CheckResult": {
+      "description": "One rule with a signed compliance margin (negative means violation).",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "passed": {
+          "title": "Passed",
+          "type": "boolean"
+        },
+        "margin": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Margin"
+        },
+        "explanation": {
+          "title": "Explanation",
+          "type": "string"
+        },
+        "feature": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Feature"
+        }
+      },
+      "required": [
+        "name",
+        "passed",
+        "margin",
+        "explanation"
+      ],
+      "title": "CheckResult",
+      "type": "object"
+    },
+    "DeltaMapping": {
+      "additionalProperties": false,
+      "description": "A named feature's raw and scaled changes plus interpretable percentages.",
+      "properties": {
+        "feature": {
+          "minLength": 1,
+          "title": "Feature",
+          "type": "string"
+        },
+        "raw_delta": {
+          "title": "Raw Delta",
+          "type": "number"
+        },
+        "scaled_delta": {
+          "title": "Scaled Delta",
+          "type": "number"
+        },
+        "percent_of_current": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Percent Of Current"
+        },
+        "percent_of_range": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Percent Of Range"
+        }
+      },
+      "required": [
+        "feature",
+        "raw_delta",
+        "scaled_delta"
+      ],
+      "title": "DeltaMapping",
+      "type": "object"
+    },
+    "FailureInformation": {
+      "additionalProperties": false,
+      "description": "Diagnostic state and operator escalation; not a globally infeasible certificate.",
+      "properties": {
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "closest_candidate": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Closest Candidate",
+          "type": "object"
+        },
+        "risk_reached": {
+          "title": "Risk Reached",
+          "type": "number"
+        },
+        "failing_tiers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Failing Tiers",
+          "type": "array"
+        },
+        "suggested_escalation": {
+          "title": "Suggested Escalation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason",
+        "message",
+        "closest_candidate",
+        "risk_reached",
+        "failing_tiers",
+        "suggested_escalation"
+      ],
+      "title": "FailureInformation",
+      "type": "object"
+    },
+    "FeatureDelta": {
+      "additionalProperties": false,
+      "description": "One feature's recommended adjustment in raw units and percent.",
+      "properties": {
+        "raw_delta": {
+          "title": "Raw Delta",
+          "type": "number"
+        },
+        "percent_change": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Percent Change"
+        },
+        "percent_of_range": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Percent Of Range"
+        },
+        "scaled_delta": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scaled Delta"
+        },
+        "role": {
+          "default": "action",
+          "enum": [
+            "action",
+            "dependent",
+            "other"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "raw_delta",
+        "percent_change"
+      ],
+      "title": "FeatureDelta",
+      "type": "object"
+    },
+    "RecourseOutcome": {
+      "additionalProperties": false,
+      "description": "Result with separate risk, physical, and feasible-action statuses.",
+      "properties": {
+        "initial_risk": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Initial Risk",
+          "type": "number"
+        },
+        "final_risk": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Final Risk",
+          "type": "number"
+        },
+        "model_valid": {
+          "title": "Model Valid",
+          "type": "boolean"
+        },
+        "recourse_feasible": {
+          "title": "Recourse Feasible",
+          "type": "boolean"
+        },
+        "tier2_plausible": {
+          "title": "Tier2 Plausible",
+          "type": "boolean"
+        },
+        "tier3_engineering_valid": {
+          "title": "Tier3 Engineering Valid",
+          "type": "boolean"
+        },
+        "tier4_coupling_valid": {
+          "title": "Tier4 Coupling Valid",
+          "type": "boolean"
+        },
+        "deltas": {
+          "items": {
+            "$ref": "#/$defs/DeltaMapping"
+          },
+          "title": "Deltas",
+          "type": "array"
+        },
+        "success": {
+          "title": "Success",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "initial_risk",
+        "final_risk",
+        "model_valid",
+        "recourse_feasible",
+        "tier2_plausible",
+        "tier3_engineering_valid",
+        "tier4_coupling_valid",
+        "deltas",
+        "success"
+      ],
+      "title": "RecourseOutcome",
+      "type": "object"
+    },
+    "StageTimings": {
+      "additionalProperties": false,
+      "description": "Measured wall-clock time for named pipeline stages, in milliseconds.",
+      "properties": {
+        "ingestion_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ingestion Ms"
+        },
+        "inference_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Inference Ms"
+        },
+        "optimization_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Optimization Ms"
+        },
+        "validation_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation Ms"
+        },
+        "pipeline_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pipeline Ms"
+        },
+        "dashboard_ms": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dashboard Ms"
+        }
+      },
+      "title": "StageTimings",
+      "type": "object"
+    },
+    "TierValidation": {
+      "additionalProperties": false,
+      "description": "Machine-readable result and optional measurement for one validation tier.",
+      "properties": {
+        "passed": {
+          "title": "Passed",
+          "type": "boolean"
+        },
+        "diagnostics": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "measurement": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Measurement"
+        },
+        "limit": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limit"
+        },
+        "margin": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Margin"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "enum": [
+                "pass",
+                "fail",
+                "skipped"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        },
+        "evidence_level": {
+          "default": "none",
+          "enum": [
+            "none",
+            "E1",
+            "E2",
+            "E3",
+            "E4",
+            "E5"
+          ],
+          "title": "Evidence Level",
+          "type": "string"
+        },
+        "checks": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/CheckResult"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "warnings": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "passed"
+      ],
+      "title": "TierValidation",
+      "type": "object"
+    },
+    "ValidationReport": {
+      "additionalProperties": false,
+      "description": "Independent validation results for model safety and physical plausibility tiers.",
+      "properties": {
+        "schema_version": {
+          "const": "2.0.0",
+          "default": "2.0.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "tier1_model_safety": {
+          "$ref": "#/$defs/TierValidation"
+        },
+        "tier2_distributional": {
+          "$ref": "#/$defs/TierValidation"
+        },
+        "tier3_engineering": {
+          "$ref": "#/$defs/TierValidation"
+        },
+        "tier4_sensor_coupling": {
+          "$ref": "#/$defs/TierValidation"
+        },
+        "simulator": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TierValidation"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "assumptions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "model_valid": {
+          "description": "Expose true model validity independently of plausibility.",
+          "readOnly": true,
+          "title": "Model Valid",
+          "type": "boolean"
+        },
+        "plausible": {
+          "description": "Expose Tier 2 distributional plausibility only.",
+          "readOnly": true,
+          "title": "Plausible",
+          "type": "boolean"
+        },
+        "constraints_ok": {
+          "description": "Require both static proxy constraint tiers.",
+          "readOnly": true,
+          "title": "Constraints Ok",
+          "type": "boolean"
+        },
+        "joint": {
+          "description": "Require all four static checks, without applying a plausibility target to joint.",
+          "readOnly": true,
+          "title": "Joint",
+          "type": "boolean"
+        },
+        "failing_tiers": {
+          "description": "Return failed tiers while keeping skipped results distinct.",
+          "items": {
+            "type": "string"
+          },
+          "readOnly": true,
+          "title": "Failing Tiers",
+          "type": "array"
+        },
+        "evidence_level": {
+          "description": "State the highest contiguous evidence level reached by this result.",
+          "enum": [
+            "none",
+            "E1",
+            "E2",
+            "E3",
+            "E4",
+            "E5"
+          ],
+          "readOnly": true,
+          "title": "Evidence Level",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tier1_model_safety",
+        "tier2_distributional",
+        "tier3_engineering",
+        "tier4_sensor_coupling",
+        "model_valid",
+        "plausible",
+        "constraints_ok",
+        "joint",
+        "failing_tiers",
+        "evidence_level"
+      ],
+      "title": "ValidationReport",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A decision with explicit machine, spec and protocol provenance.",
+  "properties": {
+    "schema_version": {
+      "const": "3.0.0",
+      "default": "3.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "original_state": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "title": "Original State",
+      "type": "object"
+    },
+    "new_state": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "title": "New State",
+      "type": "object"
+    },
+    "delta_per_feature": {
+      "additionalProperties": {
+        "$ref": "#/$defs/FeatureDelta"
+      },
+      "title": "Delta Per Feature",
+      "type": "object"
+    },
+    "risk_before": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Risk Before",
+      "type": "number"
+    },
+    "risk_after": {
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Risk After",
+      "type": "number"
+    },
+    "validation_report": {
+      "$ref": "#/$defs/ValidationReport"
+    },
+    "timings": {
+      "$ref": "#/$defs/StageTimings"
+    },
+    "warnings": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "alert": {
+      "default": true,
+      "title": "Alert",
+      "type": "boolean"
+    },
+    "status": {
+      "default": "ESCALATE",
+      "enum": [
+        "NO_INTERVENTION",
+        "RECOVERABLE",
+        "PARTIAL",
+        "ESCALATE"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "triage": {
+      "anyOf": [
+        {
+          "enum": [
+            "RECOVERABLE",
+            "PARTIAL",
+            "ESCALATE"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": "ESCALATE",
+      "title": "Triage"
+    },
+    "mode": {
+      "default": "FAST",
+      "enum": [
+        "FAST",
+        "THOROUGH"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "surrogate_risk_before": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Surrogate Risk Before"
+    },
+    "surrogate_risk_after": {
+      "anyOf": [
+        {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Surrogate Risk After"
+    },
+    "failure": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FailureInformation"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "proxy_assumptions": {
+      "default": true,
+      "title": "Proxy Assumptions",
+      "type": "boolean"
+    },
+    "assumptions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "action_features": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Action Features",
+      "type": "array"
+    },
+    "action_feasible": {
+      "default": false,
+      "title": "Action Feasible",
+      "type": "boolean"
+    },
+    "config_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Config Hash",
+      "type": "string"
+    },
+    "model_version": {
+      "minLength": 1,
+      "title": "Model Version",
+      "type": "string"
+    },
+    "seed": {
+      "minimum": 0,
+      "title": "Seed",
+      "type": "integer"
+    },
+    "run_id": {
+      "minLength": 1,
+      "title": "Run Id",
+      "type": "string"
+    },
+    "tau_danger": {
+      "default": 0.8,
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Tau Danger",
+      "type": "number"
+    },
+    "tau_safe": {
+      "default": 0.2,
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Tau Safe",
+      "type": "number"
+    },
+    "delta_min": {
+      "default": 0.3,
+      "maximum": 1,
+      "minimum": 0,
+      "title": "Delta Min",
+      "type": "number"
+    },
+    "solver_settings": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Solver Settings",
+      "type": "object"
+    },
+    "machine_id": {
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "title": "Machine Id",
+      "type": "string"
+    },
+    "spec_hash": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Spec Hash"
+    },
+    "protocol_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Protocol Version"
+    },
+    "synthetic": {
+      "title": "Synthetic",
+      "type": "boolean"
+    },
+    "evidence_level": {
+      "description": "Attach achieved evidence to every public recommendation.",
+      "enum": [
+        "none",
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5"
+      ],
+      "readOnly": true,
+      "title": "Evidence Level",
+      "type": "string"
+    },
+    "plausible": {
+      "description": "Retain the read-only Tier 2 alias for existing service clients.",
+      "readOnly": true,
+      "title": "Plausible",
+      "type": "boolean"
+    },
+    "constraints_ok": {
+      "description": "Retain the read-only Tiers 3–4 alias.",
+      "readOnly": true,
+      "title": "Constraints Ok",
+      "type": "boolean"
+    },
+    "joint": {
+      "description": "Retain the read-only all-static-tiers alias.",
+      "readOnly": true,
+      "title": "Joint",
+      "type": "boolean"
+    },
+    "actuator_constraints_feasible": {
+      "description": "Expose the same sparse-action feasibility under the legacy name.",
+      "readOnly": true,
+      "title": "Actuator Constraints Feasible",
+      "type": "boolean"
+    },
+    "outcome": {
+      "$ref": "#/$defs/RecourseOutcome",
+      "description": "Adapt existing service clients without a second decision computation.",
+      "readOnly": true
+    },
+    "tiers": {
+      "additionalProperties": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "description": "Preserve legacy tier names with the same status, margins and evidence.",
+      "readOnly": true,
+      "title": "Tiers",
+      "type": "object"
+    }
+  },
+  "required": [
+    "original_state",
+    "new_state",
+    "delta_per_feature",
+    "risk_before",
+    "risk_after",
+    "validation_report",
+    "timings",
+    "config_hash",
+    "model_version",
+    "seed",
+    "run_id",
+    "machine_id",
+    "spec_hash",
+    "synthetic",
+    "evidence_level",
+    "plausible",
+    "constraints_ok",
+    "joint",
+    "actuator_constraints_feasible",
+    "outcome",
+    "tiers"
+  ],
+  "title": "MachineRecourseResult",
+  "type": "object"
+}

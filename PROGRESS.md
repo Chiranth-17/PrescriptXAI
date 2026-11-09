@@ -1,5 +1,23 @@
 # PrescriptXAI Progress
 
+## Phase 13 generic framework in verification (9 November 2026 IST)
+
+The versioned FD001 spec preserves the existing feature units, bounds and rate
+policies, thresholds, coupling rules, intervention horizon and mode budgets.
+Named CLI and API requests use the machine spec, canonical telemetry windows,
+quality checks and a v3 decision with machine and protocol provenance. The
+compatibility endpoints retain the v2 schema used by historical runs.
+
+The synthetic test machine is provisioned with a generated CSV and YAML.
+It trains and scores using the shared numerical runtime, exercises genuine
+FAST and THOROUGH search offline and verifies measured applied-control feedback.
+The named routes withhold advice for both unconfirmed specs.
+See [machine setup](docs/adding_a_machine.md).
+
+The 19-test framework suite, Ruff, mypy and strict docs passed. The registered
+software diagnostic and full C-MAPSS regression are pending. The phase remains
+open and the next roadmap step awaits the release gate.
+
 ## Phase 12 closed under solo Step 1 (9 November 2026 IST)
 
 The independent clean-clone audit verified exact historical agreement for all 32,116

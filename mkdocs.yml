@@ -33,6 +33,7 @@ nav:
   - Reproduction and deployment: reproducibility.md
   - Verification targets: testing.md
   - Architecture: architecture.md
+  - Add a machine: adding_a_machine.md
   - Mathematics: math.md
   - Evidence:
       - Results: results.md

@@ -12,9 +12,12 @@ from typing import Any, Literal, ParamSpec, TypeVar
 import pandas as pd
 import typer
 
+from prescriptxai.adapters.base import DatasetAdapter
+from prescriptxai.adapters.registry import MachineRegistry
 from prescriptxai.config import AppConfig, load_config
 from prescriptxai.constraints.coupling import fit_and_persist_coupling
 from prescriptxai.constraints.taxonomy import load_taxonomy
+from prescriptxai.core.decision import MachineDecision
 from prescriptxai.data.cmapss import (
     SUBSETS,
     CmapssSubset,
@@ -34,6 +37,15 @@ from prescriptxai.evaluation.report import (
 )
 from prescriptxai.evaluation.runner import evaluate_states
 from prescriptxai.logging_utils import configure_logging
+from prescriptxai.machine_schema import migrate_recourse_result
+from prescriptxai.machines import (
+    fit_machine,
+    load_machine_decision,
+    machine_summary,
+    record_feedback,
+    save_machine_fit,
+    scope_archive_runtime,
+)
 from prescriptxai.models.registry import save_model_bundle
 from prescriptxai.models.train import train_risk_model
 from prescriptxai.pipeline import PrescriptXAI, PrescriptXAIEngine
@@ -67,9 +79,63 @@ def _operator_errors(command: Callable[_P, _R]) -> Callable[_P, _R]:
 
 
 @app.callback()
-def initialize_cli_logging() -> None:
-    """Assign a JSON-formatted per-invocation ID before dispatching commands."""
+def initialize_cli_logging(
+    ctx: typer.Context,
+    machine: str | None = typer.Option(None, "--machine", help="Registered machine ID."),
+    protocol: str = typer.Option("v1", "--protocol", help="Named-machine validation protocol."),
+) -> None:
+    """Initialize logging and select an optional machine for the command."""
     configure_logging()
+    if machine is not None and ctx.invoked_subcommand not in {
+        "train",
+        "assess",
+        "recommend",
+        "info",
+        "check",
+        "feedback",
+        "serve",
+        "data",
+    }:
+        raise typer.BadParameter("this operation requires the legacy workflow without --machine")
+    ctx.obj = (machine, protocol)
+
+
+def _machine_selection(ctx: typer.Context) -> tuple[str | None, str]:
+    machine, protocol = ctx.find_root().obj
+    return machine, protocol
+
+
+def _named_adapter(machine: str) -> DatasetAdapter:
+    try:
+        return MachineRegistry().open(machine)
+    except KeyError as error:
+        raise ValueError(f"unknown machine: {machine}") from error
+
+
+def _named_decision(ctx: typer.Context, config_path: Path) -> MachineDecision:
+    machine, protocol = _machine_selection(ctx)
+    if machine is None:
+        raise ValueError("select a registered machine with --machine")
+    try:
+        spec = MachineRegistry().get(machine)
+    except KeyError as error:
+        raise ValueError(f"unknown machine: {machine}") from error
+    try:
+        return load_machine_decision(spec, protocol)
+    except FileNotFoundError:
+        if spec.dataset.adapter != "cmapss":
+            raise
+    return scope_archive_runtime(spec, protocol, PrescriptXAI.from_config(config_path))
+
+
+def _read_window(path: Path | None) -> pd.DataFrame:
+    if path is None:
+        raise ValueError("provide a JSON window with canonical time_index and feature fields")
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    rows = [raw] if isinstance(raw, dict) else raw
+    if not isinstance(rows, list) or not rows or not all(isinstance(row, dict) for row in rows):
+        raise ValueError("observed window must be a JSON object or nonempty list of objects")
+    return pd.DataFrame(rows)
 
 
 @app.command("init")
@@ -170,20 +236,51 @@ def _download_subset_archive(config: AppConfig, subset: CmapssSubset) -> Path:
 @data_app.command("download")
 @_operator_errors
 def download_cmapss_data(
+    ctx: typer.Context,
     subset: CmapssSubset = typer.Option("FD001", "--subset"),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
 ) -> None:
     """Download NASA C-MAPSS or validate the existing local archive for a subset."""
+    machine, _ = _machine_selection(ctx)
+    if machine is not None:
+        adapter = _named_adapter(machine)
+        if adapter.spec.dataset.subset is None:
+            raise ValueError("provide local tabular telemetry at the machine's configured path")
+        config = load_config(config_path)
+        if adapter.path.resolve() != (config.data.root / config.data.archive_name).resolve():
+            raise ValueError(
+                "archive download configuration does not match the machine dataset path"
+            )
+        _download_subset_archive(config, adapter.spec.dataset.subset)
+        return
     _download_subset_archive(load_config(config_path), subset)
 
 
 @data_app.command("prepare")
 @_operator_errors
 def prepare_cmapss_data(
+    ctx: typer.Context,
     subset: CmapssSubset = typer.Option("FD001", "--subset"),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
 ) -> None:
     """Label, split, scale, and report one real NASA C-MAPSS subset."""
+    machine, _ = _machine_selection(ctx)
+    if machine is not None:
+        adapter = _named_adapter(machine)
+        rows = adapter.load()
+        partition = adapter.split(load_config(config_path).seed, frame=rows)
+        labels = adapter.failure_labels(adapter.spec.failure.horizon, frame=rows)
+        typer.echo(
+            json.dumps(
+                {
+                    **machine_summary(adapter.spec),
+                    "rows": len(rows),
+                    "units_per_partition": [len(units) for units in partition.units],
+                    "positive_labels": int(labels.sum()),
+                }
+            )
+        )
+        return
     if subset not in SUBSETS:
         raise typer.BadParameter(f"subset must be one of {', '.join(SUBSETS)}")
     config = load_config(config_path)
@@ -319,6 +416,7 @@ def fit_coupling_model(
 @app.command("train")
 @_operator_errors
 def train_model(
+    ctx: typer.Context,
     subset: CmapssSubset = typer.Option("FD001", "--subset"),
     model_name: Literal["xgb", "mlp", "lstm"] = typer.Option("xgb", "--model"),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
@@ -326,6 +424,20 @@ def train_model(
 ) -> None:
     """Train, calibrate, and evaluate a risk model on engine-disjoint partitions."""
     config = load_config(config_path)
+    machine, protocol = _machine_selection(ctx)
+    if machine is not None:
+        fit = fit_machine(_named_adapter(machine), config, protocol, model_name)
+        location = save_machine_fit(fit)
+        typer.echo(
+            json.dumps(
+                {
+                    **machine_summary(fit.spec),
+                    "protocol_version": protocol,
+                    "artifact_directory": str(location),
+                }
+            )
+        )
+        return
     if subset not in config.dataset_subsets:
         raise typer.BadParameter(f"subset must be one of {', '.join(config.dataset_subsets)}")
     if config.data.dataset != subset:
@@ -458,6 +570,7 @@ def _select_context(
 @app.command("recommend")
 @_operator_errors
 def recommend_state(
+    ctx: typer.Context,
     state_path: Path | None = typer.Argument(None, exists=True, readable=True),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
     taxonomy_path: Path | None = typer.Option(None, "--features"),
@@ -467,6 +580,13 @@ def recommend_state(
     mode: Literal["fast", "thorough"] | None = typer.Option(None, "--mode"),
 ) -> None:
     """Return the public result for JSON telemetry or a real engine/cycle."""
+    machine, _ = _machine_selection(ctx)
+    if machine is not None:
+        if engine_id is not None or cycle is not None or context_path is not None:
+            raise ValueError("use a canonical JSON window with --machine")
+        result_v3 = _named_decision(ctx, config_path).recommend(_read_window(state_path), mode)
+        typer.echo(result_v3.model_dump_json(indent=2))
+        return
     config = load_config(config_path)
     if taxonomy_path is not None:
         config.pipeline.taxonomy_path = taxonomy_path
@@ -485,6 +605,7 @@ def recommend_state(
 @app.command("assess")
 @_operator_errors
 def assess_state(
+    ctx: typer.Context,
     state_path: Path | None = typer.Argument(None, exists=True, readable=True),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
     engine_id: int | None = typer.Option(None, "--engine-id"),
@@ -492,6 +613,13 @@ def assess_state(
     context_path: Path | None = typer.Option(None, "--context", exists=True),
 ) -> None:
     """Assess true calibrated alert risk without recourse."""
+    machine, _ = _machine_selection(ctx)
+    if machine is not None:
+        if engine_id is not None or cycle is not None or context_path is not None:
+            raise ValueError("use a canonical JSON window with --machine")
+        result_v3 = _named_decision(ctx, config_path).assess(_read_window(state_path))
+        typer.echo(result_v3.model_dump_json(indent=2))
+        return
     config = load_config(config_path)
     try:
         pipeline = PrescriptXAI.from_config(config)
@@ -549,10 +677,52 @@ def batch_states(
 @app.command("info")
 @_operator_errors
 def pipeline_info(
+    ctx: typer.Context,
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
 ) -> None:
     """Describe loaded artifacts, thresholds, groups, raw units and assumptions."""
+    machine, _ = _machine_selection(ctx)
+    if machine is not None:
+        typer.echo(json.dumps(machine_summary(_named_adapter(machine).spec), indent=2))
+        return
     typer.echo(json.dumps(PrescriptXAI.from_config(config_path).info(), indent=2))
+
+
+@app.command("check")
+@_operator_errors
+def check_machine_window(
+    ctx: typer.Context,
+    state_path: Path = typer.Argument(..., exists=True),
+) -> None:
+    """Validate one machine's observed window without fitting or scoring."""
+    from prescriptxai.core.data_quality import require_clean_window
+
+    machine, _ = _machine_selection(ctx)
+    if machine is None:
+        raise ValueError("select a registered machine with --machine")
+    spec = _named_adapter(machine).spec
+    require_clean_window(_read_window(state_path), spec)
+    typer.echo(json.dumps({**machine_summary(spec), "quality": "pass"}))
+
+
+@app.command("feedback")
+@_operator_errors
+def feedback_machine_window(
+    ctx: typer.Context,
+    state_path: Path = typer.Argument(..., exists=True),
+    result_path: Path = typer.Option(..., "--result", exists=True),
+    applied_path: Path = typer.Option(..., "--applied", exists=True),
+    config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
+) -> None:
+    """Recheck and log applied controls against a named-machine result."""
+    result = migrate_recourse_result(json.loads(result_path.read_text(encoding="utf-8")))
+    record = _named_decision(ctx, config_path).feedback(
+        _read_window(state_path),
+        result,
+        _read_state(applied_path),
+    )
+    record_feedback(record)
+    typer.echo(record.model_dump_json(indent=2))
 
 
 @app.command("latency-bench")
@@ -667,6 +837,7 @@ def evaluate_model(
 @app.command("serve")
 @_operator_errors
 def serve_api(
+    ctx: typer.Context,
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
     taxonomy_path: Path | None = typer.Option(None, "--features"),
 ) -> None:
@@ -680,6 +851,12 @@ def serve_api(
     config = load_config(config_path)
     if taxonomy_path is not None:
         config.pipeline.taxonomy_path = taxonomy_path
+    machine, _ = _machine_selection(ctx)
+    if machine is not None:
+        selected = _named_adapter(machine).spec
+        legacy = PrescriptXAI.from_config(config) if selected.dataset.adapter == "cmapss" else None
+        uvicorn.run(create_app(legacy, config), host=config.api.host, port=config.api.port)
+        return
     engine = PrescriptXAI.from_config(config)
     uvicorn.run(create_app(engine), host=config.api.host, port=config.api.port)
 

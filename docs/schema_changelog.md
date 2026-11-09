@@ -1,5 +1,19 @@
 # Public schema history
 
+## 3.0.0 — Phase 13 named-machine decisions
+
+The machine-prefixed HTTP routes and machine-aware CLI use version 3. The
+serialized decision retains the version 2 numerical fields and adds
+`machine_id`, `spec_hash`, `protocol_version` and `synthetic`.
+The independent ValidationReport remains at version 2.
+
+Use `migrate_recourse_result` for a previously saved v2 row. The migration
+defaults its machine to `cmapss_fd001` as the legacy compatibility mapping
+and leaves the unrecorded spec hash and protocol null. It preserves the
+saved decision and verifies its serialized verdicts. The existing
+unprefixed routes still return v2. The SQLite feedback payload starts at
+version 1 and records the named machine, exact spec, protocol and result run.
+
 ## 2.0.0 — Phase 6
 
 One public RecourseResult is shared by library PrescriptXAI, CLI and HTTP responses. It adds

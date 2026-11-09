@@ -131,16 +131,6 @@ class FeatureSpec(BaseModel):
             raise ValueError(
                 f"only controllable features may set controllable_proxy on {self.name!r}"
             )
-        if self.name.startswith("op_setting_") and (
-            self.cmapss_column != self.name or self.group != "immutable_operational"
-        ):
-            raise ValueError("C-MAPSS operating settings must map to immutable operational inputs")
-        if self.name.startswith("sensor_"):
-            suffix = self.name.removeprefix("sensor_")
-            if not suffix.isdigit() or self.cmapss_column != f"s{suffix}":
-                raise ValueError(
-                    f"C-MAPSS sensor mapping for {self.name!r} must use column s{suffix}"
-                )
         return self
 
 
@@ -624,6 +614,43 @@ def bound_vectors(taxonomy: FeatureTaxonomy, scaler: FittedFeatureScaler) -> Bou
     )
 
 
+def build_feature_taxonomy(
+    *,
+    dataset: str,
+    features: tuple[FeatureSpec, ...],
+    bound_estimation: BoundEstimationConfig | None,
+    coupling: CouplingConfig | None,
+    coupling_rules: tuple[CouplingRule, ...],
+) -> FeatureTaxonomy:
+    """Derive the runtime masks and intervals from already validated feature metadata."""
+    items = list(features)
+    return FeatureTaxonomy(
+        schema_version=2,
+        dataset=dataset,
+        feature_groups=_build_groups(items),
+        actuator_constraints=_build_actuator_constraints(items),
+        coupling_rules=list(coupling_rules),
+        features=features,
+        bound_estimation=bound_estimation,
+        coupling=coupling,
+    )
+
+
+def _validate_archive_columns(features: list[FeatureSpec]) -> None:
+    """Keep the registered benchmark column mapping strict at the legacy loader."""
+    for feature in features:
+        if feature.name.startswith("op_setting_") and (
+            feature.cmapss_column != feature.name or feature.group != "immutable_operational"
+        ):
+            raise ValueError("C-MAPSS operating settings must map to immutable operational inputs")
+        if feature.name.startswith("sensor_"):
+            suffix = feature.name.removeprefix("sensor_")
+            if not suffix.isdigit() or feature.cmapss_column != f"s{suffix}":
+                raise ValueError(
+                    f"C-MAPSS sensor mapping for {feature.name!r} must use column s{suffix}"
+                )
+
+
 def load_taxonomy(path: Path, *, expected_sha256: str | None = None) -> FeatureTaxonomy:
     """Load and validate feature taxonomy YAML."""
     import hashlib
@@ -636,6 +663,7 @@ def load_taxonomy(path: Path, *, expected_sha256: str | None = None) -> FeatureT
         raise ValueError("feature taxonomy root must be a mapping")
     if "features" in raw:
         feature_specs = [FeatureSpec.model_validate(item) for item in raw["features"]]
+        _validate_archive_columns(feature_specs)
         if len({spec.name for spec in feature_specs}) != len(feature_specs):
             raise ValueError("duplicate feature names in taxonomy metadata")
         groups = _build_groups(feature_specs)

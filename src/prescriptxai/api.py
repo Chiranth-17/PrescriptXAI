@@ -18,8 +18,10 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from prescriptxai import __version__
+from prescriptxai.adapters.registry import MachineRegistry
 from prescriptxai.config import AppConfig, load_config
 from prescriptxai.logging_utils import bind_run_id, reset_run_id
+from prescriptxai.machine_api import machine_router
 from prescriptxai.pipeline import ArtifactError, InputError, PrescriptXAI, PrescriptXAIEngine
 from prescriptxai.schemas import (
     Assessment,
@@ -132,7 +134,11 @@ class RequestGuard:
 
 
 def create_app(
-    engine: PrescriptXAI | PrescriptXAIEngine | None = None, config: AppConfig | None = None
+    engine: PrescriptXAI | PrescriptXAIEngine | None = None,
+    config: AppConfig | None = None,
+    *,
+    registry: MachineRegistry | None = None,
+    machine_artifacts: Path = Path("artifacts/machines"),
 ) -> FastAPI:
     """Create a loaded service or an explicit unavailable service (503, never fake output)."""
     pipeline = (
@@ -280,4 +286,12 @@ def create_app(
         )
         return loaded().validate_controls(request.state, request.controls, request.context, mode)
 
+    app.include_router(
+        machine_router(
+            registry or MachineRegistry(),
+            pipeline,
+            machine_artifacts,
+            settings.pipeline.max_batch_rows,
+        )
+    )
     return app

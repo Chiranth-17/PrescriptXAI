@@ -65,6 +65,7 @@ def _model_feature_names(
     frame: pd.DataFrame,
     training_frame: pd.DataFrame,
     variance_threshold: float,
+    variance_features: frozenset[str] | None = None,
 ) -> tuple[str, ...]:
     """Select declared snapshot inputs, dropping only sensors constant on training engines."""
     excluded = {"engine_id", "cycle"}
@@ -83,7 +84,10 @@ def _model_feature_names(
         raise ValueError(f"training data is missing configured features: {sorted(missing)}")
     retained: list[str] = []
     for name in declared:
-        if name.startswith("sensor_"):
+        filter_variance = (
+            name.startswith("sensor_") if variance_features is None else name in variance_features
+        )
+        if filter_variance:
             variance = float(training_frame[name].to_numpy(dtype=float).var())
             if variance <= variance_threshold:
                 continue
@@ -232,8 +236,20 @@ def train_risk_model(
             val_ids,
             test_ids,
         )
+    return fit_partitioned_risk_model(splits, config, taxonomy, selected_model)
+
+
+def fit_partitioned_risk_model(
+    splits: EngineSplits,
+    config: AppConfig,
+    taxonomy: FeatureTaxonomy,
+    selected_model: str,
+    *,
+    variance_features: frozenset[str] | None = None,
+) -> TrainingResult:
+    """Fit, calibrate and score already labeled, unit-disjoint model rows."""
     feature_names = _model_feature_names(
-        taxonomy, labeled, splits.train, config.data.variance_threshold
+        taxonomy, splits.train, splits.train, config.data.variance_threshold, variance_features
     )
     taxonomy.validate_model_feature_coverage(feature_names)
     taxonomy = taxonomy.fit_training_bounds(splits.train, columns=feature_names)

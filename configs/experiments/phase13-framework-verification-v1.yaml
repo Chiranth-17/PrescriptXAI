@@ -1,0 +1,25 @@
+schema_version: 1
+phase: 13
+purpose: Verify the machine framework and preserve exact benchmark decisions.
+contracts:
+  production_machine: cmapss_fd001
+  synthetic_machine: toy
+  synthetic_fixture: tests/integration/test_machine_framework.py
+  seed: 1729
+  synthetic_population: Generated local run-to-failure-shaped CSV, kept separate from benchmark data.
+  alerts_only: Both registered test specs have empty confirmation.
+  offline_search: Genuine synthetic FAST and THOROUGH solver and independent validation.
+benchmark:
+  case_manifest: tests/regression/cmapss_baseline.json
+  fixed_subset: tests/regression/subset_manifest.json
+  known_differences: tests/regression/known_diffs.json
+  protocol_versions: [v1, v2]
+  intervention_steps: 1
+  max_changed_features: 3
+  populations: Retain the exact saved groups, cases, model artifacts and parameters.
+  acceptance: Exact output equality or explicit case and field entry in the known-differences policy.
+  reuse: Match registered source, configuration, data, runtime and case key exactly.
+quality:
+  preflight_scope: Software and coverage diagnostic excluding the fixed subset and explicit full test.
+  closure_scope: make release-gate
+  coverage_floors: configs/experiments/phase12-quality.yaml

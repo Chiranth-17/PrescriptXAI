@@ -1,0 +1,468 @@
+schema_version: 1
+machine_id: cmapss_fd001
+display_name: NASA C-MAPSS FD001 (simulated turbofan)
+unit_word: engine
+unit_plural: engines
+data_source: https://phm-datasets.s3.amazonaws.com/NASA/6.+Turbofan+Engine+Degradation+Simulation+Data+Set.zip
+license_note: NASA public benchmark. Consult the source for terms. The archive is provisioned separately.
+synthetic: true
+dataset:
+  adapter: cmapss
+  path: data/raw/CMAPSSData.zip
+  unit_column: unit_id
+  time_column: cycle
+  subset: FD001
+  split_fractions:
+  - 0.7
+  - 0.15
+  - 0.15
+  lifetime_buckets: 6
+features:
+- id: op_setting_1
+  label: Normalized altitude setting
+  unit: normalized
+  column: op_setting_1
+  role: frozen
+  legacy_group: immutable_operational
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed input held fixed during the search.
+- id: op_setting_2
+  label: Normalized Mach number setting
+  unit: normalized
+  column: op_setting_2
+  role: frozen
+  legacy_group: immutable_operational
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed input held fixed during the search.
+- id: op_setting_3
+  label: Throttle resolver angle (TRA)
+  unit: degrees
+  column: op_setting_3
+  role: frozen
+  legacy_group: immutable_operational
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed input held fixed during the search.
+- id: sensor_1
+  label: Total temperature at fan inlet (T2)
+  unit: degR
+  column: s1
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+- id: sensor_2
+  label: Total temperature at LPC outlet (T24)
+  unit: degR
+  column: s2
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+  coupling_group: t24_below_t30
+- id: sensor_3
+  label: Total temperature at HPC outlet (T30)
+  unit: degR
+  column: s3
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+  coupling_group: t24_below_t30, t30_above_t50
+- id: sensor_4
+  label: Total temperature at LPT outlet (T50)
+  unit: degR
+  column: s4
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+  coupling_group: t30_above_t50
+- id: sensor_5
+  label: Total pressure at fan inlet (P2)
+  unit: psia
+  column: s5
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+- id: sensor_6
+  label: Total pressure at bypass duct (P15)
+  unit: psia
+  column: s6
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+- id: sensor_7
+  label: Total pressure at HPC outlet (P30)
+  unit: psia
+  column: s7
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+  coupling_group: p30_above_ps30
+- id: sensor_8
+  label: Physical fan speed (Nf)
+  unit: rpm
+  column: s8
+  role: controllable
+  legacy_group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit:
+    training_delta_quantile: 0.99
+  direction: any
+  why: Measured fan-speed telemetry configured as a controllable proxy; it is not a direct fan actuator
+    command.
+  proxy: true
+- id: sensor_9
+  label: Physical core speed (Nc)
+  unit: rpm
+  column: s9
+  role: controllable
+  legacy_group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit:
+    training_delta_quantile: 0.99
+  direction: any
+  why: Measured core-speed telemetry configured as a controllable proxy; it is not a direct speed or fuel
+    command.
+  proxy: true
+- id: sensor_10
+  label: Engine pressure ratio (P50/P2)
+  unit: ratio
+  column: s10
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+- id: sensor_11
+  label: Static pressure at HPC outlet (Ps30)
+  unit: psia
+  column: s11
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+  coupling_group: p30_above_ps30
+- id: sensor_12
+  label: Fuel flow to Ps30 ratio (phi)
+  unit: ratio
+  column: s12
+  role: controllable
+  legacy_group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit:
+    training_delta_quantile: 0.99
+  direction: any
+  why: Fuel-flow ratio derived from measured telemetry, configured as a proxy; it is not a direct fuel
+    actuator command.
+  proxy: true
+- id: sensor_13
+  label: Corrected fan speed (NRf)
+  unit: rpm
+  column: s13
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+- id: sensor_14
+  label: Corrected core speed (NRc)
+  unit: rpm
+  column: s14
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+- id: sensor_15
+  label: Bypass ratio (BPR)
+  unit: ratio
+  column: s15
+  role: controllable
+  legacy_group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit:
+    training_delta_quantile: 0.99
+  direction: any
+  why: Measured bypass ratio configured as a synopsis proxy; it is not a verified variable-geometry actuator
+    command.
+  proxy: true
+- id: sensor_16
+  label: Burner fuel-air ratio (farB)
+  unit: ratio
+  column: s16
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+- id: sensor_17
+  label: Bleed enthalpy (htBleed)
+  unit: C-MAPSS units
+  column: s17
+  role: controllable
+  legacy_group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit:
+    training_delta_quantile: 0.99
+  direction: any
+  why: Bleed-related enthalpy telemetry configured as a proxy; it is not a direct bleed-valve command.
+  proxy: true
+- id: sensor_18
+  label: Demanded fan speed (Nf_dmd)
+  unit: rpm
+  column: s18
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+- id: sensor_19
+  label: Corrected fan speed demand (PCNfR_dmd)
+  unit: rpm
+  column: s19
+  role: sensor
+  legacy_group: dependent
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit: null
+  direction: any
+  why: Observed sensor channel used in the proxy validation model.
+- id: sensor_20
+  label: HPT coolant bleed (W31)
+  unit: lbm/s
+  column: s20
+  role: controllable
+  legacy_group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit:
+    training_delta_quantile: 0.99
+  direction: any
+  why: Measured coolant-bleed channel configured as a proxy; it is not a verified actuator command.
+  proxy: true
+- id: sensor_21
+  label: LPT coolant bleed (W32)
+  unit: lbm/s
+  column: s21
+  role: controllable
+  legacy_group: controllable
+  bounds:
+    minimum: null
+    maximum: null
+    source: training_percentiles
+  step_limit:
+    training_delta_quantile: 0.99
+  direction: any
+  why: Measured coolant-bleed channel configured as a proxy; it is not a verified actuator command.
+  proxy: true
+- id: engine_id
+  label: Engine unit identifier
+  unit: identifier
+  column: unit_id
+  role: frozen
+  legacy_group: context
+  bounds:
+    minimum: 1.0
+    maximum: 1000.0
+    source: manual
+  step_limit: null
+  direction: any
+  why: Observed input held fixed during the search.
+- id: cycle
+  label: Within-engine cycle index
+  unit: cycle
+  column: cycle
+  role: frozen
+  legacy_group: context
+  bounds:
+    minimum: 1.0
+    maximum: 10000.0
+    source: manual
+  step_limit: null
+  direction: any
+  why: Observed input held fixed during the search.
+failure:
+  horizon: 30
+  label_source: run_to_failure
+  tau_safe: 0.2
+  tau_danger: 0.8
+validation:
+  plausibility:
+    v1: 5.0
+    v2: 8.0
+  coupling_rules:
+  - name: p30_above_ps30
+    feature_a: sensor_7
+    feature_b: sensor_11
+    relation: greater_than
+    tolerance: 0.0
+  - name: t24_below_t30
+    feature_a: sensor_2
+    feature_b: sensor_3
+    relation: less_than
+    tolerance: 0.0
+  - name: t30_above_t50
+    feature_a: sensor_3
+    feature_b: sensor_4
+    relation: greater_than
+    tolerance: 0.0
+  fitted_coupling:
+    backend: ridge
+    residual_sigma_k: 3.0
+    min_r2: 0.35
+    min_rul_cycles: 30
+    artifact_name: '{subset}-coupling.joblib'
+    ridge_alpha: 1.0
+    gradient_boosting_estimators: 100
+    gradient_boosting_max_depth: 3
+    gradient_boosting_learning_rate: 0.05
+    mlp_hidden_dims:
+    - 32
+    - 16
+    mlp_max_iter: 500
+    mlp_learning_rate: 0.001
+    cross_validation_folds: 5
+    torch_hidden_dims:
+    - 32
+    - 16
+    torch_epochs: 250
+    torch_learning_rate: 0.001
+  bound_estimation:
+    lower_percentile: 1.0
+    upper_percentile: 99.0
+    margin_fraction: 0.02
+    degenerate_half_width: 1.0e-06
+  rate_assumption: Train-unit-only 99th percentile of absolute one-cycle change in a telemetry proxy.
+  intervention_steps: 1
+quality:
+  max_time_gap: 1
+  stuck_window: 5
+  stuck_tolerance: 0
+  stuck_features: []
+delta_min: 0.3
+k_max: 3
+latency_budgets:
+  FAST:
+    ingestion_max_ms: 10
+    inference_max_ms: 15
+    optimization_min_ms: 1200
+    optimization_max_ms: 1800
+    validation_max_ms: 100
+    dashboard_max_ms: 250
+    pipeline_min_ms: 1500
+    pipeline_max_ms: 2200
+  THOROUGH:
+    ingestion_max_ms: 10
+    inference_max_ms: 15
+    optimization_min_ms: 1200
+    optimization_max_ms: 1800
+    validation_max_ms: 100
+    dashboard_max_ms: 250
+    pipeline_min_ms: 1500
+    pipeline_max_ms: 2200
+confirmation:
+  confirmed_by: null
+  role: null
+  confirmed_on: null
+sentences:
+  increase: Increase {label} by {amount} {unit}. {why}
+  decrease: Decrease {label} by {amount} {unit}. {why}
+  escalation: Schedule maintenance and obtain domain review before intervention.

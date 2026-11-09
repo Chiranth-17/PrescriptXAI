@@ -1,0 +1,80 @@
+# Copy to configs/machines/my_machine/machine.yaml and replace the example policies.
+schema_version: 1
+machine_id: my_machine
+display_name: Example synthetic machine
+unit_word: unit
+unit_plural: units
+data_source: Replace with the source and collection context
+license_note: Replace with the source terms
+synthetic: true
+dataset:
+  adapter: tabular
+  path: data/raw/my_machine.csv
+  unit_column: asset
+  time_column: time_step
+  remaining_life_column: remaining
+  split_fractions: [0.7, 0.15, 0.15]
+features:
+  - id: setting
+    column: control_position
+    label: Control position
+    unit: "1"
+    role: controllable
+    bounds: {minimum: 0.0, maximum: 1.0, source: manual}
+    step_limit: {absolute: 0.1}
+    why: The model can score this recorded setting at another value.
+    coupling_group: working_range
+  - id: reference
+    column: reference_position
+    label: Reference position
+    unit: "1"
+    role: frozen
+    bounds: {minimum: 0.0, maximum: 1.0, source: manual}
+    why: This reference stays fixed during search.
+    coupling_group: working_range
+failure:
+  horizon: 30
+  label_source: remaining_life
+  tau_safe: 0.2
+  tau_danger: 0.8
+validation:
+  plausibility: {v1: 5.0}
+  rate_assumption: Replace with the time and basis of the step limit.
+  intervention_steps: 1
+  bound_estimation:
+    lower_percentile: 1.0
+    upper_percentile: 99.0
+    margin_fraction: 0.02
+    degenerate_half_width: 0.000001
+  coupling_rules:
+    - name: working_range
+      feature_a: setting
+      feature_b: reference
+      relation: greater_than
+      tolerance: 0.0
+quality:
+  max_time_gap: 1.0
+  stuck_window: 5
+  stuck_tolerance: 0.0
+  stuck_features: [setting]
+delta_min: 0.3
+k_max: 1
+latency_budgets:
+  FAST: &example_budget
+    ingestion_max_ms: 10
+    inference_max_ms: 15
+    optimization_min_ms: 1200
+    optimization_max_ms: 1800
+    validation_max_ms: 100
+    dashboard_max_ms: 250
+    pipeline_min_ms: 1500
+    pipeline_max_ms: 2200
+  THOROUGH: *example_budget
+confirmation:
+  confirmed_by: null
+  role: null
+  confirmed_on: null
+sentences:
+  increase: "Increase {label} by {amount} {unit}. {why}"
+  decrease: "Decrease {label} by {amount} {unit}. {why}"
+  escalation: Schedule maintenance and obtain a domain review.
