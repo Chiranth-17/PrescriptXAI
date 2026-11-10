@@ -61,6 +61,13 @@ in 277.02 seconds and both retained gates. Coverage was 91.03% scoped
 lines, 91.10% package lines and 87.76% combined. The software run
 excluded the fixed subset and full scientific regression.
 
+The registered FD001 timing run at `6a9ba75` completed all 160 measured
+edits and retained 32 warmups. Browser p95 ranged from 364.4 to 396.8 ms
+across the eight preset/viewport groups, missing the 50 ms target. The
+server scoring call ranged from 23.3 to 24.7 ms p95. All eight distinct
+inputs reproduced the displayed risks when rechecked with the fitted model.
+This Alerts-only measurement does not cover confirmed prescriptions.
+
 The [acceptance report](docs/acceptance_report.md) separates local verification
 from the remaining dashboard functionality and gates. The design mock and two
 classmate sessions are pending. The full dashboard gate and Step 3B acceptance

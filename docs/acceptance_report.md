@@ -13,7 +13,7 @@ The Phase 13 toy remains a framework test fixture.
 | Advisory and stale-result guards | Input-bound FAST work, a 400 ms debounce and Alerts-only for missing confirmation | Tests cancel queued work and discard a superseded running response. Chromium verifies withholding. | Passed locally for guards and job lifecycle |
 | Validity, statistical plausibility, control limits and coupling | Four labeled checks in the confirmed prescription view | Available archive remains in Alerts-only mode | Pending end-to-end acceptance |
 | Sparsity, risk-drop badges and waterfall | Confirmed-view badges and sequential calibrated scores | A replay test recomputes archived endpoints and verifies the changes add to the total. Confirmed rendering remains pending. | Partial |
-| Timing and performance | Risk preview time and measured prescription stages beside configured budgets | Controlled browser and serial latency remain pending | Partial |
+| Timing and performance | Actual keyboard-to-risk and server scoring timings for all four FD001 presets at both widths | Browser p95 missed the 50 ms target in all eight groups. Confirmed FAST and follow-up timings remain pending. | Browser target missed |
 | Applied outcome, trend and feedback | Live model recheck, configured adherence labels, same-unit trend and scoped SQLite log with seeded demo records | Tests cover adherence boundaries, deterministic interpolation, real FD001 trend re-scoring and backward-compatible log reads. The confirmed browser path remains pending. | Partial |
 | Edited-settings comparison | A separately labeled recorded-settings reference for the exact same base input | Both risk values use independent checks. FD001 remains Alerts-only. | Pending confirmed browser acceptance |
 | Scenario export | Standalone HTML with current settings, predicted risk and provenance | Downloaded at both widths and matched to the displayed Alerts-only case study | Passed locally for Alerts-only |
@@ -164,12 +164,52 @@ uses the same scoring and validation as the dashboard, and labels every
 generated record as simulated. Both forms retain the engineer-confirmation
 gate.
 
+## Controlled interactive timing
+
+Run `preview-latency-20261110-v2` used source
+`6a9ba75e352381f55afc9fd790a5afd7ebb1e7ed` and
+`configs/experiments/phase17-preview-latency-v2.json`
+(SHA-256 `3f979abf539faf8ff5fb7b2662925454929539419368e61e0c191c7bd874affe`).
+It measured the four registered FD001 official-test XGBoost v1 presets in
+Alerts-only mode. Active spec
+`72d91ddb5ab7b415044060847c5934d7ce45b53e346600494f4d792c59dfff0d`,
+protocol v1, `k_max=3`, `K=1`, `D_max=5.0`.
+One local Chromium 143.0.7499.4 client used light theme on Windows, serially.
+Each group has 20 measured edits and four retained warmups. The table gives
+nearest-rank p50, p95 and maximum in milliseconds.
+
+| Viewport | Recorded unit / time | Browser p50 / p95 / max | Server scoring p50 / p95 / max |
+| --- | --- | ---: | ---: |
+| desktop 1360 px | 82 / 156 | 338.4 / 372.8 / 396.8 | 20.1 / 23.3 / 26.8 |
+| desktop 1360 px | 31 / 190 | 339.5 / 389.0 / 418.6 | 20.2 / 24.3 / 25.2 |
+| desktop 1360 px | 76 / 205 | 338.1 / 396.8 / 400.0 | 21.9 / 23.7 / 23.9 |
+| desktop 1360 px | 76 / 201 | 338.5 / 380.7 / 433.4 | 21.2 / 24.3 / 30.8 |
+| phone 390 px | 82 / 156 | 337.1 / 364.4 / 406.2 | 19.4 / 24.7 / 25.5 |
+| phone 390 px | 31 / 190 | 344.6 / 390.8 / 400.8 | 21.0 / 24.3 / 25.3 |
+| phone 390 px | 76 / 205 | 335.7 / 385.1 / 402.1 | 21.6 / 24.6 / 25.6 |
+| phone 390 px | 76 / 201 | 341.9 / 376.8 / 396.5 | 21.1 / 23.5 / 25.1 |
+
+All eight browser p95 values exceeded the 50 ms target. Browser timing
+covers the trusted keyboard event through the first frame that observes the
+new settings and risk on the idle page. Server timing covers the
+`simulate_risk` call, as shown in the dashboard caption. The measurement
+does not allocate the remaining delay among input handling, transport,
+server rerun work and browser rendering. It is separate from the archived
+serial FAST measurements. Prescription and follow-up timing remain
+unmeasured while the machine is Alerts-only.
+
+The completed run exited zero and retained all 192 trials. A separate check
+verified the 12 file hashes, recalculated all eight distinct model inputs and
+matched every displayed score and timing summary. See
+`artifacts/phase17/preview-latency-20261110-v2/{summary.json,trials.jsonl,verification.json}`.
+The v1 runner stopped on a repeated endpoint key during warmup and its
+receipt remains in `artifacts/phase17/preview-latency-20261110-v1`.
+
 ## Local verification
 
 The focused suite passed 86 tests in 66.96 seconds, including 19 simulator
 tests. Ruff, mypy over 85 source files, and the strict documentation build
-also passed. The full quality gate and the controlled latency suite were
-outside this checkpoint.
+also passed. The full quality gate was outside that software checkpoint.
 
 Chromium checked the [desktop](screenshots/phase17-simulator-desktop.png)
 and [phone](screenshots/phase17-simulator-phone.png) layouts at 1,360 and 390

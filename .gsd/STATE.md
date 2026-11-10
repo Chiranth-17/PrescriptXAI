@@ -2,7 +2,7 @@
 phase: 13
 status: complete
 current_activity: solo_step3_dashboard
-activity_status: phase17_software_diagnostic_passed
+activity_status: phase17_interactive_latency_gap
 ---
 
 ## Solo Step 3 in progress (10 November 2026 IST)
@@ -11,8 +11,9 @@ The machine-scoped simulator has local FD001 risk, stale-input, Alerts-only
 and browser evidence, with input-bound scheduling, scoped follow-up and export.
 See the [acceptance report](../docs/acceptance_report.md).
 The latest software-only diagnostic passed 737 selected tests and all retained
-coverage floors. The fixed subset and full scientific verification remain open. The dashboard and Step 3B remain open. The published design reference and
-participant sessions are pending.
+coverage floors. Controlled FD001 interactive timing missed the 50 ms browser target in all eight
+groups. The fixed subset, full scientific verification, published design
+reference and participant sessions remain open.
 
 ## Solo Step 2 complete (10 November 2026 IST)
 
