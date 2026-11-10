@@ -678,3 +678,32 @@ separately with fresh timings and EXACT equality to retained payload scientific 
 Run them after712fresh controls and before case48 to reconstruct the interrupted arm
 warmup. Extra diagnostic calls=759 (712controls+47arm rechecks); missing factorial calls
 =2089. Final counts/receipts disclose both; no originaltiming is replaced.
+
+
+
+## Phase 17 interactive risk-preview timing
+
+The timing registration is `configs/experiments/phase17-preview-latency-v1.json`.
+It uses the four existing FD001 official-test presets, the retained fitted
+XGBoost v1 profile and the registered Alerts-only machine. This is a fixed
+dashboard workload with no new training, population selection, or solver runs.
+One headless Chromium client runs the registered desktop and phone viewports
+serially in light mode. Each preset has four retained warmups and 20 measured
+keyboard edits, alternating endpoints of its first adjustable slider.
+
+The browser measurement runs from a trusted keydown to the first animation
+frame that observes the changed settings, matching machine and recorded
+window, idle script and numeric risk. The server measurement is the rounded
+caption for the underlying risk-preview call on that rerun. The browser
+measurement is an interactive observation, and the server measurement
+covers only the scoring call. Report nearest-rank p50, p95 and maximum for
+each preset and viewport. Keep every attempted trial. A missing or
+mismatched observation invalidates the run. The interactive p95 target is
+under 50 ms. These fixed-preset measurements carry no confidence interval
+or pooled estimate.
+
+Store source and input hashes, host identity, raw timings and native exits.
+The current FD001 spec has no engineer confirmation, so the benchmark
+does not measure FAST prescription latency, checked follow-up latency or
+real equipment response. Keep these results separate from the archived
+serial solver benchmark and the scientific verification gates.
