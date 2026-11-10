@@ -121,7 +121,7 @@ def test_simulation_http_rejects_stale_and_scores_demonstration(
 ) -> None:
     """The scoped HTTP route binds risk and demonstration prescriptions to the request."""
     decision, runtime, rows = replay
-    client = TestClient(create_app(runtime))
+    client = TestClient(create_app(runtime, local_demo=True))
     spec = client.get(f"/machines/{DEFAULT_MACHINE}/spec")
     assert spec.status_code == 200
     assert spec.json()["machine_id"] == DEFAULT_MACHINE
@@ -419,7 +419,7 @@ def test_feedback_summary_scopes_an_empty_log(
 ) -> None:
     """Read scoped source groups without creating a database or requiring a fitted solve."""
     decision, runtime, _ = replay
-    client = TestClient(create_app(runtime, machine_artifacts=tmp_path))
+    client = TestClient(create_app(runtime, machine_artifacts=tmp_path, local_demo=True))
     query = {"machine_id": DEFAULT_MACHINE}
     default = client.get("/feedback/summary", params=query)
     assert default.status_code == 200
@@ -666,7 +666,7 @@ _feedback_log(d, settings.follow_up, log)
     assert any("could not be reconciled" in item.value for item in renderer.warning)
     assert any("Target unavailable" in item.value for item in renderer.markdown)
     assert not decision.spec.confirmation.confirmed
-    client = TestClient(create_app(replay[1], machine_artifacts=tmp_path / "api"))
+    client = TestClient(create_app(replay[1], machine_artifacts=tmp_path / "api", local_demo=True))
     blocked = client.post(
         "/feedback",
         json={
@@ -748,7 +748,9 @@ def test_replay_routes_fail_closed_on_invalid_inputs_and_local_evidence(
     config = runtime.config.model_copy(deep=True)
     config.pipeline.max_batch_rows = 1
     with TestClient(
-        create_app(runtime, config, registry=local_registry, machine_artifacts=tmp_path)
+        create_app(
+            runtime, config, registry=local_registry, machine_artifacts=tmp_path, local_demo=True
+        )
     ) as client:
         assert client.get("/machines/unknown/scenarios").status_code == 404
         assert client.get("/machines/UPPER/spec").status_code == 422

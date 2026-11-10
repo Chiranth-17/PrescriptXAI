@@ -212,7 +212,7 @@ def test_actual_http_adapter_matches_direct_and_rejects_errors(fitted_config: Pa
     """Send real HTTP through FastAPI's real service, preserving effective-mode identities."""
     identity = profile_identity(fitted_config)
     service = direct_service(str(fitted_config), identity)
-    client = TestClient(create_app(service))
+    client = TestClient(create_app(service, local_demo=True))
 
     class Handler(BaseHTTPRequestHandler):
         """Bridge a local socket to the actual ASGI app for portable network parity tests."""

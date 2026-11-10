@@ -39,6 +39,57 @@ separate versioning and output-parity verification; retained pickle exceptions a
 administrative requirement remain explicit here. Keep credentials in the process environment,
 never in scientific YAML or recommendation exports.
 
+## Authenticated serving
+
+The API and dashboard CLI commands require HTTPS authentication by default.
+Provision separate long passwords for the operator and administrator. Run
+`prescriptxai hash-password` once for each account and put its output in the
+appropriate environment variable. The command prompts without echoing the
+password. Verifiers use PBKDF2-HMAC-SHA256 with 600,000 iterations and distinct
+random salts. See [OWASP password storage guidance](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html).
+
+| Environment variable | Purpose |
+| --- | --- |
+| `PRESCRIPTXAI_AUTH_ORIGIN` | Exact HTTPS origin, including any non-default port, for this listener |
+| `PRESCRIPTXAI_OPERATOR_PASSWORD_HASH` | Salted verifier for the `operator` account |
+| `PRESCRIPTXAI_ADMIN_PASSWORD_HASH` | Salted verifier for the `admin` account |
+| `PRESCRIPTXAI_TLS_CERTFILE` and `PRESCRIPTXAI_TLS_KEYFILE` | Certificate and key for direct HTTPS. Set both when terminating TLS in the service. |
+| `PRESCRIPTXAI_ARTIFACT_MANIFEST` | Administrator-controlled JSON file containing independently established model checksums |
+| `PRESCRIPTXAI_API_TOKEN` | Optional short-lived bearer token when the dashboard calls a separate HTTPS API |
+
+Use a single worker per listener. Authentication sessions expire after five
+minutes of request inactivity or fifteen minutes total. Restarting the
+process discards all sessions. Login is limited to six attempts per client
+and 64 total in a rolling minute. Cookie-authenticated API writes require the
+configured Origin and `X-CSRF-Token` from login. The dashboard checks the
+WebSocket origin and session and retains Streamlit's native HTTP XSRF
+protection. Browser logout is at `/auth/session`. Cookies are Secure,
+HttpOnly and SameSite=Strict.
+[OWASP session management guidance](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
+
+For API automation, POST a JSON object with `username` and `password` to
+`/auth/login` using the configured Origin header. Keep the returned
+`access_token` in memory and pass it as an Authorization bearer token. The
+operator can read views and record feedback. The administrator can also inspect
+the account inventory at `/auth/admin`. Account rotation and model deployment
+are host administration operations. The network service has no upload or
+account-edit endpoint. Run behind a controlled TLS ingress if the certificate
+is provisioned at the proxy. Forward scheme and client address only from
+trusted proxy peers and preserve the public Host header.
+
+The manifest has `schema_version: 1` and a `files` object mapping
+workspace-relative or absolute fitted-artifact paths to lowercase SHA-256
+digests. Establish those hashes from an independently verified model bundle.
+Store the manifest under an administrator-controlled path separate from writable
+model storage. During loads, serialized files absent from the manifest or
+different from their registered bytes are refused before decoding. Rotate the
+manifest and model bundle together, then restart the listener.
+
+For local research and usability sessions, the `--local-demo` flag on
+`prescriptxai dashboard` or `prescriptxai serve` explicitly selects loopback-only
+operation. Use the recorded demonstration limits and keep the session on the
+operator's device.
+
 ## Dependency audit checkpoint
 
 The installed environment was audited with pip-audit2.10.1 using its public PyPI advisory

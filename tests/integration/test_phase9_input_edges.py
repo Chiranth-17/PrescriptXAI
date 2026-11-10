@@ -61,6 +61,6 @@ def test_extreme_finite_lstm_history_is_rejected_before_prediction(
     history = [[1e308, 2.0], [1.0, 2.0]]
     with pytest.raises(HistoryError, match="numeric range"):
         preview_service.assess(state, {"history": history})
-    client = TestClient(create_app(preview_service), raise_server_exceptions=False)
+    client = TestClient(create_app(preview_service, local_demo=True), raise_server_exceptions=False)
     response = client.post("/assess", json={"state": state, "context": {"history": history}})
     assert response.status_code == 422 and response.json()["error_type"] == "HistoryError"

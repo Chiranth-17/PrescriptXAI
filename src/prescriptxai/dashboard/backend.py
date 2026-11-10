@@ -11,6 +11,7 @@ from itertools import permutations
 from pathlib import Path
 from typing import Any, Literal, cast
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
 import streamlit as st
@@ -68,14 +69,20 @@ class Backend:
     def remote(self, route: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
         """Call the configured API with environment-only credentials and bounded responses."""
         headers = {"Content-Type": "application/json"}
+        token = os.environ.get("PRESCRIPTXAI_API_TOKEN")
         secret = os.environ.get(self.settings.api_key_env)
-        if secret:
-            headers["X-API-Key"] = secret
+        url = self.settings.api_url.rstrip("/") + route
+        if token and urlsplit(url).scheme != "https":
+            raise OperatorError("An authenticated remote API requires HTTPS")
         request = Request(
-            self.settings.api_url.rstrip("/") + route,
+            url,
             data=json.dumps(payload, allow_nan=False).encode() if payload is not None else None,
             headers=headers,
         )
+        if token:
+            request.add_unredirected_header("Authorization", f"Bearer {token}")
+        elif secret:
+            request.add_unredirected_header("X-API-Key", secret)
         try:
             with urlopen(request, timeout=self.settings.timeout_seconds) as response:
                 data = response.read(8 * 1024 * 1024 + 1)

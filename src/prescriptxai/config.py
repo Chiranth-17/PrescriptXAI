@@ -496,7 +496,14 @@ def _apply_environment_overrides(raw: dict[str, Any]) -> dict[str, Any]:
     service_variables = {
         "PRESCRIPTXAI_DASHBOARD_CONFIG",
         "PRESCRIPTXAI_API_KEY",
+        "PRESCRIPTXAI_API_TOKEN",
+        "PRESCRIPTXAI_AUTH_ORIGIN",
+        "PRESCRIPTXAI_OPERATOR_PASSWORD_HASH",
+        "PRESCRIPTXAI_ADMIN_PASSWORD_HASH",
+        "PRESCRIPTXAI_TLS_CERTFILE",
+        "PRESCRIPTXAI_TLS_KEYFILE",
         "PRESCRIPTXAI_TRUSTED_ARTIFACT_ROOTS",
+        "PRESCRIPTXAI_ARTIFACT_MANIFEST",
     }
     api_settings = raw.get("api", {})
     if not isinstance(api_settings, dict):

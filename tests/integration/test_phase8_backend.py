@@ -114,7 +114,7 @@ def test_missing_required_coupling_fails_closed(preview_service: PrescriptXAI) -
     state = {"actuator": -2.0, "sensor": 2.0}
     with pytest.raises(ArtifactError, match="coupling model is unavailable"):
         preview_service.validate_controls(state, {"actuator": 0.5})
-    response = TestClient(create_app(preview_service)).post(
+    response = TestClient(create_app(preview_service, local_demo=True)).post(
         "/validate-controls", json={"state": state, "controls": {"actuator": 0.5}},
     )
     assert response.status_code == 503 and response.json()["error_type"] == "ArtifactError"
@@ -123,7 +123,7 @@ def test_missing_required_coupling_fails_closed(preview_service: PrescriptXAI) -
 
 def test_manual_api_uses_library_and_typed_errors(preview_service: PrescriptXAI) -> None:
     """The optional API preview path has exact decision parity and no raw operator traceback."""
-    client = TestClient(create_app(preview_service))
+    client = TestClient(create_app(preview_service, local_demo=True))
     state = {"actuator": -2.0, "sensor": 2.0}
     controls = {"actuator": 0.5}
     direct = preview_service.validate_controls(state, controls)
@@ -138,7 +138,7 @@ def test_manual_api_uses_library_and_typed_errors(preview_service: PrescriptXAI)
         "/validate-controls", json={"state": state, "controls": {"actuator": True}}
     )
     assert boolean.status_code == 422 and "boolean" in boolean.text
-    missing = TestClient(create_app()).post(
+    missing = TestClient(create_app(local_demo=True)).post(
         "/validate-controls", json={"state": state, "controls": controls}
     )
     assert missing.status_code == 503

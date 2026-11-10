@@ -162,11 +162,12 @@ def dashboard_command(
     settings: Path = typer.Option(Path("configs/dashboard.yaml"), "--settings"),
     host: str = typer.Option("127.0.0.1", "--host"),
     port: int = typer.Option(8501, "--port"),
+    local_demo: bool = typer.Option(False, "--local-demo", help="Allow loopback-only demo access"),
 ) -> None:
     """Launch the installed dashboard using local trusted artifacts and settings."""
     from prescriptxai.workspace import launch_dashboard
 
-    raise typer.Exit(launch_dashboard(settings, host, port))
+    raise typer.Exit(launch_dashboard(settings, host, port, local_demo=local_demo))
 
 
 @app.command("reproduce")
@@ -915,12 +916,23 @@ def evaluate_model(
     )
 
 
+@app.command("hash-password")
+@_operator_errors
+def hash_password_command() -> None:
+    """Prompt for a password and print its salted verifier for deployment."""
+    from prescriptxai.security import hash_password
+
+    password = typer.prompt("Password", hide_input=True, confirmation_prompt=True)
+    typer.echo(hash_password(password))
+
+
 @app.command("serve")
 @_operator_errors
 def serve_api(
     ctx: typer.Context,
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
     taxonomy_path: Path | None = typer.Option(None, "--features"),
+    local_demo: bool = typer.Option(False, "--local-demo", help="Allow loopback-only demo access"),
 ) -> None:
     """Start the optional FastAPI service using configured bind settings."""
     try:
@@ -932,14 +944,27 @@ def serve_api(
     config = load_config(config_path)
     if taxonomy_path is not None:
         config.pipeline.taxonomy_path = taxonomy_path
+    from prescriptxai.artifacts import require_deployment_manifest
+    from prescriptxai.security import tls_files
+
+    if local_demo and config.api.host not in {"127.0.0.1", "::1", "localhost"}:
+        raise ValueError("local demo can only bind to a loopback address")
+    if not local_demo:
+        require_deployment_manifest()
+    cert, key = tls_files()
     machine, _ = _machine_selection(ctx)
-    if machine is not None:
-        selected = _named_adapter(machine).spec
-        legacy = PrescriptXAI.from_config(config) if selected.dataset.adapter == "cmapss" else None
-        uvicorn.run(create_app(legacy, config), host=config.api.host, port=config.api.port)
-        return
-    engine = PrescriptXAI.from_config(config)
-    uvicorn.run(create_app(engine), host=config.api.host, port=config.api.port)
+    spec = _named_adapter(machine).spec if machine is not None else None
+    engine = (
+        PrescriptXAI.from_config(config)
+        if spec is None or spec.dataset.adapter == "cmapss" else None
+    )
+    uvicorn.run(
+        create_app(engine, config, local_demo=local_demo),
+        host=config.api.host,
+        port=config.api.port,
+        ssl_certfile=cert,
+        ssl_keyfile=key,
+    )
 
 
 def main() -> None:

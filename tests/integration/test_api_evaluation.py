@@ -54,7 +54,7 @@ def _engine() -> PrescriptXAIEngine:
 
 def test_api_health_recommend_and_invalid_state() -> None:
     """The service returns each tier separately and rejects incomplete machine states."""
-    client = TestClient(create_app(_engine()))
+    client = TestClient(create_app(_engine(), local_demo=True))
 
     health = client.get("/health")
     response = client.post("/recommend", json={"state": {"actuator": -2, "sensor": 2}})

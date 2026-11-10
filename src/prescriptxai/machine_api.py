@@ -33,7 +33,7 @@ from prescriptxai.schemas import _reject_nonreal_measurement
 class MachineWindowRequest(BaseModel):
     """Canonical observed rows in chronological order."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     rows: list[dict[str, object]] = Field(min_length=1)
     protocol_version: str = "v1"

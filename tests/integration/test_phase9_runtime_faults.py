@@ -31,7 +31,7 @@ def test_postload_predictor_fault_is_typed_for_library_and_operator(fitted_confi
     for operation in operations:
         with pytest.raises(ArtifactError, match="verified artifacts"):
             operation()
-    client = TestClient(create_app(service), raise_server_exceptions=False)
+    client = TestClient(create_app(service, local_demo=True), raise_server_exceptions=False)
     response = client.post("/assess", json={"state": state})
     assert response.status_code == 503
     assert response.json()["error_type"] == "ArtifactError"

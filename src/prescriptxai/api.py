@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import secrets
 from contextvars import Token
+from math import isfinite
 from pathlib import Path
 from uuid import uuid4
 
@@ -14,7 +16,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
-from pydantic import ValidationError, field_validator
+from pydantic import ConfigDict, ValidationError, field_validator
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import RequestResponseEndpoint
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
@@ -32,8 +34,21 @@ from prescriptxai.schemas import (
     RecourseResult,
     _reject_nonreal_measurement,
 )
+from prescriptxai.security import AuthStore
+from prescriptxai.security_http import SessionGate
 
 logger = logging.getLogger(__name__)
+
+
+def _reject_json_constant(_value: str) -> float:
+    raise ValueError("nonfinite JSON number")
+
+
+def _finite_json_float(value: str) -> float:
+    number = float(value)
+    if not isfinite(number):
+        raise ValueError("nonfinite JSON number")
+    return number
 
 
 def _validation_details(error: ValidationError | RequestValidationError) -> dict[str, object]:
@@ -55,6 +70,8 @@ def _validation_details(error: ValidationError | RequestValidationError) -> dict
 class ControlPreviewRequest(RecourseRequest):
     """Original observed state plus named manual raw-unit proxy controls."""
 
+    model_config = ConfigDict(allow_inf_nan=False)
+
     controls: dict[str, float]
 
     @field_validator("controls", mode="before")
@@ -70,8 +87,8 @@ class ControlPreviewRequest(RecourseRequest):
 class RequestGuard:
     """Bound actual streamed bytes, authenticate and bind an isolated request identifier."""
 
-    def __init__(self, app: ASGIApp, config: AppConfig) -> None:
-        self.app, self.config = app, config
+    def __init__(self, app: ASGIApp, config: AppConfig, *, local_demo: bool) -> None:
+        self.app, self.config, self.local_demo = app, config, local_demo
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         """Check one bounded request and preserve request-local logging context."""
@@ -95,7 +112,7 @@ class RequestGuard:
             await send(message)
 
         try:
-            key = os.environ.get(self.config.api.api_key_env)
+            key = os.environ.get(self.config.api.api_key_env) if self.local_demo else None
             if key and not secrets.compare_digest(headers.get(b"x-api-key", b""), key.encode()):
                 await JSONResponse(
                     {
@@ -123,6 +140,27 @@ class RequestGuard:
                 body.extend(chunk)
                 if not message.get("more_body", False):
                     break
+            content_type = headers.get(b"content-type", b"").split(b";", 1)[0].strip().lower()
+            if body and (
+                not content_type
+                or content_type == b"application/json"
+                or content_type.endswith(b"+json")
+            ):
+                try:
+                    json.loads(
+                        body, parse_constant=_reject_json_constant, parse_float=_finite_json_float
+                    )
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    pass  # Keep the framework's existing malformed-body error contract.
+                except (ValueError, RecursionError):
+                    await JSONResponse(
+                        {
+                            "detail": "request contains nonfinite numbers or invalid JSON nesting",
+                            "mode": self.config.pipeline.default_mode.upper(),
+                        },
+                        status_code=422,
+                    )(scope, receive, respond)
+                    return
             delivered = False
 
             async def replay() -> Message:
@@ -143,6 +181,7 @@ def create_app(
     *,
     registry: MachineRegistry | None = None,
     machine_artifacts: Path = Path("artifacts/machines"),
+    local_demo: bool = False,
 ) -> FastAPI:
     """Create a loaded service or an explicit unavailable service (503, never fake output)."""
     pipeline = (
@@ -172,7 +211,13 @@ def create_app(
             "Model validity is separate from plausibility; no RUL extension is established."
         ),
     )
-    app.add_middleware(RequestGuard, config=settings)
+    app.add_middleware(RequestGuard, config=settings, local_demo=local_demo)
+    if not local_demo:
+        app.add_middleware(
+            SessionGate,
+            auth=AuthStore.from_environment(),
+            mode=settings.pipeline.default_mode.upper(),
+        )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.api.cors_origins,
@@ -192,6 +237,20 @@ def create_app(
                     "mode": settings.pipeline.default_mode.upper(),
                 },
                 status_code=500,
+            )
+        if (
+            response.status_code == 400
+            and request.method == "OPTIONS"
+            and "origin" in request.headers
+            and "access-control-request-method" in request.headers
+        ):
+            response = JSONResponse(
+                {
+                    "detail": "CORS preflight rejected",
+                    "mode": settings.pipeline.default_mode.upper(),
+                },
+                status_code=400,
+                headers={"Vary": "Origin"},
             )
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
@@ -275,7 +334,9 @@ def create_app(
         return {
             **loaded().info(),
             "mode": settings.pipeline.default_mode.upper(),
-            "authentication_enabled": bool(os.environ.get(settings.api.api_key_env)),
+            "authentication_enabled": (
+                not local_demo or bool(os.environ.get(settings.api.api_key_env))
+            ),
         }
 
     @app.get("/version")

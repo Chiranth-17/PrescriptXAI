@@ -45,7 +45,8 @@ def test_raw_train_calibrate_validators_recommend_validate_api_dashboard(
         service.engine.coupling,
     ).to_schema()
     assert validation == direct.validation_report
-    response = TestClient(create_app(service)).post("/recommend", json={"state": state})
+    client = TestClient(create_app(service, local_demo=True))
+    response = client.post("/recommend", json={"state": state})
     assert response.status_code == 200, response.text
     api = RecourseResult.model_validate(response.json())
     assert api.status == direct.status and api.validation_report == validation

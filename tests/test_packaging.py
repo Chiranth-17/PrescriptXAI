@@ -111,7 +111,7 @@ def test_dashboard_launcher_validates_inputs_and_forwards_environment(
         return SimpleNamespace(returncode=7)
 
     monkeypatch.setattr(workspace.subprocess, "run", launch)
-    assert workspace.launch_dashboard(settings, "127.0.0.1", 8501) == 7
+    assert workspace.launch_dashboard(settings, "127.0.0.1", 8501, local_demo=True) == 7
     assert Path(captured["command"][4]).is_file()
     assert captured["env"]["PRESCRIPTXAI_DASHBOARD_CONFIG"] == str(settings.resolve())
     monkeypatch.setattr(workspace.importlib.util, "find_spec", lambda _: None)

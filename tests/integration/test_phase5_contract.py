@@ -20,7 +20,7 @@ def test_validation_modes_margins_and_evidence_survive_api() -> None:
     config.recourse.restarts = config.recourse.alpha_steps = 1
     validator = fit_mahalanobis_validator(training, bundle, bundle.training_engine_ids, config)
     engine = PrescriptXAIEngine(config, taxonomy, bundle, validator)
-    response = TestClient(create_app(engine)).post(
+    response = TestClient(create_app(engine, local_demo=True)).post(
         "/recommend", json={"state": {"actuator": -2.0, "sensor": 2.0}}
     )
     assert response.status_code == 200

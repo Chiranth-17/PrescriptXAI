@@ -271,7 +271,7 @@ def test_schema_finite_and_complete(service: PrescriptXAI) -> None:
 def test_api_routes_and_guardrails(service: PrescriptXAI, monkeypatch: pytest.MonkeyPatch) -> None:
     """All endpoints share the contract, auth, request IDs, CORS and bounded payload errors."""
     service.config.api.cors_origins = ["https://operator.example"]
-    client = TestClient(create_app(service))
+    client = TestClient(create_app(service, local_demo=True))
     for path in ("/health", "/config", "/version", "/openapi.json", "/docs"):
         assert client.get(path).status_code == 200
     state = {"actuator": -2.0, "sensor": 2.0}
@@ -321,7 +321,7 @@ def test_api_routes_and_guardrails(service: PrescriptXAI, monkeypatch: pytest.Mo
         "/recommend", content=json.dumps(payload), headers={"Content-Length": "1"}
     )
     assert oversized.status_code == 413
-    unavailable = TestClient(create_app(None, service.config))
+    unavailable = TestClient(create_app(None, service.config, local_demo=True))
     for path in ("/health", "/config"):
         assert unavailable.get(path).status_code == 503
     for path, body in (
@@ -330,14 +330,14 @@ def test_api_routes_and_guardrails(service: PrescriptXAI, monkeypatch: pytest.Mo
         ("/recommend/batch", {"states": [state]}),
     ):
         # Use a separate unloaded config with the ordinary byte limit.
-        assert TestClient(create_app()).post(path, json=body).status_code == 503
+        assert TestClient(create_app(local_demo=True)).post(path, json=body).status_code == 503
 
 
 def test_configured_default_mode_is_shared(service: PrescriptXAI) -> None:
     """Omitted API/library batch modes honor YAML, while an explicit mode overrides it."""
     service.config.pipeline.default_mode = "thorough"
     state = {"actuator": 2, "sensor": 2}
-    client = TestClient(create_app(service))
+    client = TestClient(create_app(service, local_demo=True))
     assert service.recommend_batch(pd.DataFrame([state]))[0].mode == "THOROUGH"
     assert client.post("/recommend", json={"state": state}).json()["mode"] == "THOROUGH"
     assert client.post("/assess", json={"state": state}).json()["mode"] == "THOROUGH"

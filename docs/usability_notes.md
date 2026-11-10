@@ -6,7 +6,7 @@ Run two separate sessions of about 10 minutes with people who have never seen Pr
 
 ## Facilitator preparation
 
-1. Open the live dashboard in normal mode, or Demo if that is the available workflow. Record the mode and limits label. Use a recorded case with a current prescription and follow-up controls so all four tasks are available. Use the same case for both sessions.
+1. Open the authenticated dashboard, or run `uv run prescriptxai dashboard --local-demo` for a loopback-only session. Record the mode and limits label. Use a recorded case with a current prescription and follow-up controls so all four tasks are available. Use the same case for both sessions.
 2. Use a laptop with a normal browser window for Session 1. Use a phone for Session 2 if possible. Note the device, viewport, browser and dashboard version. Start each participant with a fresh session at the same recorded baseline and wait for it to settle.
 3. Keep this sheet and a stopwatch handy. Keep the mockup screenshots and facilitator notes out of the participant's view.
 4. During Task B, keep the participant's edited state visible long enough to hear what changed. Before Task C, if needed, say “I’ll reset the starting state,” then restore the recorded baseline and wait for the prescription. Do this between tasks, with the timer paused, and note the reset. Use the same reset rule in both sessions. Give no navigation hints. Have participants preview Task D without saving a follow-up.

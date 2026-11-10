@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import hashlib
 import io
+import json
 import os
 import pickle
+import re
 from pathlib import Path
 
 import joblib
@@ -18,6 +20,35 @@ import numpy as np
 
 class ArtifactLoadError(ValueError):
     """A trusted local artifact cannot be decoded or violates its declared identity."""
+
+
+def _deployment_pins(manifest: str) -> dict[Path, str]:
+    try:
+        document = json.loads(Path(manifest).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise ArtifactLoadError("deployment artifact manifest cannot be read") from error
+    if not isinstance(document, dict) or document.get("schema_version") != 1:
+        raise ArtifactLoadError("deployment artifact manifest requires schema_version 1")
+    files = document.get("files")
+    if not isinstance(files, dict) or not files:
+        raise ArtifactLoadError("deployment artifact manifest requires file checksums")
+    pins: dict[Path, str] = {}
+    for name, digest in files.items():
+        if not name or not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+            raise ArtifactLoadError("deployment artifact manifest contains an invalid checksum")
+        path = Path(name).expanduser().resolve()
+        if path in pins:
+            raise ArtifactLoadError("deployment artifact manifest repeats a file path")
+        pins[path] = digest
+    return pins
+
+
+def require_deployment_manifest() -> None:
+    """Require an administrator-provisioned checksum manifest for hosted serving."""
+    manifest = os.environ.get("PRESCRIPTXAI_ARTIFACT_MANIFEST")
+    if not manifest:
+        raise ArtifactLoadError("set PRESCRIPTXAI_ARTIFACT_MANIFEST before authenticated serving")
+    _deployment_pins(manifest)
 
 
 def validate_engine_ids(
@@ -66,9 +97,19 @@ def trusted_artifact_bytes(path: Path, expected_sha256: str | None = None) -> by
         raise FileNotFoundError(resolved)
     if not resolved.is_file():
         raise ArtifactLoadError("artifact path must be a regular file")
+    manifest = os.environ.get("PRESCRIPTXAI_ARTIFACT_MANIFEST")
+    pin = _deployment_pins(manifest).get(resolved) if manifest else None
+    if manifest and pin is None:
+        raise ArtifactLoadError("artifact is missing from the deployment checksum manifest")
     data = resolved.read_bytes()
-    if expected_sha256 is not None and hashlib.sha256(data).hexdigest() != expected_sha256:
-        raise ArtifactLoadError("artifact changed after fingerprinting; reload the complete bundle")
+    if pin is not None or expected_sha256 is not None:
+        digest = hashlib.sha256(data).hexdigest()
+        if pin is not None and digest != pin:
+            raise ArtifactLoadError("artifact differs from its deployment checksum")
+        if expected_sha256 is not None and digest != expected_sha256:
+            raise ArtifactLoadError(
+                "artifact changed after fingerprinting; reload the complete bundle"
+            )
     return data
 
 

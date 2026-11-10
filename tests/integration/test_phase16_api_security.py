@@ -13,7 +13,7 @@ def test_security_headers_cover_responses_and_preflights() -> None:
     """Verify security headers on data, schema errors, and allowed or rejected origins."""
     config = load_config(Path("configs/default.yaml"))
     config.api.cors_origins = ["https://operator.example"]
-    client = TestClient(create_app(config=config))
+    client = TestClient(create_app(config=config, local_demo=True))
     allowed, rejected = (
         client.options(
             "/assess",
@@ -23,6 +23,7 @@ def test_security_headers_cover_responses_and_preflights() -> None:
     )
     assert allowed.headers["access-control-allow-origin"] == "https://operator.example"
     assert "access-control-allow-origin" not in rejected.headers
+    assert rejected.json() == {"detail": "CORS preflight rejected", "mode": "FAST"}
     schema_error = client.post("/assess", json={"state": {}})
     assert schema_error.status_code == 422
     for response in (client.get("/version"), schema_error, allowed, rejected):
@@ -38,12 +39,12 @@ def test_application_refuses_wildcard_cors(field: str) -> None:
     config = load_config(Path("configs/default.yaml"))
     setattr(config.api, field, ["*"])
     with pytest.raises(ValueError, match="requires explicit origins"):
-        create_app(config=config)
+        create_app(config=config, local_demo=True)
 
 
 def test_unexpected_api_error_does_not_expose_exception_details() -> None:
     """Inject an endpoint failure and check its public JSON response."""
-    app = create_app()
+    app = create_app(local_demo=True)
 
     @app.get("/test-fault")
     def fault() -> None:

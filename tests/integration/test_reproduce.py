@@ -83,7 +83,7 @@ def test_real_reproduce_command_writes_loadable_hashed_artifacts(tmp_path: Path)
     )
     assert manifest["configuration_sha256"] == hashlib.sha256(profile.read_bytes()).hexdigest()
     service = PrescriptXAI.from_config(profile)
-    response = TestClient(create_app(service)).get("/health")
+    response = TestClient(create_app(service, local_demo=True)).get("/health")
     assert response.status_code == 200
     report = json.loads((root / "evaluation.json").read_text())
     measured = json.loads((root / "measured_metrics.json").read_text())

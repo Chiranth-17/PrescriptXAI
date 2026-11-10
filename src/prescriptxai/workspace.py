@@ -32,7 +32,7 @@ def initialize_workspace(destination: Path) -> list[Path]:
     return paths
 
 
-def launch_dashboard(settings: Path, host: str, port: int) -> int:
+def launch_dashboard(settings: Path, host: str, port: int, *, local_demo: bool = False) -> int:
     """Run the installed Streamlit application in the selected operator workspace."""
     if not settings.is_file():
         raise ValueError(f"dashboard settings are missing: {settings}; run prescriptxai init first")
@@ -41,6 +41,12 @@ def launch_dashboard(settings: Path, host: str, port: int) -> int:
     if not 1 <= port <= 65535:
         raise ValueError("dashboard port must be between 1 and 65535")
     entrypoint = files("prescriptxai").joinpath("dashboard", "simulator_app.py")
+    if local_demo and host not in {"127.0.0.1", "::1", "localhost"}:
+        raise ValueError("local demo can only bind to a loopback address")
+    if not local_demo:
+        from prescriptxai.dashboard.server import serve_dashboard
+
+        return serve_dashboard(settings.resolve(), str(entrypoint), host, port)
     environment = os.environ.copy()
     environment["PRESCRIPTXAI_DASHBOARD_CONFIG"] = str(settings.resolve())
     return subprocess.run(

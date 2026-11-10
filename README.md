@@ -22,7 +22,7 @@ python -m venv .venv
 .venv/Scripts/python -m pip install 'C:/path/to/5thsemEL[api,dashboard]'
 .venv/Scripts/prescriptxai init
 .venv/Scripts/prescriptxai reproduce
-.venv/Scripts/prescriptxai dashboard
+.venv/Scripts/prescriptxai dashboard --local-demo
 ```
 
 On Linux/macOS use `.venv/bin/python` and `.venv/bin/prescriptxai`, with your absolute checkout
@@ -35,7 +35,7 @@ durations, not controlled latency comparisons. This demonstrates reproduction on
 not new generalization.
 
 Choose **THOROUGH** for the [exact demo cases](docs/demo_script.md). For the API, run
-`.venv/Scripts/prescriptxai serve` in a second terminal in this same directory; interactive
+`.venv/Scripts/prescriptxai serve --local-demo` in a second terminal in this same directory; interactive
 HTTP documentation is at http://localhost:8000/docs. Python usage:
 
 ```python

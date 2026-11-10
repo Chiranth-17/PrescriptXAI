@@ -54,7 +54,7 @@ def test_framework_parser_and_routing_errors_keep_the_public_mode(
     content: bytes | None,
 ) -> None:
     """Starlette parser, unknown-path and method errors share the operator error contract."""
-    response = TestClient(create_app()).request(
+    response = TestClient(create_app(local_demo=True)).request(
         method, path, content=content, headers={"Content-Type": "application/json"}
     )
     assert response.status_code in {400, 404, 405}
@@ -103,7 +103,8 @@ def test_cli_artifact_failures_are_friendly_in_an_actual_process(
 
 def test_request_validation_never_discloses_endpoint_source_or_raw_input() -> None:
     """Unicode invalid fields get useful sanitized locations without endpoint stack details."""
-    response = TestClient(create_app()).post("/assess", json={"state": {"温度": "private-marker"}})
+    client = TestClient(create_app(local_demo=True))
+    response = client.post("/assess", json={"state": {"温度": "private-marker"}})
     assert response.status_code == 422
     body = response.json()
     assert "温度" in response.text and body["detail"]
@@ -128,7 +129,7 @@ def test_api_concurrent_requests_keep_results_and_request_ids_isolated(
     preview_service: PrescriptXAI,  # noqa: F811
 ) -> None:
     """Eight real threaded requests share locked predictors but no request-local state."""
-    application = create_app(preview_service)
+    application = create_app(preview_service, local_demo=True)
 
     def request(index: int) -> tuple[int, dict[str, object], str]:
         """Send an independent HTTP client request against the same fitted service."""
@@ -153,7 +154,7 @@ def test_empty_oversized_batches_and_reordered_dataframes_are_explicit(
 ) -> None:
     """Bound rows before workers; preserve named column mapping instead of positional guessing."""
     service = preview_service
-    client = TestClient(create_app(service))
+    client = TestClient(create_app(service, local_demo=True))
     with pytest.raises(InputError, match="nonempty"):
         service.recommend_batch(pd.DataFrame(columns=["actuator", "sensor"]))
     assert client.post("/recommend/batch", json={"states": []}).status_code == 422

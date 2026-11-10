@@ -1,5 +1,18 @@
 # PrescriptXAI Progress
 
+## Phase 16 authentication and validation checkpoint (10 November 2026 IST)
+
+Hosted entrypoints require HTTPS authentication and an administrator model
+checksum manifest. Session credentials are role scoped and short lived.
+The API rejects nonfinite JSON numbers before scoring. Deterministic schema
+fuzzing exercised the scientific and feedback write routes and read scopes.
+The integrated checkpoint passed 66 focused tests in 83.80 seconds.
+The authenticated Chromium dashboard test passed with the three retained
+fitted-artifact hashes and the real Streamlit WebSocket. See
+`artifacts/phase16/browser-auth-20261110-v3-pinned` and
+[authenticated deployment](docs/artifact_security.md#authenticated-serving).
+The spoofing run and security scans remain pending.
+
 ## Phase 16 security-lite in progress (10 November 2026 IST)
 
 The [threat model](docs/threat_model.md) maps the telemetry, browser, artifacts,

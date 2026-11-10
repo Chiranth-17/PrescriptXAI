@@ -402,6 +402,7 @@ def test_named_api_uses_toy_runtime(
             config=load_config(ROOT / "configs/default.yaml"),
             registry=registry,
             machine_artifacts=tmp_path,
+            local_demo=True,
         )
     )
     machines = client.get("/machines").json()
