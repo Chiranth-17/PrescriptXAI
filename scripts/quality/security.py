@@ -76,14 +76,12 @@ def public_digest_ids(secrets, path, today):
     if datetime.strptime(str(policy["expires"]), "%Y-%m-%d").date() < today:
         return set()
     pins = policy["files"]
-    # Policy metadata itself contains public digests and hashed scanner references.
+    # Recognize only the pinned public hashes and declared finding IDs.
+    entries = yaml.safe_load(EXCEPTIONS.read_text(encoding="utf-8"))
+    exception_ids = {item["finding"].removeprefix("secret:") for item in entries}
     metadata = {
         path.as_posix(): set(pins.values()),
-        EXCEPTIONS.as_posix(): {
-            item["finding"].rsplit(":", 1)[-1]
-            for item in yaml.safe_load(EXCEPTIONS.read_text(encoding="utf-8"))
-            if item["finding"].startswith("secret:")
-        },
+        EXCEPTIONS.as_posix(): {entry.rsplit(":", 1)[-1] for entry in exception_ids},
     }
     result = set()
     for name, matches in secrets["results"].items():
@@ -98,15 +96,27 @@ def public_digest_ids(secrets, path, today):
             continue
         lines = content.splitlines()
         for item in matches:
-            if item["type"] != "Hex High Entropy String":
-                continue
             line = item["line_number"]
             if not 1 <= line <= len(lines):
                 continue
-            words = re.findall(r"\b(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})\b", lines[line - 1])
+            text = lines[line - 1].strip()
+            if (
+                filename == EXCEPTIONS.as_posix()
+                and item["type"] == "Secret Keyword"
+                and text.startswith("- finding: secret:")
+            ):
+                value = text.removeprefix("- finding: secret:")
+                words = (value,) if value in exception_ids else ()
+            elif item["type"] == "Hex High Entropy String":
+                words = [
+                    word
+                    for word in re.findall(r"\b(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})\b", text)
+                    if fixed_snapshot or word in metadata.get(filename, ())
+                ]
+            else:
+                continue
             if any(
-                (fixed_snapshot or word in metadata.get(filename, ()))
-                and hashlib.sha1(word.encode(), usedforsecurity=False).hexdigest()
+                hashlib.sha1(word.encode(), usedforsecurity=False).hexdigest()
                 == item["hashed_secret"]
                 for word in words
             ):
@@ -211,7 +221,11 @@ def main():
             root,
             stage,
             command,
-            stdout_name={"secrets": "secrets.json", "sbom": "sbom.cdx.json"}.get(stage),
+            stdout_name=f"{stage}.json"
+            if stage == "secrets"
+            else "sbom.cdx.json"
+            if stage == "sbom"
+            else None,
         )
 
     high, excepted, public = set(), set(), set()

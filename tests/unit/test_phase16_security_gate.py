@@ -39,13 +39,14 @@ def test_high_findings_are_bound_to_source_location_and_version() -> None:
             },
         ]
     }
-    secrets = {"results": {"config.ini": [{"line_number": 4, "hashed_secret": "fixture-digest"}]}}
+    fingerprint = hashlib.sha1(b"fixture-digest", usedforsecurity=False).hexdigest()
+    secrets = {"results": {"config.ini": [{"line_number": 4, "hashed_secret": fingerprint}]}}
     audit = {
         "dependencies": [{"name": "example", "version": "0.1", "vulns": [{"id": "fixture-id"}]}]
     }
     assert finding_ids(bandit, secrets, audit) == {
         "bandit:B001:src/fixture.py:3",
-        "secret:config.ini:4:fixture-digest",
+        f"secret:config.ini:4:{fingerprint}",
         "pip-audit:example:0.1:fixture-id",
     }
 

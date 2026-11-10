@@ -54,4 +54,4 @@ release-gate:
 	uv run python scripts/quality/release_gate.py $(if $(filter 1,$(REUSE_ONLY)),--reuse-only,)
 
 security:
-	uv run --locked python scripts/quality/security.py
+	uv run --locked python scripts/quality/security.py $(if $(SECURITY_OUTPUT),--output "$(SECURITY_OUTPUT)",)
