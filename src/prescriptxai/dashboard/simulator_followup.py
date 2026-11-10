@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
+from typing import Literal
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -20,7 +21,8 @@ SOURCE_LABELS = {
     "operator": "Operator (local log)",
     "simulated_operator": "Simulated operator (demo)",
 }
-CHOICES = ("Followed as recommended", "Followed partly", "Not followed")
+ReportedChoice = Literal["Followed as recommended", "Followed partly", "Not followed"]
+CHOICES: tuple[ReportedChoice, ...] = ("Followed as recommended", "Followed partly", "Not followed")
 
 
 def _trend_panel(
@@ -132,29 +134,19 @@ def _render_applied(
         st.progress(score, text=f"{labels[name]} · {score:.0%} agreement")
 
 
-def render_follow_up(
-    decision: MachineDecision,
-    window: pd.DataFrame,
-    observations: pd.DataFrame,
-    result: MachineRecourseResult | None,
-    scope: ReplayFollowUp | None,
-    settings: FollowUpSettings,
-) -> tuple[FeedbackRecord, ReplayFollowUp] | None:
-    """Preview applied values and store them only after an explicit recording action."""
-    if result is None or scope is None or not result.action_features:
-        st.caption("A current prescription is needed to record applied settings.")
-        return None
+def _applied_inputs(
+    decision: MachineDecision, result: MachineRecourseResult, labels: dict[str, str]
+) -> tuple[ReportedChoice, str, dict[str, float]]:
     choice = st.radio("Reported follow-up", CHOICES, horizontal=True, key=f"choice:{result.run_id}")
     reason = (
         st.text_input("Reason (optional)", max_chars=500, key=f"reason:{result.run_id}").strip()
         if choice == "Not followed"
         else ""
     )
-    labels = {feature.id: feature.label for feature in decision.spec.measurement_features}
     limits = decision.control_bounds()
-    proposed = {name: result.new_state[name] for name in result.action_features}
     applied = {}
-    for name, recommendation in proposed.items():
+    for name in result.action_features:
+        recommendation = result.new_state[name]
         original = result.original_state[name]
         low, high = limits[name]
         starting = {
@@ -169,6 +161,28 @@ def render_follow_up(
             starting,
             key=f"applied:{result.run_id}:{choice}:{name}",
         )
+    return choice, reason, applied
+
+
+def render_follow_up(
+    decision: MachineDecision,
+    window: pd.DataFrame,
+    observations: pd.DataFrame,
+    result: MachineRecourseResult | None,
+    scope: ReplayFollowUp | None,
+    settings: FollowUpSettings,
+) -> tuple[FeedbackRecord, ReplayFollowUp] | None:
+    """Preview applied values and store them only after an explicit recording action."""
+    if (
+        not decision.spec.confirmation.confirmed
+        or result is None
+        or scope is None
+        or not result.action_features
+    ):
+        st.caption("A current prescription is needed to record applied settings.")
+        return None
+    labels = {feature.id: feature.label for feature in decision.spec.measurement_features}
+    choice, reason, applied = _applied_inputs(decision, result, labels)
     try:
         feedback = decision.feedback(window, result, applied)
     except ValueError:

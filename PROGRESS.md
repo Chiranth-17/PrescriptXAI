@@ -48,6 +48,13 @@ measured archive-component, malformed share-link and CLI regeneration tests.
 Chromium v13 passed at both viewport widths in light and dark themes,
 including 44-pixel targets and visible keyboard focus on the tested controls.
 
+The `a91e6b9` diagnostic passed 732 selected tests and both package floors
+(90.33% lines and 86.98% combined). Scoped coverage reached 90.25% and
+remains below the retained 91.01415094339623% floor. Additional checks cover
+invalid replay inputs, corrupt local feedback evidence, absent scorecards and
+the retained LSTM CLI history path. Follow-up also checks confirmation
+before rendering recording controls.
+
 The [acceptance report](docs/acceptance_report.md) separates local verification
 from the remaining dashboard functionality and gates. The design mock and two
 classmate sessions are pending. The full dashboard gate and Step 3B acceptance

@@ -20,15 +20,22 @@ from prescriptxai.adapters.cmapss import CmapssAdapter
 from prescriptxai.adapters.registry import DEFAULT_MACHINE, MachineRegistry
 from prescriptxai.api import create_app
 from prescriptxai.cli import app
+from prescriptxai.config import load_config
 from prescriptxai.core.data_quality import RecommendationWithheld
 from prescriptxai.core.decision import MachineDecision, action_adherence, simulated_settings
 from prescriptxai.dashboard.objectives import METRICS
 from prescriptxai.dashboard.prescription_job import PrescriptionJob
-from prescriptxai.dashboard.scenario_report import scenario_report
+from prescriptxai.dashboard.scenario_report import (
+    _followup_section,
+    _prescription_section,
+    scenario_report,
+)
 from prescriptxai.dashboard.simulator_data import (
+    observed_rows,
     parse_settings,
     replay_trend,
     sequential_risks,
+    simulator_decision,
 )
 from prescriptxai.dashboard.state import load_settings
 from prescriptxai.machine_schema import MachineRecourseResult, ReplayFollowUp
@@ -507,17 +514,33 @@ def test_archived_result_panels_render_actual_checks_and_feedback(
     )
     log = tmp_path / "feedback.sqlite3"
     record_feedback_batch([(demo, scope)], log)
+    features = {feature.id: feature for feature in decision.spec.measurement_features}
+    assert f"{result.risk_after:.1%}" in _prescription_section(features, result)
+    reason = "<check settings>"
+    noted = scope.model_copy(update={"reason": reason, "stated_choice": "Not followed"})
+    html = _followup_section(features, demo, noted)
+    assert "Simulated operator (demo)" in html and "&lt;check settings&gt;" in html
+    preview = decision.simulate_risk(window, {})
+    withheld = scenario_report(
+        decision.spec, scope.unit, scope.time, {}, preview, result, (demo, noted)
+    )
+    assert "Alerts only" in withheld and reason not in withheld
+    assert "Predicted risk with prescription" not in withheld
     settings = load_settings(Path("configs/dashboard.yaml"))
     renderer = AppTest.from_string(
         """
 import streamlit as st
-from prescriptxai.dashboard.simulator_followup import _feedback_log, _render_applied, _trend_panel
+from prescriptxai.dashboard.simulator_followup import (
+    _applied_inputs, _feedback_log, _render_applied, _trend_panel, render_follow_up,
+)
 from prescriptxai.dashboard.simulator_prescription import _render_measured_result
 d, w, rows, r, e, f, scope, settings, log = st.session_state["evidence"]
 st.caption("Archived evidence only")
 _render_measured_result(d, w, r, e, settings.report_directory)
 labels = {feature.id: feature.label for feature in d.spec.measurement_features}
 _render_applied(f, r, labels, settings.follow_up)
+_applied_inputs(d, r, labels)
+assert render_follow_up(d, w, rows, r, scope, settings.follow_up) is None
 _trend_panel(d, rows, scope, f, 3)
 _feedback_log(d, settings.follow_up, log)
 """,
@@ -543,6 +566,11 @@ _feedback_log(d, settings.follow_up, log)
     renderer.checkbox[0].set_value(True).run()
     assert not renderer.exception
     assert renderer.dataframe[-1].value.iloc[0]["Source"] == "Simulated operator (demo)"
+    renderer.radio[0].set_value("Not followed").run()
+    assert not renderer.exception
+    assert renderer.text_input[0].label == "Reason (optional)"
+    assert renderer.slider[0].value == state[result.action_features[0]]
+    assert not any(button.label == "Record this follow-up" for button in renderer.button)
     assert not decision.spec.confirmation.confirmed
 
 
@@ -600,3 +628,95 @@ def test_cli_regenerates_registered_presets_and_input_bound_previews(tmp_path: P
     refused = runner.invoke(app, args)
     assert refused.exit_code != 0 and "scenario output already exists" in refused.output
     assert target.read_bytes() == original_bytes
+
+
+def test_replay_routes_fail_closed_on_invalid_inputs_and_local_evidence(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    tmp_path: Path,
+) -> None:
+    """Verify public validation paths without loading untrusted inputs as live evidence."""
+    decision, runtime, rows = replay
+    local_registry = MachineRegistry(tmp_path / "machines")
+    path = local_registry.root / DEFAULT_MACHINE / "scenarios.yaml"
+    path.parent.mkdir(parents=True)
+    path.write_text("machine_id: other_machine", encoding="utf-8")
+    config = runtime.config.model_copy(deep=True)
+    config.pipeline.max_batch_rows = 1
+    with TestClient(
+        create_app(runtime, config, registry=local_registry, machine_artifacts=tmp_path)
+    ) as client:
+        assert client.get("/machines/unknown/scenarios").status_code == 404
+        assert client.get("/machines/UPPER/spec").status_code == 422
+        bad_manifest = client.get(f"/machines/{DEFAULT_MACHINE}/scenarios")
+        assert bad_manifest.status_code == 422
+        request = {"machine_id": DEFAULT_MACHINE, "rows": rows.iloc[:2].to_dict(orient="records")}
+        oversized = client.post("/simulate/risk", json=request)
+        assert oversized.status_code == 422 and "row limit" in oversized.json()["detail"]
+        request["rows"] = [{"time_index": 1}]
+        bad_window = client.post("/simulate/risk", json=request)
+        assert (
+            bad_window.status_code == 422
+            and "Recommendation withheld" in bad_window.json()["detail"]
+        )
+        (tmp_path / "feedback.sqlite3").write_bytes(b"invalid SQLite")
+        summary = client.get("/feedback/summary", params={"machine_id": DEFAULT_MACHINE})
+        assert summary.status_code == 503 and "log unavailable" in summary.json()["detail"]
+    with pytest.raises(ValueError, match="configuration changed"):
+        observed_rows(DEFAULT_MACHINE, "0" * 64, "test", "test-stale-spec")
+    isolated = simulator_decision(
+        MachineRegistry(),
+        DEFAULT_MACHINE,
+        load_settings(Path("configs/dashboard.yaml")),
+        isolated=True,
+    )
+    assert isolated is not decision
+    window = rows.iloc[:1]
+    assert isolated.simulate_risk(window, {}) == decision.simulate_risk(window, {})
+
+
+def test_saved_objectives_distinguish_missing_evidence(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    tmp_path: Path,
+) -> None:
+    """A missing report and an archive with no matching groups remain explicit."""
+    decision, _, _ = replay
+    panel = AppTest.from_string(
+        """
+import streamlit as st
+from prescriptxai.dashboard.objectives import objectives_page
+spec, directory = st.session_state["objective_scope"]
+objectives_page(spec, directory)
+"""
+    )
+    panel.session_state["objective_scope"] = (decision.spec, tmp_path)
+    panel.run()
+    assert not panel.exception and not panel.dataframe
+    assert any("unavailable" in warning.value for warning in panel.warning)
+    (tmp_path / "summary.json").write_text('{"groups":{}}', encoding="utf-8")
+    panel.run()
+    assert not panel.exception and not panel.dataframe
+    assert any("No saved held-out" in message.value for message in panel.info)
+
+
+def test_cli_archive_history_is_used_without_padding() -> None:
+    """Exercise the retained LSTM through the supported recorded-engine CLI path."""
+    profile = Path("configs/experiments/phase7-FD001-lstm-v1.yaml")
+    service = PrescriptXAI.from_config(profile)
+    config = load_config(profile)
+    from prescriptxai.cli import _select_context, _select_state
+
+    context = _select_context(None, 1, 100, service)
+    assert context is not None and context.history is not None
+    assert len(context.history) == service.engine.model.estimator.window - 1
+    score = service.assess(_select_state(None, 1, 100, config), context)
+    runner = CliRunner()
+    base = ["assess", "--config", str(profile), "--engine-id", "1", "--cycle"]
+    result = runner.invoke(app, [*base, "100"])
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout)["risk"] == score.risk
+    missing = runner.invoke(app, [*base, "1"])
+    assert (
+        missing.exit_code != 0 and "LSTM requires" in missing.output and "padded" in missing.output
+    )
+    unknown = runner.invoke(app, [*base, "100000"])
+    assert unknown.exit_code != 0 and "engine/cycle not found" in unknown.output

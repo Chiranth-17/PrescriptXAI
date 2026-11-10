@@ -83,7 +83,8 @@ separates the reported choice from the measured adherence label, and records
 the reason if supplied. Replay context is stored in a versioned companion table
 beside the existing feedback records. Older logs remain readable. The report
 attaches a follow-up only when the current input, machine, unit, time, and
-decision run match.
+decision run and configuration match. The follow-up view also checks
+engineer confirmation before showing input or recording controls.
 
 The trend re-scores up to 30 subsequent recorded windows for the selected
 unit, or fewer when the archive ends. It compares the recorded inputs with
@@ -121,6 +122,14 @@ still included two legacy AppTests launching the source file directly, and
 recorded zero lines for that entrypoint. Those tests now use the same imported
 entrypoint as the other workflows. Chromium still launches the shipped script.
 The package receipt remains at `artifacts/phase17/software-a61d51a`.
+
+The `a91e6b9` diagnostic ran 732 selected tests in 271.88 seconds, with one
+deselected and 68 warnings. Both package floors passed at 90.33% lines and
+86.98% combined. Scoped lines reached 90.25%, below the retained
+91.01415094339623% floor. The Phase 9 gate and pytest exited zero. The Phase
+12 gate and wrapper exited one. The receipt is
+`artifacts/phase17/software-a91e6b9`. The fixed subset and full science
+remained outside this diagnostic.
 
 ## Command-line workflows
 

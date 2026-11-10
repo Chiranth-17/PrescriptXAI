@@ -12,7 +12,48 @@ from prescriptxai.machine_schema import (
     ReplayFollowUp,
     SimulatedRisk,
 )
-from prescriptxai.machine_spec import MachineSpec
+from prescriptxai.machine_spec import MachineFeature, MachineSpec
+
+
+def _prescription_section(
+    features: Mapping[str, MachineFeature], result: MachineRecourseResult
+) -> str:
+    actions = "".join(
+        f"<li>{escape(features[name].label)}: {result.original_state[name]:g} to "
+        f"{result.new_state[name]:g} {escape(features[name].unit)}</li>"
+        for name in result.action_features
+    )
+    checks = "".join(
+        f"<li>{escape(label)}: {'Pass' if passed else 'Fail'}</li>"
+        for label, passed in prescription_checks(result)
+    )
+    return (
+        f"<p>Run {escape(result.run_id)}. Predicted risk with prescription: "
+        f"{result.risk_after:.1%}.</p><ul>{actions}</ul><ul>{checks}</ul>"
+    )
+
+
+def _followup_section(
+    features: Mapping[str, MachineFeature], record: FeedbackRecord, scope: ReplayFollowUp
+) -> str:
+    label = (
+        "Simulated operator (demo)"
+        if record.source == "simulated_operator"
+        else "Operator (this session)"
+    )
+    applied = "".join(
+        f"<li>{escape(features[name].label)}: {value:g} {escape(features[name].unit)}</li>"
+        for name, value in record.applied.items()
+    )
+    passed = record.applied_tier_passes.values()
+    reason = f"<p>Reported reason: {escape(scope.reason)}</p>" if scope.reason else ""
+    choice = f"<p>Reported choice: {escape(scope.stated_choice)}</p>" if scope.stated_choice else ""
+    return (
+        f"<p>{label}. Adherence: {record.adherence:.0%}. "
+        f"Predicted risk with applied settings: {record.applied_risk:.1%}. "
+        f"Applied settings passed {sum(passed)} of {len(passed)} checks.</p>"
+        f"{choice}{reason}<ul>{applied}</ul>"
+    )
 
 
 def scenario_report(
@@ -37,19 +78,7 @@ def scenario_report(
     if not spec.confirmation.confirmed:
         prescription = "<p>Alerts only: limits not yet confirmed by an engineer.</p>"
     elif result is not None:
-        actions = "".join(
-            f"<li>{escape(features[name].label)}: {result.original_state[name]:g} to "
-            f"{result.new_state[name]:g} {escape(features[name].unit)}</li>"
-            for name in result.action_features
-        )
-        checks = "".join(
-            f"<li>{escape(label)}: {'Pass' if passed else 'Fail'}</li>"
-            for label, passed in prescription_checks(result)
-        )
-        prescription = (
-            f"<p>Run {escape(result.run_id)}. Predicted risk with prescription: "
-            f"{result.risk_after:.1%}.</p><ul>{actions}</ul><ul>{checks}</ul>"
-        )
+        prescription = _prescription_section(features, result)
         if feedback is not None:
             record, scope = feedback
             if (
@@ -58,33 +87,12 @@ def scenario_report(
                 and record.spec_hash == spec.spec_hash
                 and record.protocol_version == score.protocol_version
                 and record.synthetic == spec.synthetic
+                and scope.config_hash == result.config_hash
                 and scope.input_hash == preview.input_hash
                 and scope.unit == unit
                 and scope.time == time
             ):
-                label = (
-                    "Simulated operator (demo)"
-                    if record.source == "simulated_operator"
-                    else "Operator (this session)"
-                )
-                applied = "".join(
-                    f"<li>{escape(features[name].label)}: {value:g} "
-                    f"{escape(features[name].unit)}</li>"
-                    for name, value in record.applied.items()
-                )
-                passed = record.applied_tier_passes.values()
-                reason = f"<p>Reported reason: {escape(scope.reason)}</p>" if scope.reason else ""
-                choice = (
-                    f"<p>Reported choice: {escape(scope.stated_choice)}</p>"
-                    if scope.stated_choice
-                    else ""
-                )
-                follow_up = (
-                    f"<p>{label}. Adherence: {record.adherence:.0%}. "
-                    f"Predicted risk with applied settings: {record.applied_risk:.1%}. "
-                    f"Applied settings passed {sum(passed)} of {len(passed)} checks.</p>"
-                    f"{choice}{reason}<ul>{applied}</ul>"
-                )
+                follow_up = _followup_section(features, record, scope)
     return (
         '<!doctype html><html lang="en"><meta charset="utf-8">'
         "<title>PrescriptXAI scenario report</title>"
