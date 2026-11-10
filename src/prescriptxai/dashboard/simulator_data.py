@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -12,15 +13,36 @@ from prescriptxai.adapters.cmapss import CmapssAdapter
 from prescriptxai.adapters.registry import MachineRegistry
 from prescriptxai.core.decision import MachineDecision
 from prescriptxai.dashboard.backend import direct_service, profile_identity
-from prescriptxai.dashboard.state import DashboardSettings
+from prescriptxai.dashboard.state import DashboardSettings, load_settings
+from prescriptxai.machine_spec import MachineSpec
 from prescriptxai.machines import resolve_machine_decision
 from prescriptxai.pipeline import PrescriptXAI
+
+
+@st.cache_data(show_spinner=False, max_entries=16)
+def _parsed_spec(machine_id: str, contents: bytes) -> MachineSpec:
+    return MachineRegistry.parse_spec(machine_id, contents)
+
+
+class SimulatorRegistry(MachineRegistry):
+    """Cache parsed specs by their authoritative bytes."""
+
+    def get(self, machine_id: str) -> MachineSpec:
+        """Load the current bytes and reuse their validated representation."""
+        return _parsed_spec(machine_id, self.spec_bytes(machine_id))
+
+
+@st.cache_data(show_spinner=False, max_entries=8)
+def simulator_settings(path: Path, identity: str) -> DashboardSettings:
+    """Cache parsed dashboard settings under the file content hash."""
+    del identity
+    return load_settings(path)
 
 
 @st.cache_data(show_spinner=False, max_entries=8)
 def observed_rows(machine_id: str, spec_hash: str, population: str, identity: str) -> pd.DataFrame:
     """Load canonical observed rows for the selected trusted data snapshot."""
-    adapter = MachineRegistry().open(machine_id)
+    adapter = SimulatorRegistry().open(machine_id)
     if adapter.spec.spec_hash != spec_hash:
         raise ValueError("The machine configuration changed while loading observations")
     del identity  # Content identity participates in the cache key.

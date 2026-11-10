@@ -25,16 +25,18 @@ from prescriptxai.dashboard.data import file_identity
 from prescriptxai.dashboard.prescription_job import PrescriptionJob
 from prescriptxai.dashboard.scenario_report import scenario_report
 from prescriptxai.dashboard.simulator_data import (
+    SimulatorRegistry,
     observed_rows,
     parse_settings,
     simulator_decision,
+    simulator_settings,
 )
 from prescriptxai.dashboard.simulator_followup import render_follow_up
 from prescriptxai.dashboard.simulator_prescription import (
     prescription_checks,
     render_recommendation,
 )
-from prescriptxai.dashboard.state import load_settings
+from prescriptxai.dashboard.state import DashboardSettings
 from prescriptxai.machine_schema import MachineRecourseResult, ReplayFollowUp, SimulatedRisk
 from prescriptxai.machine_spec import MachineSpec
 from prescriptxai.pipeline import ArtifactError
@@ -156,7 +158,7 @@ def _cancel_prescription() -> None:
 @st.fragment(run_every=0.15)
 def _wait_for_prescription(job: PrescriptionJob) -> None:
     if st.session_state.get("simulator_job") is not job or job.future.done():
-        st.rerun()
+        st.rerun("simulator-preview")
     st.info("Calculating…")
 
 
@@ -206,10 +208,10 @@ def _prescription(
     if job is not None and job.input_hash != input_hash:
         _cancel_prescription()
         job = None
-    if not decision.spec.confirmation.confirmed:
+    if decision.spec.alerts_only:
         _cancel_prescription()
         st.session_state.pop("simulator_reference", None)
-        st.info("Recommendation withheld: Alerts only: limits not yet confirmed by an engineer")
+        st.info(f"Recommendation withheld: {decision.spec.limits_label}")
         return None
     if controls:
         _cancel_prescription()
@@ -251,11 +253,9 @@ def _prescription(
 
 def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
     st.caption("Synthetic or sample machine data" if spec.synthetic else "Recorded replay data")
-    if not spec.confirmation.confirmed:
-        st.info("Alerts only: limits not yet confirmed by an engineer")
-    settings = load_settings(
-        Path(os.environ.get("PRESCRIPTXAI_DASHBOARD_CONFIG", "configs/dashboard.yaml"))
-    )
+    st.badge(spec.limits_label, color="orange" if spec.limits_status == "demonstration" else "blue")
+    settings_path = Path(os.environ.get("PRESCRIPTXAI_DASHBOARD_CONFIG", "configs/dashboard.yaml"))
+    settings = simulator_settings(settings_path, file_identity(settings_path))
     decision = simulator_decision(registry, spec.machine_id, settings)
     adapter = registry.open(spec.machine_id)
     frame = observed_rows(
@@ -274,28 +274,81 @@ def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
             st.query_params.pop("settings", None)
     preset = st.session_state.pop("simulator_pick", None)
     revision = st.session_state.get("simulator_revision", 0)
+    st.subheader("1. Set the conditions")
+    st.markdown("**Situation (fixed)**")
+    unit, time, window = _location(spec.machine_id, frame, preset)
+    with st.expander("Fixed context"):
+        for feature in spec.measurement_features:
+            if feature.role == "frozen":
+                st.write(f"{feature.label} · {float(window[feature.id].iloc[-1]):g} {feature.unit}")
+    selection = json.dumps((spec.spec_hash, decision.runtime_identity, unit, time, revision))
+    restore = (
+        st.query_params.get("settings", "")
+        if preset is None
+        and st.query_params.get("machine") == spec.machine_id
+        and st.query_params.get("spec") == spec.spec_hash
+        and st.query_params.get("unit") == unit
+        and st.query_params.get("time") == str(time)
+        else ""
+    )
+    _interactive(
+        decision, registry, settings, frame, unit, time, window, selection, restore
+    )
+    with st.expander("About this view and how it was checked"):
+        st.write("SDG 9 · Advisory maintenance replay and model-based checks.")
+        st.write(spec.limits_label)
+        st.write(spec.data_source)
+        st.write(spec.validation.rate_assumption)
+        st.caption(f"Machine configuration: {spec.spec_hash}")
+
+
+def _report_error(error: Exception) -> None:
+    _cancel_prescription()
+    st.session_state.pop("simulator_reference", None)
+    message = str(error)
+    st.error(
+        message
+        if message.startswith("Recommendation withheld:")
+        else f"Recommendation withheld: {message}"
+    )
+
+
+@st.fragment(key="simulator-preview")
+def _interactive(
+    decision: MachineDecision,
+    registry: MachineRegistry,
+    settings: DashboardSettings,
+    frame: pd.DataFrame,
+    unit: str,
+    time: float,
+    window: pd.DataFrame,
+    selection: str,
+    restore: str,
+) -> None:
+    """Rerun the editable controls and their dependent outputs as one view."""
+    try:
+        _render_interactive(
+            decision, registry, settings, frame, unit, time, window, selection, restore
+        )
+    except (ArtifactError, OSError, ValueError, KeyError, TypeError) as error:
+        _report_error(error)
+
+
+def _render_interactive(
+    decision: MachineDecision,
+    registry: MachineRegistry,
+    settings: DashboardSettings,
+    frame: pd.DataFrame,
+    unit: str,
+    time: float,
+    window: pd.DataFrame,
+    selection: str,
+    restore: str,
+) -> None:
+    spec = decision.spec
     conditions, predictions = st.columns([1, 1])
     with conditions, st.container(border=True):
-        st.subheader("1. Set the conditions")
-        st.markdown("**Situation (fixed)**")
-        unit, time, window = _location(spec.machine_id, frame, preset)
-        with st.expander("Fixed context"):
-            for feature in spec.measurement_features:
-                if feature.role == "frozen":
-                    st.write(
-                        f"{feature.label} · {float(window[feature.id].iloc[-1]):g} {feature.unit}"
-                    )
         st.markdown("**Current adjustable settings**")
-        selection = json.dumps((spec.spec_hash, decision.runtime_identity, unit, time, revision))
-        restore = (
-            st.query_params.get("settings", "")
-            if preset is None
-            and st.query_params.get("machine") == spec.machine_id
-            and st.query_params.get("spec") == spec.spec_hash
-            and st.query_params.get("unit") == unit
-            and st.query_params.get("time") == str(time)
-            else ""
-        )
         controls = _settings(decision, window, selection, restore)
     params = {
         "machine": spec.machine_id,
@@ -349,11 +402,6 @@ def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
         "text/html",
         on_click="ignore",
     )
-    with st.expander("About this view and how it was checked"):
-        st.write("SDG 9 · Advisory maintenance replay and model-based checks.")
-        st.write(spec.data_source)
-        st.write(spec.validation.rate_assumption)
-        st.caption(f"Machine configuration: {spec.spec_hash}")
 
 
 def main() -> None:
@@ -366,7 +414,7 @@ def main() -> None:
     st.html(STYLE)
     workspace = st.sidebar.radio("Workspace", ("Simulator", "Advanced"))
     try:
-        registry = MachineRegistry()
+        registry = SimulatorRegistry()
         specs = {spec.machine_id: spec for spec in registry.list()}
         machines = list(specs)
         requested = st.query_params.get("machine", machines[0])
@@ -387,14 +435,7 @@ def main() -> None:
         )
         _simulator(specs[machine], registry)
     except (ArtifactError, OSError, ValueError, KeyError, TypeError) as error:
-        _cancel_prescription()
-        st.session_state.pop("simulator_reference", None)
-        message = str(error)
-        st.error(
-            message
-            if message.startswith("Recommendation withheld:")
-            else f"Recommendation withheld: {message}"
-        )
+        _report_error(error)
 
 
 if __name__ == "__main__":

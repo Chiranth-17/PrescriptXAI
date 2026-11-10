@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -32,7 +33,7 @@ from prescriptxai.machine_schema import (
     ReplayFollowUp,
     migrate_recourse_result,
 )
-from prescriptxai.machine_spec import MachineSpec, load_machine_spec
+from prescriptxai.machine_spec import DEMONSTRATION_LIMITS_LABEL, MachineSpec, load_machine_spec
 from prescriptxai.machines import (
     FittedMachine,
     fit_machine,
@@ -72,6 +73,7 @@ def toy(tmp_path_factory: pytest.TempPathFactory) -> DatasetAdapter:
     spec = {
         "schema_version": 1,
         "machine_id": "toy",
+        "limits_status": "demonstration",
         "display_name": "Synthetic contract machine",
         "unit_word": "unit",
         "unit_plural": "units",
@@ -191,6 +193,7 @@ def test_fd001_spec_keeps_legacy_numeric_configuration() -> None:
     assert spec.latency_budgets["FAST"] == config.latency_budget
     assert spec.latency_budgets["THOROUGH"] == config.latency_budget
     assert not spec.confirmation.confirmed
+    assert spec.limits_status == "demonstration"
     packaged = ROOT / "src/prescriptxai/resources/machines/cmapss_fd001/machine.yaml"
     assert load_machine_spec(packaged) == spec
 
@@ -256,8 +259,9 @@ def test_toy_training_scoring_and_fail_closed_recommendation(
     observed = {"feed": float(high["feed"].iloc[-1]), "ambient": float(high["ambient"].iloc[-1])}
     direct = trained.training.bundle.predict_risk(pd.DataFrame([observed]))[0]
     assert service.assess(high).risk == direct
+    no_status = MachineSpec.model_validate({**toy.spec.model_dump(), "limits_status": None})
     with pytest.raises(RecommendationWithheld, match="limits not yet confirmed"):
-        service.recommend(high)
+        replace(trained, spec=no_status).decision().recommend(high)
     with pytest.raises(RecommendationWithheld, match="out_of_range"):
         service.recommend(high.assign(feed=100))
     assert action_adherence({"feed": 9.0}, {"feed": 5.0}, {"feed": 7.0}) == {"feed": 0.5}
@@ -286,6 +290,40 @@ def test_spec_validation_rejects_ambiguous_inputs(toy: DatasetAdapter) -> None:
                 "dataset": {**document["dataset"], "unit_column": "setting"},
             }
         )
+
+
+def test_limits_status_publication_modes(trained_toy: FittedMachine) -> None:
+    """Exercise three modes on the real toy fit with schema-only confirmation data."""
+    spec = trained_toy.spec
+    document = spec.model_dump()
+    test_confirmation = {
+        "confirmed_by": "TEST SCHEMA TOKEN",
+        "role": "TEST ROLE TOKEN",
+        "confirmed_on": "2000-01-01",
+    }
+    with pytest.raises(ValueError, match="engineer name, role and date"):
+        MachineSpec.model_validate({**document, "limits_status": "confirmed"})
+    with pytest.raises(ValueError, match="cannot carry engineer confirmation"):
+        MachineSpec.model_validate({**document, "confirmation": test_confirmation})
+    with pytest.raises(ValueError, match="demonstration"):
+        MachineSpec.model_validate({**document, "limits_status": "unknown"})
+    confirmed = MachineSpec.model_validate(
+        {**document, "limits_status": "confirmed", "confirmation": test_confirmation}
+    )
+    unclassified = MachineSpec.model_validate(
+        {**document, "limits_status": None, "confirmation": test_confirmation}
+    )
+    rows = pd.DataFrame([{"time_index": 9, "feed": 9.0, "ambient": 0.1}])
+    for active_spec in (spec, confirmed):
+        decision = replace(trained_toy, spec=active_spec).decision()
+        result = decision.recommend(rows, "fast")
+        assert result.joint and result.status == "RECOVERABLE"
+        assert result.spec_hash == active_spec.spec_hash
+        assert (DEMONSTRATION_LIMITS_LABEL in result.warnings) == (active_spec is spec)
+    assert "Advisory mode" in confirmed.limits_label
+    assert unclassified.alerts_only
+    with pytest.raises(RecommendationWithheld, match="Alerts only"):
+        replace(trained_toy, spec=unclassified).decision().recommend(rows)
 
 
 def test_core_has_no_machine_specific_names() -> None:
@@ -334,12 +372,13 @@ def test_toy_offline_solver_validation_and_schema(
     )
     assert migrate_recourse_result(scoped.model_dump(mode="json")) == scoped
     service = trained_toy.decision()
-    assert service._checked_result(fast) == scoped
+    assert service._checked_result(fast) == scoped.model_copy(
+        update={"warnings": (*scoped.warnings, DEMONSTRATION_LIMITS_LABEL)}
+    )
     explanation = service._explanation(scoped)
     assert explanation.actions[0].startswith("Decrease Feed setting")
     assert explanation.verdict["joint"]
-    with pytest.raises(RecommendationWithheld, match="Alerts only"):
-        service.explain_result(scoped)
+    assert service.explain_result(service._scoped(fast)).verdict["joint"]
     with pytest.raises(RecommendationWithheld, match="withheld"):
         service._checked_result(runtime.validate_controls(state, {"feed": 9.0}, None, "fast"))
     frozen = json.loads(
@@ -354,7 +393,7 @@ def test_named_api_uses_toy_runtime(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Resolve one isolated fitted model, score real rows, and refuse advice through HTTP."""
+    """Resolve a fitted model and exercise labeled advice and quality checks through HTTP."""
     monkeypatch.setenv("PRESCRIPTXAI_TRUSTED_ARTIFACT_ROOTS", str(tmp_path))
     registry = MachineRegistry(toy.path.parent / "configs/machines", toy.path.parent)
     save_machine_fit(trained_toy, tmp_path)
@@ -367,7 +406,9 @@ def test_named_api_uses_toy_runtime(
     )
     machines = client.get("/machines").json()
     assert [machine["machine_id"] for machine in machines] == [DEFAULT_MACHINE, "toy"]
-    assert machines[1]["synthetic"] and machines[1]["alerts_only"]
+    assert machines[1]["synthetic"] and not machines[1]["alerts_only"]
+    assert machines[1]["limits_status"] == "demonstration"
+    assert machines[1]["limits_label"] == DEMONSTRATION_LIMITS_LABEL
     rows = toy.load().query("unit_id == 'unit-17'").iloc[-3:].to_dict(orient="records")
     response = client.post("/machines/toy/assess", json={"rows": rows})
     assert response.status_code == 200, response.text
@@ -401,10 +442,12 @@ def test_named_api_uses_toy_runtime(
         "/machines/toy/validate-controls",
         json={"rows": rows, "controls": {"feed": 5}},
     )
-    assert preview.status_code == 422 and "Alerts only" in preview.json()["detail"]
-    scoped = trained_toy.decision()._scoped(
-        trained_toy.decision()._runtime.recommend({"feed": 9.0, "ambient": 0.1}, None, "fast")
-    )
+    assert preview.status_code == 200, preview.text
+    assert DEMONSTRATION_LIMITS_LABEL in preview.json()["warnings"]
+    response = client.post("/machines/toy/recommend", json={"rows": rows})
+    assert response.status_code == 200, response.text
+    scoped = MachineRecourseResult.model_validate(response.json())
+    assert DEMONSTRATION_LIMITS_LABEL in scoped.warnings
     follow_up = client.post(
         "/machines/toy/feedback",
         json={
@@ -413,9 +456,7 @@ def test_named_api_uses_toy_runtime(
             "applied": {"feed": 5},
         },
     )
-    assert follow_up.status_code == 422 and "Alerts only" in follow_up.json()["detail"]
-    response = client.post("/machines/toy/recommend", json={"rows": rows})
-    assert response.status_code == 422 and "limits not yet confirmed" in response.json()["detail"]
+    assert follow_up.status_code == 200, follow_up.text
     rows[-1]["feed"] = 100.0
     response = client.post("/machines/toy/recommend", json={"rows": rows})
     assert response.status_code == 422 and "out_of_range" in response.json()["detail"]
@@ -443,7 +484,8 @@ def test_archive_scoped_score_and_alerts_only() -> None:
     adapter = MachineRegistry(ROOT / "configs/machines", ROOT).open(DEFAULT_MACHINE)
     rows = adapter.load().iloc[:3]
     legacy = PrescriptXAI.from_config(ROOT / "configs/default.yaml")
-    scoped = scope_archive_runtime(adapter.spec, "v1", legacy)
+    unclassified = MachineSpec.model_validate({**adapter.spec.model_dump(), "limits_status": None})
+    scoped = scope_archive_runtime(unclassified, "v1", legacy)
     state = {
         feature.id: float(rows[feature.id].iloc[-1])
         for feature in adapter.spec.measurement_features
@@ -494,11 +536,8 @@ def test_synthetic_feedback_uses_actual_validation(
     computed = runtime.recommend(state, None, "fast")
     scoped = service._scoped(computed)
     applied = {"feed": scoped.new_state["feed"]}
-    with pytest.raises(RecommendationWithheld, match="Alerts only"):
-        service.feedback(rows, scoped, applied, "simulated_operator")
-    feedback = service._measure_feedback(rows, scoped, applied, "simulated_operator")
-    with pytest.raises(RecommendationWithheld, match="Alerts only"):
-        service.simulate_feedback(rows, scoped, seed=1729, count=2)
+    feedback = service.feedback(rows, scoped, applied, "simulated_operator")
+    assert len(service.simulate_feedback(rows, scoped, seed=1729, count=2)) == 2
 
     assert feedback.machine_id == "toy" and feedback.synthetic
     assert feedback.source == "simulated_operator"
@@ -639,12 +678,13 @@ def test_named_cli_runs_data_to_score(
     trained = invoke("train", "--config", str(config))
     assert trained.exit_code == 0, trained.output
     info = invoke("info")
-    assert info.exit_code == 0 and json.loads(info.stdout)["alerts_only"]
+    assert info.exit_code == 0 and json.loads(info.stdout)["limits_status"] == "demonstration"
     result = invoke("assess", str(window))
     assert result.exit_code == 0, result.output
     assert json.loads(result.stdout)["synthetic"]
-    withheld = invoke("recommend", str(window))
-    assert withheld.exit_code != 0 and "Alerts only" in withheld.output
+    recommended = invoke("recommend", str(window))
+    assert recommended.exit_code == 0, recommended.output
+    assert DEMONSTRATION_LIMITS_LABEL in json.loads(recommended.stdout)["warnings"]
     bad_window = tmp_path / "invalid.json"
     bad_window.write_text("[]", encoding="utf-8")
     invalid = invoke("assess", str(bad_window))

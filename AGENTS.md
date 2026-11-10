@@ -38,5 +38,5 @@
 34. LABEL SYNTHETIC AND SIMULATED DATA everywhere (tables, charts, exports, UI).
 35. DETERMINISTIC AND TIERED TESTS. Fixed seeds; iteration budgets for search (wall-clock only for reporting). `make check` is fast; the full regression runs only before a tag. Do not run the full regression more than once per phase unless production source changed.
 36. NO POOLED NUMBERS. Results are per machine, with machine id, spec hash, protocol version, run id, K and population on every table.
-37. LIMITS NEED AN ENGINEER. Bounds, step limits and the failure definition have an "engineer confirmed by / date" field in the machine spec. Empty means the machine runs in Alerts-only mode.
+37. LIMITS STATUS. Use `limits_status: confirmed` for Advisory mode only with a recorded engineer name, role and date. Use `limits_status: demonstration` for benchmark, synthetic or sample data with data-derived limits and no engineer confirmation. Label demonstration prescriptions, exports and the About panel “Demonstration limits: not confirmed by an engineer”. A spec without either status is Alerts-only.
 Send a short status with real numbers after every phase.

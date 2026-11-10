@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "machine_id": "cmapss_fd001",
+  "spec_hash": "dd8e5c36baefe87e4be57fbe100232f6dac8aaff1dc38c8bc3c9a457787247eb",
+  "dashboard_settings": "configs/dashboard.yaml",
+  "profile": "configs/experiments/phase7-FD001-xgb-v1.yaml",
+  "registered_scenarios": "configs/machines/cmapss_fd001/scenarios.yaml",
+  "protocol": "v1",
+  "population": "official_test_all_alerts_registered_presets",
+  "intervention_horizon": 1,
+  "publication_mode": "Demonstration limits: not confirmed by an engineer",
+  "pre_trial_settle": "Wait for the selected recorded prescription job to settle before warmups.",
+  "comparison_baseline": "phase17-preview-latency-v2",
+  "synopsis_ui_budget_ms": 250,
+  "browser": "local Chromium headless, light theme, no external requests, one client and one outstanding edit",
+  "viewport_order": [
+    {"name": "desktop", "width": 1360, "height": 900},
+    {"name": "phone", "width": 390, "height": 844}
+  ],
+  "preset_order": [
+    {"name": "Case study (selected by rule)", "unit": "82", "time": 156, "case_id": "1ef4b7eaa432e65652ef94fb1dd2f27736051b7ecd4ce7b57cb3da32fbeb794c"},
+    {"name": "Replay example 2", "unit": "31", "time": 190, "case_id": "0051ac34c69222b87cbd74e406631a66b3c208496c885c67460d77774c540b78"},
+    {"name": "Replay example 3", "unit": "76", "time": 205, "case_id": "0e009eaacafb082b50497b7ab35ddf8b4c8d000755cb6ef5efdab14ad3b80217"},
+    {"name": "Replay example 4", "unit": "76", "time": 201, "case_id": "0204ff470966c9107659167a64343b466bf635dfee5438681ddca1be8e1cf1b9"}
+  ],
+  "edit_rule": "First available adjustable native slider on each preset. Use End unless already at the maximum, then Home. After the first completed edit, alternate keys using the last successful edit.",
+  "warmups_per_preset_viewport": 4,
+  "measured_per_preset_viewport": 20,
+  "trial_timeout_ms": 10000,
+  "browser_metric": "Trusted keydown to first animation-frame observation of changed settings URL, same machine/unit/time, idle script and rendered numeric risk and server timing.",
+  "server_metric": "Rounded dashboard caption for the simulate_risk call on the rerun. Excludes page setup and the rest of the rerun.",
+  "summary": "Nearest-rank p50, p95 and max per preset and viewport. Retain every attempted trial. A timeout, error, changed endpoint identity or missing observation invalidates the run. No outlier removal, pooling or confidence interval.",
+  "instant_target_ms": 50
+}

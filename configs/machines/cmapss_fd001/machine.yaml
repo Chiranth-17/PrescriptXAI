@@ -1,4 +1,5 @@
 schema_version: 1
+limits_status: demonstration
 machine_id: cmapss_fd001
 display_name: NASA C-MAPSS FD001 (simulated turbofan)
 unit_word: engine

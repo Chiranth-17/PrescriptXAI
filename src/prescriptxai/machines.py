@@ -445,7 +445,9 @@ def machine_summary(spec: MachineSpec) -> dict[str, object]:
         "unit_plural": spec.unit_plural,
         "synthetic": spec.synthetic,
         "data_source": spec.data_source,
-        "alerts_only": not spec.confirmation.confirmed,
+        "alerts_only": spec.alerts_only,
+        "limits_status": spec.limits_status,
+        "limits_label": spec.limits_label,
         "protocol_versions": sorted(spec.validation.plausibility),
         "features": [
             {

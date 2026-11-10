@@ -174,7 +174,7 @@ def render_follow_up(
 ) -> tuple[FeedbackRecord, ReplayFollowUp] | None:
     """Preview applied values and store them only after an explicit recording action."""
     if (
-        not decision.spec.confirmation.confirmed
+        decision.spec.alerts_only
         or result is None
         or scope is None
         or not result.action_features

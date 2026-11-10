@@ -43,6 +43,11 @@ async function selectPreset(page, preset) {
       && Number(query.get("time")) === preset.time && query.get("settings") === "{}"
       && app?.getAttribute("data-test-script-state") === "notRunning";
   }, { preset, machine: plan.machine_id }, { timeout: plan.trial_timeout_ms });
+  if (plan.publication_mode === "Demonstration limits: not confirmed by an engineer") {
+    await page.getByText("Calculating…", { exact: true }).waitFor({
+      state: "hidden", timeout: plan.trial_timeout_ms,
+    });
+  }
 }
 
 async function measure(page, slider, key, before, preset) {
@@ -100,7 +105,9 @@ try {
     page.on("pageerror", (error) => pageErrors.push(String(error)));
     await page.goto(address, { waitUntil: "domcontentloaded" });
     await page.getByText("Predicted risk now", { exact: true }).waitFor();
-    await page.getByText("Alerts only: limits not yet confirmed by an engineer", { exact: true }).waitFor();
+    const limitsLabel = plan.publication_mode === "Alerts only"
+      ? "Alerts only: limits not yet confirmed by an engineer" : plan.publication_mode;
+    await page.getByText(limitsLabel, { exact: true }).first().waitFor();
     for (const preset of plan.preset_order) {
       await selectPreset(page, preset);
       const slider = page.locator(

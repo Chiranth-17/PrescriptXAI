@@ -40,6 +40,7 @@ from prescriptxai.dashboard.simulator_data import (
 )
 from prescriptxai.dashboard.state import load_settings
 from prescriptxai.machine_schema import MachineRecourseResult, ReplayFollowUp
+from prescriptxai.machine_spec import DEMONSTRATION_LIMITS_LABEL, MachineSpec
 from prescriptxai.machines import record_feedback_batch, scope_archive_runtime
 from prescriptxai.pipeline import InputError, PrescriptXAI
 from prescriptxai.scenarios import scenario_presets
@@ -66,6 +67,21 @@ def replay() -> tuple[MachineDecision, PrescriptXAI, pd.DataFrame]:
     rows = adapter.load_official()
     runtime = PrescriptXAI.from_config(Path("configs/experiments/phase7-FD001-xgb-v1.yaml"))
     return scope_archive_runtime(adapter.spec, "v1", runtime), runtime, rows
+
+
+@pytest.fixture
+def alerts_spec(monkeypatch: pytest.MonkeyPatch) -> MachineSpec:
+    """Expose the same real archive under an isolated, unclassified spec."""
+    current = MachineRegistry.get
+    spec = MachineSpec.model_validate(
+        {**MachineRegistry().get(DEFAULT_MACHINE).model_dump(), "limits_status": None}
+    )
+
+    def get(registry: MachineRegistry, machine_id: str) -> MachineSpec:
+        return spec if machine_id == DEFAULT_MACHINE else current(registry, machine_id)
+
+    monkeypatch.setattr(MachineRegistry, "get", get)
+    return spec
 
 
 def _window(rows: pd.DataFrame, unit: str, time: str) -> pd.DataFrame:
@@ -96,10 +112,10 @@ def test_simulated_risk_is_authoritative_and_input_bound(
         decision.simulate_risk(window.drop(columns=feature), {})
 
 
-def test_simulation_http_rejects_stale_and_withholds_unconfirmed(
+def test_simulation_http_rejects_stale_and_scores_demonstration(
     replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
 ) -> None:
-    """The scoped HTTP route gives risk without publishing unconfirmed actions."""
+    """The scoped HTTP route binds risk and demonstration prescriptions to the request."""
     decision, runtime, rows = replay
     client = TestClient(create_app(runtime))
     spec = client.get(f"/machines/{DEFAULT_MACHINE}/spec")
@@ -122,11 +138,11 @@ def test_simulation_http_rejects_stale_and_withholds_unconfirmed(
     assert risk.json() == expected.model_dump(mode="json")
     stale = client.post("/simulate/prescribe", json={**request, "input_hash": "0" * 64})
     assert stale.status_code == 409
-    withheld = client.post(
+    response = client.post(
         "/simulate/prescribe", json={**request, "input_hash": expected.input_hash}
     )
-    assert withheld.status_code == 422
-    assert "limits not yet confirmed by an engineer" in withheld.json()["detail"]
+    assert response.status_code == 200, response.text
+    assert DEMONSTRATION_LIMITS_LABEL in response.json()["decision"]["warnings"]
     invalid = client.post("/simulate/risk", json={**request, "controls": {"unknown": True}})
     assert invalid.status_code == 422
 
@@ -144,7 +160,7 @@ def test_simulator_view_and_url_restore(
         "3. Prescription",
         "4. Was it followed?",
     ]
-    assert any("limits not yet confirmed" in widget.value for widget in page.info)
+    assert any(DEMONSTRATION_LIMITS_LABEL in widget.value for widget in page.markdown)
     assert len(page.metric) == 1
     window = _window(rows, page.query_params["unit"], page.query_params["time"])
     labels = {feature.label: feature.id for feature in decision.spec.measurement_features}
@@ -202,7 +218,7 @@ def test_presets_and_advanced_navigation(
         score = decision.simulate_risk(window, {}).assessment.risk
         assert page.metric[0].value == f"{score:.1%}"
         assert len(page.metric) == 1
-        assert any("limits not yet confirmed" in widget.value for widget in page.info)
+        assert any(DEMONSTRATION_LIMITS_LABEL in widget.value for widget in page.markdown)
     page.sidebar.radio[0].set_value("Advanced")
     page.run()
     assert not page.exception
@@ -269,9 +285,11 @@ def test_scorecard_numbers_come_from_saved_engine_intervals() -> None:
 
 def test_prescription_jobs_discard_superseded_work(
     replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    alerts_spec: MachineSpec,
 ) -> None:
     """Cancel queued work, discard a running response, and preserve real publication policy."""
-    decision, _, rows = replay
+    _, runtime, rows = replay
+    decision = scope_archive_runtime(alerts_spec, "v1", runtime)
     window = rows.iloc[:2]
     before = decision.input_hash(window, {})
     after = decision.input_hash(rows.iloc[:1], {})
@@ -339,7 +357,7 @@ def test_waterfall_replays_saved_case_with_real_predictor(
     assert not decision.spec.confirmation.confirmed
 
 
-def test_scenario_report_keeps_alerts_only_and_escapes_content(
+def test_scenario_report_labels_demonstration_and_escapes_content(
     replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
 ) -> None:
     """Export actual selected risk, machine provenance and the withheld state offline."""
@@ -350,7 +368,7 @@ def test_scenario_report_keeps_alerts_only_and_escapes_content(
     prediction = decision.simulate_risk(window, edits)
     html = scenario_report(decision.spec, "<script>", 2.0, edits, prediction, None, None)
     assert "<script>" not in html and "&lt;script&gt;" in html
-    assert "Alerts only: limits not yet confirmed by an engineer" in html
+    assert DEMONSTRATION_LIMITS_LABEL in html
     assert f"Predicted risk now: {prediction.assessment.risk:.1%}" in html
     assert prediction.input_hash in html
     assert decision.spec.spec_hash in html
@@ -445,9 +463,11 @@ def test_followup_trend_uses_only_actual_later_windows(
 def test_feedback_cli_aliases_preserve_alerts_only(
     replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
     tmp_path: Path,
+    alerts_spec: MachineSpec,
 ) -> None:
     """Exercise both add spellings and the demo command without bypassing confirmation."""
-    decision, _, rows = replay
+    _, runtime, rows = replay
+    decision = scope_archive_runtime(alerts_spec, "v1", runtime)
     window = next(
         candidate
         for index in range(min(len(rows), 30))
@@ -495,6 +515,7 @@ def test_archived_result_panels_render_actual_checks_and_feedback(
     replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
     case_evidence: tuple[pd.DataFrame, dict[str, Any]],
     tmp_path: Path,
+    alerts_spec: MachineSpec,
 ) -> None:
     """Exercise display components against rechecked evidence without confirming the machine."""
     decision, _, rows = replay
@@ -531,8 +552,14 @@ def test_archived_result_panels_render_actual_checks_and_feedback(
     withheld = scenario_report(
         decision.spec, scope.unit, scope.time, {}, preview, result, (demo, noted)
     )
-    assert "Alerts only" in withheld and reason not in withheld
-    assert "Predicted risk with prescription" not in withheld
+    assert DEMONSTRATION_LIMITS_LABEL in withheld
+    assert "Predicted risk with prescription" in withheld
+    assert "&lt;check settings&gt;" in withheld
+    blocked_html = scenario_report(
+        alerts_spec, scope.unit, scope.time, {}, preview, result, (demo, noted)
+    )
+    assert "Alerts only" in blocked_html and reason not in blocked_html
+    assert "Predicted risk with prescription" not in blocked_html
     settings = load_settings(Path("configs/dashboard.yaml"))
     renderer = AppTest.from_string(
         """
@@ -547,7 +574,7 @@ _render_measured_result(d, w, r, e, settings.report_directory)
 labels = {feature.id: feature.label for feature in d.spec.measurement_features}
 _render_applied(f, r, labels, settings.follow_up)
 _applied_inputs(d, r, labels)
-assert render_follow_up(d, w, rows, r, scope, settings.follow_up) is None
+assert render_follow_up(st.session_state["alerts"], w, rows, r, scope, settings.follow_up) is None
 _trend_panel(d, rows, scope, f, 3)
 _trend_panel(d, w, scope, f, 3)
 _trend_panel(d, rows.drop(columns=d.features[0]), scope, f, 3)
@@ -555,6 +582,7 @@ _feedback_log(d, settings.follow_up, log)
 """,
         default_timeout=45,
     )
+    renderer.session_state["alerts"] = scope_archive_runtime(alerts_spec, "v1", replay[1])
     renderer.session_state["evidence"] = (
         decision,
         window,

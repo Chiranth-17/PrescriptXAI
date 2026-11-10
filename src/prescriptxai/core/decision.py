@@ -18,7 +18,7 @@ from prescriptxai.machine_schema import (
     MachineRecourseResult,
     SimulatedRisk,
 )
-from prescriptxai.machine_spec import MachineSpec
+from prescriptxai.machine_spec import DEMONSTRATION_LIMITS_LABEL, MachineSpec
 from prescriptxai.schemas import Assessment, Explanation, InputContext, RecourseResult
 
 SearchMode = Literal["fast", "thorough"]
@@ -97,8 +97,8 @@ class MachineDecision:
         return current, InputContext(history=history or None)
 
     def _publishable(self) -> None:
-        if not self.spec.confirmation.confirmed:
-            raise RecommendationWithheld("Alerts only: limits not yet confirmed by an engineer")
+        if self.spec.alerts_only:
+            raise RecommendationWithheld(self.spec.limits_label)
 
     def assess(self, window: pd.DataFrame, mode: SearchMode | None = None) -> MachineAssessment:
         """Score the checked observation without publishing a prescription."""
@@ -167,6 +167,10 @@ class MachineDecision:
         return self._scoped(result)
 
     def _scoped(self, result: RecourseResult) -> MachineRecourseResult:
+        if self.spec.limits_status == "demonstration":
+            result = result.model_copy(
+                update={"warnings": (*result.warnings, DEMONSTRATION_LIMITS_LABEL)}
+            )
         return MachineRecourseResult.from_decision(
             result,
             machine_id=self.spec.machine_id,

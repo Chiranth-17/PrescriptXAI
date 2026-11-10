@@ -23,6 +23,9 @@ from prescriptxai.constraints.taxonomy import (
 MACHINE_ID_PATTERN = r"^[a-z][a-z0-9_]*$"
 FeatureRole = Literal["sensor", "controllable", "frozen"]
 LabelSource = Literal["remaining_life", "terminal_event", "run_to_failure"]
+LimitsStatus = Literal["confirmed", "demonstration"]
+DEMONSTRATION_LIMITS_LABEL = "Demonstration limits: not confirmed by an engineer"
+ALERTS_ONLY_LABEL = "Alerts only: limits not yet confirmed by an engineer"
 
 
 class SpecSection(BaseModel):
@@ -151,7 +154,7 @@ class QualityPolicy(SpecSection):
 
 
 class LimitConfirmation(SpecSection):
-    """Recorded engineering confirmation. An empty block enables Alerts-only mode."""
+    """Recorded engineering confirmation for limits explicitly marked confirmed."""
 
     confirmed_by: str | None = None
     role: str | None = None
@@ -198,12 +201,17 @@ class MachineSpec(SpecSection):
     delta_min: float = Field(ge=0, le=1)
     k_max: int = Field(ge=1)
     latency_budgets: dict[Literal["FAST", "THOROUGH"], LatencyBudgetConfig]
-    confirmation: LimitConfirmation
+    confirmation: LimitConfirmation = Field(default_factory=LimitConfirmation)
+    limits_status: LimitsStatus | None = None
     sentences: SentenceTemplates
 
     @model_validator(mode="after")
     def check_references(self) -> MachineSpec:
         """Validate mapped columns, constraint references and required runtime policies."""
+        if self.limits_status == "confirmed" and not self.confirmation.confirmed:
+            raise ValueError("confirmed limits require an engineer name, role and date")
+        if self.limits_status == "demonstration" and self.confirmation.confirmed:
+            raise ValueError("demonstration limits cannot carry engineer confirmation")
         names = {feature.id for feature in self.features}
         columns = {feature.column for feature in self.features}
         if len(names) != len(self.features) or len(columns) != len(self.features):
@@ -254,11 +262,30 @@ class MachineSpec(SpecSection):
         return self
 
     @property
+    def alerts_only(self) -> bool:
+        """Withhold recommendations for specs without an active limits declaration."""
+        return self.limits_status != "demonstration" and not (
+            self.limits_status == "confirmed" and self.confirmation.confirmed
+        )
+
+    @property
+    def limits_label(self) -> str:
+        """Name the current publication mode without implying physical safety."""
+        if self.alerts_only:
+            return ALERTS_ONLY_LABEL
+        if self.limits_status == "demonstration":
+            return DEMONSTRATION_LIMITS_LABEL
+        return "Advisory mode · Engineer-confirmed limits"
+
+    @property
     def spec_hash(self) -> str:
         """Fingerprint the validated configuration, independent of YAML formatting."""
         import json
 
-        payload = json.dumps(self.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+        spec = self.model_dump(mode="json")
+        if self.limits_status is None:
+            spec.pop("limits_status")  # Preserve identity for historical specs without this field.
+        payload = json.dumps(spec, sort_keys=True, separators=(",", ":"))
         return sha256(payload.encode("utf-8")).hexdigest()
 
     @property

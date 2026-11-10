@@ -13,12 +13,18 @@ unit, or explicitly declare complete run-to-failure trajectories. A terminal
 event policy rejects censored units. It never assumes their final observation
 was a failure.
 
-An engineer must decide which settings can change, the raw-unit operating
-bounds and step limits, what counts as failure, the prediction horizon, and
-which sensor relationships constrain a candidate. Record the name, role and
-date only after confirmation. An empty block permits risk alerts and withholds
-prescriptions and applied-control previews. The FD001 spec is unconfirmed.
-Its controls and fitted limits describe benchmark proxies.
+Choose a limits status in the machine spec.
+
+| `limits_status` | Required evidence | Dashboard and named routes |
+| --- | --- | --- |
+| `confirmed` | An engineer has reviewed the adjustable settings, raw-unit bounds, step limits and applicable checks. Record their name, role and date under `confirmation.confirmed_by`, `confirmation.role` and `confirmation.confirmed_on`. | Advisory mode. The usual input quality and validation checks apply. |
+| `demonstration` | Benchmark, synthetic or sample data with limits derived from data. Leave `confirmation` empty. | Eligible prescriptions and exports carry **Demonstration limits: not confirmed by an engineer**. The About panel repeats that label. |
+| Omitted | Use this status while the operating limits are unclassified. | Alerts-only. Risk previews are available and prescriptions and applied-control checks are withheld. |
+
+The registered FD001 replay uses demonstration limits for its benchmark
+proxies. Its recommendations remain advisory and model-based. A change of
+limits status changes the spec hash. Recheck the fitted artifact scope and
+registered scenario references before using the new spec.
 
 Use positive disjoint split fractions. The adapter splits entire units and
 audits the partition. The runtime fits the scaler, predictor and covariance on
@@ -54,5 +60,4 @@ to reproduce historical benchmark results.
 
 The Phase 13 contract constructs a toy spec and a synthetic CSV in its test
 directory. It fits and scores with the shared numerical runtime and runs
-actual bounded FAST and THOROUGH searches offline. Its public named routes
-withhold recommendations without an engineer confirmation.
+actual bounded FAST and THOROUGH searches offline. It uses demonstration limits and labels recommendations from its public named routes.

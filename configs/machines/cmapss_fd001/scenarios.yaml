@@ -1,6 +1,7 @@
 schema_version: 1
 machine_id: cmapss_fd001
-spec_hash: 72d91ddb5ab7b415044060847c5934d7ce45b53e346600494f4d792c59dfff0d
+spec_hash: dd8e5c36baefe87e4be57fbe100232f6dac8aaff1dc38c8bc3c9a457787247eb
+selection_spec_hash: 72d91ddb5ab7b415044060847c5934d7ce45b53e346600494f4d792c59dfff0d
 population: test
 source_scope:
   dataset: FD001

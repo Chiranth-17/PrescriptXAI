@@ -75,8 +75,8 @@ def scenario_report(
     source = "Synthetic or sample machine data" if spec.synthetic else "Recorded replay data"
     prescription = "<p>No prescription was published for these inputs.</p>"
     follow_up = "<p>No follow-up is attached to this report.</p>"
-    if not spec.confirmation.confirmed:
-        prescription = "<p>Alerts only: limits not yet confirmed by an engineer.</p>"
+    if spec.alerts_only:
+        prescription = f"<p>{escape(spec.limits_label)}.</p>"
     elif result is not None:
         prescription = _prescription_section(features, result)
         if feedback is not None:
@@ -98,6 +98,7 @@ def scenario_report(
         "<title>PrescriptXAI scenario report</title>"
         "<h1>PrescriptXAI scenario report</h1>"
         f"<p>{escape(spec.display_name)} · {source} · unit {escape(unit)}, time {time:g}</p>"
+        f"<p>{escape(spec.limits_label)}</p>"
         f"<p>Data source: {escape(spec.data_source)}</p>"
         "<p>Advisory replay and model-based checks. Physical outcomes were not measured.</p>"
         "<h2>Current settings and predicted risk</h2>"
