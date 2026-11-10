@@ -37,6 +37,7 @@ from prescriptxai.dashboard.simulator_data import (
     replay_trend,
     sequential_risks,
     simulator_decision,
+    solve_prescription,
 )
 from prescriptxai.dashboard.state import load_settings
 from prescriptxai.machine_schema import MachineRecourseResult, ReplayFollowUp
@@ -48,7 +49,9 @@ from prescriptxai.scenarios import scenario_presets
 
 def _app_test() -> AppTest:
     return AppTest.from_string(
-        "from prescriptxai.dashboard.simulator_app import main\nmain()", default_timeout=45
+        "from prescriptxai.dashboard.simulator_app import main\n"
+        "if __name__ == '__main__':\n    main()",
+        default_timeout=45,
     )
 
 
@@ -149,6 +152,7 @@ def test_simulation_http_rejects_stale_and_scores_demonstration(
 
 def test_simulator_view_and_url_restore(
     replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Drive the installed dashboard with real observations and restore a simulated edit."""
     decision, _, rows = replay
@@ -179,7 +183,12 @@ def test_simulator_view_and_url_restore(
         break
     else:
         pytest.fail("The recorded observation offers no visible change across its controls")
-    page.run()
+    def unexpected_solve(*_args: object, **_kwargs: object) -> None:
+        pytest.fail("A manual slider edit attempted to schedule a prescription")
+
+    with monkeypatch.context() as edit_context:
+        edit_context.setattr(PrescriptionJob, "start", unexpected_solve)
+        page.run()
     assert not page.exception and not page.error
     assert page.metric[0].value == f"{edited:.1%}"
     assert json.loads(page.query_params["settings"]) == {name: candidate}
@@ -332,6 +341,28 @@ def case_evidence(
     with source.open(encoding="utf-8") as file:
         saved = next(json.loads(line) for line in file if case.case_id in line)
     return _window(rows, case.unit, str(case.time)), saved
+
+
+def test_spawned_prescription_binds_current_inputs(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    case_evidence: tuple[pd.DataFrame, dict[str, Any]],
+) -> None:
+    """Check the isolated worker using a real recorded window and the saved fit."""
+    decision, _, _ = replay
+    window, _ = case_evidence
+    registry = MachineRegistry()
+    settings = load_settings(Path("configs/dashboard.yaml"))
+    input_hash = decision.input_hash(window, {})
+    cancel = Event()
+    result = solve_prescription(registry, DEFAULT_MACHINE, settings, window, input_hash, cancel)
+    assert result.joint and result.status == "RECOVERABLE"
+    assert result.risk_before == decision.simulate_risk(window, {}).assessment.risk
+    assert DEMONSTRATION_LIMITS_LABEL in result.warnings
+    with pytest.raises(RecommendationWithheld, match="^Recommendation withheld: The model"):
+        solve_prescription(registry, DEFAULT_MACHINE, settings, window, "0" * 64, cancel)
+    cancel.set()
+    with pytest.raises(CancelledError):
+        solve_prescription(registry, DEFAULT_MACHINE, settings, window, input_hash, cancel)
 
 
 def test_waterfall_replays_saved_case_with_real_predictor(

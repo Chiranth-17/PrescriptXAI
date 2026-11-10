@@ -16,6 +16,7 @@ const origin = new URL(address).origin;
 const { chromium } = createRequire(import.meta.url)(modulePath);
 const browser = await chromium.launch({ headless: true, executablePath });
 const results = [];
+const limitsLabel = "Demonstration limits: not confirmed by an engineer";
 
 async function presetAccess(button) {
   return button.evaluate((element) => {
@@ -140,11 +141,15 @@ try {
     }, before);
     const cards = ["1. Set the conditions", "2. Predicted risk", "3. Prescription", "4. Was it followed?"];
     for (const title of cards) await page.getByRole("heading", { name: title, exact: true }).waitFor();
-    await page.getByText("Alerts only: limits not yet confirmed by an engineer", { exact: true }).waitFor();
-    if (await page.getByText("Predicted risk with the prescription", { exact: true }).count()
-        || await page.getByRole("button", { name: "Record this follow-up" }).count()) {
-      throw new Error("An unconfirmed machine offered a prescription");
-    }
+    await page.getByText(limitsLabel, { exact: true }).first().waitFor();
+    await page.getByText("Predicted risk with the prescription", { exact: true }).waitFor({
+      timeout: 90000,
+    });
+    await page.getByRole("button", { name: "Record this follow-up" }).waitFor();
+    const about = page.locator("details").filter({ hasText: "About this view and how it was checked" });
+    await about.locator("summary").click();
+    await about.getByText(limitsLabel, { exact: true }).waitFor();
+    await about.locator("summary").click();
     const bounds = await page.evaluate(() => ({
       viewportWidth: window.innerWidth,
       documentWidth: document.documentElement.scrollWidth,
@@ -171,13 +176,17 @@ try {
     const reportFile = path.join(output, name + "-scenario.html");
     await download.saveAs(reportFile);
     const report = await fs.readFile(reportFile, "utf8");
-    if (!report.includes("Alerts only: limits not yet confirmed by an engineer.")
+    if (!report.includes(limitsLabel)
         || !report.includes("Predicted risk now: " + risk)
         || !report.includes("Synthetic or sample machine data")
-        || report.includes("Predicted risk with prescription:")) {
-      throw new Error("Downloaded scenario does not match the Alerts-only view");
+        || !report.includes("Predicted risk with prescription:")) {
+      throw new Error("Downloaded scenario does not match the demonstration view");
     }
     const keyboard = await keyboardSettings(page, risk);
+    if (await page.getByText("Predicted risk with the prescription", { exact: true }).count()
+        || await page.getByRole("button", { name: "Record this follow-up" }).count()) {
+      throw new Error("A manual edit retained a recorded-input prescription");
+    }
     if (errors.length || external.length) {
       throw new Error(JSON.stringify({ errors, external }));
     }

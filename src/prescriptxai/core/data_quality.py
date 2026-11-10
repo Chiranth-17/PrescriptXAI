@@ -27,7 +27,8 @@ class RecommendationWithheld(ValueError):
     """A machine policy or data check blocked publication of a recommendation."""
 
     def __init__(self, reason: str) -> None:
-        super().__init__(f"Recommendation withheld: {reason}")
+        prefix = "Recommendation withheld: "
+        super().__init__(prefix + reason.removeprefix(prefix))
 
 
 def check_window(rows: pd.DataFrame, spec: MachineSpec) -> tuple[QualityIssue, ...]:
