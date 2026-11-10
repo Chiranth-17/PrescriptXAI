@@ -32,6 +32,7 @@ from prescriptxai.dashboard.scenario_report import (
     scenario_report,
 )
 from prescriptxai.dashboard.simulator_data import (
+    _solve_prescription,
     observed_rows,
     parse_settings,
     replay_trend,
@@ -348,11 +349,16 @@ def test_spawned_prescription_binds_current_inputs(
     case_evidence: tuple[pd.DataFrame, dict[str, Any]],
 ) -> None:
     """Check the isolated worker using a real recorded window and the saved fit."""
-    decision, _, _ = replay
+    decision, _, rows = replay
     window, _ = case_evidence
     registry = MachineRegistry()
     settings = load_settings(Path("configs/dashboard.yaml"))
     input_hash = decision.input_hash(window, {})
+    initial = rows.iloc[:1]
+    initial_hash = decision.input_hash(initial, {})
+    assert not _solve_prescription(registry, DEFAULT_MACHINE, settings, initial, initial_hash).alert
+    with pytest.raises(RecommendationWithheld, match="The model or recorded conditions changed"):
+        _solve_prescription(registry, DEFAULT_MACHINE, settings, window, "0" * 64)
     cancel = Event()
     result = solve_prescription(registry, DEFAULT_MACHINE, settings, window, input_hash, cancel)
     assert result.joint and result.status == "RECOVERABLE"
