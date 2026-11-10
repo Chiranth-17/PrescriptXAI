@@ -49,18 +49,19 @@ STYLE = """
 [data-testid="stHeading"] h1, [data-testid="stHeading"] h2,
 [data-testid="stHeading"] h3 { letter-spacing: -0.02em; }
 [data-testid="stVerticalBlockBorderWrapper"] { border-radius: 12px; }
-.stButton button, .stDownloadButton button { min-height: 44px; }
+.stButton button, .stDownloadButton button,
+.stSelectbox [role="combobox"], .stExpander summary { min-height: 44px; }
 [data-testid="stAppDeployButton"] { display: none; }
 [data-testid="stMetricValue"] { font-family: ui-monospace, Consolas, monospace; }
 [data-testid="stSlider"] { min-height: 64px; }
-.stApp :is(button, [role="slider"], [role="combobox"]):focus-visible {
-  outline: 3px solid #1d4ed8;
+.stApp { --psx-focus: #1d4ed8; }
+.stApp :is(button, [role="combobox"], summary):focus-visible,
+.stApp [data-testid="stSlider"]:has(input[type="range"]:focus-visible) {
+  outline: 3px solid var(--psx-focus);
   outline-offset: 3px;
 }
 @media (prefers-color-scheme: dark) {
-  .stApp :is(button, [role="slider"], [role="combobox"]):focus-visible {
-    outline-color: #9ac0ff;
-  }
+  .stApp { --psx-focus: #9ac0ff; }
 }
 @media (max-width: 600px) {
   [data-testid="stMainBlockContainer"] { padding-inline: 1rem; }

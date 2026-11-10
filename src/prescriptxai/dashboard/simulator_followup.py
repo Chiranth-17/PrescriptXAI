@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
+from pathlib import Path
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -69,12 +70,16 @@ def _trend_panel(
         st.dataframe(observed, hide_index=True, width="stretch")
 
 
-def _feedback_log(decision: MachineDecision, settings: FollowUpSettings) -> None:
+def _feedback_log(
+    decision: MachineDecision,
+    settings: FollowUpSettings,
+    path: Path = Path("artifacts/machines/feedback.sqlite3"),
+) -> None:
     with st.expander("Follow-up log"):
         include_demo = st.checkbox("Include simulated operator records")
         try:
             entries = read_feedback_log(
-                decision.spec, decision.protocol_version, include_simulated=include_demo
+                decision.spec, decision.protocol_version, path, include_simulated=include_demo
             )
         except (OSError, ValueError, sqlite3.Error):
             st.warning("The local follow-up log is unavailable.")
@@ -107,6 +112,24 @@ def _feedback_log(decision: MachineDecision, settings: FollowUpSettings) -> None
                 }
             )
         st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+
+
+def _render_applied(
+    feedback: FeedbackRecord,
+    result: MachineRecourseResult,
+    labels: dict[str, str],
+    settings: FollowUpSettings,
+) -> None:
+    recorded, actual = st.columns(2)
+    recorded.metric("Predicted risk with prescription", f"{result.risk_after:.1%}")
+    actual.metric("Predicted risk with applied settings", f"{feedback.applied_risk:.1%}")
+    passes = feedback.applied_tier_passes.values()
+    st.caption(
+        f"Applied settings passed {sum(passes)} of {len(passes)} checks · "
+        f"{settings.adherence_label(feedback.adherence)} ({feedback.adherence:.0%} agreement)"
+    )
+    for name, score in feedback.action_adherence.items():
+        st.progress(score, text=f"{labels[name]} · {score:.0%} agreement")
 
 
 def render_follow_up(
@@ -152,16 +175,7 @@ def render_follow_up(
         st.warning("The applied settings could not be checked. Review the recorded values.")
         _feedback_log(decision, settings)
         return None
-    recorded, actual = st.columns(2)
-    recorded.metric("Predicted risk with prescription", f"{result.risk_after:.1%}")
-    actual.metric("Predicted risk with applied settings", f"{feedback.applied_risk:.1%}")
-    passes = feedback.applied_tier_passes.values()
-    st.caption(
-        f"Applied settings passed {sum(passes)} of {len(passes)} checks · "
-        f"{settings.adherence_label(feedback.adherence)} ({feedback.adherence:.0%} agreement)"
-    )
-    for name, score in feedback.action_adherence.items():
-        st.progress(score, text=f"{labels[name]} · {score:.0%} agreement")
+    _render_applied(feedback, result, labels, settings)
     if st.checkbox("Show later recorded replay", key=f"trend:{result.run_id}"):
         _trend_panel(decision, observations, scope, feedback, settings.trend_steps)
     details = ReplayFollowUp.model_validate(

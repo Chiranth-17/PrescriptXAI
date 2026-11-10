@@ -28,8 +28,9 @@ def test_cli_help_lists_configured_workflows() -> None:
 
 def test_dashboard_empty_state_shows_dataset_and_configuration_limits() -> None:
     """The real operator UI explains static-data and missing actuator limitations."""
-    dashboard_path = Path(__file__).resolve().parents[2] / "src/prescriptxai/dashboard/app.py"
-    app_test = AppTest.from_file(dashboard_path).run(timeout=30)
+    app_test = AppTest.from_string("from prescriptxai.dashboard.app import main\nmain()").run(
+        timeout=30
+    )
     assert not app_test.exception
     assert any(
         "does not establish real-machine safety or RUL extension" in item.value

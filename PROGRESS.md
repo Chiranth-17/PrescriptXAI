@@ -40,6 +40,14 @@ Package coverage remains open. The CLI now generates registered presets and
 optional risk-preview caches, and retains the original feedback syntax
 alongside explicit add and seeded simulation commands.
 
+The `a61d51a` follow-up diagnostic passed all 729 selected tests in
+258.97 seconds and missed the retained coverage floors. It measured 88.68%
+scoped lines, 87.80% package lines and 84.52% combined. The next checkpoint
+uses imported entrypoints across the remaining legacy AppTests and adds
+measured archive-component, malformed share-link and CLI regeneration tests.
+Chromium v13 passed at both viewport widths in light and dark themes,
+including 44-pixel targets and visible keyboard focus on the tested controls.
+
 The [acceptance report](docs/acceptance_report.md) separates local verification
 from the remaining dashboard functionality and gates. The design mock and two
 classmate sessions are pending. The full dashboard gate and Step 3B acceptance

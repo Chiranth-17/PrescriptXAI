@@ -51,8 +51,8 @@ def test_raw_train_calibrate_validators_recommend_validate_api_dashboard(
     assert api.status == direct.status and api.validation_report == validation
     assert api.new_state == direct.new_state and api.risk_after == direct.risk_after
     monkeypatch.setenv("PRESCRIPTXAI_DASHBOARD_CONFIG", str(fitted.dashboard))
-    app = AppTest.from_file(
-        str(Path("src/prescriptxai/dashboard/app.py").resolve()), default_timeout=60
+    app = AppTest.from_string(
+        "from prescriptxai.dashboard.app import main\nmain()", default_timeout=60
     ).run()
     assert not app.exception and not app.error
     app.selectbox(key="engine").set_value(int(row.engine_id)).run()

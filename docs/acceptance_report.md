@@ -63,6 +63,12 @@ reference only when its recorded-input hash matches the selected window. It
 offers no actions or follow-up for an edited input. The full confirmed browser
 flow remains pending.
 
+An offline component test rechecks the registered FD001 candidate using the
+fitted model, then renders the measured risk waterfall and applied-setting
+comparison. It exercises the recorded trend and a temporary follow-up log.
+The demo row appears only after opting in. These component checks do not
+grant publication approval.
+
 The waterfall test uses the archived case-study action controls and re-scores
 each prefix with the same fitted model and coupling reference. It matches the
 saved risk endpoints within an absolute probability tolerance of 1e-9. This
@@ -108,7 +114,13 @@ AppTests recorded 101 lines and 24 branches for the legacy entrypoint and
 159 lines and 29 branches for the simulator. The standalone browser check
 still runs the shipped Streamlit entrypoint. These are targeted measurements
 under `artifacts/phase17/coverage-entrypoint-20261110-v2`. A fresh
-software-only package measurement is required.
+software-only package measurement at `a61d51a` passed all 729 selected tests
+in 258.97 seconds and missed all three retained coverage floors. It measured
+88.68% scoped lines, 87.80% package lines and 84.52% combined. The full run
+still included two legacy AppTests launching the source file directly, and
+recorded zero lines for that entrypoint. Those tests now use the same imported
+entrypoint as the other workflows. Chromium still launches the shipped script.
+The package receipt remains at `artifacts/phase17/software-a61d51a`.
 
 ## Command-line workflows
 
@@ -127,26 +139,30 @@ gate.
 
 ## Local verification
 
-The focused suite passed 78 tests in 34.63 seconds, including 16 simulator
+The focused suite passed 86 tests in 66.96 seconds, including 19 simulator
 tests. Ruff, mypy over 85 source files, and the strict documentation build
 also passed. The full quality gate and the controlled latency suite were
 outside this checkpoint.
 
-Chromium captured the [desktop](screenshots/phase17-simulator-desktop.png)
-and [phone](screenshots/phase17-simulator-phone.png) layouts at widths of 1,360
-and 390 CSS pixels, with no horizontal overflow, external requests or
-browser page errors during the check. The browser receipt is
-`artifacts/phase17/browser-20261110-v11/browser.json` and the native exit is
-zero. Both downloads contain the same 87.7% risk and Alerts-only label, with
-identical HTML SHA-256. The preset button measured 44 CSS pixels and
-14.24:1 text contrast, with a visible focus outline. A keyboard adjustment
-moved predicted risk from 87.7% to 92.1%, and reloading the link restored
-the edit at both widths. These measurements cover the tested light-theme
-controls. The design comparison and broader accessibility review remain open.
+Chromium checked the [desktop](screenshots/phase17-simulator-desktop.png)
+and [phone](screenshots/phase17-simulator-phone.png) layouts at 1,360 and 390
+CSS pixels in both themes. [Dark desktop](screenshots/phase17-simulator-desktop-dark.png)
+and [dark phone](screenshots/phase17-simulator-phone-dark.png) captures are
+also saved. The browser receipts are
+`artifacts/phase17/browser-20261110-v13-light/browser.json` and
+`artifacts/phase17/browser-20261110-v13-dark/browser.json`. Both exited zero.
+Each viewport verified offline operation, no horizontal overflow, Alerts-only
+HTML export, and the keyboard edit from 87.7% to 92.1% with URL restoration.
+All measured action buttons, selectors and expanders were at least 44 CSS
+pixels tall. The preset text measured 14.24:1 contrast in light mode and
+15.56:1 in dark mode. The preset and edited slider both showed visible keyboard
+focus. The checks cover those controls. The external design comparison and
+full accessibility review remain open.
 
 Earlier receipts include the v3 tooltip timeout, v7 and v9 attempts that
 targeted the recorded-time slider instead of an adjustable setting, the v8
-port reservation refusal and Windows connection resets during browser teardown.
+port reservation refusal, the v12 selector probe that matched no controls,
+and Windows connection resets during browser teardown.
 The first focused run found adherence defaults in the UI module. The final
 run passed the original hardcoded-results guard after the defaults moved
 to typed configuration.

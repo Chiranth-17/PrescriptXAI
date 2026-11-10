@@ -7,6 +7,8 @@ import path from "node:path";
 const [address, output] = process.argv.slice(2);
 const modulePath = process.env.PSX_PHASE17_PLAYWRIGHT;
 const executablePath = process.env.PSX_PHASE17_CHROMIUM;
+const colorScheme = process.env.PSX_PHASE17_COLOR_SCHEME || "light";
+if (!["light", "dark"].includes(colorScheme)) throw new Error("Expected light or dark theme");
 if (!address || !output || !modulePath || !executablePath) {
   throw new Error("Supply the local address, output directory, Playwright module and Chromium executable");
 }
@@ -55,6 +57,12 @@ async function keyboardSettings(page, originalRisk) {
     const before = new URL(page.url()).searchParams.get("settings");
     const key = now === maximum ? "Home" : "End";
     await control.press(key);
+    const sliderFocus = await control.evaluate((element) => {
+      const style = getComputedStyle(element.closest('[data-testid="stSlider"]'));
+      return element.matches(":focus-visible") && style.outlineStyle !== "none"
+        && parseFloat(style.outlineWidth) >= 2;
+    });
+    if (!sliderFocus) throw new Error("Adjustable slider has no visible focus outline");
     try {
       await page.waitForFunction((previous) =>
         new URL(location.href).searchParams.get("settings") !== previous
@@ -78,7 +86,7 @@ async function keyboardSettings(page, originalRisk) {
       if (new URL(page.url()).searchParams.get("settings") !== settings) {
         throw new Error("Reloaded link did not restore the keyboard settings");
       }
-      return { edits, restored: true };
+      return { edits, restored: true, sliderFocus: true };
     }
   }
   throw new Error("No keyboard-edited control changed the displayed risk");
@@ -86,7 +94,7 @@ async function keyboardSettings(page, originalRisk) {
 
 try {
   for (const [name, width, height] of [["desktop", 1360, 900], ["phone", 390, 844]]) {
-    const context = await browser.newContext({ viewport: { width, height }, colorScheme: "light" });
+    const context = await browser.newContext({ viewport: { width, height }, colorScheme });
     const external = [];
     await context.route("**/*", async (route) => {
       const url = new URL(route.request().url());
@@ -109,6 +117,20 @@ try {
     const accessibility = await presetAccess(preset);
     if (accessibility.buttonHeight < 44 || accessibility.contrast < 4.5 || !accessibility.focusVisible) {
       throw new Error("Preset accessibility failed: " + JSON.stringify(accessibility));
+    }
+    const targetSizes = await page.evaluate(() => {
+      const sizes = (selector) => [...document.querySelectorAll(selector)]
+        .filter((element) => element.getBoundingClientRect().width > 0)
+        .map((element) => element.getBoundingClientRect().height);
+      return {
+        actions: sizes(".stButton button, .stDownloadButton button"),
+        selectors: sizes('.stSelectbox [role="combobox"]'),
+        expanders: sizes(".stExpander summary"),
+      };
+    });
+    if (Object.values(targetSizes).some((sizes) => !sizes.length || Math.min(...sizes) < 44)) {
+      const selector = await page.locator('[data-testid="stSelectbox"]').first().innerHTML();
+      throw new Error("Dashboard target heights failed: " + JSON.stringify(targetSizes) + " " + selector);
     }
     await preset.press("Enter");
     await page.waitForFunction((unit) => {
@@ -162,7 +184,7 @@ try {
     const reportSha256 = createHash("sha256").update(report).digest("hex");
     results.push({
       name, viewport: { width, height }, captureHeight, bounds, risk, sha256, file,
-      reportFile, reportSha256, accessibility, keyboard,
+      reportFile, reportSha256, accessibility, keyboard, colorScheme, targetSizes,
     });
     await context.close();
   }

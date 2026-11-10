@@ -7,9 +7,11 @@ from concurrent.futures import CancelledError, ThreadPoolExecutor
 from itertools import pairwise
 from pathlib import Path
 from threading import Event
+from typing import Any
 
 import pandas as pd
 import pytest
+import yaml
 from fastapi.testclient import TestClient
 from streamlit.testing.v1 import AppTest
 from typer.testing import CliRunner
@@ -29,8 +31,8 @@ from prescriptxai.dashboard.simulator_data import (
     sequential_risks,
 )
 from prescriptxai.dashboard.state import load_settings
-from prescriptxai.machine_schema import MachineRecourseResult
-from prescriptxai.machines import scope_archive_runtime
+from prescriptxai.machine_schema import MachineRecourseResult, ReplayFollowUp
+from prescriptxai.machines import record_feedback_batch, scope_archive_runtime
 from prescriptxai.pipeline import InputError, PrescriptXAI
 from prescriptxai.scenarios import scenario_presets
 
@@ -287,16 +289,26 @@ def test_prescription_jobs_discard_superseded_work(
             current.future.result(timeout=5)
 
 
-def test_waterfall_replays_saved_case_with_real_predictor(
+@pytest.fixture(scope="module")
+def case_evidence(
     replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
-) -> None:
-    """Recompute attribution for a historical candidate without publishing it as advice."""
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Load the registered archived case and its original observation window."""
     decision, _, rows = replay
     case = scenario_presets(MachineRegistry(), DEFAULT_MACHINE, "test", decision.spec.spec_hash)[0]
     source = load_settings(Path("configs/dashboard.yaml")).report_directory / "records.jsonl"
     with source.open(encoding="utf-8") as file:
         saved = next(json.loads(line) for line in file if case.case_id in line)
-    window = _window(rows, case.unit, str(case.time))
+    return _window(rows, case.unit, str(case.time)), saved
+
+
+def test_waterfall_replays_saved_case_with_real_predictor(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    case_evidence: tuple[pd.DataFrame, dict[str, Any]],
+) -> None:
+    """Recompute attribution for a historical candidate without publishing it as advice."""
+    decision, _, _ = replay
+    window, saved = case_evidence
     names = sorted(
         set(saved["changed_features"]) & decision.control_bounds().keys(),
         key=lambda name: (-abs(saved["candidate"][name] - saved["original"][name]), name),
@@ -463,3 +475,128 @@ def test_feedback_cli_aliases_preserve_alerts_only(
         assert "Recommendation withheld: Alerts only" in result.output
         assert "confirmed by an engineer" in result.output
         assert not log_path.exists()
+
+
+def test_archived_result_panels_render_actual_checks_and_feedback(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    case_evidence: tuple[pd.DataFrame, dict[str, Any]],
+    tmp_path: Path,
+) -> None:
+    """Exercise display components against rechecked evidence without confirming the machine."""
+    decision, _, rows = replay
+    window, saved = case_evidence
+    controls = {
+        name: saved["candidate"][name]
+        for name in saved["changed_features"]
+        if name in decision.control_bounds()
+    }
+    state, context = decision._observed(window)
+    result = decision._scoped(decision._runtime.validate_controls(state, controls, context, "fast"))
+    assert result.status == "RECOVERABLE" and result.joint
+    assert result.risk_after == pytest.approx(saved["risk_after"], abs=1e-9, rel=0)
+    applied = {name: (state[name] + result.new_state[name]) / 2 for name in result.action_features}
+    demo = decision._measure_feedback(window, result, applied, "simulated_operator")
+    scope = ReplayFollowUp(
+        input_hash=decision.input_hash(window, {}),
+        unit=str(window["unit_id"].iloc[-1]),
+        time=float(window["time_index"].iloc[-1]),
+        risk_before=result.risk_before,
+        prescription_risk=result.risk_after,
+        config_hash=result.config_hash,
+        demo_seed=1729,
+    )
+    log = tmp_path / "feedback.sqlite3"
+    record_feedback_batch([(demo, scope)], log)
+    settings = load_settings(Path("configs/dashboard.yaml"))
+    renderer = AppTest.from_string(
+        """
+import streamlit as st
+from prescriptxai.dashboard.simulator_followup import _feedback_log, _render_applied, _trend_panel
+from prescriptxai.dashboard.simulator_prescription import _render_measured_result
+d, w, rows, r, e, f, scope, settings, log = st.session_state["evidence"]
+st.caption("Archived evidence only")
+_render_measured_result(d, w, r, e, settings.report_directory)
+labels = {feature.id: feature.label for feature in d.spec.measurement_features}
+_render_applied(f, r, labels, settings.follow_up)
+_trend_panel(d, rows, scope, f, 3)
+_feedback_log(d, settings.follow_up, log)
+""",
+        default_timeout=45,
+    )
+    renderer.session_state["evidence"] = (
+        decision,
+        window,
+        rows,
+        result,
+        decision._explanation(result),
+        demo,
+        scope,
+        settings,
+        log,
+    )
+    renderer.run()
+    assert not renderer.exception
+    assert len(renderer.get("plotly_chart")) == 2
+    assert renderer.metric[0].value == f"{result.risk_after:.1%}"
+    assert renderer.metric[-1].value == f"{demo.applied_risk:.1%}"
+    assert any("No follow-ups" in item.value for item in renderer.info)
+    renderer.checkbox[0].set_value(True).run()
+    assert not renderer.exception
+    assert renderer.dataframe[-1].value.iloc[0]["Source"] == "Simulated operator (demo)"
+    assert not decision.spec.confirmation.confirmed
+
+
+def test_simulator_rejects_unknown_controls_before_showing_a_score(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+) -> None:
+    """An edited share link cannot add settings outside the declared controls."""
+    decision, _, rows = replay
+    unit = str(rows["unit_id"].iloc[0])
+    time = str(float(rows["time_index"].iloc[0]))
+    page = _app_test()
+    page.query_params.update(
+        {
+            "machine": DEFAULT_MACHINE,
+            "spec": decision.spec.spec_hash,
+            "unit": unit,
+            "time": time,
+            "settings": '{"unknown":1}',
+        }
+    )
+    page.run()
+    assert not page.exception and not page.metric
+    assert any("Recommendation withheld" in item.value for item in page.error)
+
+
+def test_cli_regenerates_registered_presets_and_input_bound_previews(tmp_path: Path) -> None:
+    """Regenerate the complete registered selection and risk-only cache without replacing it."""
+    target, cache = tmp_path / "scenarios.yaml", tmp_path / "preview.json"
+    args = [
+        "--machine",
+        DEFAULT_MACHINE,
+        "scenarios",
+        "generate",
+        "--output",
+        str(target),
+        "--preview-cache",
+        str(cache),
+        "--profile",
+        "configs/experiments/phase7-FD001-xgb-v1.yaml",
+    ]
+    runner = CliRunner()
+    result = runner.invoke(app, args)
+    assert result.exit_code == 0, result.output
+    regenerated = yaml.safe_load(target.read_text(encoding="utf-8"))
+    original = yaml.safe_load(
+        (Path("configs/machines") / DEFAULT_MACHINE / "scenarios.yaml").read_text(encoding="utf-8")
+    )
+    for name in ("scenarios", "selection_config_sha256", "saved_results_sha256"):
+        assert regenerated[name] == original[name]
+    previews = json.loads(cache.read_text(encoding="utf-8"))["previews"]
+    assert [row["case_id"] for row in previews] == [row["case_id"] for row in original["scenarios"]]
+    assert all(set(row["preview"]) == {"input_hash", "unusual", "assessment"} for row in previews)
+    assert all(len(row["preview"]["input_hash"]) == 64 for row in previews)
+    original_bytes = target.read_bytes()
+    refused = runner.invoke(app, args)
+    assert refused.exit_code != 0 and "scenario output already exists" in refused.output
+    assert target.read_bytes() == original_bytes

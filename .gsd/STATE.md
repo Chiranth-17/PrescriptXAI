@@ -10,8 +10,8 @@ activity_status: phase17_software_coverage_open
 The machine-scoped simulator has local FD001 risk, stale-input, Alerts-only
 and browser evidence, with input-bound scheduling, scoped follow-up and export.
 See the [acceptance report](../docs/acceptance_report.md).
-The software-only diagnostic passed 728 selected tests and missed the retained
-coverage floors. The dashboard and Step 3B remain open. The published design reference and
+The latest completed software-only diagnostic passed 729 selected tests and
+missed the retained coverage floors. The dashboard and Step 3B remain open. The published design reference and
 participant sessions are pending.
 
 ## Solo Step 2 complete (10 November 2026 IST)

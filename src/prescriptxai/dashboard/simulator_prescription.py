@@ -16,6 +16,7 @@ from prescriptxai.dashboard.data import file_identity, saved_json
 from prescriptxai.dashboard.plots import waterfall_chart
 from prescriptxai.dashboard.simulator_data import sequential_risks
 from prescriptxai.machine_schema import MachineRecourseResult
+from prescriptxai.schemas import Explanation
 
 
 def prescription_checks(result: MachineRecourseResult) -> tuple[tuple[str, bool], ...]:
@@ -49,6 +50,16 @@ def render_recommendation(
 ) -> None:
     """Show results only after publication and input binding have succeeded."""
     explanation = decision.explain_result(result)
+    _render_measured_result(decision, window, result, explanation, report_directory)
+
+
+def _render_measured_result(
+    decision: MachineDecision,
+    window: pd.DataFrame,
+    result: MachineRecourseResult,
+    explanation: Explanation,
+    report_directory: Path,
+) -> None:
     if not result.alert:
         st.info("No action needed at the current alert threshold.")
         return
