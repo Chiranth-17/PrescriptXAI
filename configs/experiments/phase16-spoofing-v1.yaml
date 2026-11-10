@@ -1,0 +1,34 @@
+schema_version: 1
+machine_id: cmapss_fd001
+spec_hash: dd8e5c36baefe87e4be57fbe100232f6dac8aaff1dc38c8bc3c9a457787247eb
+population: four preregistered FD001 XGBoost v1 official-test alert replay presets
+profile: configs/experiments/phase7-FD001-xgb-v1.yaml
+scenarios: configs/machines/cmapss_fd001/scenarios.yaml
+case_ids:
+- 1ef4b7eaa432e65652ef94fb1dd2f27736051b7ecd4ce7b57cb3da32fbeb794c
+- 0051ac34c69222b87cbd74e406631a66b3c208496c885c67460d77774c540b78
+- 0e009eaacafb082b50497b7ab35ddf8b4c8d000755cb6ef5efdab14ad3b80217
+- 0204ff470966c9107659167a64343b466bf635dfee5438681ddca1be8e1cf1b9
+protocol: v1
+mode: FAST
+K: 1
+max_changes: 3
+features:
+- sensor_2
+- sensor_3
+step_fraction: 0.1
+attack_rule: For each sensor independently, move the final observed value ten percent of the remaining distance
+  toward each fitted bound. Keep other observations and all controls unchanged.
+success_rule: The spoofed request publishes a prescription, then at least one of the four static checks fails when
+  the same proposed controls are rechecked on the original recorded observation.
+cpu_threads: 1
+input_sha256:
+  configs/machines/cmapss_fd001/machine.yaml: 1c9b6d2a2a5ea80e02c3bf0c5047b51c0c59155b03a22e8e1c99ec5e2eb527b1
+  configs/machines/cmapss_fd001/scenarios.yaml: de61fef3ac069901071202b6765e8b72bdccf4db11c197e40a2bad6da5047af1
+  configs/experiments/phase7-FD001-xgb-v1.yaml: 62aeacb3fc00bd9d2f79f67479bb5808c1fd6c8a6d18acfd73ca57ad895b821f
+  configs/features.yaml: e60c06899f736079b46e3eb5394b884312b786d22f69fda8e94a543a707604f2
+  data/raw/CMAPSSData.zip: c9c5dec12a945a82e8bb4446589d7fb3cc057b5e5d81fa1a12e25ee9912ad3b2
+  artifacts/FD001-xgboost.joblib: cc3b3c2028a4d4a568cd554d1c2cf360bcd9fe237ecfd4afe5d628d3ca40d8bd
+  artifacts/phase7-models/FD001-xgb/mahalanobis-v1.joblib: b8ba25fc73a8286d787dc43824e0de6a5516e18e0735cd50b53435dddf2a076d
+  artifacts/phase7-models/FD001-xgb/coupling.joblib: d5ed51ef500eed32331e4769d860fddd4d795fedc02c19cab338af9e798f18e4
+  uv.lock: 215a3b22fa03eaef4852211b2d4961733e2aaf508a075f88e7a3ba6c2540ea8a
