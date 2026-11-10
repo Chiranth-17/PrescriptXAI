@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 import os
-from collections.abc import Callable
 from concurrent.futures import CancelledError
+from concurrent.futures.process import BrokenProcessPool
 from math import isclose
 from pathlib import Path
 from threading import Event
@@ -30,6 +30,7 @@ from prescriptxai.dashboard.simulator_data import (
     parse_settings,
     simulator_decision,
     simulator_settings,
+    solve_prescription,
 )
 from prescriptxai.dashboard.simulator_followup import render_follow_up
 from prescriptxai.dashboard.simulator_prescription import (
@@ -199,8 +200,8 @@ def _prescription(
     window: pd.DataFrame,
     preview: SimulatedRisk,
     controls: dict[str, float],
-    worker: Callable[[], MachineDecision],
-    report_directory: Path,
+    registry: MachineRegistry,
+    settings: DashboardSettings,
 ) -> MachineRecourseResult | None:
     input_hash = preview.input_hash
     job = cast(PrescriptionJob | None, st.session_state.get("simulator_job"))
@@ -225,12 +226,9 @@ def _prescription(
         snapshot = window.copy(deep=True)
 
         def solve(cancelled: Event) -> MachineRecourseResult:
-            isolated = worker()
-            if isolated.input_hash(snapshot, {}) != input_hash:
-                raise RecommendationWithheld("The model or recorded conditions changed")
-            if cancelled.is_set():
-                raise CancelledError()
-            return isolated.recommend(snapshot, "fast")
+            return solve_prescription(
+                registry, decision.spec.machine_id, settings, snapshot, input_hash, cancelled
+            )
 
         job = PrescriptionJob.start(computation_pool(), input_hash, solve)
         st.session_state["simulator_job"] = job
@@ -249,7 +247,10 @@ def _prescription(
     except RecommendationWithheld as error:
         st.warning(str(error))
         return None
-    render_recommendation(decision, window, result, report_directory)
+    except BrokenProcessPool:
+        st.warning("Recommendation withheld: the local prescription worker stopped.")
+        return None
+    render_recommendation(decision, window, result, settings.report_directory)
     st.session_state["simulator_reference"] = (input_hash, result)
     return result
 
@@ -378,8 +379,8 @@ def _render_interactive(
                 window,
                 preview,
                 controls,
-                lambda: simulator_decision(registry, spec.machine_id, settings, isolated=True),
-                settings.report_directory,
+                registry,
+                settings,
             )
     with st.container(border=True):
         st.subheader("4. Was it followed?")

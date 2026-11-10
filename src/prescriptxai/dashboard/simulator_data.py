@@ -4,16 +4,22 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
+from concurrent.futures import CancelledError, ProcessPoolExecutor, wait
+from multiprocessing import get_context
 from pathlib import Path
+from threading import Event
 
 import pandas as pd
 import streamlit as st
 
 from prescriptxai.adapters.cmapss import CmapssAdapter
 from prescriptxai.adapters.registry import MachineRegistry
+from prescriptxai.core.data_quality import RecommendationWithheld
 from prescriptxai.core.decision import MachineDecision
 from prescriptxai.dashboard.backend import direct_service, profile_identity
 from prescriptxai.dashboard.state import DashboardSettings, load_settings
+from prescriptxai.evaluation.runner import _worker_threads
+from prescriptxai.machine_schema import MachineRecourseResult
 from prescriptxai.machine_spec import MachineSpec
 from prescriptxai.machines import resolve_machine_decision
 from prescriptxai.pipeline import PrescriptXAI
@@ -76,6 +82,49 @@ def simulator_decision(
         return direct_service(str(profile), identity)
 
     return resolve_machine_decision(registry, machine_id, protocol, legacy=legacy)
+
+
+@st.cache_resource(show_spinner=False)
+def prescription_pool() -> ProcessPoolExecutor:
+    """Keep native FAST search and its numerical thread pool outside Streamlit."""
+    return ProcessPoolExecutor(
+        max_workers=1, mp_context=get_context("spawn"), initializer=_worker_threads, initargs=(1,)
+    )
+
+
+def _solve_prescription(
+    registry: MachineRegistry,
+    machine_id: str,
+    settings: DashboardSettings,
+    window: pd.DataFrame,
+    input_hash: str,
+) -> MachineRecourseResult:
+    decision = simulator_decision(registry, machine_id, settings, isolated=True)
+    if decision.input_hash(window, {}) != input_hash:
+        raise RecommendationWithheld("The model or recorded conditions changed")
+    return decision.recommend(window, "fast")
+
+
+def solve_prescription(
+    registry: MachineRegistry,
+    machine_id: str,
+    settings: DashboardSettings,
+    window: pd.DataFrame,
+    input_hash: str,
+    cancelled: Event,
+) -> MachineRecourseResult:
+    """Submit the bound snapshot and drop stale work without blocking a new session edit."""
+    if cancelled.is_set():
+        raise CancelledError()
+    future = prescription_pool().submit(
+        _solve_prescription, MachineRegistry(registry.root, registry.workspace),
+        machine_id, settings, window, input_hash,
+    )
+    while not cancelled.is_set():
+        if wait((future,), timeout=0.05).done:
+            return future.result()
+    future.cancel()
+    raise CancelledError()
 
 
 def parse_settings(serialized: str, limits: Mapping[str, tuple[float, float]]) -> dict[str, float]:
