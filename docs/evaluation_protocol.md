@@ -707,3 +707,13 @@ The current FD001 spec has no engineer confirmation, so the benchmark
 does not measure FAST prescription latency, checked follow-up latency or
 real equipment response. Keep these results separate from the archived
 serial solver benchmark and the scientific verification gates.
+
+
+
+The first timing attempt stopped during warmup when the runner sent End
+twice. Chromium exposed the slider position and fitted endpoint at different
+precisions. The v2 registration keeps all groups, trial counts, endpoints,
+metrics and targets and alternates subsequent keys from the last successful
+edit. This correction was committed before the second run. Preserve the v1
+attempt at `artifacts/phase17/preview-latency-20261110-v1` without using it
+in timing summaries.

@@ -108,6 +108,7 @@ try {
       ).first();
       const endpoint = new Map();
       const measured = [];
+      let previousKey;
       const count = plan.warmups_per_preset_viewport + plan.measured_per_preset_viewport;
       for (let index = 0; index < count; index++) {
         const sample = { viewport: name, preset, trial: index + 1,
@@ -120,7 +121,9 @@ try {
           if (!Number.isFinite(min) || !Number.isFinite(max) || min >= max || !label) {
             throw new Error("Missing measurable control");
           }
-          const key = value === max ? "Home" : "End";
+          const key = previousKey
+            ? (previousKey === "End" ? "Home" : "End")
+            : (value === max ? "Home" : "End");
           const before = new URL(page.url()).searchParams.get("settings");
           Object.assign(sample, { key, control: label, before });
           const result = await measure(page, slider, key, before, preset);
@@ -137,6 +140,7 @@ try {
             throw new Error("Control endpoint or displayed risk changed across repetitions");
           }
           endpoint.set(key, identity);
+          previousKey = key;
           await writeTrial(sample);
           if (!sample.warmup) measured.push(sample);
         } catch (error) {
