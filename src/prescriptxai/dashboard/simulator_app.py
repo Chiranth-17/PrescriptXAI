@@ -221,6 +221,12 @@ def _prescription(
         _cancel_prescription()
         st.info("No action needed at the current alert threshold.")
         return None
+    reference = cast(
+        tuple[str, MachineRecourseResult] | None, st.session_state.get("simulator_reference")
+    )
+    if reference is not None and reference[0] == input_hash:
+        render_recommendation(decision, window, reference[1], report_directory)
+        return reference[1]
     if job is None:
         snapshot = window.copy(deep=True)
 
@@ -357,8 +363,6 @@ def _render_interactive(
         "time": str(time),
         "settings": json.dumps(controls, sort_keys=True, separators=(",", ":")),
     }
-    if st.query_params.to_dict() != params:
-        st.query_params.from_dict(params)
     with st.expander("Copy replay settings"):
         st.code("?" + urlencode(params), language=None)
     with predictions:
@@ -402,6 +406,10 @@ def _render_interactive(
         "text/html",
         on_click="ignore",
     )
+    # Publish the settings link after the risk and every dependent output.
+    if st.query_params.to_dict() != params:
+        st.query_params.from_dict(params)
+
 
 
 def main() -> None:
