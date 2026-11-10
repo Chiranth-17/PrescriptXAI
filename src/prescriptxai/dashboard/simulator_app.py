@@ -158,7 +158,7 @@ def _cancel_prescription() -> None:
 @st.fragment(run_every=0.15)
 def _wait_for_prescription(job: PrescriptionJob) -> None:
     if st.session_state.get("simulator_job") is not job or job.future.done():
-        st.rerun("simulator-preview")
+        st.rerun()
     st.info("Calculating…")
 
 
@@ -319,7 +319,7 @@ def _report_error(error: Exception) -> None:
     )
 
 
-@st.fragment(key="simulator-preview")
+@st.fragment
 def _interactive(
     decision: MachineDecision,
     registry: MachineRegistry,

@@ -45,7 +45,7 @@ async function selectPreset(page, preset) {
   }, { preset, machine: plan.machine_id }, { timeout: plan.trial_timeout_ms });
   if (plan.publication_mode === "Demonstration limits: not confirmed by an engineer") {
     await page.getByText("Calculating…", { exact: true }).waitFor({
-      state: "hidden", timeout: plan.trial_timeout_ms,
+      state: "hidden", timeout: plan.pre_trial_settle_timeout_ms,
     });
   }
 }

@@ -10,6 +10,7 @@
   "intervention_horizon": 1,
   "publication_mode": "Demonstration limits: not confirmed by an engineer",
   "pre_trial_settle": "Wait for the selected recorded prescription job to settle before warmups.",
+  "pre_trial_settle_timeout_ms": 60000,
   "comparison_baseline": "phase17-preview-latency-v2",
   "synopsis_ui_budget_ms": 250,
   "browser": "local Chromium headless, light theme, no external requests, one client and one outstanding edit",
