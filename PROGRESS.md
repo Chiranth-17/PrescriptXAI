@@ -1,5 +1,20 @@
 # PrescriptXAI Progress
 
+## Phase 17 fixed-subset gate complete (10 November 2026 IST)
+
+`mingw32-make check REUSE_ONLY=0` passed on `735cc4b` in 13,487.87 seconds
+(3 h 44 min 48 s). Ruff and mypy passed, and pytest reported 740 passed,
+1 deselected and 68 warnings. Both coverage gates passed at 91.44131% scoped
+lines, 91.50835% package lines and 88.26628% package combined. Make and the
+wrapper exited zero. All 15,525 requested cases were freshly recomputed across
+23 groups, with zero reuses, exact comparison and zero exceptions. See the
+[gate receipts](docs/acceptance_report.md#fixed-subset-gate).
+
+The desktop and phone mockups are recorded in the
+[design comparison](docs/design_diff.md). The [two-session kit](docs/usability_notes.md)
+is ready for participants. Human usability, the timed explanation and full
+dashboard acceptance remain open. Technical work advances to Step 4 security-lite.
+
 ## Phase 17 limits modes and slider verification (10 November 2026 IST)
 
 The registered FD001 replay and the synthetic toy fixture now declare
@@ -14,7 +29,7 @@ were 23.3–24.7 ms and 364.4–396.8 ms. One after group met the 250 ms
 UI budget. See the [timing record and deviation](docs/deviations.md).
 Browser run v14 passed for both widths, including a live labeled
 prescription and removal of current actions after a keyboard edit.
-The two design references and two unassisted classmate sessions remain
+The later gate entry records the supplied design references and pending
 [human tasks](docs/acceptance_report.md#human-tasks-for-dashboard-acceptance).
 
 The software-only diagnostic at `bbe8142` passed 739 tests in 316.73

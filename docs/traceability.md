@@ -1,11 +1,14 @@
 # Synopsis traceability - Phase 13 closed
 
-## Phase 17 dashboard work in progress
+## Phase 17 dashboard technical gate
 
-See [dashboard acceptance status](acceptance_report.md) for local simulator
-verification, demonstration limits and pending human evidence. The separate
-[slider timing](deviations.md) tracks the measured UI budget gap. The synopsis
-requirement statuses below retain their previously verified scope.
+The [fixed-subset gate](acceptance_report.md#fixed-subset-gate) passed on
+`735cc4b` in 13,487.87 seconds. All 15,525 cases were freshly recomputed
+and matched exactly. Pytest passed 740 tests, and both coverage gates cleared
+their retained floors. The [design comparison](design_diff.md) includes both
+supplied mockups. The [facilitator kit](usability_notes.md) awaits real participant
+observations. The [slider timing](deviations.md) documents the measured UI budget
+gap. The synopsis requirement statuses below retain their previously verified scope.
 
 ## Phase 13 closeout (10 November 2026 IST)
 

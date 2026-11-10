@@ -1,19 +1,22 @@
 ---
 phase: 13
 status: complete
-current_activity: solo_step3_dashboard
-activity_status: phase17_fixed_subset_check_pending
+current_activity: solo_step4_security_lite
+activity_status: phase17_technical_gate_passed_usability_pending
 ---
 
-## Solo Step 3 in progress (10 November 2026 IST)
+## Solo Step 3 technical gate passed (10 November 2026 IST)
 
-The registered replay and the toy fixture use demonstration limits.
-Local tests cover Advisory mode, labeled demonstration and Alerts-only.
-The repeated browser timing and the remaining 250 ms gap are recorded
-in [deviations](../docs/deviations.md). The latest software-only
-diagnostic passed 739 tests and both retained coverage gates. The
-fixed-subset `make check` is registered separately. The design screenshots
-and usability sessions remain [human tasks](../docs/acceptance_report.md).
+The fixed-subset `make check` passed in 13,487.87 seconds on `735cc4b`.
+All 15,525 cases were freshly recomputed and matched exactly. The gate
+reported 740 passing tests and cleared both retained coverage floors.
+The registered replay and toy fixture use demonstration limits. Local tests
+cover Advisory, demonstration and Alerts-only. The
+[design comparison](../docs/design_diff.md) includes both supplied references.
+The [usability kit](../docs/usability_notes.md) awaits two participant sessions,
+and the timed explanation is pending. The technical roadmap advances to Step 4
+security-lite. See [acceptance](../docs/acceptance_report.md) and
+[the measured browser gap](../docs/deviations.md).
 
 ## Solo Step 2 complete (10 November 2026 IST)
 

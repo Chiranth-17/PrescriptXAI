@@ -1,8 +1,9 @@
 # Dashboard acceptance status
 
-Phase 17 and Step 3B are in progress. The registered dashboard machine is the NASA FD001 simulated archive. It
-uses demonstration limits, as does the Phase 13 toy test fixture. Both have
-empty engineer confirmation blocks.
+The Phase 17 technical gate passed. Human usability and full Step 3B
+acceptance remain pending. The registered dashboard machine is the NASA FD001
+simulated archive. It uses demonstration limits, as does the Phase 13 toy test
+fixture. Both have empty engineer confirmation blocks.
 
 | Objective | Dashboard evidence | Verification | Status |
 | --- | --- | --- | --- |
@@ -18,7 +19,7 @@ empty engineer confirmation blocks.
 | Edited-settings comparison | A separately labeled recorded-settings reference for the exact same base input | Both risk values use independent checks. Edits clear current prescriptions. | Verified locally for demonstration |
 | Scenario export | Standalone HTML with current settings, predicted risk and provenance | The HTML carries the active limits label and withholds stale results | Verified locally |
 | Synopsis scorecard | Machine-scoped Advanced page with saved FAST alert and first-alert results | AppTest compares each displayed metric and serial latency interval with its saved source | Passed locally for archived results |
-| Design and usability | Local desktop and phone captures, keyboard preset activation, slider editing and visible focus | Checked both widths. Full accessibility review, published mock and two participant sessions remain pending. | Partial |
+| Design and usability | Local desktop and phone captures, keyboard preset activation, slider editing and visible focus | Checked both widths and compared the supplied references. Full accessibility review and two participant sessions remain pending. | Partial |
 
 The four scenario presets were generated from the saved
 `phase7-20261020T102540Z` FD001 XGBoost v1 FAST official-test results.
@@ -251,18 +252,36 @@ Software-only verification at `bbe8142b99e0c388019af2676d1c9fb2e86ef396`
 passed 739 tests in 316.73 seconds, with 68 warnings and the full marker
 deselected. The fixed subset was excluded from this diagnostic. Coverage was
 91.4413104584666% scoped lines, 91.50834772596431% package lines and
-88.26627651792246% combined. The separate `make check` is registered under
-`artifacts/phase17/fixed-subset-check-20261110-v1`. Its result remains pending.
-Full regression is reserved for the release gate.
+88.26627651792246% combined.
+
+## Fixed-subset gate
+
+`mingw32-make check REUSE_ONLY=0` at
+`735cc4bf40c4f27cb36d6461b3dcdc921d632c97` ran for 13,487.87 seconds
+(3 h 44 min 48 s) on November 10, 2026. Ruff and mypy passed. Pytest reported
+740 passed, 1 deselected and 68 warnings. Both coverage gates passed at
+91.4413104584666% scoped lines, 91.50834772596431% package lines and
+88.26627651792246% package combined. Make and the wrapper exited zero.
+
+The registered subset recomputed all 15,525 cases in 23 groups, with zero reuses.
+The receipt lists zero float-exact differences and zero accepted exceptions.
+The read-only record count matched the requested count. Full regression is
+reserved for the release gate.
+
+- Run and coverage receipts: `artifacts/phase17/fixed-subset-check-20261110-v1`
+- Subset comparison: `artifacts/regression-tiers/check-20261110T064255542551Z-48236/complete.json`
+- Context SHA-256: `d064d495a6383f3b2fdb1f8040ab479147294d4d1ffec7f23fdaaf3011d1878e`
 
 ## Human tasks for dashboard acceptance
 
-- Provide the published design mock screenshots at 1,360 and 390 px. Save them
-  as `docs/design/dashboard_mock_desktop.png` and `docs/design/dashboard_mock_phone.png`.
-- Arrange two independent, unassisted two-minute classmate sessions. Supply
-  their observations and where they hesitated for `docs/usability_notes.md`.
+The supplied desktop and phone mockups are in the [design comparison](design_diff.md).
+Their values are illustrative. The live captures and benchmark receipts report
+the measured values.
 
-These tasks remain pending while technical verification and the remaining
-roadmap work proceed.
+Run two separate sessions of about ten minutes with participants new to the
+project. Each session includes two minutes of unassisted free use. Record their
+observations and task outcomes using the [facilitator kit](usability_notes.md).
+The timed explanation and usability findings remain pending while the
+technical roadmap proceeds.
 
 [Design comparison](design_diff.md) · [Usability notes](usability_notes.md)
