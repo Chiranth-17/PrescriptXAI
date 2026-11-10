@@ -159,7 +159,6 @@ def _cancel_prescription() -> None:
 def _wait_for_prescription(job: PrescriptionJob) -> None:
     if st.session_state.get("simulator_job") is not job or job.future.done():
         st.rerun()
-    st.info("Calculating…")
 
 
 def _manual_comparison(
@@ -205,7 +204,9 @@ def _prescription(
 ) -> MachineRecourseResult | None:
     input_hash = preview.input_hash
     job = cast(PrescriptionJob | None, st.session_state.get("simulator_job"))
-    if job is not None and job.input_hash != input_hash:
+    if job is not None and job.input_hash != input_hash and (
+        not controls or not job.future.done()
+    ):
         _cancel_prescription()
         job = None
     if decision.spec.alerts_only:
@@ -214,19 +215,12 @@ def _prescription(
         st.info(f"Recommendation withheld: {decision.spec.limits_label}")
         return None
     if controls:
-        _cancel_prescription()
         _manual_comparison(decision, window, preview, controls)
         return None
     if not preview.assessment.alert:
         _cancel_prescription()
         st.info("No action needed at the current alert threshold.")
         return None
-    reference = cast(
-        tuple[str, MachineRecourseResult] | None, st.session_state.get("simulator_reference")
-    )
-    if reference is not None and reference[0] == input_hash:
-        render_recommendation(decision, window, reference[1], report_directory)
-        return reference[1]
     if job is None:
         snapshot = window.copy(deep=True)
 
@@ -240,8 +234,11 @@ def _prescription(
 
         job = PrescriptionJob.start(computation_pool(), input_hash, solve)
         st.session_state["simulator_job"] = job
+        # Register the completion watcher in the main app even if a slider
+        # restored the recorded inputs from inside the interactive fragment.
+        st.rerun()
     if not job.future.done():
-        _wait_for_prescription(job)
+        st.info("Calculating…")
         return None
     try:
         result = job.future.result()
@@ -300,6 +297,9 @@ def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
     _interactive(
         decision, registry, settings, frame, unit, time, window, selection, restore
     )
+    job = cast(PrescriptionJob | None, st.session_state.get("simulator_job"))
+    if job is not None and not job.future.done():
+        _wait_for_prescription(job)
     with st.expander("About this view and how it was checked"):
         st.write("SDG 9 · Advisory maintenance replay and model-based checks.")
         st.write(spec.limits_label)

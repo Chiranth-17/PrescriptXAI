@@ -39,7 +39,11 @@ class MachineRegistry:
     @staticmethod
     def parse_spec(machine_id: str, contents: bytes) -> MachineSpec:
         """Validate the configuration and its registered identity."""
-        spec = MachineSpec.model_validate(yaml.safe_load(contents.decode("utf-8")))
+        try:
+            document = yaml.safe_load(contents.decode("utf-8"))
+        except yaml.YAMLError as error:
+            raise ValueError(f"invalid machine YAML for {machine_id}") from error
+        spec = MachineSpec.model_validate(document)
         if spec.machine_id != machine_id:
             raise ValueError(f"registered machine ID differs from spec ID: {machine_id}")
         return spec

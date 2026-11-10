@@ -49,6 +49,8 @@ def main(*, advanced: bool = False, spec: MachineSpec | None = None) -> None:
     page = st.sidebar.radio("Page", pages, key="advanced-page" if advanced else "page")
     if page == PAGES[4]:
         about_page()
+        if spec is not None:
+            st.write(spec.limits_label)
         return
     try:
         settings = load_settings(
