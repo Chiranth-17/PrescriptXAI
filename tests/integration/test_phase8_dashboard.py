@@ -22,6 +22,12 @@ from prescriptxai.validation.pipeline import fit_mahalanobis_validator, save_mah
 APP = Path("src/prescriptxai/dashboard/app.py").resolve()
 
 
+def _app_test() -> AppTest:
+    return AppTest.from_string(
+        "from prescriptxai.dashboard.app import main\nmain()", default_timeout=40
+    )
+
+
 @pytest.fixture
 def operator_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """Fit actual portable artifacts once for each independent widget workflow."""
@@ -32,7 +38,7 @@ def operator_settings(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 def test_operator_selection_risk_solve_slider_and_exports(operator_settings: Path) -> None:
     """Engine/cycle edits change live scores; manual edits re-run every tier and reset safely."""
-    app = AppTest.from_file(str(APP), default_timeout=40).run()
+    app = _app_test().run()
     assert not app.exception and not app.error, [v.value for v in app.error]
     initial = app.metric[0].value
     service = PrescriptXAI.from_config(
@@ -65,7 +71,7 @@ def test_every_page_loads_with_explicit_missing_evidence(
     operator_settings: Path, page: str
 ) -> None:
     """Absent measured sources are honestly unavailable; every page remains usable."""
-    app = AppTest.from_file(str(APP), default_timeout=40).run()
+    app = _app_test().run()
     app.radio(key="page").set_value(page).run()
     assert not app.exception
     assert any(page == header.value for header in app.header)
@@ -129,7 +135,7 @@ def test_empty_corrupt_source_is_an_operator_error(operator_settings: Path) -> N
     """Invalid telemetry is an actionable message rather than a raw Streamlit traceback."""
     settings = load_settings(operator_settings)
     settings.telemetry_path.write_text("engine_id,cycle,actuator,sensor\n", encoding="utf-8")
-    app = AppTest.from_file(str(APP), default_timeout=40).run()
+    app = _app_test().run()
     assert not app.exception and app.error
     assert "Operator request unavailable" in app.error[0].value
 
@@ -140,7 +146,7 @@ def test_evidence_pages_display_actual_saved_fixture_records(
 ) -> None:
     """Save actual computed fixture outcomes, then compare displayed measured values/engine CIs."""
     summary = write_operator_evidence(operator_settings)
-    app = AppTest.from_file(str(APP), default_timeout=40).run()
+    app = _app_test().run()
     app.radio(key="page").set_value(page).run()
     assert not app.exception and not app.error
     assert app.dataframe and app.get("plotly_chart") if page == PAGES[2] else app.dataframe
@@ -176,7 +182,7 @@ def test_protocol_curves_and_ladder_do_not_mix_saved_groups(operator_settings: P
     second = write_operator_evidence(alternate_path, "v2", write=False)
     summary["groups"].update(second["groups"])
     (settings.report_directory / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
-    app = AppTest.from_file(str(APP), default_timeout=40).run()
+    app = _app_test().run()
     app.radio(key="page").set_value(PAGES[2]).run()
     assert not app.exception
     assert set(app.dataframe[-1].value.protocol) == {"v1"}
@@ -198,7 +204,7 @@ def test_fleet_handoff_preserves_cycle_across_unequal_lifetimes(operator_setting
     added = frame.loc[frame.engine_id == 8].iloc[-1:].copy()
     added["cycle"] = 4
     pd.concat([frame, added], ignore_index=True).to_csv(settings.telemetry_path, index=False)
-    app = AppTest.from_file(str(APP), default_timeout=40).run()
+    app = _app_test().run()
     app.slider(key="cycle").set_value(2).run()
     app.radio(key="page").set_value(PAGES[1]).run()
     app.selectbox(key="fleet_engine").set_value(8).run()

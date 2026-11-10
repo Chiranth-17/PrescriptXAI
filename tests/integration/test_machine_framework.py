@@ -497,6 +497,9 @@ def test_synthetic_feedback_uses_actual_validation(
     with pytest.raises(RecommendationWithheld, match="Alerts only"):
         service.feedback(rows, scoped, applied, "simulated_operator")
     feedback = service._measure_feedback(rows, scoped, applied, "simulated_operator")
+    with pytest.raises(RecommendationWithheld, match="Alerts only"):
+        service.simulate_feedback(rows, scoped, seed=1729, count=2)
+
     assert feedback.machine_id == "toy" and feedback.synthetic
     assert feedback.source == "simulated_operator"
     assert feedback.adherence == 1.0 and all(feedback.applied_tier_passes.values())

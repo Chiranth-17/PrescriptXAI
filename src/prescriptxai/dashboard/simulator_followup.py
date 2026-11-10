@@ -11,7 +11,7 @@ import streamlit as st
 from prescriptxai.config import FollowUpSettings
 from prescriptxai.core.decision import MachineDecision
 from prescriptxai.dashboard.plots import PALETTE
-from prescriptxai.dashboard.simulator_data import replay_trend, simulated_settings
+from prescriptxai.dashboard.simulator_data import replay_trend
 from prescriptxai.machine_schema import FeedbackRecord, MachineRecourseResult, ReplayFollowUp
 from prescriptxai.machines import read_feedback_log, record_feedback_batch
 
@@ -176,12 +176,9 @@ def render_follow_up(
             st.success("Follow-up recorded locally.")
         if st.button("Simulate operators"):
             batch = [
-                (
-                    decision.feedback(window, result, values, "simulated_operator"),
-                    scope.model_copy(update={"demo_seed": settings.demo_seed}),
-                )
-                for values in simulated_settings(
-                    result.original_state, proposed, settings.demo_seed, settings.demo_count
+                (record, scope.model_copy(update={"demo_seed": settings.demo_seed}))
+                for record in decision.simulate_feedback(
+                    window, result, settings.demo_seed, settings.demo_count
                 )
             ]
             record_feedback_batch(batch)

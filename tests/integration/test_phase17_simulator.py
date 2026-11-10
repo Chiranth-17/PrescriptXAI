@@ -12,12 +12,14 @@ import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 from streamlit.testing.v1 import AppTest
+from typer.testing import CliRunner
 
 from prescriptxai.adapters.cmapss import CmapssAdapter
 from prescriptxai.adapters.registry import DEFAULT_MACHINE, MachineRegistry
 from prescriptxai.api import create_app
+from prescriptxai.cli import app
 from prescriptxai.core.data_quality import RecommendationWithheld
-from prescriptxai.core.decision import MachineDecision, action_adherence
+from prescriptxai.core.decision import MachineDecision, action_adherence, simulated_settings
 from prescriptxai.dashboard.objectives import METRICS
 from prescriptxai.dashboard.prescription_job import PrescriptionJob
 from prescriptxai.dashboard.scenario_report import scenario_report
@@ -25,7 +27,6 @@ from prescriptxai.dashboard.simulator_data import (
     parse_settings,
     replay_trend,
     sequential_risks,
-    simulated_settings,
 )
 from prescriptxai.dashboard.state import load_settings
 from prescriptxai.machine_schema import MachineRecourseResult
@@ -33,7 +34,11 @@ from prescriptxai.machines import scope_archive_runtime
 from prescriptxai.pipeline import InputError, PrescriptXAI
 from prescriptxai.scenarios import scenario_presets
 
-APP = Path("src/prescriptxai/dashboard/simulator_app.py").resolve()
+
+def _app_test() -> AppTest:
+    return AppTest.from_string(
+        "from prescriptxai.dashboard.simulator_app import main\nmain()", default_timeout=45
+    )
 
 
 @pytest.fixture(scope="module")
@@ -115,7 +120,7 @@ def test_simulator_view_and_url_restore(
 ) -> None:
     """Drive the installed dashboard with real observations and restore a simulated edit."""
     decision, _, rows = replay
-    page = AppTest.from_file(str(APP), default_timeout=45).run()
+    page = _app_test().run()
     assert not page.exception and not page.error
     assert [widget.value for widget in page.subheader] == [
         "1. Set the conditions",
@@ -146,7 +151,7 @@ def test_simulator_view_and_url_restore(
     assert not page.exception and not page.error
     assert page.metric[0].value == f"{edited:.1%}"
     assert json.loads(page.query_params["settings"]) == {name: candidate}
-    restored = AppTest.from_file(str(APP), default_timeout=45)
+    restored = _app_test()
     restored.query_params.update(page.query_params)
     restored.run()
     assert not restored.exception and restored.metric[0].value == page.metric[0].value
@@ -163,16 +168,25 @@ def test_link_rejects_invalid_control_values(encoded: str) -> None:
         parse_settings(encoded, {"control": (0.0, 1.0)})
 
 
-def test_presets_and_advanced_navigation() -> None:
-    """Open a saved case study and keep the advanced workspace observational."""
-    page = AppTest.from_file(str(APP), default_timeout=45).run()
-    preset = next(
-        button for button in page.button if button.label == "Case study (selected by rule)"
-    )
-    preset.click()
-    page.run()
-    assert not page.exception and not page.error
-    assert page.query_params["unit"] == "82" and page.query_params["time"] == "156.0"
+def test_presets_and_advanced_navigation(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+) -> None:
+    """Verify every saved preset against the real model and keep Advanced observational."""
+    decision, _, rows = replay
+    page = _app_test().run()
+    presets = scenario_presets(MachineRegistry(), DEFAULT_MACHINE, "test", decision.spec.spec_hash)
+    assert len(presets) == 4
+    for preset in presets:
+        next(button for button in page.button if button.label == preset.name).click()
+        page.run()
+        assert not page.exception and not page.error
+        assert page.query_params["unit"] == preset.unit
+        assert float(page.query_params["time"]) == preset.time
+        window = _window(rows, preset.unit, str(preset.time))
+        score = decision.simulate_risk(window, {}).assessment.risk
+        assert page.metric[0].value == f"{score:.1%}"
+        assert len(page.metric) == 1
+        assert any("limits not yet confirmed" in widget.value for widget in page.info)
     page.sidebar.radio[0].set_value("Advanced")
     page.run()
     assert not page.exception
@@ -186,7 +200,7 @@ def test_scorecard_numbers_come_from_saved_engine_intervals() -> None:
     """Compare each displayed measurement, target and interval with its saved source."""
     settings = load_settings(Path("configs/dashboard.yaml"))
     summary = json.loads((settings.report_directory / "summary.json").read_text(encoding="utf-8"))
-    page = AppTest.from_file(str(APP), default_timeout=45)
+    page = _app_test()
     page.run()
     page.sidebar.radio[0].set_value("Advanced")
     page.run()
@@ -400,3 +414,52 @@ def test_followup_trend_uses_only_actual_later_windows(
         assert row["Alert level"] == before.tau_danger
     assert replay_trend(decision, rows, unit, float(track["time_index"].max()), applied, 30).empty
     assert not decision.spec.confirmation.confirmed
+
+
+def test_feedback_cli_aliases_preserve_alerts_only(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    tmp_path: Path,
+) -> None:
+    """Exercise both add spellings and the demo command without bypassing confirmation."""
+    decision, _, rows = replay
+    window = next(
+        candidate
+        for index in range(min(len(rows), 30))
+        if not decision.assess(candidate := rows.iloc[index : index + 1], "fast").alert
+    )
+    state, context = decision._observed(window)
+    actual = decision._runtime.recommend(state, context, "fast")
+    assert not actual.alert
+    scoped = MachineRecourseResult.from_decision(
+        actual,
+        machine_id=decision.spec.machine_id,
+        spec_hash=decision.spec.spec_hash,
+        protocol_version=decision.protocol_version,
+        synthetic=decision.spec.synthetic,
+    )
+    window_path = tmp_path / "window.json"
+    result_path = tmp_path / "result.json"
+    applied_path = tmp_path / "applied.json"
+    log_path = tmp_path / "feedback.sqlite3"
+    window_path.write_text(window.to_json(orient="records", double_precision=15), encoding="utf-8")
+    result_path.write_text(scoped.model_dump_json(), encoding="utf-8")
+    applied_path.write_text("{}", encoding="utf-8")
+    common = [
+        "--result",
+        str(result_path),
+        "--log",
+        str(log_path),
+        "--config",
+        "configs/experiments/phase7-FD001-xgb-v1.yaml",
+    ]
+    runner = CliRunner()
+    for form in (
+        [str(window_path), "--applied", str(applied_path)],
+        ["add", str(window_path), "--applied", str(applied_path)],
+        ["simulate", str(window_path), "--seed", "42", "--count", "2"],
+    ):
+        result = runner.invoke(app, ["--machine", DEFAULT_MACHINE, "feedback", *form, *common])
+        assert result.exit_code != 0
+        assert "Recommendation withheld: Alerts only" in result.output
+        assert "confirmed by an engineer" in result.output
+        assert not log_path.exists()

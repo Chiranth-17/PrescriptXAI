@@ -14,7 +14,7 @@ import typer
 
 from prescriptxai.adapters.base import DatasetAdapter
 from prescriptxai.adapters.registry import MachineRegistry
-from prescriptxai.config import AppConfig, load_config
+from prescriptxai.config import AppConfig, FollowUpSettings, load_config
 from prescriptxai.constraints.coupling import fit_and_persist_coupling
 from prescriptxai.constraints.taxonomy import load_taxonomy
 from prescriptxai.core.decision import MachineDecision
@@ -43,12 +43,14 @@ from prescriptxai.machines import (
     load_machine_decision,
     machine_summary,
     record_feedback,
+    record_feedback_batch,
     save_machine_fit,
     scope_archive_runtime,
 )
 from prescriptxai.models.registry import save_model_bundle
 from prescriptxai.models.train import train_risk_model
 from prescriptxai.pipeline import PrescriptXAI, PrescriptXAIEngine
+from prescriptxai.scenarios import Scenario, generate_scenarios, write_scenarios
 from prescriptxai.schemas import InputContext, _reject_nonreal_measurement
 from prescriptxai.validation.pipeline import (
     fit_mahalanobis_validator,
@@ -58,7 +60,9 @@ from prescriptxai.validation.pipeline import (
 app = typer.Typer(no_args_is_help=True, help="PrescriptXAI maintenance recourse tools")
 data_app = typer.Typer(no_args_is_help=True, help="C-MAPSS data acquisition and preparation")
 constraints_app = typer.Typer(no_args_is_help=True, help="Feature taxonomy and coupling artifacts")
+scenarios_app = typer.Typer(no_args_is_help=True, help="Generate registered replay scenarios")
 app.add_typer(data_app, name="data")
+app.add_typer(scenarios_app, name="scenarios")
 app.add_typer(constraints_app, name="constraints")
 LOGGER = logging.getLogger(__name__)
 _P = ParamSpec("_P")
@@ -93,6 +97,7 @@ def initialize_cli_logging(
         "info",
         "check",
         "feedback",
+        "scenarios",
         "serve",
         "data",
     }:
@@ -705,24 +710,100 @@ def check_machine_window(
     typer.echo(json.dumps({**machine_summary(spec), "quality": "pass"}))
 
 
+@scenarios_app.command("generate")
+@_operator_errors
+def generate_replay_scenarios(
+    ctx: typer.Context,
+    config_path: Path = typer.Option(
+        Path("configs/experiments/phase17-dashboard-v1.yaml"), "--config"
+    ),
+    output: Path | None = typer.Option(None, "--output"),
+    preview_cache: Path | None = typer.Option(None, "--preview-cache"),
+    profile: Path | None = typer.Option(None, "--profile"),
+) -> None:
+    """Generate saved presets and optionally precompute input-bound risk previews."""
+    machine, protocol = _machine_selection(ctx)
+    if output is not None and output.exists():
+        raise FileExistsError(f"scenario output already exists: {output}")
+    document = generate_scenarios(config_path, machine)
+    target = output or Path("configs/machines") / document["machine_id"] / "scenarios.yaml"
+    if target.exists():
+        raise FileExistsError(f"scenario output already exists: {target}")
+    previews = []
+    if preview_cache is not None:
+        if preview_cache.exists() or preview_cache.resolve() == target.resolve():
+            raise FileExistsError(f"preview cache output already exists: {preview_cache}")
+        if machine is None or profile is None or protocol != document["source_scope"]["protocol"]:
+            raise ValueError("preview cache requires --machine, matching --protocol and --profile")
+        from prescriptxai.adapters.cmapss import CmapssAdapter
+
+        adapter = _named_adapter(machine)
+        if not isinstance(adapter, CmapssAdapter):
+            raise ValueError("registered archive adapter required for these saved scenarios")
+        observations = adapter.load_official()
+        decision = _named_decision(ctx, profile)
+        for entry in document["scenarios"]:
+            scenario = Scenario.model_validate(entry)
+            window = observations.loc[
+                (observations["unit_id"].map(str) == scenario.unit)
+                & (observations["time_index"] <= scenario.time)
+            ]
+            preview = decision.simulate_risk(window, {})
+            previews.append(
+                {
+                    "case_id": scenario.case_id,
+                    "preview": preview.model_dump(mode="json"),
+                }
+            )
+    write_scenarios(document, target)
+    if preview_cache is not None:
+        with preview_cache.open("x", encoding="utf-8") as stream:
+            json.dump({"schema_version": 1, "previews": previews}, stream, indent=2)
+            stream.write("\n")
+    typer.echo(f"Generated {len(document['scenarios'])} registered replay scenarios")
+
+
 @app.command("feedback")
 @_operator_errors
 def feedback_machine_window(
     ctx: typer.Context,
-    state_path: Path = typer.Argument(..., exists=True),
+    command_or_window: str = typer.Argument(..., help="add, simulate, or the legacy JSON window."),
+    window_path: Path | None = typer.Argument(None),
     result_path: Path = typer.Option(..., "--result", exists=True),
-    applied_path: Path = typer.Option(..., "--applied", exists=True),
+    applied_path: Path | None = typer.Option(None, "--applied", exists=True),
     config_path: Path = typer.Option(Path("configs/default.yaml"), "--config"),
+    log_path: Path = typer.Option(Path("artifacts/machines/feedback.sqlite3"), "--log"),
+    seed: int = typer.Option(FollowUpSettings().demo_seed, "--seed", min=0),
+    count: int = typer.Option(FollowUpSettings().demo_count, "--count", min=1, max=30),
 ) -> None:
-    """Recheck and log applied controls against a named-machine result."""
+    """Add measured follow-up or simulate a seeded batch for the selected machine."""
+    if window_path is None and command_or_window not in {"add", "simulate"}:
+        window_path = Path(command_or_window)
+        command_or_window = "add"
+    if command_or_window not in {"add", "simulate"} or window_path is None:
+        raise ValueError("use feedback add WINDOW or feedback simulate WINDOW")
+    if (command_or_window == "add") != (applied_path is not None):
+        raise ValueError("--applied is required for add and reserved for measured inputs")
     result = migrate_recourse_result(json.loads(result_path.read_text(encoding="utf-8")))
-    record = _named_decision(ctx, config_path).feedback(
-        _read_window(state_path),
-        result,
-        _read_state(applied_path),
+    window = _read_window(window_path)
+    service = _named_decision(ctx, config_path)
+    if applied_path is not None:
+        record = service.feedback(window, result, _read_state(applied_path))
+        record_feedback(record, log_path)
+        typer.echo(record.model_dump_json(indent=2))
+        return
+    records = service.simulate_feedback(window, result, seed, count)
+    record_feedback_batch([(record, None) for record in records], log_path)
+    typer.echo(
+        json.dumps(
+            {
+                "label": "Simulated operator (demo)",
+                "seed": seed,
+                "records": [record.model_dump(mode="json") for record in records],
+            },
+            indent=2,
+        )
     )
-    record_feedback(record)
-    typer.echo(record.model_dump_json(indent=2))
 
 
 @app.command("latency-bench")

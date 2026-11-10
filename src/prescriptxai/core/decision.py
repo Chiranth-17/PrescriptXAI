@@ -6,6 +6,7 @@ import json
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from hashlib import sha256
+from random import Random
 from typing import Literal, Protocol
 
 import pandas as pd
@@ -241,6 +242,18 @@ class MachineDecision:
         self._publishable()
         return self._measure_feedback(window, result, applied, source)
 
+    def simulate_feedback(
+        self, window: pd.DataFrame, result: MachineRecourseResult, seed: int, count: int
+    ) -> list[FeedbackRecord]:
+        """Score reproducible, explicitly simulated outcomes through the same checks."""
+        self._publishable()
+        self._verify_provenance(result)
+        proposed = {name: result.new_state[name] for name in result.action_features}
+        return [
+            self._measure_feedback(window, result, applied, "simulated_operator")
+            for applied in simulated_settings(result.original_state, proposed, seed, count)
+        ]
+
     def _measure_feedback(
         self,
         window: pd.DataFrame,
@@ -301,3 +314,20 @@ def action_adherence(
         )
         for name, value in applied.items()
     }
+
+
+def simulated_settings(
+    original: Mapping[str, float],
+    prescription: Mapping[str, float],
+    seed: int,
+    count: int,
+) -> list[dict[str, float]]:
+    """Draw reproducible compliance fractions and interpolate named applied settings."""
+    generator = Random(seed)
+    return [
+        {
+            name: original[name] + fraction * (value - original[name])
+            for name, value in prescription.items()
+        }
+        for fraction in (generator.random() for _ in range(count))
+    ]

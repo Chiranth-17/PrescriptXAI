@@ -8,7 +8,7 @@ The Phase 13 toy remains a framework test fixture.
 | --- | --- | --- | --- |
 | Machine-scoped observed state | Registered machine, unit and recorded cycle | Simulator integration and browser preset selection | Passed locally |
 | Calibrated risk and interactive controls | Fitted model risk after an edit; URL restores the settings | Simulator integration with retained FD001 assets | Passed locally |
-| Case-study preset | FD001 unit 82, cycle 156, with 87.7% live predicted risk | Registered selection rule and browser capture | Passed locally |
+| Case-study preset | FD001 unit 82, cycle 156, with 87.7% live predicted risk | Registered selection rule, browser capture and live AppTest comparisons for all four presets | Passed locally |
 | Immutable features | Only declared adjustable settings can be overridden | Simulator API rejects a frozen feature | Passed locally |
 | Advisory and stale-result guards | Input-bound FAST work, a 400 ms debounce and Alerts-only for missing confirmation | Tests cancel queued work and discard a superseded running response. Chromium verifies withholding. | Passed locally for guards and job lifecycle |
 | Validity, statistical plausibility, control limits and coupling | Four labeled checks in the confirmed prescription view | Available archive remains in Alerts-only mode | Pending end-to-end acceptance |
@@ -91,9 +91,43 @@ labeled “Simulated operator (demo)” and excluded by default. The registered
 FD001 spec has no engineer confirmation, so the dashboard withholds the
 prescription, live follow-up entry and demo controls for that machine.
 
+## Software-only coverage diagnostic
+
+The diagnostic of `138d9ef` completed with 728 passing tests, one deselected
+test, and 68 warnings in 249.71 seconds. It excluded the fixed subset and
+full scientific replay. Coverage was 87.71% scoped lines, 86.83% package lines
+and 83.75% combined. Both coverage checks failed and the wrapper exited 1.
+The retained Phase 12 floors remain 91.01415094339623% scoped lines,
+90.02682841479063% package lines and 86.64259927797833% combined.
+Receipts and reports are in `artifacts/phase17/software-138d9ef`.
+
+Both dashboard entrypoints reported zero coverage in the original run.
+A mixed direct-script and imported AppTest run also reported zero for both.
+Using the imported application entrypoints consistently in the same 27
+AppTests recorded 101 lines and 24 branches for the legacy entrypoint and
+159 lines and 29 branches for the simulator. The standalone browser check
+still runs the shipped Streamlit entrypoint. These are targeted measurements
+under `artifacts/phase17/coverage-entrypoint-20261110-v2`. A fresh
+software-only package measurement is required.
+
+## Command-line workflows
+
+`prescriptxai scenarios generate --output PATH` writes a new scenario
+registration from the saved archive and refuses to replace an existing file.
+With a named machine and matching protocol, `--profile` and
+`--preview-cache PATH` also save input-bound risk previews. The cache
+contains no prescription and does not change what the dashboard publishes.
+
+`prescriptxai --machine MACHINE feedback add WINDOW --result RESULT
+--applied VALUES` accepts the same inputs as the original form without
+`add`. `feedback simulate WINDOW --result RESULT --seed SEED --count COUNT`
+uses the same scoring and validation as the dashboard, and labels every
+generated record as simulated. Both forms retain the engineer-confirmation
+gate.
+
 ## Local verification
 
-The focused suite passed 77 tests in 41.38 seconds, including 15 simulator
+The focused suite passed 78 tests in 34.63 seconds, including 16 simulator
 tests. Ruff, mypy over 85 source files, and the strict documentation build
 also passed. The full quality gate and the controlled latency suite were
 outside this checkpoint.

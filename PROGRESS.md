@@ -32,6 +32,14 @@ viewport widths and restored the edit from the URL. The 77-test focused
 suite passed in 41.38 seconds, with 15 simulator tests, Ruff, mypy over 85
 source files and strict docs.
 
+The software-only diagnostic of `138d9ef` passed all 728 selected tests
+in 249.71 seconds. It failed the retained coverage requirements with 83.75%
+combined, 86.83% full-package lines and 87.71% scoped lines. A targeted
+AppTest check restored recorded coverage for both dashboard entrypoints.
+Package coverage remains open. The CLI now generates registered presets and
+optional risk-preview caches, and retains the original feedback syntax
+alongside explicit add and seeded simulation commands.
+
 The [acceptance report](docs/acceptance_report.md) separates local verification
 from the remaining dashboard functionality and gates. The design mock and two
 classmate sessions are pending. The full dashboard gate and Step 3B acceptance

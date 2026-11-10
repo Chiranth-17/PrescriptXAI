@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping
-from random import Random
 
 import pandas as pd
 import streamlit as st
@@ -87,23 +86,6 @@ def sequential_risks(
         applied[name] = value
         risks.append(decision.simulate_risk(window, applied).assessment.risk)
     return tuple(risks)
-
-
-def simulated_settings(
-    original: Mapping[str, float],
-    prescription: Mapping[str, float],
-    seed: int,
-    count: int,
-) -> list[dict[str, float]]:
-    """Draw reproducible compliance fractions and interpolate named applied settings."""
-    generator = Random(seed)
-    return [
-        {
-            name: original[name] + fraction * (value - original[name])
-            for name, value in prescription.items()
-        }
-        for fraction in (generator.random() for _ in range(count))
-    ]
 
 
 def replay_trend(
