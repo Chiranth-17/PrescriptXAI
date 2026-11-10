@@ -11,7 +11,10 @@ The authenticated Chromium dashboard test passed with the three retained
 fitted-artifact hashes and the real Streamlit WebSocket. See
 `artifacts/phase16/browser-auth-20261110-v3-pinned` and
 [authenticated deployment](docs/artifact_security.md#authenticated-serving).
-The spoofing run and security scans remain pending.
+The registered spoofing run at `cd61f2d` finished with 16 attacks,
+eight withheld, six that passed on the original observation and two that
+failed Tier 1 on the original observation. The [safety case](docs/safety_case.md)
+records the residual. The scanner gate and fixed-subset gate remain pending.
 
 ## Phase 16 security-lite in progress (10 November 2026 IST)
 

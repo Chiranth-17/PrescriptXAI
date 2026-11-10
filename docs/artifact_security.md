@@ -111,3 +111,21 @@ uv run pip-audit --path .venv/Lib/site-packages --format json --output artifacts
 
 Use the corresponding site-packages path on other platforms. Scientific results from the old
 measurement source must not be relabeled as measurements of the patched environment.
+
+## Security gate
+
+`mingw32-make security` runs the installed dependency audit, Bandit, an
+offline detect-secrets scan, a CycloneDX 1.5 export from the pinned lockfile,
+and the Phase 16 security tests. It retains native exits, machine-readable
+findings, the SBOM and the gate verdict in a fresh `artifacts/phase16/security-*`
+directory. The local source distribution is checked by Bandit and tests.
+The audit sends dependency names and pinned versions to the public advisory
+service. The credential scanner does not make network verification calls.
+
+The gate blocks high or critical Bandit findings, any unresolved credential
+finding, any reported dependency advisory, and incomplete scan evidence.
+The dated exception file identifies exact false positives by filename,
+line and scanner fingerprint. The public digest policy covers only hexadecimal
+identifiers in reviewed, pinned text snapshots. Changing a snapshot or
+passing its expiry requires a new review. The SBOM inventories the entire
+lockfile. See [uv lockfile export](https://docs.astral.sh/uv/concepts/projects/export/).

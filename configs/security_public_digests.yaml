@@ -1,0 +1,42 @@
+reason: Hexadecimal case IDs, source commits and SHA checksums in the reviewed public research inventories. Each complete
+  normalized-text snapshot is pinned, so additions require review.
+expires: '2027-02-28'
+files:
+  configs/experiments/phase11-audit.yaml: fc1ea34597768a647f59517e9675a32bd12dddd65240fb73143da88939a560e2
+  configs/experiments/phase12-arithmetic-resume-v1.yaml: 5da64b1998e70126deef6369d79270df48243ce4024a6fc30e9d69e749994ffc
+  configs/experiments/phase12-arithmetic-v1.yaml: 3345c10963c5d391bc5670cb70ba38509f3e0ae1d8ccb3e4c5c0d76a14367d28
+  configs/experiments/phase12-baseline-v1.yaml: 9e7ce88d108d32beb39662284a3c806d46ebae4ed191960950fe61462965fcac
+  configs/experiments/phase12-calibration-migration-v1.yaml: 0f7442c5166538124c2d2cd836acd0d2a371a91730ebbdb18dbe748eb85cbee2
+  configs/experiments/phase12-clean-clone-gate-attempt2-v1.yaml: 06181f29d0afd020d93521924c5b603677a13b9cd38df21cf51fe0357edf6fd0
+  configs/experiments/phase12-closure-712-v1.yaml: 901ee5635b8ef6ca84766602a0e14b6cac6ee21eade384950c2d1305c8d9bb20
+  configs/experiments/phase12-impact-v1.yaml: 3c6dc6473d967404a42dc98816f0c5b78ca46ab9ae091e343ff8ff699c20b438
+  configs/experiments/phase12-localization-v1.yaml: f08feeda77423c971a14b9983ebdf3d17df855cc97b1f9693bb1fc39614cdca7
+  configs/experiments/phase12-quality.yaml: 67018b8a9c534507bb2f218c69ce02dcb579885c57a1a14fa7a1345426b0f303
+  configs/experiments/phase12-test-cache-origin-v1.json: f6a996c53d6bc64328d8a5eab6209cae26cd34f2c90e17a29816c53be5e61796
+  configs/experiments/phase12-test-tiers-v1.yaml: e376bbbce905126cd54d7c8661cd16ebc4cc49f9b44cfb6ac692981305baf4a7
+  configs/experiments/phase16-spoofing-v1.yaml: 242228051320c064794fff41f64d2e933c0fa67ded7087d72e2df5fdcb6dad36
+  configs/experiments/phase17-preview-latency-v1.json: f3f187de45bab47cf132ed79fa4dcc707396492fe015e6fca2cacfe2c6576f6d
+  configs/experiments/phase17-preview-latency-v2.json: 3c6f29b91845afaf5dea663bfb9c8a3188705200a3ddbce63e70558e8d107b45
+  configs/experiments/phase17-preview-latency-v3.json: 517fb66373f6e3b46eb478eaca5a321fdaf5cd382ca63441a660da06296ced44
+  configs/experiments/phase8-ui-render.yaml: 05f692de6b78fa6c9ca3477de8e3c4dd7454cfccff7d9259ef43909d5b4c6f5b
+  configs/experiments/phase9-hardening.yaml: 9309f3ba8b3088830eed46afc0732d73baad1763fc068a423ad7e8d911278e9d
+  configs/experiments/remediation-development-profile-v1.yaml: 7392afb8ecb97d33ff3119393ffb36b0505a4283fca6981a3d04ce7da4869ac5
+  configs/experiments/remediation-final-latency-v1.yaml: 2bc6f275e89e88efd889c607dacd29599634092f4e24b20969a8616c4c14d16b
+  configs/machines/cmapss_fd001/scenarios.yaml: 8a60eeafd86e786f3d1e840c431f1ca3f39ec32c52e2ec6c1e5d40dd639d591d
+  docs/final_targets.md: 6505a647d2bf88cb8fd1e3fed26a58434620fa3f61b03157e7d94a2a5604805a
+  docs/final_verification.md: 4ae2f24db7834402b40874ebeeb22f5703cd337fd0e0350b1cc96e66aba4a989
+  docs/phase12_headline_impact.md: 69520bdbfbc8e771542dd15296e4204290fdf58fad75fcdda2c1b2929a7927fd
+  docs/phase12_open_items.json: 4bfde03800d0229503611bb4f9e991b495fbde2bd82de12fba58b4874c58248f
+  docs/phase4_full_diagnosis_results.json: 2b941747b7fad88ac20e216536b7ae1014513ab7f3a51f3dcd9b83fd6650afd7
+  docs/phase5_changes.md: 2f871ac5cecca2b3d586d2adc20545790d701b17cf7f321992e156186babd040
+  docs/results.md: de8625e60ef02fbe41f838cd4c3535f83f4d91dbce7d8a9ff6c0fccabfd195f0
+  docs/results_provenance.json: 35d044c01173f5d58a7b51e5c0e0c2a13c89de0f7a651d091b5f20795596a70d
+  paper/appendix.md: 149cca0aff69d2419f9706d716df4d2ff8f804781bb2854d1d82a1678069ad89
+  paper/evidence.json: 1a4e4f6d6f3bf7d78ef7830450b6b19a75f7e9463f60eebd69ed00e4e56310cb
+  scripts/diagnostics/phase12_arithmetic.py: 4d09cec329fc79d6d891c28db1fa71890490de108bbf655df8dec37806024224
+  scripts/diagnostics/phase12_baseline.py: 9969081fa976a1c86e294c31d30266ebf6b109a84421f47ee9257d6ab45c088b
+  scripts/diagnostics/run_full_diagnosis.py: e562cd4cb1d1a61b12e9989bb517f81352f69cccd47454e94ebc6a5ae677be66
+  src/prescriptxai/models/registry.py: 74237f6160e8ab07ea9f2ac7a1a95d5c3a374a088fa7fdfca0e5aac5765bdabe
+  tests/regression/cmapss_baseline.json: acea653c78cf43bf72fcbd711706d869e560a7cec5ecad408b8b96c00920a193
+  tests/regression/subset_ids.json: 2d1d8b5b7deace1db610277b5ff61e5f8af126e415531cf5b6be27f4d5564e81
+  tests/regression/subset_manifest.json: 331266daefcc66713f360af9b2826d64280d5af10f6372b40ed13967193d1cec

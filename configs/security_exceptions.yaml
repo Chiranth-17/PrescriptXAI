@@ -1,0 +1,102 @@
+- finding: secret:.gsd/examples/multi-wave-workflow.md:81:7288edd0fc3ffcbe93a0cf06e3568e28521687bc
+  reason: Illustrative localhost command uses a public dummy password and example.com identity.
+  expires: '2027-02-28'
+- finding: secret:.gsd/examples/multi-wave-workflow.md:228:e5e9fa1ba31ecd1ae84f75caaa474f3a663f05f4
+  reason: Illustrative localhost command uses a public dummy password and example.com identity.
+  expires: '2027-02-28'
+- finding: secret:configs/dashboard.yaml:3:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/default.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase10-reproduce-v1.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase6-fold-1-v1.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase6-fold-1-v2.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase6-fold-2-v1.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase6-fold-2-v2.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase6-fold-3-v1.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase6-fold-3-v2.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase6-fold-4-v1.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase6-fold-4-v2.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase6-fold-5-v1.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase6-fold-5-v2.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase6-pipeline-v1.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase6-pipeline-v2.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase7-FD001-lstm-v1.yaml:39:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase7-FD001-lstm-v2.yaml:39:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase7-FD001-mlp-v1.yaml:39:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase7-FD001-mlp-v2.yaml:39:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase7-FD001-xgb-v1.yaml:39:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase7-FD001-xgb-v2.yaml:39:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase7-FD002-xgb-v1.yaml:39:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase7-FD002-xgb-v2.yaml:39:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:configs/experiments/phase9-hardening.yaml:41:616fad763d066610662d20f06d4600c892fa7041
+  reason: This YAML field contains prose describing the earlier source scan.
+  expires: '2027-02-28'
+- finding: secret:paper/evidence.json:79817:b6cf6fc26a12457232057173a0ba07d024de20b9
+  reason: Public slash-delimited experiment group key in the saved research inventory.
+  expires: '2027-02-28'
+- finding: secret:paper/evidence.json:110174:dccc43d574ed752b842726e0ca51199b4c9624e3
+  reason: Public slash-delimited experiment group key in the saved research inventory.
+  expires: '2027-02-28'
+- finding: secret:paper/evidence.json:111621:3bc355ebda20a88a7fe6ca212f3eebeae29bd9b4
+  reason: Public slash-delimited experiment group key in the saved research inventory.
+  expires: '2027-02-28'
+- finding: secret:paper/evidence.json:113068:05fa170664704f7eb356f092399f043b42a8b4fa
+  reason: Public slash-delimited experiment group key in the saved research inventory.
+  expires: '2027-02-28'
+- finding: secret:src/prescriptxai/resources/default.yaml:42:830586312421ffa3bbc5f66b7b96086a959a26f9
+  reason: Public configuration names an environment variable and holds no credential value.
+  expires: '2027-02-28'
+- finding: secret:tests/integration/test_phase16_sessions.py:130:81f344a7686a80b4c5293e8fdc0b0160c82c06a8
+  reason: Deliberately invalid authentication payload used in the login rejection test.
+  expires: '2027-02-28'
+- finding: secret:tests/regression/subset_manifest.json:761:97377ac7da4641225b20a61f2dfcb0316b588a6c
+  reason: Public slash-delimited experiment group key in the saved research inventory.
+  expires: '2027-02-28'
+- finding: secret:tests/regression/subset_manifest.json:770:32866cbfc43f34b297846823735f5341b88d21c6
+  reason: Public slash-delimited experiment group key in the saved research inventory.
+  expires: '2027-02-28'

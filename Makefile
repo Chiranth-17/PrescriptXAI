@@ -1,4 +1,4 @@
-.PHONY: install lint typecheck test cov data train evaluate dashboard api docs clean all-checks check regression-full release-gate
+.PHONY: install lint typecheck test cov data train evaluate dashboard api docs clean all-checks check regression-full release-gate security
 
 ifeq ($(REUSE_ONLY),1)
 export PSX_QUALITY_REGRESSION_REUSE_ONLY = 1
@@ -52,3 +52,6 @@ regression-full:
 
 release-gate:
 	uv run python scripts/quality/release_gate.py $(if $(filter 1,$(REUSE_ONLY)),--reuse-only,)
+
+security:
+	uv run --locked python scripts/quality/security.py

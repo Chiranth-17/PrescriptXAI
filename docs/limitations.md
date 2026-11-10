@@ -143,3 +143,12 @@ when its environment key is absent; it does not satisfy authentication-on-by-def
 starts no service or industrial advisory deployment. These obligations are assigned to
 Phases13-18 and remain explicit until their tests pass. No absent engineer/classmate identity,
 public repository, hosted CI evidence or real plant benefit is invented for a gate.
+
+## Plausible telemetry spoofing
+
+On the registered FD001 XGBoost v1 sample, two of 16 bounded spoofing attempts
+published proxy prescriptions that failed the model-risk check on the
+original recorded observation. The four presets represent three simulated
+units. The two bypasses crossed the fixed 20% threshold on recheck. Keep
+authenticated upstream telemetry and independent engineering review as
+deployment requirements. See the [advisory safety case](safety_case.md).

@@ -41,7 +41,7 @@ boundary. B5 transfers labeled information to the person who downloads it.
 
 | Threat | Boundary and class | Initial rating | Current mitigation and evidence | Residual risk and open verification |
 | --- | --- | --- | --- | --- |
-| Sensor spoofing within plausible ranges | B1, spoofing and tampering | High | Finite values and data-quality constraints are checked before scoring. Four independent checks can withhold a candidate. See the Phase 9 API edge tests and recourse validation tests. | High until the bounded adversarial sample is measured. Plausible forgeries can survive model-based checks. A deployment needs authenticated telemetry and independent review. |
+| Sensor spoofing within plausible ranges | B1, spoofing and tampering | High | Finite values and data-quality constraints are checked before scoring. Four independent checks can withhold a candidate. See the Phase 9 API edge tests and recourse validation tests. | High. The bounded sample published two of 16 prescriptions that failed Tier 1 on the original recorded input. Deployment requires authenticated telemetry and independent review. See the [safety case](safety_case.md). |
 | Replayed or stale data | B1 and B2, spoofing and tampering | High | A current prescription binds to the input hash. The Phase 17 keyboard and API checks exercise edited input and stale-result withholding. | High for replay of an otherwise valid observation by an upstream source. Input binding establishes consistency within the workflow. It does not establish acquisition time or source identity. |
 | Poisoned training data | B3, tampering | High | Unit-separated fitting and leakage audits check partition identity. Scientific runs pin input and fitted-artifact hashes. | High when an administrator approves poisoned source data before pinning. Source approval and provenance checks remain required. Partition tests address leakage only. |
 | Tampered model or validator | B3, tampering and elevation | High | The named loader checks file digests from the fitted-bundle manifest before decoding. Trusted roots, bundle compatibility and the legacy pickle boundary are documented in [artifact security](artifact_security.md). Phase 9 artifact tests exercise root and decode failures. | Medium while an independent administrator manifest and filesystem permissions hold. Hosted loaders refuse unregistered or altered artifacts before decode. A privileged replacement of both trust anchor and artifact remains a risk. |
@@ -52,11 +52,9 @@ boundary. B5 transfers labeled information to the person who downloads it.
 
 ## Phase 16 evidence still to collect
 
-- Register the bounded spoofing sample, run it and report attempts, outcomes
-  and which checks withheld prescriptions.
 - Run the dependency and source scans, produce the SBOM and verify deployment
   artifact checksums. Record the advisory database and dated exceptions.
-- Complete the advisory safety case and the prescribed Phase 16 gates.
+- Run both prescribed Phase 16 gates. The [advisory safety case](safety_case.md) records the spoofing residual.
 
 High residual risks remain visible until their mitigations and tests are
 verified. The technical dashboard gate is recorded separately in the
