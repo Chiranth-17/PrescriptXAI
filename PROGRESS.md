@@ -1,5 +1,19 @@
 # PrescriptXAI Progress
 
+## Phase 16 security-lite in progress (10 November 2026 IST)
+
+The [threat model](docs/threat_model.md) maps the telemetry, browser, artifacts,
+feedback and export trust boundaries. It records current mitigations and open
+risks. API responses disable caching, content sniffing and framing and omit
+referrers. Unexpected endpoint failures produce a generic JSON error.
+Application startup rejects wildcard CORS settings.
+
+The focused Phase 16, Phase 9 API and Phase 6 pipeline suite passed 57 tests in
+85.36 seconds. Ruff, mypy over 85 files and strict docs passed. Authentication,
+role and session enforcement, endpoint fuzzing, spoofing measurements, supply
+chain scans and the safety case remain in the Phase 16 scope. Its full
+`make check` and `make security` gates are pending.
+
 ## Phase 17 fixed-subset gate complete (10 November 2026 IST)
 
 `mingw32-make check REUSE_ONLY=0` passed on `735cc4b` in 13,487.87 seconds

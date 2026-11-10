@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import secrets
 from contextvars import Token
@@ -12,9 +13,10 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import ValidationError, field_validator
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.base import RequestResponseEndpoint
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from prescriptxai import __version__
@@ -30,6 +32,8 @@ from prescriptxai.schemas import (
     RecourseResult,
     _reject_nonreal_measurement,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _validation_details(error: ValidationError | RequestValidationError) -> dict[str, object]:
@@ -151,6 +155,15 @@ def create_app(
     settings = config or (
         pipeline.config if pipeline else load_config(Path("configs/default.yaml"))
     )
+    if any(
+        "*" in entries
+        for entries in (
+            settings.api.cors_origins,
+            settings.api.cors_methods,
+            settings.api.cors_headers,
+        )
+    ):
+        raise ValueError("CORS configuration requires explicit origins, methods and headers")
     app = FastAPI(
         title="PrescriptXAI",
         version="2.0.0",
@@ -166,6 +179,25 @@ def create_app(
         allow_methods=settings.api.cors_methods,
         allow_headers=settings.api.cors_headers,
     )
+
+    @app.middleware("http")
+    async def secure_response(request: Request, call_next: RequestResponseEndpoint) -> Response:
+        try:
+            response = await call_next(request)
+        except Exception as error:
+            logger.error("Unhandled API error (%s)", type(error).__name__)
+            response = JSONResponse(
+                {
+                    "detail": "internal server error",
+                    "mode": settings.pipeline.default_mode.upper(),
+                },
+                status_code=500,
+            )
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Cache-Control"] = "no-store"
+        return response
 
     def loaded() -> PrescriptXAI:
         if pipeline is None:

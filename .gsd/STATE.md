@@ -2,7 +2,7 @@
 phase: 13
 status: complete
 current_activity: solo_step4_security_lite
-activity_status: phase17_technical_gate_passed_usability_pending
+activity_status: phase16_threat_model_and_api_headers_verified
 ---
 
 ## Solo Step 3 technical gate passed (10 November 2026 IST)
