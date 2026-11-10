@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from concurrent.futures import CancelledError, ThreadPoolExecutor
 from itertools import pairwise
 from pathlib import Path
@@ -48,6 +49,12 @@ def _app_test() -> AppTest:
     return AppTest.from_string(
         "from prescriptxai.dashboard.simulator_app import main\nmain()", default_timeout=45
     )
+
+
+@pytest.fixture(autouse=True)
+def restore_test_entrypoint(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Restore pytest's entrypoint after Streamlit runs its temporary main module."""
+    monkeypatch.setitem(sys.modules, "__main__", sys.modules["__main__"])
 
 
 @pytest.fixture(scope="module")
@@ -542,6 +549,8 @@ _render_applied(f, r, labels, settings.follow_up)
 _applied_inputs(d, r, labels)
 assert render_follow_up(d, w, rows, r, scope, settings.follow_up) is None
 _trend_panel(d, rows, scope, f, 3)
+_trend_panel(d, w, scope, f, 3)
+_trend_panel(d, rows.drop(columns=d.features[0]), scope, f, 3)
 _feedback_log(d, settings.follow_up, log)
 """,
         default_timeout=45,
@@ -563,6 +572,8 @@ _feedback_log(d, settings.follow_up, log)
     assert renderer.metric[0].value == f"{result.risk_after:.1%}"
     assert renderer.metric[-1].value == f"{demo.applied_risk:.1%}"
     assert any("No follow-ups" in item.value for item in renderer.info)
+    assert any("no later recorded observations" in item.value for item in renderer.info)
+    assert any("could not be checked" in item.value for item in renderer.info)
     renderer.checkbox[0].set_value(True).run()
     assert not renderer.exception
     assert renderer.dataframe[-1].value.iloc[0]["Source"] == "Simulated operator (demo)"
@@ -571,7 +582,37 @@ _feedback_log(d, settings.follow_up, log)
     assert renderer.text_input[0].label == "Reason (optional)"
     assert renderer.slider[0].value == state[result.action_features[0]]
     assert not any(button.label == "Record this follow-up" for button in renderer.button)
+    damaged = window.drop(columns=decision.features[0])
+    missing_summary = settings.model_copy(update={"report_directory": tmp_path})
+    renderer.session_state["evidence"] = (
+        decision,
+        damaged,
+        rows,
+        result,
+        decision._explanation(result),
+        demo,
+        scope,
+        missing_summary,
+        log,
+    )
+    renderer.run()
+    assert not renderer.exception
+    assert len(renderer.get("plotly_chart")) == 1
+    assert any("could not be reconciled" in item.value for item in renderer.warning)
+    assert any("Target unavailable" in item.value for item in renderer.markdown)
     assert not decision.spec.confirmation.confirmed
+    client = TestClient(create_app(replay[1], machine_artifacts=tmp_path / "api"))
+    blocked = client.post(
+        "/feedback",
+        json={
+            "machine_id": DEFAULT_MACHINE,
+            "rows": window.to_dict(orient="records"),
+            "result": result.model_dump(mode="json"),
+            "applied": applied,
+        },
+    )
+    assert blocked.status_code == 422 and "Alerts only" in blocked.json()["detail"]
+    assert not (tmp_path / "api" / "feedback.sqlite3").exists()
 
 
 def test_simulator_rejects_unknown_controls_before_showing_a_score(
@@ -639,7 +680,6 @@ def test_replay_routes_fail_closed_on_invalid_inputs_and_local_evidence(
     local_registry = MachineRegistry(tmp_path / "machines")
     path = local_registry.root / DEFAULT_MACHINE / "scenarios.yaml"
     path.parent.mkdir(parents=True)
-    path.write_text("machine_id: other_machine", encoding="utf-8")
     config = runtime.config.model_copy(deep=True)
     config.pipeline.max_batch_rows = 1
     with TestClient(
@@ -647,8 +687,22 @@ def test_replay_routes_fail_closed_on_invalid_inputs_and_local_evidence(
     ) as client:
         assert client.get("/machines/unknown/scenarios").status_code == 404
         assert client.get("/machines/UPPER/spec").status_code == 422
-        bad_manifest = client.get(f"/machines/{DEFAULT_MACHINE}/scenarios")
-        assert bad_manifest.status_code == 422
+        route = f"/machines/{DEFAULT_MACHINE}/scenarios"
+        assert client.get(route).json() == []
+        path.write_text("machine_id: other_machine", encoding="utf-8")
+        assert client.get(route).status_code == 422
+        path.write_text(
+            yaml.safe_dump(
+                {
+                    "schema_version": 1,
+                    "machine_id": DEFAULT_MACHINE,
+                    "spec_hash": decision.spec.spec_hash,
+                    "population": "test",
+                }
+            ),
+            encoding="utf-8",
+        )
+        assert client.get(route).status_code == 422
         request = {"machine_id": DEFAULT_MACHINE, "rows": rows.iloc[:2].to_dict(orient="records")}
         oversized = client.post("/simulate/risk", json=request)
         assert oversized.status_code == 422 and "row limit" in oversized.json()["detail"]
@@ -720,3 +774,65 @@ def test_cli_archive_history_is_used_without_padding() -> None:
     )
     unknown = runner.invoke(app, [*base, "100000"])
     assert unknown.exit_code != 0 and "engine/cycle not found" in unknown.output
+
+
+def test_cli_validates_existing_archive_without_download() -> None:
+    """Exercise the archive preflight using the actual retained checksum and counts."""
+    from prescriptxai.data.download import verify_archive
+
+    profile = Path("configs/experiments/phase7-FD001-xgb-v1.yaml")
+    config = load_config(profile)
+    path = config.data.root / config.data.archive_name
+    assert path.is_file()
+    digest = verify_archive(path, config.data.dataset_sha256)
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "--machine",
+            DEFAULT_MACHINE,
+            "data",
+            "download",
+            "--config",
+            str(profile),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert "Verified existing C-MAPSS archive" in result.stdout and digest in result.stdout
+
+
+def test_unusual_replay_edits_warn_without_publishing_actions(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    case_evidence: tuple[pd.DataFrame, dict[str, Any]],
+) -> None:
+    """Extreme but bounded fitted controls keep the actual model risk visible with a warning."""
+    decision, _, _ = replay
+    window, _ = case_evidence
+    bounds = decision.control_bounds()
+    options = [
+        {
+            name: limits[(position + shift) % 2]
+            for position, (name, limits) in enumerate(bounds.items())
+        }
+        for shift in range(2)
+    ] + [{name: limits[1] for name, limits in bounds.items()}]
+    controls, result = next(
+        (values, preview)
+        for values in options
+        if (preview := decision.simulate_risk(window, values)).unusual
+    )
+    page = _app_test()
+    page.query_params.update(
+        {
+            "machine": DEFAULT_MACHINE,
+            "spec": decision.spec.spec_hash,
+            "unit": str(window["unit_id"].iloc[-1]),
+            "time": str(float(window["time_index"].iloc[-1])),
+            "settings": json.dumps(controls),
+        }
+    )
+    page.run()
+    assert not page.exception and not page.error
+    assert [metric.value for metric in page.metric] == [f"{result.assessment.risk:.1%}"]
+    assert any("unusual" in warning.value for warning in page.warning)
+    assert not any(button.label == "Record this follow-up" for button in page.button)

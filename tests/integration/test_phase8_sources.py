@@ -11,6 +11,7 @@ from threading import Thread
 import pandas as pd
 import pytest
 import yaml
+from fastapi.responses import PlainTextResponse
 from fastapi.testclient import TestClient
 
 from integration.test_phase6_artifacts_cli import fitted_config  # noqa: F401
@@ -233,6 +234,14 @@ def test_actual_http_adapter_matches_direct_and_rejects_errors(fitted_config: Pa
         def log_message(self, format: str, *args: object) -> None:
             """Keep local request bodies/credentials out of the test log."""
 
+    @client.app.get("/non-object")
+    def non_object() -> list[object]:
+        return []
+
+    @client.app.get("/non-json-error")
+    def non_json_error() -> PlainTextResponse:
+        return PlainTextResponse("invalid request", status_code=400)
+
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -259,6 +268,10 @@ def test_actual_http_adapter_matches_direct_and_rejects_errors(fitted_config: Pa
             adapter.remote("/missing")
         with pytest.raises(OperatorError, match="API 422"):
             adapter.call("assess", {}, InputContext(), "fast")
+        with pytest.raises(OperatorError, match="invalid response object"):
+            adapter.remote("/non-object")
+        with pytest.raises(OperatorError, match="API 400: Request rejected"):
+            adapter.remote("/non-json-error")
     finally:
         server.shutdown()
         server.server_close()

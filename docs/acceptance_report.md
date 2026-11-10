@@ -131,6 +131,16 @@ deselected and 68 warnings. Both package floors passed at 90.33% lines and
 `artifacts/phase17/software-a91e6b9`. The fixed subset and full science
 remained outside this diagnostic.
 
+The diagnostic of `58cd33a` passed 733 tests and failed two Windows
+multiprocessing tests. A temporary Streamlit AppTest entrypoint persisted as
+the process main module. Spawned workers re-executed it and could not access
+the parent's Streamlit session state. The simulator test fixture now restores
+the pytest entrypoint. The triggering AppTest and both worker tests passed
+together in the recovery check at
+`artifacts/phase17/windows-apptest-spawn-recovery-v1`. The failed package
+receipt and its 85.97% combined coverage are retained at
+`artifacts/phase17/software-58cd33a`.
+
 ## Command-line workflows
 
 `prescriptxai scenarios generate --output PATH` writes a new scenario
