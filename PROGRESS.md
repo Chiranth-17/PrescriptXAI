@@ -55,6 +55,12 @@ invalid replay inputs, corrupt local feedback evidence, absent scorecards and
 the retained LSTM CLI history path. Follow-up also checks confirmation
 before rendering recording controls.
 
+The Windows worker recovery restored pytest's entrypoint after simulator
+AppTests. At `7626483`, the software-only run passed 737 selected tests
+in 277.02 seconds and both retained gates. Coverage was 91.03% scoped
+lines, 91.10% package lines and 87.76% combined. The software run
+excluded the fixed subset and full scientific regression.
+
 The [acceptance report](docs/acceptance_report.md) separates local verification
 from the remaining dashboard functionality and gates. The design mock and two
 classmate sessions are pending. The full dashboard gate and Step 3B acceptance

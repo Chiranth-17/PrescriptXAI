@@ -141,6 +141,14 @@ together in the recovery check at
 receipt and its 85.97% combined coverage are retained at
 `artifacts/phase17/software-58cd33a`.
 
+The recovery diagnostic at `7626483` passed 737 selected tests in 277.02
+seconds, with one deselected and 68 warnings. It cleared all retained
+floors at 91.03340496190663% scoped lines, 91.10337491538536% package lines
+and 87.76066612629873% combined. Pytest, both coverage gates and the wrapper
+exited zero. Evidence is in `artifacts/phase17/software-7626483`. This result
+covers software tests. The fixed subset, full regression, controlled latency,
+and the external acceptance requirements remain pending.
+
 ## Command-line workflows
 
 `prescriptxai scenarios generate --output PATH` writes a new scenario
