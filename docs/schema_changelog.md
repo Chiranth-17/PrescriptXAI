@@ -1,5 +1,14 @@
 # Public schema history
 
+## Phase 17 machine limits status
+
+The version 1 machine spec accepts an optional `limits_status`. A confirmed
+spec requires a complete engineer confirmation record. A demonstration
+spec rejects such a record and labels its decisions through the existing
+warnings field. A spec with no status remains Alerts-only and retains its
+historical hash. The version 3 decision and version 2 validation schemas
+retain their fields.
+
 ## Phase 17 replay follow-up context
 
 The local SQLite log can now associate an optional version 1 replay context

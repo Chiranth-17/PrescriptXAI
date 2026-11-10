@@ -3,7 +3,8 @@
 ## Phase 17 dashboard work in progress
 
 See [dashboard acceptance status](acceptance_report.md) for local simulator
-verification, remaining objectives and external evidence gaps. The synopsis
+verification, demonstration limits and pending human evidence. The separate
+[slider timing](deviations.md) tracks the measured UI budget gap. The synopsis
 requirement statuses below retain their previously verified scope.
 
 ## Phase 13 closeout (10 November 2026 IST)

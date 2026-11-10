@@ -2,18 +2,18 @@
 phase: 13
 status: complete
 current_activity: solo_step3_dashboard
-activity_status: phase17_interactive_latency_gap
+activity_status: phase17_fixed_subset_check_pending
 ---
 
 ## Solo Step 3 in progress (10 November 2026 IST)
 
-The machine-scoped simulator has local FD001 risk, stale-input, Alerts-only
-and browser evidence, with input-bound scheduling, scoped follow-up and export.
-See the [acceptance report](../docs/acceptance_report.md).
-The latest software-only diagnostic passed 737 selected tests and all retained
-coverage floors. Controlled FD001 interactive timing missed the 50 ms browser target in all eight
-groups. The fixed subset, full scientific verification, published design
-reference and participant sessions remain open.
+The registered replay and the toy fixture use demonstration limits.
+Local tests cover Advisory mode, labeled demonstration and Alerts-only.
+The repeated browser timing and the remaining 250 ms gap are recorded
+in [deviations](../docs/deviations.md). The latest software-only
+diagnostic passed 739 tests and both retained coverage gates. The
+fixed-subset `make check` is registered separately. The design screenshots
+and usability sessions remain [human tasks](../docs/acceptance_report.md).
 
 ## Solo Step 2 complete (10 November 2026 IST)
 

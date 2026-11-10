@@ -1,5 +1,27 @@
 # PrescriptXAI Progress
 
+## Phase 17 limits modes and slider verification (10 November 2026 IST)
+
+The registered FD001 replay and the synthetic toy fixture now declare
+demonstration limits. Local tests cover demonstration prescriptions,
+confirmed Advisory mode with schema-only test data, and withholding for
+an unclassified spec. Current live exports and both About views show the
+active limits label.
+
+The repeated eight-group timing measured p95 server scoring of
+26.3–32.0 ms and browser round trips of 241.8–443.2 ms. Earlier values
+were 23.3–24.7 ms and 364.4–396.8 ms. One after group met the 250 ms
+UI budget. See the [timing record and deviation](docs/deviations.md).
+Browser run v14 passed for both widths, including a live labeled
+prescription and removal of current actions after a keyboard edit.
+The two design references and two unassisted classmate sessions remain
+[human tasks](docs/acceptance_report.md#human-tasks-for-dashboard-acceptance).
+
+The software-only diagnostic at `bbe8142` passed 739 tests in 316.73
+seconds and both coverage gates. The separate fixed-subset `make check`
+is registered under `artifacts/phase17/fixed-subset-check-20261110-v1`.
+Full regression is reserved for the release gate.
+
 ## Phase 17 dashboard implementation (10 November 2026 IST)
 
 The machine-scoped Streamlit simulator is available through `make dashboard`.

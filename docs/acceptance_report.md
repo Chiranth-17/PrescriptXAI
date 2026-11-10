@@ -1,8 +1,8 @@
 # Dashboard acceptance status
 
-Phase 17 and Step 3B are in progress. The registered dashboard machine is the
-NASA FD001 simulated archive. Its engineer confirmation block is empty.
-The Phase 13 toy remains a framework test fixture.
+Phase 17 and Step 3B are in progress. The registered dashboard machine is the NASA FD001 simulated archive. It
+uses demonstration limits, as does the Phase 13 toy test fixture. Both have
+empty engineer confirmation blocks.
 
 | Objective | Dashboard evidence | Verification | Status |
 | --- | --- | --- | --- |
@@ -10,13 +10,13 @@ The Phase 13 toy remains a framework test fixture.
 | Calibrated risk and interactive controls | Fitted model risk after an edit; URL restores the settings | Simulator integration with retained FD001 assets | Passed locally |
 | Case-study preset | FD001 unit 82, cycle 156, with 87.7% live predicted risk | Registered selection rule, browser capture and live AppTest comparisons for all four presets | Passed locally |
 | Immutable features | Only declared adjustable settings can be overridden | Simulator API rejects a frozen feature | Passed locally |
-| Advisory and stale-result guards | Input-bound FAST work, a 400 ms debounce and Alerts-only for missing confirmation | Tests cancel queued work and discard a superseded running response. Chromium verifies withholding. | Passed locally for guards and job lifecycle |
-| Validity, statistical plausibility, control limits and coupling | Four labeled checks in the confirmed prescription view | Available archive remains in Alerts-only mode | Pending end-to-end acceptance |
-| Sparsity, risk-drop badges and waterfall | Confirmed-view badges and sequential calibrated scores | A replay test recomputes archived endpoints and verifies the changes add to the total. Confirmed rendering remains pending. | Partial |
-| Timing and performance | Actual keyboard-to-risk and server scoring timings for all four FD001 presets at both widths | Browser p95 missed the 50 ms target in all eight groups. Confirmed FAST and follow-up timings remain pending. | Browser target missed |
-| Applied outcome, trend and feedback | Live model recheck, configured adherence labels, same-unit trend and scoped SQLite log with seeded demo records | Tests cover adherence boundaries, deterministic interpolation, real FD001 trend re-scoring and backward-compatible log reads. The confirmed browser path remains pending. | Partial |
-| Edited-settings comparison | A separately labeled recorded-settings reference for the exact same base input | Both risk values use independent checks. FD001 remains Alerts-only. | Pending confirmed browser acceptance |
-| Scenario export | Standalone HTML with current settings, predicted risk and provenance | Downloaded at both widths and matched to the displayed Alerts-only case study | Passed locally for Alerts-only |
+| Advisory and stale-result guards | Input-bound FAST work, a 400 ms debounce and Alerts-only for an unclassified spec | Tests cancel queued work, discard a superseded running response and exercise all three limits statuses. | Passed locally for guards and job lifecycle |
+| Validity, statistical plausibility, control limits and coupling | Four labeled checks in the demonstration prescription view | Fitted FD001 replay and toy status tests | Verified locally for demonstration |
+| Sparsity, risk-drop badges and waterfall | Labeled badges and sequential calibrated scores | A replay test recomputes archived endpoints and verifies the changes add to the total. The demo renders current input-bound results. | Verified locally for demonstration |
+| Timing and performance | Actual keyboard-to-risk and server scoring timings for all four FD001 presets at both widths | The repeated browser benchmark met 250 ms in one of eight groups. See [deviations](deviations.md). | Browser target missed |
+| Applied outcome, trend and feedback | Live model recheck, configured adherence labels, same-unit trend and scoped SQLite log with seeded demo records | Tests cover adherence boundaries, deterministic interpolation, real FD001 trend re-scoring and backward-compatible log reads. The demonstration path is available for local checks. | Partial |
+| Edited-settings comparison | A separately labeled recorded-settings reference for the exact same base input | Both risk values use independent checks. Edits clear current prescriptions. | Verified locally for demonstration |
+| Scenario export | Standalone HTML with current settings, predicted risk and provenance | The HTML carries the active limits label and withholds stale results | Verified locally |
 | Synopsis scorecard | Machine-scoped Advanced page with saved FAST alert and first-alert results | AppTest compares each displayed metric and serial latency interval with its saved source | Passed locally for archived results |
 | Design and usability | Local desktop and phone captures, keyboard preset activation, slider editing and visible focus | Checked both widths. Full accessibility review, published mock and two participant sessions remain pending. | Partial |
 
@@ -57,11 +57,11 @@ The simulator cancels delayed or queued requests when their input hash changes.
 If the numerical call has already started, it may finish on the isolated worker.
 Its result is discarded. The simulator publishes only an exact current result.
 A nearby cached candidate could describe different settings, so the view does
-not use one as advice. Slider edits still receive the risk preview. On a confirmed machine, a
+not use one as advice. Slider edits still receive the risk preview. On a classified machine, a
 comparison can show the previous prescription's risk and check count as a
 reference only when its recorded-input hash matches the selected window. It
-offers no actions or follow-up for an edited input. The full confirmed browser
-flow remains pending.
+offers no current actions or follow-up for an edited input. The recorded-input
+prescription and its report carry the active limits label.
 
 An offline component test rechecks the registered FD001 candidate using the
 fitted model, then renders the measured risk waterfall and applied-setting
@@ -72,8 +72,8 @@ grant publication approval.
 The waterfall test uses the archived case-study action controls and re-scores
 each prefix with the same fitted model and coupling reference. It matches the
 saved risk endpoints within an absolute probability tolerance of 1e-9. This
-is an archival diagnostic. The FD001 page and HTML export show only the current
-risk and withholding message.
+is an archival diagnostic. The FD001 page and export can publish an independently
+checked current prescription with the demonstration label.
 
 ## Follow-up evidence
 
@@ -83,8 +83,8 @@ separates the reported choice from the measured adherence label, and records
 the reason if supplied. Replay context is stored in a versioned companion table
 beside the existing feedback records. Older logs remain readable. The report
 attaches a follow-up only when the current input, machine, unit, time, and
-decision run and configuration match. The follow-up view also checks
-engineer confirmation before showing input or recording controls.
+decision run and configuration match. The follow-up view also checks the machine's publication mode before showing
+input or recording controls.
 
 The trend re-scores up to 30 subsequent recorded windows for the selected
 unit, or fewer when the archive ends. It compares the recorded inputs with
@@ -95,8 +95,8 @@ boundary, the archive labels and the actual model predictions.
 
 Demo rows are generated from seeded interpolation, independently scored,
 labeled “Simulated operator (demo)” and excluded by default. The registered
-FD001 spec has no engineer confirmation, so the dashboard withholds the
-prescription, live follow-up entry and demo controls for that machine.
+FD001 replay keeps its demonstration label while eligible advice and follow-up
+are displayed.
 
 ## Software-only coverage diagnostic
 
@@ -161,8 +161,7 @@ contains no prescription and does not change what the dashboard publishes.
 --applied VALUES` accepts the same inputs as the original form without
 `add`. `feedback simulate WINDOW --result RESULT --seed SEED --count COUNT`
 uses the same scoring and validation as the dashboard, and labels every
-generated record as simulated. Both forms retain the engineer-confirmation
-gate.
+generated record as simulated. Both forms enforce the active limits mode.
 
 ## Controlled interactive timing
 
@@ -205,7 +204,9 @@ matched every displayed score and timing summary. See
 The v1 runner stopped on a repeated endpoint key during warmup and its
 receipt remains in `artifacts/phase17/preview-latency-20261110-v1`.
 
-## Local verification
+See [the repeated timing and remaining UI gap](deviations.md) for the demonstration run.
+
+## Local verification before demonstration limits
 
 The focused suite passed 86 tests in 66.96 seconds, including 19 simulator
 tests. Ruff, mypy over 85 source files, and the strict documentation build
@@ -233,5 +234,35 @@ and Windows connection resets during browser teardown.
 The first focused run found adherence defaults in the UI module. The final
 run passed the original hardcoded-results guard after the defaults moved
 to typed configuration.
+
+## Demonstration-mode verification
+
+Chromium verified the live demo chip, the About label and scenario downloads
+at 1,360 and 390 CSS pixels. The registered case rendered an 87.7% predicted
+risk and a current 15.0% model prediction with the prescription. A keyboard
+edit changed the risk to 92.1%, cleared the current prescription and follow-up
+and restored the edited risk on reload. The
+[desktop](screenshots/phase17-demonstration-desktop.png) and
+[phone](screenshots/phase17-demonstration-phone.png) captures are local renders.
+The browser receipt and exports are in
+`artifacts/phase17/browser-20261110-v14-demonstration`.
+
+Software-only verification at `bbe8142b99e0c388019af2676d1c9fb2e86ef396`
+passed 739 tests in 316.73 seconds, with 68 warnings and the full marker
+deselected. The fixed subset was excluded from this diagnostic. Coverage was
+91.4413104584666% scoped lines, 91.50834772596431% package lines and
+88.26627651792246% combined. The separate `make check` is registered under
+`artifacts/phase17/fixed-subset-check-20261110-v1`. Its result remains pending.
+Full regression is reserved for the release gate.
+
+## Human tasks for dashboard acceptance
+
+- Provide the published design mock screenshots at 1,360 and 390 px. Save them
+  as `docs/design/dashboard_mock_desktop.png` and `docs/design/dashboard_mock_phone.png`.
+- Arrange two independent, unassisted two-minute classmate sessions. Supply
+  their observations and where they hesitated for `docs/usability_notes.md`.
+
+These tasks remain pending while technical verification and the remaining
+roadmap work proceed.
 
 [Design comparison](design_diff.md) · [Usability notes](usability_notes.md)
