@@ -1,5 +1,42 @@
 # PrescriptXAI Progress
 
+## Phase 16 security-lite gate complete (11 November 2026 IST)
+
+Source `ca3581a50b2a4943b0691b53346cdb267a4c12e4` passed `make security`
+and the recovered `mingw32-make check REUSE_ONLY=0`. The check passed
+783 tests, one full-tier test deselected and 68 warnings in 2,476.27 seconds
+(41 min 16 s). Ruff and mypy over 88 files passed. Both coverage gates passed
+at 91.16548375046695% scoped lines, 91.23277536298899% package lines and
+88.04982757407276% combined, above the retained floors. Strict docs passed
+at closeout.
+
+The original 10 November segment stopped after saving 11,723 completed
+observations and registering 11,727 cases. Its termination cause is unverified,
+with no native exit or traceback. Original database, WAL, logs, manifests
+and result timings remain preserved. Recovery admission verified every saved
+case and scientific output exactly under the same source, inputs and runtime.
+The second segment computed the remaining 3,802 cases. The subset receipt
+reports 15,525 requests across 23 groups, 11,723 reuses, 3,802 recomputations,
+zero exact differences and zero known-difference exceptions. Recovery make
+and wrapper exited zero. Both execution segments are disclosed. Their
+operational test timings provide no serial latency measurement. Receipts and
+preservation are under `artifacts/phase16/fixed-subset-recovery-20261111-v1`.
+The final subset is `artifacts/regression-tiers/check-20261111T140415675674Z-13876`.
+
+The scanner receipt in `artifacts/phase16/security-gate-20261110-v2` reports
+132 audited dependencies, zero known advisories, zero high Bandit findings
+(12 medium, 123 low), 156 SBOM components and 43 security tests in 41.15 s.
+Of 17,535 secret candidates, 17,501 were verified public digest findings and
+34 had dated scoped exceptions. No blocking finding or scanner error remains.
+The failed first scanner is retained.
+
+The spoofing study remains 8 withheld, 6 published original-pass and 2 published
+original-Tier-1-fail out of 16 selected attempts. Its high deployment residual
+requires authenticated upstream telemetry and independent operations review
+before plant use. See the [research safety case](docs/safety_case.md).
+Technical work advances to packaging-lite. The two genuine usability sessions
+and timed dashboard explanation remain pending human tasks.
+
 ## Phase 16 authentication and validation checkpoint (10 November 2026 IST)
 
 Hosted entrypoints require HTTPS authentication and an administrator model

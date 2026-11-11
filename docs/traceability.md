@@ -1,5 +1,16 @@
 # Synopsis traceability - Phase 13 closed
 
+## Phase 16 technical verification (11 November 2026 IST)
+
+The research security-lite gate passed on `ca3581a` with 783 tests,
+both retained coverage floors and an exact 15,525-case fixed subset.
+The interrupted first segment retained 11,723 results and the second computed
+3,802. Original termination cause and native exit remain unverified.
+The selected spoofing study retains two bypasses in 16 attempts, requiring
+authenticated upstream telemetry and independent operations review for deployment.
+See the [gate record](threat_model.md#phase-16-gate) and
+[safety case](safety_case.md). Scientific target statuses retain their prior scope.
+
 ## Phase 17 dashboard technical gate
 
 The [fixed-subset gate](acceptance_report.md#fixed-subset-gate) passed on

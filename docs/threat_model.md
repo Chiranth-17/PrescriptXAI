@@ -3,7 +3,7 @@
 Scope is the advisory API and dashboard, the retained C-MAPSS replay and
 fitted artifacts, and local feedback and exports. The application has no
 machine-control write path. Industrial security principles guide this review.
-This document is a working Phase 16 assessment.
+The research Phase 16 gate passed with the deployment residuals below retained.
 
 ## Data flow and trust boundaries
 
@@ -50,12 +50,28 @@ boundary. B5 transfers labeled information to the person who downloads it.
 | Sensitive error or export disclosure | B2 and B5, information disclosure | High | API validation strips raw inputs from public errors. Unexpected API failures return a generic JSON response. API responses use no-store and deny framing. Scenario reports bind the current input and limits label. | Medium. Downloads leave the application's controls. Test ordinary errors, failure injection and both permitted and denied preflights. |
 | Resource exhaustion through API requests | B1 and B2, denial of service | High | The guard limits streamed bytes before parsing. Machine windows and batches have configured row limits. The Phase 9 HTTP tests send an oversized body with a false length. | High for repeated valid requests or simultaneous solves. Enforce limits at ingress and test login throttling. |
 
-## Phase 16 evidence still to collect
+## Phase 16 gate
 
-- Run the dependency and source scans, produce the SBOM and verify deployment
-  artifact checksums. Record the advisory database and dated exceptions.
-- Run both prescribed Phase 16 gates. The [advisory safety case](safety_case.md) records the spoofing residual.
+At source `ca3581a`, `make security` passed with 132 audited dependencies,
+zero known advisories, zero high Bandit findings, 12 medium and 123 low
+findings, and a 156-component CycloneDX SBOM. The secret scan resolved
+17,535 candidates as 17,501 verified public digests and 34 dated scoped
+exceptions. All 43 security tests passed in 41.15 seconds. The raw scans,
+exceptions and receipt are in `artifacts/phase16/security-gate-20261110-v2`.
 
-High residual risks remain visible until their mitigations and tests are
-verified. The technical dashboard gate is recorded separately in the
-[acceptance report](acceptance_report.md).
+The recovered fixed-subset check passed 783 tests in 2,476.27 seconds,
+with 68 warnings and one full-tier deselection. Make and wrapper native
+exits were zero. All 15,525 cases matched exactly across 23 groups,
+with 11,723 preserved records reused and 3,802 freshly computed. Both
+retained coverage gates passed at 91.16548375046695% scoped lines,
+91.23277536298899% package lines and 88.04982757407276% combined.
+Strict docs passed at closeout.
+
+The original segment stopped without a native exit or traceback. Its cause
+is unverified. Original files, all result timings and the database including
+WAL are preserved with hash and payload checks under
+`artifacts/phase16/fixed-subset-recovery-20261111-v1`.
+The final subset is `artifacts/regression-tiers/check-20261111T140415675674Z-13876`.
+No full regression was run for this closeout. The
+[safety case](safety_case.md) retains the high spoofing deployment residual.
+The [dashboard acceptance report](acceptance_report.md) retains pending human tasks.

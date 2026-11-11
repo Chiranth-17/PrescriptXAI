@@ -1,9 +1,21 @@
 ---
 phase: 13
 status: complete
-current_activity: solo_step4_security_lite
-activity_status: phase16_auth_and_schema_fuzz_verified
+current_activity: solo_step5_packaging_lite
+activity_status: phase16_security_and_recovered_fixed_subset_passed
 ---
+
+## Solo Step 4 research gate passed (11 November 2026 IST)
+
+Source `ca3581a` passed security and the recovered fixed-subset check.
+The check passed 783 tests and both retained coverage gates in 2,476.27 s.
+All 15,525 cases matched exactly, with 11,723 preserved results reused and
+3,802 fresh observations. Original process loss has no native exit and an
+unverified cause. Both segments, payloads and timings remain preserved.
+The selected spoofing study found two bypasses in 16 attempts, retained as
+a high deployment residual. See [progress](../PROGRESS.md) and
+[security verification](../docs/threat_model.md#phase-16-gate).
+Step 5 packaging-lite is next. Human usability and timed walkthrough remain pending.
 
 ## Solo Step 3 technical gate passed (10 November 2026 IST)
 
