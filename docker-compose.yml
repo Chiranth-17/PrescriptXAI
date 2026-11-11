@@ -1,34 +1,46 @@
+x-runtime: &runtime
+  build: .
+  image: ${PSX_IMAGE:-prescriptxai:local}
+  user: "10001:10001"
+  read_only: true
+  tmpfs:
+    - /tmp:rw,nosuid,nodev,size=256m,mode=1777
+  restart: unless-stopped
+  init: true
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  env_file: ${PSX_ENV_FILE:-.env}
+  volumes:
+    - ${PSX_WORKSPACE:-./artifacts/demo}/configs:/work/configs:ro
+    - ${PSX_WORKSPACE:-./artifacts/demo}/data:/work/data:ro
+    - ${PSX_WORKSPACE:-./artifacts/demo}/artifacts:/work/artifacts:ro
+    - ${PSX_WORKSPACE:-./artifacts/demo}/artifacts/machines:/work/artifacts/machines:rw
+    - ${PSX_TLS_DIR:?Set PSX_TLS_DIR to a private certificate directory}:/run/tls:ro
+    - ${PSX_MANIFEST:?Set PSX_MANIFEST to an independently approved JSON manifest}:/run/artifact-manifest.json:ro
+  logging:
+    driver: json-file
+    options: {max-size: 10m, max-file: "3"}
+
 services:
   api:
-    build: .
-    image: prescriptxai:0.2.0
+    <<: *runtime
     environment:
       PRESCRIPTXAI_API__HOST: 0.0.0.0
+      PRESCRIPTXAI_AUTH_ORIGIN: ${PSX_API_ORIGIN:?Set the exact API HTTPS origin}
+      PRESCRIPTXAI_TLS_CERTFILE: /run/tls/tls.crt
+      PRESCRIPTXAI_TLS_KEYFILE: /run/tls/tls.key
+      PRESCRIPTXAI_ARTIFACT_MANIFEST: /run/artifact-manifest.json
+      PSX_HEALTH_URL: https://localhost:8000/auth/session
     ports:
       - "127.0.0.1:8000:8000"
-    volumes:
-      - ${PRESCRIPTXAI_WORKSPACE:-.}/configs:/work/configs:ro
-      - ${PRESCRIPTXAI_WORKSPACE:-.}/artifacts:/work/artifacts:ro
-      - ${PRESCRIPTXAI_WORKSPACE:-.}/data:/work/data:ro
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=8)"]
-      interval: 15s
-      timeout: 10s
-      start_period: 60s
-      retries: 4
   dashboard:
-    image: prescriptxai:0.2.0
-    build: .
+    <<: *runtime
     command: ["prescriptxai", "dashboard", "--host", "0.0.0.0"]
+    environment:
+      PRESCRIPTXAI_AUTH_ORIGIN: ${PSX_DASHBOARD_ORIGIN:?Set the exact dashboard HTTPS origin}
+      PRESCRIPTXAI_TLS_CERTFILE: /run/tls/tls.crt
+      PRESCRIPTXAI_TLS_KEYFILE: /run/tls/tls.key
+      PRESCRIPTXAI_ARTIFACT_MANIFEST: /run/artifact-manifest.json
+      PSX_HEALTH_URL: https://localhost:8501/auth/session
     ports:
       - "127.0.0.1:8501:8501"
-    volumes:
-      - ${PRESCRIPTXAI_WORKSPACE:-.}/configs:/work/configs:ro
-      - ${PRESCRIPTXAI_WORKSPACE:-.}/artifacts:/work/artifacts:ro
-      - ${PRESCRIPTXAI_WORKSPACE:-.}/data:/work/data:ro
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=8)"]
-      interval: 15s
-      timeout: 10s
-      start_period: 60s
-      retries: 4

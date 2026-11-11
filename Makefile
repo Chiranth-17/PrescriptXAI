@@ -1,4 +1,4 @@
-.PHONY: install lint typecheck test cov data train evaluate dashboard api docs clean all-checks check regression-full release-gate security
+.PHONY: install lint typecheck test cov data train evaluate dashboard api docs clean all-checks check regression-full release-gate security verify demo package image
 
 ifeq ($(REUSE_ONLY),1)
 export PSX_QUALITY_REGRESSION_REUSE_ONLY = 1
@@ -55,3 +55,16 @@ release-gate:
 
 security:
 	uv run --locked python scripts/quality/security.py $(if $(SECURITY_OUTPUT),--output "$(SECURITY_OUTPUT)",)
+
+verify:
+	uv run --locked python scripts/packaging/verify.py $(if $(VERIFY_OUTPUT),--output "$(VERIFY_OUTPUT)",) $(if $(filter 1,$(REUSE_ONLY)),--reuse-only,)
+
+DEMO_WORKSPACE ?= artifacts/demo
+demo:
+	uv run --locked python scripts/packaging/demo.py --workspace "$(DEMO_WORKSPACE)" $(if $(DEMO_ARCHIVE),--archive "$(DEMO_ARCHIVE)",) $(if $(filter 1,$(DEMO_SMOKE)),--smoke,)
+
+package:
+	uv run --locked python -m build
+
+image: package
+	docker build -t prescriptxai:local .

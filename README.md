@@ -10,7 +10,32 @@ statistical plausibility, engineering constraints and learned sensor coupling se
 assumptions, not real actuator commands. Static data cannot establish RUL extension, causal
 machine response or deployment safety. Learned coupling is not a physics simulator.
 
-## Quickstart in five commands
+## Local two-machine demo
+
+From a trusted checkout, install Python 3.11–3.13, uv and make. On Windows,
+use `mingw32-make`. Docker Desktop is optional for this local path.
+
+```powershell
+uv sync --all-groups --locked
+mingw32-make demo
+```
+
+Open the printed dashboard URL, normally http://127.0.0.1:8501. The same
+command starts the API at http://127.0.0.1:8000/docs. Both listeners bind
+to loopback. Ctrl+C stops them. Select **Recorded replay** or
+**Synthetic sample CSV** in the machine selector. The generated CSV is
+explicitly synthetic. Both use demonstration limits and display the limits label.
+
+The first run downloads the hash-pinned NASA archive and prepares the existing
+FD001 reproduction, then fits the small synthetic sample. This preparation
+can take 10–20 minutes after dependency installation. Subsequent starts verify
+saved input and model hashes before reusing the workspace. Generated data,
+weights and logs stay under ignored `artifacts/demo`. If preparation stops,
+retain its logs and choose a fresh `DEMO_WORKSPACE`. See
+[packaging and environment settings](docs/packaging.md) for smoke tests,
+authenticated Docker deployment and the clean-clone verification prerequisites.
+
+## Installed-package reproduction
 
 Prerequisites: Python 3.11–3.13, internet access for dependencies/NASA data, a trusted local
 checkout of this project, and an **empty operator directory** as your current directory.
@@ -53,6 +78,10 @@ artifacts. API authentication and deployment boundaries are described in the
 
 ```mermaid
 flowchart LR
+    Spec[Machine YAML] --> Adapter[Registered data adapter]
+    Adapter --> A
+    Spec --> Core[Machine-independent decision interface]
+    Core --> D
     A[Observed raw telemetry] --> B[Engine-disjoint preparation]
     B --> C[Train predictor and calibrate]
     C --> D[Risk gate]
@@ -122,6 +151,21 @@ simulator interface is off by default. See [limitations](docs/limitations.md),
 [defense questions](docs/defense_qa.md) and the conditional [SDG 9 connection](docs/sdg9.md).
 
 ## Development, docs and release artifacts
+
+The package version is defined once in `src/prescriptxai/__init__.py`.
+Wheel and source metadata read it through Hatch. The `api`, `dashboard`
+and `dev` extras support installation from a wheel. For the complete
+packaging gate, run `mingw32-make verify`. It records check, security,
+build, installed-wheel smoke and strict-docs stages under `artifacts/phase18`.
+The fixed scientific subset requires the separately provisioned hash-pinned
+verification assets described in [testing](docs/testing.md). Missing assets fail.
+
+Tested scientific scope is the C-MAPSS replay, with a separate synthetic
+contract/sample demonstration. Windows and container packaging measurements
+are recorded in [the packaging report](docs/packaging.md) as they are verified.
+Designed but not built are plant SQL, OPC UA and MQTT connectors, an approval
+workflow and audit chain, onboarding wizard, drift monitoring, model registry,
+synthetic pump simulator and a second real machine.
 
 ```powershell
 uv sync --all-groups --locked

@@ -1,0 +1,13 @@
+schema_version: 1
+purpose: Portable packaging and local demonstration, no headline scientific evaluation.
+seed: 1729
+cmapss_archive_sha256: c9c5dec12a945a82e8bb4446589d7fb3cc057b5e5d81fa1a12e25ee9912ad3b2
+cmapss_configuration: configs/experiments/phase10-reproduce-v1.yaml
+sample_machine: sample_csv
+sample_units: 18
+sample_steps: 10
+sample_model_estimators: 16
+sample_data_label: Synthetic sample CSV, no physical machine or measured intervention.
+startup_timeout_seconds: 180
+api_port: 8000
+dashboard_port: 8501

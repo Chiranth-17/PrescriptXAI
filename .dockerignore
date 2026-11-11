@@ -18,4 +18,6 @@ coverage.*
 .gemini
 .gsd
 .streamlit/secrets.toml
+.env
+.env.*
 diagnostic_bundle*

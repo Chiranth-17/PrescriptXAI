@@ -2524,7 +2524,6 @@ wheels = [
 
 [[package]]
 name = "prescriptxai"
-version = "0.2.0"
 source = { editable = "." }
 default-groups = ["api", "baselines", "core", "dashboard", "dev"]
 dependencies = [
@@ -2562,6 +2561,20 @@ dashboard = [
     { name = "opentelemetry-api" },
     { name = "plotly" },
     { name = "streamlit" },
+]
+dev = [
+    { name = "build" },
+    { name = "httpx2" },
+    { name = "hypothesis" },
+    { name = "mypy" },
+    { name = "pandas-stubs" },
+    { name = "pip-audit" },
+    { name = "pre-commit" },
+    { name = "psutil" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+    { name = "types-pyyaml" },
 ]
 
 [package.dev-dependencies]
@@ -2602,21 +2615,32 @@ docs = [
 
 [package.metadata]
 requires-dist = [
+    { name = "build", marker = "extra == 'dev'", specifier = "==1.6.1" },
     { name = "certifi", specifier = "==2026.10.23" },
     { name = "dice-ml", marker = "extra == 'baselines'", specifier = "==0.12" },
     { name = "fastapi", marker = "extra == 'api'", specifier = "==0.142.2" },
     { name = "filelock", specifier = "==4.2.4" },
+    { name = "httpx2", marker = "extra == 'dev'", specifier = "==2.13.1" },
+    { name = "hypothesis", marker = "extra == 'dev'", specifier = "==6.168.3" },
     { name = "joblib", specifier = "==1.6.0" },
     { name = "lightgbm", marker = "extra == 'baselines'", specifier = "==4.7.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = "==1.20.2" },
     { name = "numpy", specifier = "==2.4.6" },
     { name = "opentelemetry-api", marker = "extra == 'dashboard'", specifier = "==1.45.1" },
     { name = "pandas", specifier = "==3.0.6" },
+    { name = "pandas-stubs", marker = "extra == 'dev'", specifier = "==3.0.5.260914" },
     { name = "pillow", specifier = "==13.0.0" },
+    { name = "pip-audit", marker = "extra == 'dev'", specifier = "==2.10.1" },
     { name = "plotly", specifier = "==6.9.0" },
     { name = "plotly", marker = "extra == 'dashboard'", specifier = "==6.9.0" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = "==4.6.2" },
+    { name = "psutil", marker = "extra == 'dev'", specifier = "==7.2.2" },
     { name = "pydantic", specifier = "==2.13.5" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = "==9.1.1" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = "==7.1.0" },
     { name = "pyyaml", specifier = "==6.0.3" },
     { name = "raiutils", marker = "extra == 'baselines'", specifier = "==0.4.2" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = "==0.16.10" },
     { name = "scikit-learn", specifier = "==1.9.1" },
     { name = "scipy", marker = "python_full_version < '3.12'", specifier = "==1.17.1" },
     { name = "scipy", marker = "python_full_version >= '3.12'", specifier = "==1.18.1" },
@@ -2626,10 +2650,11 @@ requires-dist = [
     { name = "torch", specifier = "==2.14.1" },
     { name = "tqdm", marker = "extra == 'baselines'", specifier = "==4.70.1" },
     { name = "typer", specifier = "==0.27.2" },
+    { name = "types-pyyaml", marker = "extra == 'dev'", specifier = "==6.0.12.20260906" },
     { name = "uvicorn", marker = "extra == 'api'", specifier = "==0.54.0" },
     { name = "xgboost", specifier = "==3.1.2" },
 ]
-provides-extras = ["api", "dashboard", "baselines"]
+provides-extras = ["api", "baselines", "dashboard", "dev"]
 
 [package.metadata.requires-dev]
 api = [

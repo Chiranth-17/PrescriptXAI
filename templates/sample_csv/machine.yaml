@@ -1,0 +1,74 @@
+schema_version: 1
+machine_id: sample_csv
+limits_status: demonstration
+display_name: Synthetic sample CSV
+unit_word: unit
+unit_plural: units
+data_source: Deterministic generated sample CSV, 18 units with 10 observations each.
+license_note: Project-generated synthetic demonstration data, MIT.
+synthetic: true
+dataset:
+  adapter: tabular
+  path: data/raw/sample.csv
+  unit_column: device
+  time_column: tick
+  remaining_life_column: remaining
+features:
+  - id: feed
+    column: setting
+    label: Feed setting
+    unit: "1"
+    role: controllable
+    bounds: {minimum: 0, maximum: 9.3, source: manual}
+    step_limit: {absolute: 9}
+    why: Scores a synthetic setting on the fitted sample model.
+  - id: ambient
+    column: ambient
+    label: Ambient reference
+    unit: "1"
+    role: frozen
+    bounds: {minimum: 0, maximum: 0.2, source: manual}
+    why: The observed reference stays fixed during search.
+failure:
+  horizon: 2
+  label_source: remaining_life
+  tau_safe: 0.25
+  tau_danger: 0.7
+validation:
+  plausibility: {v1: 5}
+  bound_estimation:
+    lower_percentile: 1
+    upper_percentile: 99
+    margin_fraction: 0.02
+    degenerate_half_width: 0.000001
+  rate_assumption: Synthetic single-step demonstration, no actuator interpretation.
+  intervention_steps: 1
+  coupling_rules:
+    - name: feed_above_reference
+      feature_a: feed
+      feature_b: ambient
+      relation: greater_than
+      tolerance: 0.25
+quality:
+  max_time_gap: 1
+  stuck_window: 3
+  stuck_tolerance: 0
+  stuck_features: [feed]
+delta_min: 0.3
+k_max: 1
+latency_budgets:
+  FAST: &budget
+    ingestion_max_ms: 10
+    inference_max_ms: 15
+    optimization_min_ms: 1200
+    optimization_max_ms: 1800
+    validation_max_ms: 100
+    dashboard_max_ms: 250
+    pipeline_min_ms: 1500
+    pipeline_max_ms: 2200
+  THOROUGH: *budget
+confirmation: {}
+sentences:
+  increase: "Increase {label} by {amount} {unit}. {why}"
+  decrease: "Decrease {label} by {amount} {unit}. {why}"
+  escalation: "Review the synthetic example. No machine intervention is implied."

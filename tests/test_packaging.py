@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.metadata
 import json
 import subprocess
 import tomllib
@@ -121,10 +122,16 @@ def test_dashboard_launcher_validates_inputs_and_forwards_environment(
 
 def test_release_versions_and_explicit_runtime_dependencies_match() -> None:
     """Published metadata installs the direct runtime imports and keeps schema separate."""
-    metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
-    assert metadata["version"] == __version__ == (ROOT / "VERSION").read_text().strip()
+    document = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    metadata = document["project"]
+    assert metadata["dynamic"] == ["version"]
+    assert document["tool"]["hatch"]["version"]["path"] == "src/prescriptxai/__init__.py"
+    assert importlib.metadata.version("prescriptxai") == __version__
     assert metadata["license"] == "MIT"
     assert {"numpy", "pandas", "torch", "xgboost", "joblib", "plotly"}.issubset(
         {dependency.split("==")[0] for dependency in metadata["dependencies"]}
     )
-    assert set(metadata["optional-dependencies"]) == {"api", "dashboard", "baselines"}
+    assert set(metadata["optional-dependencies"]) == {"api", "dashboard", "baselines", "dev"}
+    assert set(metadata["optional-dependencies"]["dev"]) == set(
+        document["dependency-groups"]["dev"]
+    )

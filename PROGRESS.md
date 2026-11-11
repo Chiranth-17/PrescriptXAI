@@ -1,5 +1,23 @@
 # PrescriptXAI Progress
 
+## Phase 18 packaging implementation (11 November 2026 IST)
+
+Hatch reads the package version from the existing `__version__` source.
+The redundant VERSION file was removed and a pinned dev extra added.
+The shared container and Compose configuration include authenticated HTTPS,
+non-root execution, a read-only root, scoped writable feedback storage,
+health probes, restart policy and a secrets template. `make demo` prepares
+FD001 plus a separately labeled synthetic CSV sample in an isolated workspace.
+`make verify` records check, security, build, installed-wheel smoke and strict
+documentation stages. Setup and environment variables are in
+[packaging](docs/packaging.md).
+
+Ten focused packaging tests passed in 5.78 seconds. Ruff and mypy over
+88 package files passed. The demo design is registered in
+`configs/experiments/phase18-packaging-v1.yaml` before preparation.
+Actual demo, built-wheel, container and clean-clone verification remain
+pending. No Phase 18 closure is claimed.
+
 ## Phase 16 security-lite gate complete (11 November 2026 IST)
 
 Source `ca3581a50b2a4943b0691b53346cdb267a4c12e4` passed `make security`
