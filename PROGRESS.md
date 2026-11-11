@@ -1,5 +1,25 @@
 # PrescriptXAI Progress
 
+## Phase 18 clean-clone demo and wheel diagnosis (11 November 2026 IST)
+
+The clean Windows clone at source `56ded65` installed its own locked Python
+3.13 environment, downloaded the registered NASA archive and passed
+`make demo DEMO_SMOKE=1` for FD001 and the synthetic sample CSV in 335.22 s.
+Both API assessments and dashboard HTTP readiness passed. The distribution
+build passed in 11.83 s. These outputs and source labels remain in
+`artifacts/phase18/packaging-preflight-56ded65-v1` and the preserved clone.
+
+The first wheel smoke failed because its no-dependency installation inherited
+system packages that lacked XGBoost. The isolated probe in
+`artifacts/phase18/wheel-smoke-diagnosis-20261111-v1` reproduced the missing
+module. The helper now installs the locked runtime and API/dashboard dependencies
+into a fresh environment and saves each subprocess's stdout, stderr and exit.
+The corrected helper passed on the same built wheel, including installed
+imports, packaged resources, build provenance and CLI, at
+`artifacts/phase18/wheel-smoke-fixed-20261111-v1`. The failed first preflight
+and all demo results are retained. Ten focused tests passed in 11.39 s and
+Ruff passed. Container build and full packaging verification remain pending.
+
 ## Phase 18 packaging implementation (11 November 2026 IST)
 
 Hatch reads the package version from the existing `__version__` source.

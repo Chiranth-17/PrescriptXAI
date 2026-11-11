@@ -43,49 +43,78 @@ def main():
         raise FileNotFoundError("Install uv before running the packaging smoke test")
     environment = dict(os.environ)
     environment.pop("PYTHONPATH", None)
-    with tempfile.TemporaryDirectory(prefix="prescriptxai-wheel-") as name:
-        root = Path(name)
-        venv.create(root / "environment", system_site_packages=True, with_pip=False)
-        python = root / "environment" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
-        subprocess.run(
+    root = Path(tempfile.mkdtemp(prefix="prescriptxai-wheel-"))
+    venv.create(root / "environment", with_pip=False)
+    python = root / "environment" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    receipt = {
+        "passed": False,
+        "wheel": str(wheel),
+        "environment": str(root),
+        "dependencies": "Fresh runtime and API/dashboard dependencies constrained by uv.lock",
+    }
+
+    def run(stage, command):
+        result = subprocess.run(
+            command,
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        for suffix, contents in (
+            ("stdout.log", result.stdout),
+            ("stderr.log", result.stderr),
+            ("exit", str(result.returncode) + "\n"),
+        ):
+            args.output.with_suffix(f".{stage}.{suffix}").write_text(contents, encoding="utf-8")
+        if result.returncode:
+            raise RuntimeError(
+                f"Wheel {stage} exited {result.returncode}. Inspect {args.output.parent}"
+            )
+        return result
+
+    try:
+        constraints = root / "constraints.txt"
+        run(
+            "export",
+            [
+                uv,
+                "export",
+                "--project",
+                str(Path.cwd()),
+                "--locked",
+                "--all-groups",
+                "--all-extras",
+                "--no-emit-project",
+                "--no-hashes",
+                "--format",
+                "requirements-txt",
+                "--output-file",
+                str(constraints),
+            ],
+        )
+        run(
+            "install",
             [
                 uv,
                 "pip",
                 "install",
                 "--python",
                 str(python),
-                "--no-deps",
-                "--reinstall-package",
-                "prescriptxai",
-                str(wheel),
+                "--constraint",
+                str(constraints),
+                str(wheel) + "[api,dashboard]",
             ],
-            cwd=root,
-            env=environment,
-            check=True,
         )
-        result = subprocess.run(
-            [str(python), "-c", CHECK],
-            cwd=root,
-            env=environment,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        subprocess.run(
-            [str(python), "-m", "prescriptxai.cli", "--help"],
-            cwd=root,
-            env=environment,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        receipt = json.loads(result.stdout)
-        receipt["dependencies"] = (
-            "Inherited installed dependencies; wheel import and CLI outside checkout"
-        )
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+        result = run("import", [str(python), "-c", CHECK])
+        run("cli", [str(python), "-m", "prescriptxai.cli", "--help"])
+        receipt.update(json.loads(result.stdout))
         print(json.dumps({key: receipt[key] for key in ("passed", "version")}))
+    finally:
+        args.output.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

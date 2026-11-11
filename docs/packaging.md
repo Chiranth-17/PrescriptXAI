@@ -84,10 +84,10 @@ The host ports bind to loopback in the shipped Compose file.
 `make verify` runs `make check`, the security gate, builds both distributions,
 installs the wheel in a temporary environment outside the checkout, exercises
 its CLI and resources, and builds strict docs. Each stage records command,
-native exit and wall time. The wheel smoke inherits installed dependencies
-and checks that the package imports from the new installation. It does not
-claim a fresh dependency installation. The independent clean-clone checks
-must establish that separately.
+native exit and wall time. The wheel smoke installs runtime and API/dashboard
+dependencies into a fresh environment, constrained by the committed uv lockfile,
+and checks that the package imports from that installation. Each subprocess
+retains stdout, stderr and its native exit. The environment is retained for diagnosis.
 
 The full regression is reserved for the release gate. `make verify` runs
 the fixed 15,525-case subset with the existing exact-key policy. To verify
@@ -99,6 +99,15 @@ own demonstration fits and does not replace those scientific assets.
 
 ## Current verification status
 
-Phase 18 implementation is in progress. Clean-clone Windows/Linux demo and
-verification runs, container health/scoring and measured image size are pending.
-No Phase 18 closure or release tag is claimed by this document.
+The clean Windows clone at `56ded65` passed the two-machine demo and HTTP
+smoke in 335.22 seconds. It downloaded the pinned real archive and fitted its
+own models. Its distribution build passed in 11.83 seconds. The first wheel
+smoke failed because inherited system packages lacked XGBoost. A diagnostic
+reproduced that cause. The corrected helper passed on the same wheel after
+installing the locked runtime and API/dashboard dependencies in a fresh
+environment, with imports, resources, provenance and CLI verified. Receipts
+are under `artifacts/phase18/packaging-preflight-56ded65-v1` and
+`artifacts/phase18/wheel-smoke-fixed-20261111-v1`.
+
+Linux demo, complete Windows/Linux verification, container health/scoring and
+measured image size remain pending. Phase 18 closure and release are pending.
