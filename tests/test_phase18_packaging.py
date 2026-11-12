@@ -138,6 +138,9 @@ def test_registered_tracked_inputs_keep_exact_bytes_on_checkout(
         if name in tracked
     }
     assert selected
+    baseline = json.loads(Path("tests/regression/cmapss_baseline.json").read_text(encoding="utf-8"))
+    assert selected["configs/experiments/phase12-baseline-v1.yaml"] == baseline["design_sha256"]
+    assert selected["tests/regression/cmapss_baseline.parquet"] == baseline["fixture_sha256"]
     subprocess.run(
         [
             "git",

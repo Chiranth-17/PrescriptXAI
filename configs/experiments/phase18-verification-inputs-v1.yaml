@@ -22,3 +22,9 @@ required_inputs:
   configs/experiments/phase12-test-tiers-v1.yaml:
     sha256: b189a38c16532c5ad7cc75913113b0d47eaaca1d8f64f97c6667085c2335b021
     provenance: Exact registered CRLF policy bytes bound by the immutable subset manifest.
+  configs/experiments/phase12-baseline-v1.yaml:
+    sha256: be26bf6ce264db835d62a193bec19b4f7c7e5818a1e57a7c7097a9c4119a7978
+    provenance: Original registered CRLF design bytes bound by the immutable baseline manifest.
+  tests/regression/cmapss_baseline.parquet:
+    sha256: 382bbf1fac0f0a467e252772b8a47c94e9460bc9bb02196d312e6ac401cb3f15
+    provenance: Independently approved complete 32116-case fixture; validate before deserialization.

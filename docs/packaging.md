@@ -1,5 +1,35 @@
 # Packaging and local operation
 
+## Phase 18 Linux design-pin repair (12 November 2026 IST)
+
+The second Linux attempt, `linux-clean-edfcc31-v1`, passed its own locked
+setup, all 107 asset provisions and quality-input checks, then exited 1 at
+policy preflight at 20:20:22 IST. The baseline manifest separately pins the
+original 4,113-byte CRLF design, while Git supplied its 4,034-byte LF version.
+This design had not been in the provisioning inventory. No demo, cache access
+or scientific solve started. The container, volume, original logs and failure
+receipt remain preserved; the earlier Linux attempt is also unchanged.
+
+A read-only inspection checked all 101 direct baseline/subset hash pins in the
+retained Linux clone: only the design bytes differed. Every audited dependency
+version matched. A separate read-only genuine-fixture diagnostic validated all
+32,116 serialized cases/observations and the fixed 15,525 IDs in 26.37 seconds,
+with zero fits, solves or cache access. It did not waive the failed raw-byte
+preflight or count as a regression pass. Evidence is in
+`artifacts/phase18/linux-design-repair-v1` and the second attempt's preservation.
+
+The exact historical design bytes are now committed with a file-local no-text
+conversion attribute. The design and independently approved Parquet fixture are
+both mandatory in the packaging provisioning inventory (109 unique registered
+assets). The checkout tests require those two bindings to equal the immutable
+baseline manifest and export every tracked registered input under both Git
+line-ending modes. Existing fixture, subset, design values, scientific hashes,
+thresholds, tolerances and known differences are unchanged. Reviewed whole-file
+public-digest pins were updated for the inventory and expanded test file; no new
+secret exception was added. Linux own-clone demo/verify remain pending, and the
+Windows pass retains its original source and evidence.
+
+
 ## Phase 18 Linux taxonomy-byte repair (12 November 2026 IST)
 
 The first Linux own-clone sequence at `3762636` passed system setup, clone

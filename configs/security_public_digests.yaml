@@ -42,5 +42,5 @@ files:
   tests/regression/subset_ids.json: 2d1d8b5b7deace1db610277b5ff61e5f8af126e415531cf5b6be27f4d5564e81
   tests/regression/subset_manifest.json: 331266daefcc66713f360af9b2826d64280d5af10f6372b40ed13967193d1cec
   configs/experiments/phase18-packaging-v1.yaml: 26d4799f8d63ec4a64334139d47ca7c00d07691344ea24c0d3ee95859d31c75b
-  tests/test_phase18_packaging.py: e67638810135d0bc01e4242788d7e65f16cba03b79db5099d2d2a7ea6c9531e0
-  configs/experiments/phase18-verification-inputs-v1.yaml: 0f9fca545dca5f10041908cec0715d934cd737346203a7ec4e122c4135b042d0
+  tests/test_phase18_packaging.py: be5a2ffb00802a2a0ac6837318266a9a57ade9e704e65f0adb9e835cbe8d0c1a
+  configs/experiments/phase18-verification-inputs-v1.yaml: ccc78a622e18ddd09654175e07bdef3217fd6792df1135e5a3010d16dd99afb7

@@ -2,8 +2,18 @@
 phase: 13
 status: complete
 current_activity: solo_step5_packaging_lite
-activity_status: phase18_linux_taxonomy_byte_repair
+activity_status: phase18_linux_design_pin_repair
 ---
+
+## Linux design preflight failure preserved (12 November 2026 IST)
+
+The edfcc31 Linux clone passed provisioning but stopped on the separately pinned
+baseline design CRLF/LF bytes, before demo or solves. Its original container,
+volume and logs remain intact. The exact historical design bytes and approved
+fixture are now mandatory among 109 registered inputs; normalized design values
+and all scientific policies are unchanged. Read-only Linux fixture/schema/subset
+validation passed all 32,116 saved cases / 15,525 IDs, with zero solves. This is
+not make verify. New Linux demo/verify and Phase 18 closure remain pending.
 
 ## Linux provisioning failure preserved (12 November 2026 IST)
 
