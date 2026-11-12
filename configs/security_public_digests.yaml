@@ -42,4 +42,4 @@ files:
   tests/regression/subset_ids.json: 2d1d8b5b7deace1db610277b5ff61e5f8af126e415531cf5b6be27f4d5564e81
   tests/regression/subset_manifest.json: 331266daefcc66713f360af9b2826d64280d5af10f6372b40ed13967193d1cec
   configs/experiments/phase18-packaging-v1.yaml: 26d4799f8d63ec4a64334139d47ca7c00d07691344ea24c0d3ee95859d31c75b
-  tests/test_phase18_packaging.py: f2920910443fd155b74f8a16505b58b7c523b9f25ed7bcc03b463c77e21fe05b
+  tests/test_phase18_packaging.py: e67638810135d0bc01e4242788d7e65f16cba03b79db5099d2d2a7ea6c9531e0

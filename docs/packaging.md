@@ -58,6 +58,10 @@ loopback mode. Authenticated serving remains the default for the CLI.
 
 `make image` builds the wheel and the shared API/dashboard image. Compose
 uses the same image for both roles. Copy `.env.example` to ignored `.env`.
+The builder constrains transitive runtime dependencies with
+`runtime-requirements.txt`, exported from `uv.lock` for the API/dashboard
+extras. A test checks that this export matches the lockfile. The explicit
+CPU Torch wheel retains its actual local version in runtime provenance.
 Supply distinct password verifiers, the exact origins, a certificate directory
 containing `tls.crt` and `tls.key`, and an independently reviewed artifact
 manifest. The certificate must cover `localhost` for the local HTTPS health

@@ -31,6 +31,11 @@ a trusted workspace. It preserves normalized checkout bytes before restoring
 an identical canonical Git blob and optionally copies an authenticated cache
 for normal exact-key revalidation. See [packaging](docs/packaging.md).
 
+The container now reads a runtime dependency export constrained by the uv
+lockfile. Its additional export-consistency test passed in 4.34 seconds.
+The next registered sequence must test a freshly fitted version-2 sample
+inside the new image before starting the full fixed-subset packaging gate.
+
 ## Phase 18 clean-clone demo and wheel diagnosis (11 November 2026 IST)
 
 The clean Windows clone at source `56ded65` installed its own locked Python

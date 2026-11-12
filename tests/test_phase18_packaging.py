@@ -2,6 +2,7 @@
 
 import json
 import os
+import subprocess
 from copy import deepcopy
 from pathlib import Path
 
@@ -98,3 +99,28 @@ def test_v2_spec_rejects_a_dataset_outside_its_workspace(location: str) -> None:
     document["dataset"]["path"] = location
     with pytest.raises(ValueError, match="workspace-relative"):
         MachineSpec.model_validate(document)
+
+
+def test_container_runtime_constraints_match_the_lockfile() -> None:
+    """The container must use the lockfile's transitive versions for the runtime extras."""
+    exported = subprocess.check_output(
+        [
+            "uv",
+            "export",
+            "--locked",
+            "--no-default-groups",
+            "--extra",
+            "api",
+            "--extra",
+            "dashboard",
+            "--no-emit-project",
+            "--no-hashes",
+            "--format",
+            "requirements-txt",
+        ],
+        text=True,
+    )
+    checked = Path("runtime-requirements.txt").read_text(encoding="utf-8")
+    assert [line for line in exported.splitlines() if line and not line.startswith("#")] == [
+        line for line in checked.splitlines() if line and not line.startswith("#")
+    ]
