@@ -44,4 +44,4 @@ files:
   configs/experiments/phase18-packaging-v1.yaml: 26d4799f8d63ec4a64334139d47ca7c00d07691344ea24c0d3ee95859d31c75b
   tests/test_phase18_packaging.py: be5a2ffb00802a2a0ac6837318266a9a57ade9e704e65f0adb9e835cbe8d0c1a
   configs/experiments/phase18-verification-inputs-v1.yaml: ccc78a622e18ddd09654175e07bdef3217fd6792df1135e5a3010d16dd99afb7
-  configs/experiments/phase18-crossscore-v1.yaml: 856fc4139e38c0ba034f11c63482b44b3d9eb697380d055be3f6f44e06419e70
+  configs/experiments/phase18-crossscore-v1.yaml: 9b5da29742630b884c1367c996d53ec25d14ba44f7973bcf90d4da841262ab5e

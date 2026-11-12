@@ -42,6 +42,7 @@ def main():
     os.chdir(root)
     sys.path.insert(0, str(root))
 
+    import pandas as pd
     import pyarrow.parquet as pq
     import torch
     import yaml
@@ -136,9 +137,9 @@ def main():
             runtime = PrescriptXAI.from_config(case.config)
             runtime.config = case.config.model_copy(deep=True)
             initial, observed = runtime._normalize(case.state, case.context, complete=True)
-            risk = runtime.assess(initial, case.context, case.mode).risk
             with runtime.engine.predictor_lock:
                 bundle = runtime._bundle(observed)
+                risk = float(bundle.predict_risk(pd.DataFrame([initial]))[0])
                 stream.write(
                     json.dumps(
                         {"case_id": key, "group": case.group, "vertex": "original", "risk": risk},

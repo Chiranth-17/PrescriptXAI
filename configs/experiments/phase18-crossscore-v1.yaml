@@ -2,7 +2,7 @@ schema_version: 1
 purpose: 'Diagnosis only: isolate fixed-vector scoring/validation differences from changed saved search
   candidates across Windows and Linux. No gate-policy change or headline/generalization estimate.'
 origin_source: 909986c0556a9888e6e43cbbd4f363b9eaf3a5ac
-script_canonical_sha256: 7449f9d92bc894a4c96652cd7c9e2834945889049199cd950e8a6fd46297bbfc
+script_canonical_sha256: 26a7cfadeb5999e3ac3c988fdcb029695e0e814b04f47218ab3c9af6b1a5cfb5
 linux_database: artifacts/phase18/linux-verify-recovery-909986c-v1/preserved-tier/recomputed/records.sqlite3
 linux_database_sha256: f722e773952c6726c2512ec49bf55af847e332c58eca0b3d385d53c63c49954c
 linux_manifest: artifacts/phase18/linux-verify-recovery-909986c-v1/preserved-tier/manifest.json
@@ -24,7 +24,7 @@ no_candidate_propagation_or_projection: true
 model_input_policy: Use the exact raw saved vectors; preserve the genuine observed LSTM history from each
   saved QueryCase. Load the original hash-pinned fitted assets only.
 production_functions:
-- PrescriptXAI.assess
+- ModelBundle.predict_risk(pd.DataFrame([normalized_original])) as used by recommend
 - PrescriptXAI._normalize
 - PrescriptXAI._bundle
 - validate_candidate(...).to_schema()
@@ -40,3 +40,5 @@ unchanged: No baseline/known-diff/threshold/bound/rate/sparsity/model/population
   of these differences. Preserve all original rows, counters, failures and timings.
 scope: Research diagnostic on reused benchmark states; max E3 proxy assumptions, no physical benefit or
   new generalization claim.
+preexecution_note: Before any score call, match the exact production recommend pre-alert frame rather
+  than the public assess normalization path. No diagnostic outputs existed at this revision.
