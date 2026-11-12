@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 import yaml
 from scripts.packaging.demo import DESIGN, file_hash, prepare
-from scripts.packaging.provision import safe_path
+from scripts.packaging.provision import registered_assets, safe_path
 
 from prescriptxai.machine_spec import MachineSpec, load_machine_spec, migrate_machine_spec_v1
 
@@ -124,3 +124,31 @@ def test_container_runtime_constraints_match_the_lockfile() -> None:
     assert [line for line in exported.splitlines() if line and not line.startswith("#")] == [
         line for line in checked.splitlines() if line and not line.startswith("#")
     ]
+
+
+@pytest.mark.parametrize("autocrlf", ["true", "false"])
+def test_registered_tracked_inputs_keep_exact_bytes_on_checkout(
+    tmp_path: Path, autocrlf: str
+) -> None:
+    """Actual Git checkout filters preserve registered bytes under both platform defaults."""
+    tracked = set(subprocess.check_output(["git", "ls-files", "-z"], text=True).split("\0"))
+    selected = {
+        name: expected
+        for name, expected in registered_assets(Path.cwd()).items()
+        if name in tracked
+    }
+    assert selected
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            f"core.autocrlf={autocrlf}",
+            "checkout-index",
+            f"--prefix={tmp_path.as_posix()}/",
+            "--",
+            *selected,
+        ],
+        check=True,
+    )
+    for name, expected in selected.items():
+        assert file_hash(tmp_path / name) == expected, (autocrlf, name)

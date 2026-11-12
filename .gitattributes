@@ -12,3 +12,5 @@ tests/regression/known_diffs.json -text
 configs/experiments/phase12-test-tiers-v1.yaml -text
 configs/experiments/phase12-test-cache-origin-v1.json -text
 configs/experiments/phase17-dashboard-v1.yaml -text
+configs/features.yaml -text whitespace=cr-at-eol
+src/prescriptxai/resources/features.yaml -text whitespace=cr-at-eol

@@ -1,5 +1,31 @@
 # Packaging and local operation
 
+## Phase 18 Linux taxonomy-byte repair (12 November 2026 IST)
+
+The first Linux own-clone sequence at `3762636` passed system setup, clone
+and its own locked Python 3.13 environment, then exited 1 at asset provisioning
+at 18:12:40 IST. No demo, cache access or scientific solve started. Its container,
+volume and 45 pinned original host files remain preserved under
+`artifacts/phase18/linux-clean-3762636-v1/failure-preservation.json`.
+
+The registered feature taxonomy and packaged duplicate contain 8,959 historical
+bytes with mixed line endings. Their Git blobs contained the 8,607-byte LF
+normalization. Windows could restore the registered bytes under its Git filter;
+Linux correctly rejected that canonical-blob comparison with its default
+`core.autocrlf` unset. Inventory inspection found exactly these two tracked
+registered inputs differed from their Git blobs; normalized content is identical.
+
+Both files now preserve their exact registered bytes at checkout using file-local
+Git attributes. The CR-at-EOL whitespace attribute recognizes their retained line
+endings while other whitespace checks remain active. No YAML value, taxonomy
+mapping, threshold, fixture, input hash or historical result changes. The new
+actual-Git checkout tests export every tracked registered input under both
+`core.autocrlf=true` and `false` and require the original SHA-256 bytes. Packaging,
+workspace initialization and taxonomy tests pass; Linux verification is still
+pending. The passed Windows source remains `e97fbdb`, with its original receipts.
+No Phase 18 closure or release is claimed.
+
+
 ## Latest measured packaging verification (12 November 2026 IST)
 
 The clean Windows v5 clone at `e97fbdb` passed `make verify REUSE_ONLY=0`:

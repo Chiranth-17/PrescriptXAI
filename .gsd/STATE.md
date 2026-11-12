@@ -2,8 +2,18 @@
 phase: 13
 status: complete
 current_activity: solo_step5_packaging_lite
-activity_status: phase18_windows_verified_linux_pending
+activity_status: phase18_linux_taxonomy_byte_repair
 ---
+
+## Linux provisioning failure preserved (12 November 2026 IST)
+
+The first Linux clone at 3762636 installed its own locked environment but
+stopped at taxonomy-byte provisioning before any demo or regression. Its
+container/volume and original logs are preserved. Both taxonomy files now
+preserve the exact historical mixed-line-ending bytes in Git; normalized YAML
+content is identical. Actual checkout tests cover both Git line-ending modes.
+New Linux demo and verify remain pending. Windows e97fbdb verification is still
+passed; no Phase 18 closure. See PROGRESS.md for the disclosed attempt.
 
 ## Phase 18 Windows verified; Linux next (12 November 2026 IST)
 
