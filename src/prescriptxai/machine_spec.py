@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 from hashlib import sha256
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Literal
 
 import yaml
@@ -185,7 +185,7 @@ class SentenceTemplates(SpecSection):
 class MachineSpec(SpecSection):
     """Complete configuration boundary for one registered machine."""
 
-    schema_version: Literal[1]
+    schema_version: Literal[1, 2]
     machine_id: str = Field(pattern=MACHINE_ID_PATTERN)
     display_name: str = Field(min_length=1)
     unit_word: str = Field(min_length=1)
@@ -204,6 +204,23 @@ class MachineSpec(SpecSection):
     confirmation: LimitConfirmation = Field(default_factory=LimitConfirmation)
     limits_status: LimitsStatus | None = None
     sentences: SentenceTemplates
+
+    @model_validator(mode="before")
+    @classmethod
+    def portable_dataset_path(cls, value: object) -> object:
+        """Version 2 uses a workspace-relative dataset path on both operating systems."""
+        if not isinstance(value, dict) or value.get("schema_version") != 2:
+            return value
+        dataset = value.get("dataset")
+        if not isinstance(dataset, dict) or "path" not in dataset:
+            return value
+        if not isinstance(dataset["path"], (str, Path)):
+            return value
+        path = str(dataset["path"]).replace("\\", "/")
+        relative = PurePosixPath(path)
+        if relative.is_absolute() or PureWindowsPath(path).drive or ".." in relative.parts:
+            raise ValueError("version 2 dataset path must be workspace-relative")
+        return {**value, "dataset": {**dataset, "path": relative.as_posix()}}
 
     @model_validator(mode="after")
     def check_references(self) -> MachineSpec:
@@ -283,6 +300,8 @@ class MachineSpec(SpecSection):
         import json
 
         spec = self.model_dump(mode="json")
+        if self.schema_version == 2:
+            spec["dataset"]["path"] = self.dataset.path.as_posix()
         if self.limits_status is None:
             spec.pop("limits_status")  # Preserve identity for historical specs without this field.
         payload = json.dumps(spec, sort_keys=True, separators=(",", ":"))
@@ -301,3 +320,14 @@ def load_machine_spec(path: Path) -> MachineSpec:
     except yaml.YAMLError as error:
         raise ValueError(f"invalid machine YAML in {path}") from error
     return MachineSpec.model_validate(document)
+
+
+def migrate_machine_spec_v1(document: dict[str, object]) -> dict[str, object]:
+    """Return a separate v2 spec without changing legacy specs, fits or recorded results."""
+    original = MachineSpec.model_validate(document)
+    if original.schema_version != 1:
+        raise ValueError("machine spec migration requires schema version 1")
+    migrated = MachineSpec.model_validate({**document, "schema_version": 2})
+    result = migrated.model_dump(mode="json")
+    result["dataset"]["path"] = migrated.dataset.path.as_posix()
+    return result

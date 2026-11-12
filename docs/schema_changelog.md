@@ -1,5 +1,22 @@
 # Public schema history
 
+## Machine specification 2 — portable dataset identity
+
+Phase 18 adds machine-spec version 2. Dataset paths are workspace-relative
+and use forward slashes for the spec fingerprint on Windows and Linux.
+Version 1 retains its historical native-path fingerprint and remains readable.
+The registered FD001 spec stays version 1. New-machine and synthetic sample
+templates use version 2. Recourse and validation result schemas retain their
+existing versions and fields.
+
+`migrate_machine_spec_v1(document)` returns a separate version-2 spec. It
+preserves the policy fields and accepts only relative dataset locations.
+The original spec, fitted directories, feedback rows and result hashes stay
+as saved. A new version-2 fit belongs in its new spec namespace. Migration
+does not approve, relabel or copy legacy fitted results into that namespace.
+Operators should retain their original version-1 records and fit the new
+namespace through the usual train-only pipeline before using it.
+
 ## Phase 17 machine limits status
 
 The version 1 machine spec accepts an optional `limits_status`. A confirmed

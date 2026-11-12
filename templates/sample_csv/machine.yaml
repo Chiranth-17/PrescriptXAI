@@ -1,4 +1,4 @@
-schema_version: 1
+schema_version: 2
 machine_id: sample_csv
 limits_status: demonstration
 display_name: Synthetic sample CSV

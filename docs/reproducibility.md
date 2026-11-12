@@ -65,7 +65,13 @@ byte identity is made. Rebuilding a modified source archive marks its source ide
 
 ## Docker
 
-From the checkout, with an already initialized/reproduced operator workspace:
+The following commands describe the historical Phase 10 container workflow.
+Current authenticated deployment uses the [packaging instructions](packaging.md#authenticated-docker),
+including the `.env` template, exact HTTPS origins, certificate pair and an
+independently established artifact manifest. The current Compose variable
+is `PSX_WORKSPACE`. Historical HTTP endpoints below retain their original scope.
+
+From the historical checkout, with an already initialized/reproduced operator workspace:
 
 ```powershell
 uv sync --all-groups --locked

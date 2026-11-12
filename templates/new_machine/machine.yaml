@@ -1,5 +1,5 @@
 # Copy to configs/machines/my_machine/machine.yaml and replace the example policies.
-schema_version: 1
+schema_version: 2
 machine_id: my_machine
 display_name: Example synthetic machine
 unit_word: unit

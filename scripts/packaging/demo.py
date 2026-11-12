@@ -68,6 +68,10 @@ def prepare(workspace: Path, archive: Path | None = None) -> dict:
     sample = workspace / "configs/machines" / design["sample_machine"]
     sample.mkdir(parents=True)
     shutil.copy2(ROOT / "templates/sample_csv/machine.yaml", sample / "machine.yaml")
+    from prescriptxai.machine_spec import load_machine_spec
+
+    if load_machine_spec(sample / "machine.yaml").schema_version != design["sample_machine_schema"]:
+        raise ValueError("Sample machine schema differs from the registered packaging design")
     with (workspace / "data/raw/sample.csv").open("x", newline="", encoding="utf-8") as stream:
         writer = csv.writer(stream)
         writer.writerow(("device", "tick", "setting", "ambient", "remaining"))

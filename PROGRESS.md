@@ -1,5 +1,36 @@
 # PrescriptXAI Progress
 
+## Phase 18 main gate and container portability repair (12 November 2026 IST)
+
+At `8cc7ba7`, the image build passed and `make verify` completed in 782.08 s.
+Its check passed 786 tests, one full-tier deselection and 68 warnings, with
+15,525 exact-key reuses and zero recomputations or differences. Both coverage
+gates retained 91.16548375046695% scoped lines, 91.23277536298899% package
+lines and 88.04982757407276% combined. Security, build, fresh installed-wheel
+smoke and strict docs all exited zero. Image size was 964,648,175 bytes.
+Receipts are in `artifacts/phase18/container-8cc7ba7-v1`.
+
+The subsequent authenticated Compose smoke loaded and scored FD001 but
+returned 503 for the Windows-created synthetic sample fit. Direct diagnosis
+showed a platform-dependent version-1 spec hash from its dataset path.
+The original failed run, manifests and five fitted files remain preserved in
+`artifacts/phase18/container-smoke-20261112-v1` and the original demo clone.
+
+Machine-spec version 2 now normalizes relative dataset paths before hashing.
+Version 1 keeps its historical identity and readable records. Migration is
+explicit and creates a separate spec and fit namespace. FD001 stays version 1.
+The new-machine and sample templates use version 2. No numeric policy or
+public result field was changed. Nineteen focused tests passed in 129.31 s,
+including both saved v1 identities, portable v2 identity, migration and path
+rejection. Ruff and mypy over 88 files passed. Real container scoring of the
+new sample, clean-clone Windows/Linux verification and Phase 18 closure remain
+pending. The old passing gate retains its original source label.
+
+The new provisioning command copies only registered verification inputs from
+a trusted workspace. It preserves normalized checkout bytes before restoring
+an identical canonical Git blob and optionally copies an authenticated cache
+for normal exact-key revalidation. See [packaging](docs/packaging.md).
+
 ## Phase 18 clean-clone demo and wheel diagnosis (11 November 2026 IST)
 
 The clean Windows clone at source `56ded65` installed its own locked Python

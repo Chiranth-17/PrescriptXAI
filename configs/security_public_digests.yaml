@@ -1,5 +1,6 @@
-reason: Hexadecimal case IDs, source commits and SHA checksums in the reviewed public research inventories. Each complete
-  normalized-text snapshot is pinned, so additions require review.
+reason: Hexadecimal case IDs, source commits and SHA checksums in the reviewed public
+  research inventories. Each complete normalized-text snapshot is pinned, so additions
+  require review.
 expires: '2027-02-28'
 files:
   configs/experiments/phase11-audit.yaml: fc1ea34597768a647f59517e9675a32bd12dddd65240fb73143da88939a560e2
@@ -40,4 +41,5 @@ files:
   tests/regression/cmapss_baseline.json: acea653c78cf43bf72fcbd711706d869e560a7cec5ecad408b8b96c00920a193
   tests/regression/subset_ids.json: 2d1d8b5b7deace1db610277b5ff61e5f8af126e415531cf5b6be27f4d5564e81
   tests/regression/subset_manifest.json: 331266daefcc66713f360af9b2826d64280d5af10f6372b40ed13967193d1cec
-  configs/experiments/phase18-packaging-v1.yaml: 074ad94df9d38cbd8780431295e0c9eb0711420402e9f3d9f924d2c53b52ba4e
+  configs/experiments/phase18-packaging-v1.yaml: 26d4799f8d63ec4a64334139d47ca7c00d07691344ea24c0d3ee95859d31c75b
+  tests/test_phase18_packaging.py: f2920910443fd155b74f8a16505b58b7c523b9f25ed7bcc03b463c77e21fe05b

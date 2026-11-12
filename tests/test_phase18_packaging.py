@@ -1,12 +1,16 @@
 """Packaging failure paths preserve owned workspaces and reject stale demo files."""
 
 import json
+import os
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
+import yaml
 from scripts.packaging.demo import DESIGN, file_hash, prepare
+from scripts.packaging.provision import safe_path
 
-from prescriptxai.machine_spec import load_machine_spec
+from prescriptxai.machine_spec import MachineSpec, load_machine_spec, migrate_machine_spec_v1
 
 
 def test_sample_spec_has_explicit_demonstration_and_synthetic_provenance() -> None:
@@ -15,6 +19,7 @@ def test_sample_spec_has_explicit_demonstration_and_synthetic_provenance() -> No
     assert spec.synthetic and spec.limits_status == "demonstration"
     assert not spec.confirmation.confirmed
     assert spec.machine_id == "sample_csv"
+    assert spec.schema_version == 2
 
 
 def test_demo_refuses_an_incomplete_workspace_without_changing_it(tmp_path: Path) -> None:
@@ -42,3 +47,54 @@ def test_demo_rechecks_all_saved_files_before_reuse(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="Demo files changed"):
         prepare(tmp_path)
     assert fitted.read_bytes() == b"changed-file"
+
+
+@pytest.mark.parametrize("name", ["../outside", "/absolute", "C:/other", "data\\other"])
+def test_verification_assets_cannot_escape_the_selected_workspace(
+    tmp_path: Path, name: str
+) -> None:
+    """A supplied asset name must stay portable and inside the trusted roots."""
+    with pytest.raises(ValueError, match="portable and relative"):
+        safe_path(tmp_path, name)
+
+
+def test_v2_spec_identity_is_portable_and_v1_keeps_its_saved_identity() -> None:
+    """Separator spelling shares v2 identity, while actual saved v1 identities remain readable."""
+    document = yaml.safe_load(Path("templates/sample_csv/machine.yaml").read_text(encoding="utf-8"))
+    first = MachineSpec.model_validate(document)
+    windows = deepcopy(document)
+    windows["dataset"]["path"] = "data\\raw\\sample.csv"
+    second = MachineSpec.model_validate(windows)
+    assert first.spec_hash == second.spec_hash
+    assert second.dataset.path.as_posix() == "data/raw/sample.csv"
+    legacy = MachineSpec.model_validate({**document, "schema_version": 1})
+    saved_hash = {
+        "nt": "e43329662532cafbb127e50955bf97e74c091e45e781e78209009a7f40d53d61",
+        "posix": "f969d5b37179036169419b215b0aa09a8aacf6d8e0bf0d6bc730ea082bc02caa",
+    }
+    assert legacy.spec_hash == saved_hash[os.name]
+
+
+def test_explicit_spec_migration_preserves_policies_and_the_original_document() -> None:
+    """A new version gets a new identity without mutating a legacy spec or its policies."""
+    document = yaml.safe_load(Path("templates/sample_csv/machine.yaml").read_text(encoding="utf-8"))
+    document["schema_version"] = 1
+    original = deepcopy(document)
+    migrated = migrate_machine_spec_v1(document)
+    assert document == original
+    assert migrated["schema_version"] == 2
+    before = MachineSpec.model_validate(document).model_dump(mode="json")
+    before["schema_version"] = 2
+    before["dataset"]["path"] = "data/raw/sample.csv"
+    assert migrated == before
+    with pytest.raises(ValueError, match="requires schema version 1"):
+        migrate_machine_spec_v1(migrated)
+
+
+@pytest.mark.parametrize("location", ["/absolute.csv", "C:\\data\\input.csv", "../escape.csv"])
+def test_v2_spec_rejects_a_dataset_outside_its_workspace(location: str) -> None:
+    """Portable specs cannot silently change root directories across operating systems."""
+    document = yaml.safe_load(Path("templates/sample_csv/machine.yaml").read_text(encoding="utf-8"))
+    document["dataset"]["path"] = location
+    with pytest.raises(ValueError, match="workspace-relative"):
+        MachineSpec.model_validate(document)

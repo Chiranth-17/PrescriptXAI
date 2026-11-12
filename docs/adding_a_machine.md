@@ -61,3 +61,12 @@ to reproduce historical benchmark results.
 The Phase 13 contract constructs a toy spec and a synthetic CSV in its test
 directory. It fits and scores with the shared numerical runtime and runs
 actual bounded FAST and THOROUGH searches offline. It uses demonstration limits and labels recommendations from its public named routes.
+## Portable machine specifications
+
+New-machine templates use schema version 2. Store the dataset path relative
+to the operator workspace. Version 2 normalizes separators for a stable spec
+hash on Windows and Linux. Version 1 remains readable with its original
+native-path hash. The registered historical FD001 spec remains version 1.
+See [schema migration](schema_changelog.md#machine-specification-2-portable-dataset-identity)
+before migrating an existing machine. Migration creates a new spec identity
+and requires a fit in that namespace. Retain original fitted files and rows.

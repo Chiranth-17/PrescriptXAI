@@ -97,6 +97,20 @@ plus the quality input manifest. These remain outside Git. The preflight
 checks their hashes and missing assets fail. `make demo` instead prepares its
 own demonstration fits and does not replace those scientific assets.
 
+From the fresh clone, provision those bytes from a trusted workspace using
+`uv run python scripts/packaging/provision.py --source C:/path/to/trusted-workspace`.
+Use a Linux path on Linux. The source must have the same registered asset
+inventory. Every file is checked against the committed hashes before copying.
+Existing differing untracked files cause failure. A tracked file with normalized
+checkout line endings can be restored only when its canonical Git blob equals
+HEAD, and its original bytes are preserved. The resulting tree must stay clean.
+
+Optionally append `--reuse-cache` to copy a local authenticated cache snapshot.
+The gate still checks each original signature, full execution context and
+scientific output and reports reused versus recomputed counts. A different
+platform or numerical build requires fresh solves. Cache copying grants no
+compatibility by itself. Both provisioning and verification preserve receipts.
+
 ## Current verification status
 
 The clean Windows clone at `56ded65` passed the two-machine demo and HTTP
@@ -109,5 +123,17 @@ environment, with imports, resources, provenance and CLI verified. Receipts
 are under `artifacts/phase18/packaging-preflight-56ded65-v1` and
 `artifacts/phase18/wheel-smoke-fixed-20261111-v1`.
 
-Linux demo, complete Windows/Linux verification, container health/scoring and
-measured image size remain pending. Phase 18 closure and release are pending.
+At `8cc7ba7`, the main `make verify` passed in 782.08 seconds, including
+786 tests and all 15,525 fixed cases reused with exact comparison. Both
+coverage gates and security passed. The image built at 964,648,175 bytes.
+Its authenticated Compose smoke passed FD001 scoring but failed loading the
+Windows-created sample because version-1 path serialization produced a
+different spec hash on Linux. The failed run is preserved in
+`artifacts/phase18/container-smoke-20261112-v1`.
+
+Machine-spec version 2 gives new relative-path specs a portable identity.
+Version 1 keeps its original identity. The sample template now uses version 2,
+with a separate new fit required. See [schema history](schema_changelog.md).
+Nineteen local packaging and portability tests pass. Real scoring of the new
+sample in the container, Linux demo and complete clean-clone Windows/Linux
+verification remain pending. Phase 18 closure and release are pending.

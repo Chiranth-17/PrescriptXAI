@@ -160,6 +160,19 @@ build, installed-wheel smoke and strict-docs stages under `artifacts/phase18`.
 The fixed scientific subset requires the separately provisioned hash-pinned
 verification assets described in [testing](docs/testing.md). Missing assets fail.
 
+For a fresh verification checkout, supply the retained assets from a trusted
+workspace before running the gate. Generated demonstration fits serve their
+own demo and do not replace the registered benchmark assets.
+
+```powershell
+uv run python scripts/packaging/provision.py --source C:/path/to/trusted-workspace --reuse-cache
+mingw32-make verify
+```
+
+Use `make` and the appropriate filesystem path on Linux. The optional cache
+is revalidated on exact keys, with reused and recomputed counts in the receipt.
+See [provisioning details](docs/packaging.md#packaging-verification).
+
 Tested scientific scope is the C-MAPSS replay, with a separate synthetic
 contract/sample demonstration. Windows and container packaging measurements
 are recorded in [the packaging report](docs/packaging.md) as they are verified.
