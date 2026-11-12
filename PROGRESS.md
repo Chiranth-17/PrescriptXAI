@@ -1,5 +1,22 @@
 # PrescriptXAI Progress
 
+## Phase 18 fixed-state gradient probe preregistered (13 November 2026 IST)
+
+The previous cross-score localizes selected FD002 verdict differences upstream
+of final validation. The new design `phase18-gradient-probe-v1.yaml` fixes the
+same 53 cases and both saved candidates, pins all prior native controls, original
+production code and assets, and registers 159 gradient rows per runtime. It
+captures the first dense production objective before any SciPy invocation and
+evaluates fixed points only. It compares raw scaling, surrogate derivatives,
+lifted features, feasibility derivatives and full objective gradients; fresh-graph
+repeats must match exactly. No search iterations, refits, new regression or
+accepted differences are authorized. Original evidence stays immutable.
+
+Three diagnostic-harness tests passed in 7.68 s; they verify zero SciPy calls,
+failure propagation and restoration of the callback. Ruff and diff checks pass.
+This registration is not a diagnostic result, software coverage gate or closure.
+Phase 18 remains open; the Windows demonstration stays available for evaluation.
+
 ## Phase 18 fixed-vector cross-runtime diagnostic completed (13 November 2026 IST)
 
 After preregistration at `10d6390`, both native saved-state controls reproduced

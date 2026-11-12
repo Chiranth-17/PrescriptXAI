@@ -5,6 +5,15 @@ current_activity: solo_step5_packaging_lite
 activity_status: phase18_linux_search_portability_open
 ---
 
+## First-objective gradient diagnostic registered (13 November 2026 IST)
+
+No gate is running. The new committed design phase18-gradient-probe-v1 evaluates
+the same53fixedcases and159points/runtime, with exact previous native controls.
+It intercepts the first production dense objective before SciPy, without solver
+iterations/refits, and compares scaled inputs/surrogate/feasibility/full gradients.
+Three interception/cleanup harness tests passed. This is preregistration, not a
+result or numerical repair. Production and regression policies remain unchanged.
+
 ## Fixed-vector controls pass; search portability unresolved (13 November 2026 IST)
 
 No gate is running. The preregistered 53-case cross-score wrote159rows/runtime,

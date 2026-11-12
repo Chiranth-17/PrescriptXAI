@@ -1,0 +1,41 @@
+schema_version: 1
+purpose: 'Diagnostic only: localize fixed-state surrogate, coupling, feasibility and objective gradient
+  differences across the original Windows/Linux environments. No optimizer iterations, refits, new regression
+  or accepted differences.'
+origin_source: 909986c0556a9888e6e43cbbd4f363b9eaf3a5ac
+script_canonical_sha256: 5a869ae5df806e247108a19fe1c5079bfa56eae3a654414c17833df69da68aab
+crossscore_config: configs/experiments/phase18-crossscore-v1.yaml
+crossscore_config_sha256: 9b5da29742630b884c1367c996d53ec25d14ba44f7973bcf90d4da841262ab5e
+controls:
+  windows:
+    path: artifacts/phase18/crossscore-20261113-v1/windows/scores.jsonl
+    sha256: 5c3cd551b33e0689ffa84a9d130ab2d1333bf61a54536cb8fd6944d53bb3e511
+  linux:
+    path: artifacts/phase18/crossscore-20261113-v1/linux/result/scores.jsonl
+    sha256: 17b297c37ed834e44074b30bb0b00520960ed207a7c3ad3c125f951820d3be5e
+selection: 'Same registered 53 FD002/XGBoost cases: every Tier2/triage flip and maximum final-risk-delta
+  case. Original and both saved candidate vectors; no new population selection.'
+expected_cases: 53
+expected_rows_per_runtime: 159
+seed: 1729
+cpu_threads: 1
+no_optimizer_iterations: true
+no_refits: true
+capture: Temporarily intercept the first production minimize callback and immediately raise a private
+  sentinel before calling SciPy. Retain the original dense objective, bounds and first start. Restore
+  callback unconditionally; require full control support.
+points: At each original and both exact saved vectors score the unchanged scaled input and its surrogate
+  gradient. At dense first start and the two saved control deltas clipped to unchanged production bounds,
+  evaluate the captured original objective/gradient/components and separate risk/feasibility derivatives.
+  Candidate-derived dense lifts are diagnostics, never replacement advice or new saved candidates.
+controls_policy: First reproduce all previous native original risks and full candidate validation reports
+  exactly; fail causal interpretation on any difference. Repeat each full objective value/gradient with
+  a fresh graph and require exact equality. Zero SciPy calls/iterations or new solver queries.
+comparison: Compare all fields exactly, also list numeric maxima and values outside existing abs1e-6.
+  Do not accept discrepancies or alter regression policy. Direct surrogate native equality is separately
+  reported; distinguish fixed raw vectors from propagated dense lifts.
+unchanged: All original 90 production/helper code hashes, 97 science assets, fixture and design pinned.
+  No science/config/model/tolerance/baseline/known-diff mutation. Original volumes read-only. New output
+  location, preserve all errors/partials.
+scope: Selected fixed-state diagnostic, not generalization, release approval or latency evidence; at most
+  E3 proxy assumptions.

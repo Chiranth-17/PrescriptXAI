@@ -106,6 +106,24 @@ retained discrepancies have been investigated. Any repair affecting numerical
 execution needs preregistration and appropriate verification. Linux remains
 partially verified, and Phase 19 release gates remain unmet.
 
+## Registered first-objective gradient probe
+
+`configs/experiments/phase18-gradient-probe-v1.yaml` registers the next diagnostic,
+using the same 53 cases and both saved candidates. Before collecting gradients,
+each runtime must reproduce all 159 earlier native scoring/validation controls
+exactly. A diagnostic-only interception captures the first dense production
+objective and raises before SciPy executes. It restores the original callback
+even on an error; harness tests verify that no numerical solver is invoked.
+
+The probe records unchanged raw-vector scaling, surrogate risk and derivatives,
+and the captured objective's full and separate risk/feasibility gradients.
+Candidate-derived dense points use the existing production bounds and lift;
+they are diagnostic evaluations, not newly solved recommendations. Every full
+objective is evaluated twice with fresh graphs and must agree exactly. This
+does not execute optimizer iterations, refit models, alter historical data or
+authorize another regression. A difference could further localize the numerical
+path; it would not alone establish a particular kernel cause or a valid repair.
+
 For the academic Phase 2 evaluation, use the established Windows demonstration
 and the supplied report with its original snapshot. The public benchmark and
 synthetic sample are advisory demonstrations, not evidence of physical efficacy,
