@@ -43,3 +43,4 @@ files:
   tests/regression/subset_manifest.json: 331266daefcc66713f360af9b2826d64280d5af10f6372b40ed13967193d1cec
   configs/experiments/phase18-packaging-v1.yaml: 26d4799f8d63ec4a64334139d47ca7c00d07691344ea24c0d3ee95859d31c75b
   tests/test_phase18_packaging.py: e67638810135d0bc01e4242788d7e65f16cba03b79db5099d2d2a7ea6c9531e0
+  configs/experiments/phase18-verification-inputs-v1.yaml: 1ba0cceef37ad5b3fe7c98c28cc7a085345b9e61a5cd6a15e90e2a45c67a29ee

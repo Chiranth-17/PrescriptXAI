@@ -280,7 +280,7 @@ def test_spec_validation_rejects_ambiguous_inputs(toy: DatasetAdapter) -> None:
     """Bad versions, partial confirmation and wrong column mappings fail at load."""
     document = toy.spec.model_dump(mode="python")
     with pytest.raises(ValueError, match="schema_version"):
-        MachineSpec.model_validate({**document, "schema_version": 2})
+        MachineSpec.model_validate({**document, "schema_version": 999})
     with pytest.raises(ValueError, match="limits confirmation"):
         MachineSpec.model_validate({**document, "confirmation": {"role": "reviewer"}})
     with pytest.raises(ValueError, match="collides"):

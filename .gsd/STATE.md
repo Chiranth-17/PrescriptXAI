@@ -2,8 +2,18 @@
 phase: 13
 status: complete
 current_activity: solo_step5_packaging_lite
-activity_status: phase18_portable_spec_fix_verified_locally
+activity_status: phase18_clean_clone_input_repair
 ---
+
+## Phase 18 clean-clone repair (12 November 2026 IST)
+
+The `9482823` Windows sequence stopped at its software-only diagnostic,
+before demo or scientific regression. Five genuine historical evidence files
+were missing from provisioning and one test still rejected supported schema 2.
+Exact asset hashes are now registered and mandatory. All eight previously
+failed/erroring tests pass. Preserve the failed clone and receipts under
+`artifacts/phase18/windows-portable-9482823-v1`. New clean-clone software,
+container and Windows/Linux verification remain pending. No Phase 18 tag.
 
 ## Solo Step 4 research gate passed (11 November 2026 IST)
 

@@ -8,6 +8,7 @@ import sqlite3
 import subprocess
 from contextlib import closing
 from datetime import UTC, datetime
+from itertools import chain
 from pathlib import Path
 
 import yaml
@@ -38,7 +39,12 @@ def registered_assets(root):
         )
     )["supplemental_required_inputs"]
     assets = dict(science)
-    for name, value in quality.items():
+    dashboard = yaml.safe_load(
+        (root / "configs/experiments/phase18-verification-inputs-v1.yaml").read_text(
+            encoding="utf-8"
+        )
+    )["required_inputs"]
+    for name, value in chain(quality.items(), dashboard.items()):
         if name in assets and assets[name] != value["sha256"]:
             raise ValueError(f"Conflicting registered asset: {name}")
         assets[name] = value["sha256"]

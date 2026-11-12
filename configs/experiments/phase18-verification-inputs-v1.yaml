@@ -1,0 +1,18 @@
+schema_version: 1
+purpose: Required genuine saved evidence for legacy loader and dashboard verification.
+required_inputs:
+  artifacts/phase5/FD001-mahalanobis.joblib:
+    sha256: b8ba25fc73a8286d787dc43824e0de6a5516e18e0735cd50b53435dddf2a076d
+    provenance: Exact retained FD001 v1 validator bytes, also used by the audited Phase 7 profile.
+  artifacts/phase5/FD001-coupling.joblib:
+    sha256: d5ed51ef500eed32331e4769d860fddd4d795fedc02c19cab338af9e798f18e4
+    provenance: Exact retained FD001 coupling bytes, also used by the audited Phase 7 profile.
+  artifacts/experiments/phase7-20261020T102540Z/records.jsonl:
+    sha256: d4ffef41bccc178c7021320b318f225c75fdcf140e87a2bc34749cb18a5ab51f
+    provenance: Immutable full Phase 7 records pinned by the Phase 17 scenario-selection registration.
+  artifacts/experiments/phase7-20261020T102540Z/summary.json:
+    sha256: e0de87c06b418be761142d259ccad8870b81232217b6d75303ee7a91957082fe
+    provenance: Published historical summary with whole-engine intervals and original run labels.
+  artifacts/experiments/phase7-20261020T102540Z/latency.json:
+    sha256: e0915d1178942d8804dd0b2b60c7c529e783757325faa504e46bb8cc0a55b78f
+    provenance: Retained historical serial timing scope, separate from current test durations.

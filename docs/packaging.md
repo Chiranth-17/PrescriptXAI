@@ -97,7 +97,10 @@ The full regression is reserved for the release gate. `make verify` runs
 the fixed 15,525-case subset with the existing exact-key policy. To verify
 from a fresh clone, provision the required scientific fitted files, genuine
 inputs and registered evidence referenced by the regression fixture manifest,
-plus the quality input manifest. These remain outside Git. The preflight
+plus the quality input manifests. The Phase 18 verification inventory also
+requires the genuine legacy validators and complete saved Phase 7 records,
+summary and serial-latency evidence used by dashboard tests. These remain
+outside Git, pinned in `configs/experiments/phase18-verification-inputs-v1.yaml`. The preflight
 checks their hashes and missing assets fail. `make demo` instead prepares its
 own demonstration fits and does not replace those scientific assets.
 
@@ -141,3 +144,11 @@ with a separate new fit required. See [schema history](schema_changelog.md).
 Nineteen local packaging and portability tests pass. Real scoring of the new
 sample in the container, Linux demo and complete clean-clone Windows/Linux
 verification remain pending. Phase 18 closure and release are pending.
+
+The subsequent clean Windows clone at `9482823` stopped before demo or
+regression because its software diagnostic lacked those five historical assets
+and retained a test rejecting newly supported schema 2. The failed clone and
+all outputs are preserved under `artifacts/phase18/windows-portable-9482823-v1`.
+The exact archived inputs are now mandatory and the test uses unsupported
+version 999. All eight previously failed/erroring tests pass in 43.80 seconds.
+This focused pass does not establish clean-clone or scientific verification.
