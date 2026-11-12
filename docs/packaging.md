@@ -1,5 +1,31 @@
 # Packaging and local operation
 
+## Phase 18 fixed-vector cross-runtime diagnostic completed (13 November 2026 IST)
+
+After preregistration at `10d6390`, both native saved-state controls reproduced
+exactly for all 53 selected FD002/XGBoost cases. Each runtime wrote 159 scoring/
+validation rows, with no refit or solver query. Across 106 identical candidate
+vectors, true risk, all numeric validation fields and all four verdicts match
+exactly. One formatted surrogate-warning string differs in its final displayed
+digit; both full reports remain preserved. This is a diagnostic success, not a
+regression pass. Windows/Linux operational study times were 10.62/11.49 seconds;
+these are not latency-budget measurements.
+
+The 52 Tier 2 and 14 triage changes in the failed Linux subset follow different
+search-produced candidates upstream of final validation. The responsible
+numerical operation/process behavior is still unresolved. The selected study
+covers five FD002 protocol/population groups; it does not explain all FD001
+numeric-only discrepancies. All 1,547 out-of-envelope records remain unaccepted
+(828 FD001, 719 FD002), and the known-difference list is unchanged. No new search,
+training, science threshold or coverage-floor change was made.
+
+Evidence: `artifacts/phase18/crossscore-20261113-v1/comparison.json`, native
+complete/score files and `docs/linux_portability.md`. No gate is currently
+running. Further complete regressions are held pending a concrete portability
+repair and registration. Windows verification stays passed at its original
+source; Linux verification, Phase 18 closure and release remain unmet.
+
+
 ## Linux verification gap (13 November 2026 IST)
 
 Linux now passes the clean-clone two-machine API/dashboard HTTP demo, with its

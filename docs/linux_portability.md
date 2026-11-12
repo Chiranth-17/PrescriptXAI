@@ -72,7 +72,7 @@ reports differing numerical explanation text. The scope and causes of these
 software failures need individual repair and tests. Their existence is not
 permission to weaken hashes, skip tests, change the golden or lower coverage.
 
-## Next controlled diagnostic
+## Preregistered fixed-vector diagnostic
 
 The committed design `configs/experiments/phase18-crossscore-v1.yaml` registers
 53 cases: every Tier 2/triage flip plus the largest final-risk-delta case. It
@@ -81,7 +81,24 @@ candidate on both runtimes, 159 rows per runtime. It uses only original pinned
 fitted artifacts, genuine LSTM history and the production prediction/validation
 functions. There is no search, propagation, projection, refit or new intervention
 population. Each runtime's own saved-state control must reproduce exactly before
-interpreting cross-runtime differences. That study is pending at registration.
+interpreting cross-runtime differences. The study ran after committing its design and implementation (`10d6390`).
+Both runtime controls passed exactly: 53 cases and 159 rows each, with no fit,
+optimization or new solver query. All selected cases are FD002/XGBoost, across
+five protocol/population groups; this does not cover FD001 numerical-only gaps.
+For all 106 fixed-candidate pairs, true risk, numeric validation fields and the
+four pass/fail verdicts match exactly across the runtimes. One pair retains a
+formatted surrogate-warning text difference (`0.129527` versus `0.129526`).
+Nothing was silently rounded or accepted. The full raw reports and comparison
+are preserved in `artifacts/phase18/crossscore-20261113-v1`.
+
+For these selected cases, the original Tier 2/triage changes therefore follow
+different candidate vectors produced upstream of final validation. This localizes
+the failure; it does not identify the numerical operation or establish a repair.
+Surrogate computation, gradient/optimizer execution, deterministic ordering and
+process-start context still require controlled investigation. All 1,547 original
+out-of-envelope cases remain unaccepted. The complete per-dataset diagnostic
+counts are 828 FD001 and 719 FD002; these are fixed-subset discrepancy counts,
+not scientific population success rates or new engine intervals.
 
 No threshold, bound, rate, model, tolerance, baseline, case population or
 known-difference list is changed. Do not launch another regression until the

@@ -2,8 +2,18 @@
 phase: 13
 status: complete
 current_activity: solo_step5_packaging_lite
-activity_status: phase18_linux_native_parity_diagnosis
+activity_status: phase18_linux_search_portability_open
 ---
+
+## Fixed-vector controls pass; search portability unresolved (13 November 2026 IST)
+
+No gate is running. The preregistered 53-case cross-score wrote159rows/runtime,
+with exact native controls and no solver calls/fits. All106fixed-candidate pairs
+agree exactly on true risk/numeric checks/verdicts; one warning text differs.
+Thus selectedFD002verdictchanges follow different upstream search candidates.
+No specific numerical cause or repair is yet established. FullLinuxverify remains
+failed; no difference is accepted and no new regression until a concrete repair.
+Windowsgate remains passed at originalsource. See docs/linux_portability.md.
 
 ## Linux demo passed; full verification failed (13 November 2026 IST)
 
