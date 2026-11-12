@@ -1,5 +1,15 @@
 # Synopsis traceability - Phase 13 closed
 
+## Current solo packaging evidence (12 November 2026 IST)
+
+Windows clean-clone `make verify` passed at `e97fbdb`: 796 tests, all 15,525
+fixed-subset cases freshly computed and exactly matched, both unchanged coverage
+gates, security, build, installed-wheel smoke and strict docs. The receipt is
+`artifacts/phase18/windows-verify-e97fbdb-v1/closeout-verification.json`;
+[packaging](packaging.md) and `PROGRESS.md` retain full measured scopes.
+Linux clean-clone demo/verify, Phase 18 closure and Phase 19 release remain
+pending. Dated historical rows below retain their original evidence scope.
+
 ## Phase 16 technical verification (11 November 2026 IST)
 
 The research security-lite gate passed on `ca3581a` with 783 tests,

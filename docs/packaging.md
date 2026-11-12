@@ -1,5 +1,20 @@
 # Packaging and local operation
 
+## Latest measured packaging verification (12 November 2026 IST)
+
+The clean Windows v5 clone at `e97fbdb` passed `make verify REUSE_ONLY=0`:
+796 tests, 68 warnings, one release-only full marker deselected, and all
+15,525 fixed cases freshly recomputed with exact comparison (zero reused).
+`make check` took 8,805.0479676 s and complete verification 9,009.8640601 s.
+Coverage was 91.1674275598621% scoped / 91.23454511902565% package lines /
+88.0527867471571% combined, above unchanged floors. Security, distribution build,
+fresh installed-wheel smoke and strict docs passed. See the source-bound
+receipts and `closeout-verification.json` in
+`artifacts/phase18/windows-verify-e97fbdb-v1` and the detailed `PROGRESS.md`.
+The earlier fresh demo and authenticated two-machine container smoke remain
+scoped to `4bb89a6`, with image inspect size 974,593,999 bytes. Linux own-clone
+demo and complete verify are still pending; Phase 18 is not closed.
+
 The canonical version is `prescriptxai.__version__`. Hatch reads that source
 for wheel and source distributions. Optional extras are `api`, `dashboard`,
 `dev` and the retained `baselines`. The repository uses the committed uv lockfile.

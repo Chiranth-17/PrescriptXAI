@@ -1,5 +1,17 @@
 # State of the project - Phase 13 closed
 
+## Latest solo roadmap position (12 November 2026 IST)
+
+Phases 12, 13, 17 technical and 16 research security-lite are closed. Phase 18
+Windows clean-clone verify now passes at `e97fbdb`: 796 tests and 15,525 fresh
+exact fixed-subset cases, both coverage gates, security, build and wheel smoke.
+Linux own-clone demo/verify and Phase 19 independent audit/release remain pending.
+See [packaging](packaging.md) and `PROGRESS.md`. Dated sections below
+are historical. The newer limits-status rule permits permanently labeled
+demonstration prescriptions; FD001 and the synthetic sample use demonstration
+limits without invented engineer confirmation. Design references have arrived;
+two participant sessions and a timed walkthrough remain pending human tasks.
+
 ## Phase 17 dashboard in progress (10 November 2026 IST)
 
 The [local acceptance report](acceptance_report.md) records the machine-scoped

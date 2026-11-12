@@ -1,5 +1,39 @@
 # PrescriptXAI Progress
 
+## Phase 18 Windows clean-clone verification passed (12 November 2026 IST)
+
+At committed source `e97fbdb`, the new Windows clone passed `make verify
+REUSE_ONLY=0` with native exit 0 at 17:53:56 IST. All 796 selected tests passed
+(68 warnings; one release-only full marker deselected). The mandatory fixed
+subset freshly computed all 15,525 cases across 23 represented groups, with
+zero reuses, no accepted differences and no exact-float differences. The full
+32,116-case regression was not run. `make check` took 8,805.0479676 seconds;
+complete `make verify` took 9,009.8640601 seconds. These quality timings are not
+serial-latency evidence.
+
+Both configured coverage gates passed: 91.1674275598621% scoped lines,
+91.23454511902565% package lines and 88.0527867471571% combined lines/branches.
+Every retained floor is unchanged. Security passed with 132 audited dependencies,
+zero known advisories, zero high Bandit findings (15 medium, 146 low), zero
+blocking secret findings and 156 SBOM components. Build, fresh installed-wheel
+smoke and strict docs passed; Ruff and mypy checked 88 source files. This does
+not remove the previously reported high sensor-spoofing deployment residual.
+
+Original logs, all fresh query payloads/timings and source-bound receipts are in
+`artifacts/phase18/windows-verify-e97fbdb-v1` and its recorded v5 clone.
+`closeout-verification.json` checks the native exits, empty comparison lists,
+15,525 actual SQLite records/integrity and receipt hashes. All prior failed and
+paused attempts remain preserved. The working two-machine demo and authenticated
+Linux-container scoring retain their measured source `4bb89a6`; they are not
+relabeled as new runs. Linux own-clone `make demo` and `make verify` remain the
+next packaging requirements. No Phase 18 closure or release tag is claimed.
+
+The academic Phase 2 progress report is a separate, delivered 51-page snapshot
+under ignored `output/pdf`, with a 9-page genuine dashboard gallery and teammate
+bundle. Its 16:27 IST snapshot is retained unchanged. Two real participant
+sessions and a timed walkthrough remain pending human tasks, not blockers for
+technical continuation.
+
 ## Phase 18 current demo and policy-byte guard (12 November 2026 IST)
 
 The user-paused `4bb89a6` attempt was explicitly recovered in the same clean

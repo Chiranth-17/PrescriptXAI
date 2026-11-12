@@ -2,8 +2,18 @@
 phase: 13
 status: complete
 current_activity: solo_step5_packaging_lite
-activity_status: phase18_exact_subset_policy_checkout_repair
+activity_status: phase18_windows_verified_linux_pending
 ---
+
+## Phase 18 Windows verified; Linux next (12 November 2026 IST)
+
+The e97fbdb v5 clean clone passed make verify with native 0: 796 tests,
+15,525 fresh exact fixed-subset observations, zero reuse/differences, both
+retained coverage gates, security, build, installed-wheel smoke and strict docs.
+Verify took 9,009.8640601 s. Full regression was not run. Original receipts and
+all earlier attempts remain preserved. Linux own-clone demo and make verify
+remain pending; no Phase 18 tag or final release. The separate academic Phase 2
+report/gallery/team bundle is delivered and keeps its original snapshot.
 
 ## Phase 18 demo passed, policy bytes pending verification
 
