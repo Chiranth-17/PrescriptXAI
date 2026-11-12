@@ -124,6 +124,48 @@ does not execute optimizer iterations, refit models, alter historical data or
 authorize another regression. A difference could further localize the numerical
 path; it would not alone establish a particular kernel cause or a valid repair.
 
+The registered probe ran at `38a8c9e`. Both runtimes completed 53 cases and
+159 rows, reproduced all prior native scoring/full-validation controls exactly,
+and passed every fresh-graph repeat. All fixed raw/scaled inputs, feature and
+control orders, tensor strides, bounds, decisions and solver options match.
+There were zero SciPy iterations, new solver queries or fits. Operational
+Windows/Linux times were 23.6510266999976/17.77520129000186 seconds, not latency
+benchmarks. Original stopped containers and volumes remain unchanged.
+
+| Fixed-state diagnostic field | Differing rows of 159 | Maximum absolute delta |
+| --- | ---: | ---: |
+| Direct surrogate risk | 80 | 5.364418029785156e-7 |
+| Direct surrogate gradient | 159 | 9.059906005859375e-6 |
+| Dense objective value | 130 | 5.9655678112946475e-6 |
+| Dense full gradient | 136 | 0.0002199386049852592 |
+| Dense risk-component value or gradient | 159 | 1.6710791203244924e-5 |
+| Dense feasibility-component value or gradient | 116 | 2.2560016077477485e-9 |
+| Dense lifted features | 107 | 2.1496693314304594e-14 |
+
+In particular, all 53 original first-start objective gradients differ before
+any optimizer iteration. Direct surrogate gradients also differ for all 53
+cases on identical fixed scaled tensors. This establishes a numerical-path
+difference before SciPy, separate from final true-estimator validation. It does
+not identify a particular linear-algebra kernel, prove that it explains every
+later search divergence, or establish a portable repair. FD001 discrepancies
+and independent legacy identity/software failures remain outside this probe.
+
+An additional diagnostic control is deliberately reported separately: direct
+surrogate values on saved candidates exactly match the historical recorded
+surrogate in only 34/106 Windows and 26/106 Linux evaluations. Maximum native
+differences are 8.642673492431641e-7 and 7.152557373046875e-7 respectively.
+The direct-gradient probe uses a newly constructed contiguous float32 tensor;
+its call layout is not asserted to reproduce every archived surrogate call.
+These values are retained, not accepted or used to replace saved results. The
+earlier original-risk/full-validation controls do reproduce exactly on each
+native runtime. Do not describe this as exact reproduction of historical
+gradients, which were not recorded.
+
+Receipts, native exits, all raw gradients, exact field differences and maxima
+are under `artifacts/phase18/gradient-probe-20261113-v1`. The original failed
+subset remains failed, all 1,547 out-of-envelope observations remain unaccepted,
+and no regression, numerical policy or production math was changed.
+
 For the academic Phase 2 evaluation, use the established Windows demonstration
 and the supplied report with its original snapshot. The public benchmark and
 synthetic sample are advisory demonstrations, not evidence of physical efficacy,

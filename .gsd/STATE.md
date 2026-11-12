@@ -5,14 +5,17 @@ current_activity: solo_step5_packaging_lite
 activity_status: phase18_linux_search_portability_open
 ---
 
-## First-objective gradient diagnostic registered (13 November 2026 IST)
+## First-objective gradients differ before SciPy (13 November 2026 IST)
 
-No gate is running. The new committed design phase18-gradient-probe-v1 evaluates
-the same53fixedcases and159points/runtime, with exact previous native controls.
-It intercepts the first production dense objective before SciPy, without solver
-iterations/refits, and compares scaled inputs/surrogate/feasibility/full gradients.
-Three interception/cleanup harness tests passed. This is preregistration, not a
-result or numerical repair. Production and regression policies remain unchanged.
+No gate is running. Registered gradient-probe-v1 at38a8c9e completed53cases and
+159rows/runtime, exact prior scoring/validation controls and fresh-graph repeats.
+Fixed inputs/orders/strides/bounds/decisions match. All53first-start gradients
+differ before SciPy; maxfullgradientdelta0.0002199386049852592. Direct surrogate
+gradients differ on all159fixedpoints. Zero optimizeriterations/queries/fits.
+This localizes a numerical path, not a specific kernel or validated repair.
+Direct surrogate native agreement with archived values is only34/106Windows,
+26/106Linux; calllayout notassertedhistorical. Allpartials/rawvalues retained.
+Linuxverify remains failed andPhase18open; no policy/math/known-diff change.
 
 ## Fixed-vector controls pass; search portability unresolved (13 November 2026 IST)
 

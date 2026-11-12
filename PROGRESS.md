@@ -1,5 +1,31 @@
 # PrescriptXAI Progress
 
+## Phase 18 pre-solver numerical difference measured (13 November 2026 IST)
+
+The gradient probe registered at `38a8c9e` completed with native 0 on Windows and
+Linux: 53 selected FD002/XGBoost cases and 159 rows per runtime. Previous native
+scoring/full-validation controls and repeated fresh-graph objective evaluations
+were exact. Fixed inputs, orders, strides, bounds, decisions and solver options
+match across runtimes. There were zero SciPy iterations, new solver queries or
+fits. Windows/Linux operational times were 23.65/17.78 s, not latency evidence.
+
+All 53 first-start full gradients differ before any SciPy call. Across all 159
+fixed points, direct surrogate gradients differ (max 9.059906005859375e-6);
+full dense gradients differ in 136 rows (max 0.0002199386049852592). Direct
+surrogate values differ in 80 rows (max 5.364418029785156e-7). Feasibility and
+lift discrepancies are separately retained. This establishes a pre-solver
+numerical difference, not its particular kernel cause or a complete explanation
+and repair of all Linux discrepancies. No numerical behavior was changed.
+
+The probe's newly constructed direct surrogate calls match archived surrogate
+values exactly for only 34/106 Windows and 26/106 Linux candidates. Their native
+max deltas, tensor layout and raw values remain disclosed; only previous risk/
+full-validation controls are claimed exact. No historical gradient was stored
+to claim exact gradient replay. See `docs/linux_portability.md` and
+`artifacts/phase18/gradient-probe-20261113-v1/comparison.json` plus raw rows/exits.
+Linux verification and Phase 18 remain open; all original differences remain
+unaccepted. The academic report and Windows demonstration remain intact.
+
 ## Phase 18 fixed-state gradient probe preregistered (13 November 2026 IST)
 
 The previous cross-score localizes selected FD002 verdict differences upstream
