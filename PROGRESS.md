@@ -1,5 +1,21 @@
 # PrescriptXAI Progress
 
+## Phase 18 fixed-operation trace registered (13 November 2026 IST)
+
+`phase18-operator-probe-v1.yaml` selects the three cases attaining the largest
+direct surrogate-gradient, full-objective-value and direct surrogate-value
+differences in the completed gradient probe. Their original and both saved
+candidate points give nine fixed points per runtime. It traces existing MLP
+layers, probability sigmoid and fitted calibration; native full scores/gradients
+must exactly match the earlier probe, and a manual sequential chain must match
+the production function exactly. Linux also replays the exact Windows layer
+operands, retaining native and common-input outputs, all-ones VJPs and parameter
+hashes. No replacement numerical math, solving or fitting is allowed. This is
+registered before execution, not a result or regression pass.
+
+Five interception/operation-harness tests passed in 7.39 s; Ruff passed. Original
+science source and policies remain unchanged. Phase 18 stays open.
+
 ## Phase 18 pre-solver numerical difference measured (13 November 2026 IST)
 
 The gradient probe registered at `38a8c9e` completed with native 0 on Windows and

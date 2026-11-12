@@ -5,6 +5,14 @@ current_activity: solo_step5_packaging_lite
 activity_status: phase18_linux_search_portability_open
 ---
 
+## Fixed-operation trace registered (13 November 2026 IST)
+
+No gate is running. New operator-probe-v1 registers3cases/9fixedpoints selected
+by the completed gradient-probe maxima. It traces original MLP/calibration
+operations with exact native score/gradient controls and common Windows operands.
+No solving/fitting/math changes. Five diagnostic harness tests passed7.39s.
+This registration is not a result; Phase18 remains open.
+
 ## First-objective gradients differ before SciPy (13 November 2026 IST)
 
 No gate is running. Registered gradient-probe-v1 at38a8c9e completed53cases and

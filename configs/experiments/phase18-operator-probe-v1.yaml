@@ -1,0 +1,44 @@
+schema_version: 1
+purpose: Localize fixed surrogate operation differences, not regression acceptance or a numerical repair.
+origin_source: 909986c0556a9888e6e43cbbd4f363b9eaf3a5ac
+script_canonical_sha256: 27910cc4d27999db7d264de951d97682763c6a55a161c79d9cce55d3a15daca4
+case_ids:
+- 15d76dc4cc4cf4cc6f5fcb7c302e44fcf48c501ea6f93ee786086d29381bcf88
+- 3824175d8b2b6eaddd855e718983aff81fdeebd15bb9c99a229d0b8d5d6fa752
+- d4a796924c45e7f66b2c91d1d8d00e4308b9c342eda37d31f592d5da42e20e35
+selection: 'Union of cases attaining maximum direct surrogate-gradient delta, maximum full-objective-value
+  delta, and maximum direct surrogate-value delta in completed registered gradient probe v1. Use original
+  and both saved candidate points: 9 fixed points. This is selected diagnostic scope, no generalization
+  estimate.'
+controls:
+  windows:
+    path: artifacts/phase18/gradient-probe-20261113-v1/windows/gradients.jsonl
+    sha256: 85d895d79e59f3fd4cee60d06f24c5244cac6044b3699aa655db59b6f119760e
+  linux:
+    path: artifacts/phase18/gradient-probe-20261113-v1/linux/result/gradients.jsonl
+    sha256: 86936a388150dfba2cee1a153bf2704f7609d0d55c826e9c28cfbd22bdddccfc
+original_manifest: artifacts/phase18/linux-verify-recovery-909986c-v1/preserved-tier/manifest.json
+original_manifest_sha256: a02057358e987a623021807f3bf396db05b6aa3a48cc0c4c1aac5f6d81b8939c
+windows_trace: artifacts/phase18/operator-probe-20261113-v1/windows/trace.jsonl
+common_operands: Linux replays each exact Windows-recorded layer input through its original fitted layer
+  and a fixed all-ones vector-Jacobian product. Require matching completed Windows config/trace hash receipt
+  and matching architecture; compare parameter hashes separately. Keep native-input traces alongside shared-input
+  traces.
+expected_cases: 3
+expected_rows: 9
+seed: 1729
+cpu_threads: 1
+no_solves_or_fits: true
+native_controls: Full native forward/backward must exactly reproduce previous gradient-probe values at
+  all 9 points. Manual sequential layer chain must exactly match production ModelBundle.torch_forward
+  and gradient; otherwise stop interpretation.
+operations: Existing sequential MLP modules, probability sigmoid, and existing fitted tensor calibration.
+  No replacement activation, precision, kernel policy, weights, thresholds or math. Record each layer
+  native input/output/all-ones VJP plus common-Windows-input output/VJP and raw parameter hash.
+interpretation: A differing operation with equal operands and parameter hashes localizes a native numerical
+  discrepancy, not proof of a particular backend implementation nor a full causal explanation or repair
+  of historical search outcomes.
+unchanged: Original scientific assets, 90 production/helper hashes, all source records and prior diagnostic
+  outputs preserved; original Linux volume and MAIN evidence read-only. No regression, cache admission,
+  accepted known difference, refit or optimization.
+scope: Fixed-operation diagnosis only, not latency/generalization or physical efficacy evidence.
