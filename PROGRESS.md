@@ -1,5 +1,24 @@
 # PrescriptXAI Progress
 
+## Phase 18 scenario-registration checkout repair (12 November 2026 IST)
+
+The next Windows clone at `f481190` passed all asset provisioning and input
+checks, then its software-only diagnostic reported 794 passes and one failure
+in 336.62 seconds. No demo, container or scientific subset started. All outputs
+and the clone are retained in `artifacts/phase18/windows-portable-f481190-v1`.
+The CLI generated the same four scenarios and saved-results hash, but the
+selection-config hash differed: Git had changed the registered YAML from
+408 LF bytes to 424 CRLF bytes. Both canonical Git blobs are identical.
+
+The exact original selection YAML is now a required registered input and its
+Git attribute preserves its bytes on future checkouts. No selection rule,
+case, result, metric or scientific setting changed. The saved scenario manifest
+and historical archive remain unchanged. The mandatory preflight verifies the
+original config hash rather than accepting the altered checkout hash.
+The affected CLI test passed in 47.35 seconds after the repair; Ruff and
+strict docs passed. Clean-clone verification and Phase 18 closure are still pending.
+
+
 ## Phase 18 clean-clone input repair (12 November 2026 IST)
 
 The new Windows clone at `9482823` stopped in its software-only diagnostic.

@@ -2,8 +2,16 @@
 phase: 13
 status: complete
 current_activity: solo_step5_packaging_lite
-activity_status: phase18_clean_clone_input_repair
+activity_status: phase18_registered_config_checkout_repair
 ---
+
+## Phase 18 registered config bytes (12 November 2026 IST)
+
+The `f481190` clean clone passed provisioning and input checks, then stopped
+with 794 software tests passed and one scenario-manifest hash failure. Git had
+converted the original selection YAML from LF to CRLF. Its original exact bytes
+are now registered and preserved at checkout. No scientific run started.
+Keep the failed clone and receipts intact. Full verification remains pending.
 
 ## Phase 18 clean-clone repair (12 November 2026 IST)
 

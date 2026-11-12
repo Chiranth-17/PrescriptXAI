@@ -152,3 +152,10 @@ all outputs are preserved under `artifacts/phase18/windows-portable-9482823-v1`.
 The exact archived inputs are now mandatory and the test uses unsupported
 version 999. All eight previously failed/erroring tests pass in 43.80 seconds.
 This focused pass does not establish clean-clone or scientific verification.
+
+The `f481190` clone passed provisioning but one of 795 selected software tests
+failed because Git converted the registered scenario-selection YAML from LF
+to CRLF. Its exact original bytes are now required by the Phase 18 inventory
+and preserved by a file-specific Git attribute. Scenario IDs and saved results
+were unchanged. The failed clone and outputs remain preserved. No scientific
+subset was started by either failed clean-clone diagnostic.

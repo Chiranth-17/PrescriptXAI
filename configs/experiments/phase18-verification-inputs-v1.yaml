@@ -16,3 +16,6 @@ required_inputs:
   artifacts/experiments/phase7-20261020T102540Z/latency.json:
     sha256: e0915d1178942d8804dd0b2b60c7c529e783757325faa504e46bb8cc0a55b78f
     provenance: Retained historical serial timing scope, separate from current test durations.
+  configs/experiments/phase17-dashboard-v1.yaml:
+    sha256: 679e5f88abddf11474055f324ccd216b2c3758aed301d0a5a162f2329b5a48b3
+    provenance: Original registered LF bytes; the saved scenario manifest binds this exact config.
