@@ -2,8 +2,20 @@
 phase: 13
 status: complete
 current_activity: solo_step5_packaging_lite
-activity_status: phase18_registered_config_checkout_repair
+activity_status: phase18_exact_subset_policy_checkout_repair
 ---
+
+## Phase 18 demo passed, policy bytes pending verification
+
+Recovery at `4bb89a6` passed 795 software tests, both coverage gates and the
+fresh two-machine demo. Authenticated Linux-container scoring now passes for
+both FD001 and the schema-2 synthetic sample. The actual packaging gate stopped
+at the immutable subset policy hash before cache access or any solve. Original
+registered CRLF policy bytes are now committed and mandatory at provisioning;
+no YAML value, subset or comparison policy changed. New Windows verification,
+Linux clean-clone verification and Phase 18 closure remain pending. The user's
+evaluation is 13 November 2026 at 11:00 am IST; preparation notes are ignored
+artifacts, not a final audit or release.
 
 ## Phase 18 registered config bytes (12 November 2026 IST)
 

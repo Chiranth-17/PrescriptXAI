@@ -1,5 +1,34 @@
 # PrescriptXAI Progress
 
+## Phase 18 current demo and policy-byte guard (12 November 2026 IST)
+
+The user-paused `4bb89a6` attempt was explicitly recovered in the same clean
+clone with its own locked environment. Original pause receipts and logs are
+SHA-pinned in `artifacts/phase18/windows-recovery-4bb89a6-v1/preservation.json`.
+The recovery passed 795 software-only tests in 428.02 seconds and both retained
+coverage gates: 91.1674275598621% scoped lines, 91.23454511902565% package lines
+and 88.0527867471571% combined. These are software diagnostics, not regression.
+
+The fresh schema-2 two-machine demo passed in 420.90 seconds. Its image built
+and authenticated HTTPS scoring passed for FD001 and the synthetic CSV sample,
+with operator login, denied unauthenticated/admin access and container health.
+This resolves the earlier sample-path identity failure. Real browser rendering
+is separately scoped. All outputs remain under the recovery receipt and clone.
+
+The subsequent actual `make verify` failed at the mandatory subset policy guard
+before cache access or any fresh scientific solve. Its other 795 software tests
+passed. The immutable subset manifest requires the historical 2,741-byte CRLF
+policy, but the committed blob was its 2,683-byte LF equivalent. MAIN retained
+the original registered bytes while a clean checkout received LF. The same YAML
+values do not justify accepting a different pinned hash. The exact original
+CRLF bytes are now explicitly committed under the existing `-text` attribute
+and required by provisioning/preflight. The subset IDs, manifest, fixture,
+selection rules, scientific settings and known differences stay unchanged.
+No passing `make verify`, Phase 18 closure or release is claimed for this attempt.
+Original failure logs and clone are preserved. New verification must validate
+the policy before launching the registered subset.
+
+
 ## Phase 18 scenario-registration checkout repair (12 November 2026 IST)
 
 The next Windows clone at `f481190` passed all asset provisioning and input

@@ -159,3 +159,13 @@ to CRLF. Its exact original bytes are now required by the Phase 18 inventory
 and preserved by a file-specific Git attribute. Scenario IDs and saved results
 were unchanged. The failed clone and outputs remain preserved. No scientific
 subset was started by either failed clean-clone diagnostic.
+
+Recovery of the user-paused `4bb89a6` clone passed 795 software-only tests,
+both coverage gates, the fresh two-machine demo and authenticated HTTPS scoring
+inside the Linux image. The actual `make verify` then stopped at the subset
+policy hash before cache access or solves. The immutable subset manifest binds
+the original CRLF policy bytes, while its committed LF blob gave a different
+clean-checkout hash. Those original CRLF bytes are now committed explicitly
+and required by provisioning. The manifest, subset, values and tolerances are
+unchanged. Preserve the recovery receipt and failed gate; complete Windows/Linux
+verification and Phase 18 closure remain pending.
