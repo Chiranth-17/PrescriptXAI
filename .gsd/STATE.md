@@ -5,13 +5,16 @@ current_activity: solo_step5_packaging_lite
 activity_status: phase18_linux_search_portability_open
 ---
 
-## Fixed-operation trace registered (13 November 2026 IST)
+## First surrogate Linear operation differs (13 November 2026 IST)
 
-No gate is running. New operator-probe-v1 registers3cases/9fixedpoints selected
-by the completed gradient-probe maxima. It traces original MLP/calibration
-operations with exact native score/gradient controls and common Windows operands.
-No solving/fitting/math changes. Five diagnostic harness tests passed7.39s.
-This registration is not a result; Phase18 remains open.
+No gate is running. Operator-probe-v1 at79b28e8 completed3cases/9points/runtime,
+native0/exact previous score-gradient controls/exact manual production chain.
+Equal operands/weight hashes: firstLinear forward+onesVJP differ at9/9points;
+ReLU/sigmoid/calibration match on common inputs. NativeTorch2.14.1 builds embed
+WindowsMKL2026.1 vsLinuxMKL2024.2 (bothAVX2). Specific build compatibility lead,
+not an isolated backend cause or full repair. No search/fits/math/policychange.
+Next isolate compatible native backend BEFORE authorizing new search; preserve
+all original environments. Legacyidentity/softwarefailures separate. Phase18open.
 
 ## First-objective gradients differ before SciPy (13 November 2026 IST)
 

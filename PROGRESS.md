@@ -1,5 +1,30 @@
 # PrescriptXAI Progress
 
+## Phase 18 surrogate operation difference localized (13 November 2026 IST)
+
+The fixed-operation design committed at `79b28e8` completed on Windows and Linux
+with native 0, three selected FD002 cases and nine fixed points each. Every
+native surrogate score/gradient reproduces the earlier gradient probe exactly;
+the manually traced sequence matches production forward/backward exactly.
+Layer parameter hashes and replayed Windows operands match across runtimes.
+The first Linear layer's outputs and all-ones VJPs differ at all nine points
+(max 2.980232238769531e-7 and 4.76837158203125e-7). Common-input ReLU, sigmoid
+and calibration agree exactly. No search, refit, new regression or math change
+was made. These are selected operation diagnostics, not generalization evidence.
+
+The retained PyTorch build receipts expose MKL 2026.1 on Windows versus 2024.2
+on Linux, despite matching PyTorch 2.14.1 versions/source commit. This is a
+specific compatibility lead, not yet an isolated backend cause or full repair.
+Windows/Linux operation-study times were 8.37/2.58 s, not latency benchmarks.
+Evidence: `artifacts/phase18/operator-probe-20261113-v1`, native exits/complete
+receipts, raw native/common traces and `docs/linux_portability.md`.
+
+Next investigate native backend compatibility in an isolated environment before
+any new search; preserve the stable Windows demo and all original records. The
+legacy identity/software failures remain separate. Five new diagnostic harness
+tests passed; Ruff, mypy and strict docs are checked separately from coverage.
+No Phase 18 closure or final release is claimed.
+
 ## Phase 18 fixed-operation trace registered (13 November 2026 IST)
 
 `phase18-operator-probe-v1.yaml` selects the three cases attaining the largest

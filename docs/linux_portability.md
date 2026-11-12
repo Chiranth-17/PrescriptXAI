@@ -166,6 +166,52 @@ are under `artifacts/phase18/gradient-probe-20261113-v1`. The original failed
 subset remains failed, all 1,547 out-of-envelope observations remain unaccepted,
 and no regression, numerical policy or production math was changed.
 
+## Fixed-operation localization
+
+The separately preregistered `phase18-operator-probe-v1.yaml` ran at `79b28e8`.
+It selects three cases by the previously recorded largest surrogate-gradient,
+full-objective-value and surrogate-value differences, with three fixed points
+each. This selection supports diagnosis, not a population estimate. Both native
+runs exited 0, reproduced all nine earlier surrogate values/gradients exactly,
+and verified that sequential tracing reproduces the production forward and
+backward path exactly. Windows/Linux operational times were 8.37/2.58 s.
+
+Linux then replayed the exact Windows input operands at each existing operation.
+All architecture and layer-parameter hashes match. On these common operands:
+
+| Operation | Forward differences / 9 | All-ones VJP differences / 9 | Maximum forward delta | Maximum VJP delta |
+| --- | ---: | ---: | ---: | ---: |
+| First Linear | 9 | 9 | 2.980232238769531e-7 | 4.76837158203125e-7 |
+| First ReLU | 0 | 0 | 0 | 0 |
+| Second Linear | 3 | 9 | 5.960464477539063e-8 | 9.5367431640625e-7 |
+| Second ReLU | 0 | 0 | 0 | 0 |
+| Output Linear | 6 | 0 | 2.384185791015625e-7 | 0 |
+| Probability sigmoid | 0 | 0 | 0 | 0 |
+| Fitted calibration | 0 | 0 | 0 | 0 |
+
+The first differing operation is the first Linear layer at every tested point.
+The all-ones vector-Jacobian products are isolated operation diagnostics, not
+the complete upstream-weighted gradient of an archived solve. Inputs to later
+native operations can differ; the table deliberately compares common Windows
+operands to separate that effect. Raw native and common-input traces are both
+preserved in `artifacts/phase18/operator-probe-20261113-v1`.
+
+The original runtime receipts record the same PyTorch package version 2.14.1
+and source commit, but different native builds: Windows embeds MKL 2026.1
+(product build 20260612), Linux MKL 2024.2 (product build 20240605). Both report
+AVX2. Windows is built without CUDA; the Linux wheel is CUDA-enabled while all
+these diagnostics execute on CPU. These are observed build differences, not a
+controlled proof that replacing MKL alone repairs the full search. No backend,
+dependency, precision, model or scientific policy has been changed.
+
+The next numerical investigation should isolate a compatible native backend in
+a separate environment, retain the original native controls, and test the
+fixed-operation discrepancy before any search is authorized. A production
+repair needs an explicit versioned execution policy and verification against
+unchanged historical results; another complete regression is premature. The
+separate legacy path-identity migration and Linux software failures also remain
+open. Windows demo and original reports stay available; Phase 18 is partial.
+
 For the academic Phase 2 evaluation, use the established Windows demonstration
 and the supplied report with its original snapshot. The public benchmark and
 synthetic sample are advisory demonstrations, not evidence of physical efficacy,
