@@ -2,8 +2,21 @@
 phase: 13
 status: complete
 current_activity: solo_step5_packaging_lite
-activity_status: phase18_linux_design_pin_repair
+activity_status: phase18_linux_native_parity_diagnosis
 ---
+
+## Linux demo passed; full verification failed (13 November 2026 IST)
+
+At source909986c the genuine two-machine Linux demo passed in445.51s. A launch-only
+receipt-copy failure was preserved and recovered without refitting, using a
+separate verified snapshot while originals stayed read-only. Actual makeverify
+then failed:787passed/7failed/4errors/74warnings and85.39239084655343% combined.
+All15525freshrecords are retained; zero cacheadmissions. Root saved-output review
+finds1547non-identity cases beyondtolerance,52Tier2flips and14triageflips, none
+borderline. No scientific settings/tolerances/known-diffs changed. The53-case
+fixed-vector cross-score diagnostic is now preregistered, not yet run. No new
+regression until diagnosis; Phase18 remainsopen and no v1release. See
+PROGRESS.md and docs/linux_portability.md. Original report snapshot unchanged.
 
 ## Linux design preflight failure preserved (12 November 2026 IST)
 

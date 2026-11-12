@@ -1,5 +1,18 @@
 # Limitations and intended use
 
+## Native Linux reproducibility remains unmet (13 November 2026 IST)
+
+The Windows saved-result replay passes in its registered numerical environment.
+Native Linux completes the fixed 15,525-case computation but does not reproduce
+that reference: 1,547 cases have non-identity fields beyond the existing tolerance,
+including 52 Tier 2 and 14 triage changes outside the borderline band. Do not
+claim cross-platform numerical invariance, relabel these as noise, change the
+known-difference policy, or substitute Linux outputs for historical results.
+See the [complete diagnostic scope](linux_portability.md). The Linux demonstration
+passes API scoring and dashboard HTTP readiness; complete Linux UI/software,
+scientific verification and final release are still pending.
+
+
 - **Controllable channels are telemetry proxies, not actuators.** C-MAPSS reports measured
   sensor outputs and operating settings. The configurable mapping in `configs/features.yaml`
   treats fuel-flow ratio (phi), bypass ratio (BPR), fan/core speed, and bleed-related channels as

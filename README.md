@@ -176,6 +176,10 @@ See [provisioning details](docs/packaging.md#packaging-verification).
 Tested scientific scope is the C-MAPSS replay, with a separate synthetic
 contract/sample demonstration. Windows and container packaging measurements
 are recorded in [the packaging report](docs/packaging.md) as they are verified.
+Windows clean-clone verification passes at its recorded source. Linux passes
+the two-machine API/demo HTTP smoke, but its native scientific/software
+verification fails; see the [retained portability findings](docs/linux_portability.md).
+Cross-platform numerical invariance and Phase 18 closure are not established.
 Designed but not built are plant SQL, OPC UA and MQTT connectors, an approval
 workflow and audit chain, onboarding wizard, drift monitoring, model registry,
 synthetic pump simulator and a second real machine.

@@ -15,3 +15,4 @@ configs/experiments/phase17-dashboard-v1.yaml -text
 configs/features.yaml -text whitespace=cr-at-eol
 src/prescriptxai/resources/features.yaml -text whitespace=cr-at-eol
 configs/experiments/phase12-baseline-v1.yaml -text whitespace=cr-at-eol
+configs/experiments/phase18-crossscore-v1.yaml -text

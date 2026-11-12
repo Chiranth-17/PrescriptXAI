@@ -1,0 +1,42 @@
+schema_version: 1
+purpose: 'Diagnosis only: isolate fixed-vector scoring/validation differences from changed saved search
+  candidates across Windows and Linux. No gate-policy change or headline/generalization estimate.'
+origin_source: 909986c0556a9888e6e43cbbd4f363b9eaf3a5ac
+script_canonical_sha256: 7449f9d92bc894a4c96652cd7c9e2834945889049199cd950e8a6fd46297bbfc
+linux_database: artifacts/phase18/linux-verify-recovery-909986c-v1/preserved-tier/recomputed/records.sqlite3
+linux_database_sha256: f722e773952c6726c2512ec49bf55af847e332c58eca0b3d385d53c63c49954c
+linux_manifest: artifacts/phase18/linux-verify-recovery-909986c-v1/preserved-tier/manifest.json
+ids_path: artifacts/phase18/linux-parity-diagnosis-909986c-v1/diagnostic-ids.json
+ids_sha256: a1157a345d0b2c90fbc0c946b164b7ce44b7c7117d5b6bca72ce482c3be070fa
+selection: Union of every saved Tier2 or triage flip case and the single largest absolute risk_after delta
+  case; case IDs sorted. All data from the completed failed subset; no sampling or changes to its population.
+expected_cases: 53
+vertices:
+- original
+- windows_candidate
+- linux_candidate
+expected_rows_per_runtime: 159
+seed: 1729
+cpu_threads: 1
+no_new_solves: true
+no_refits: true
+no_candidate_propagation_or_projection: true
+model_input_policy: Use the exact raw saved vectors; preserve the genuine observed LSTM history from each
+  saved QueryCase. Load the original hash-pinned fitted assets only.
+production_functions:
+- PrescriptXAI.assess
+- PrescriptXAI._normalize
+- PrescriptXAI._bundle
+- validate_candidate(...).to_schema()
+control: Windows original risk and Windows-candidate validation must exactly reproduce their saved Windows
+  values; Linux original risk and Linux-candidate validation must exactly reproduce their saved Linux
+  values. Stop causal interpretation if either native control fails.
+diagnostic_tolerance: 1.0e-06
+relative_tolerance: 0
+interpretation: Compare both candidates on both runtimes. If fixed-vector outputs match but saved candidates
+  differ, locate the unresolved discrepancy upstream in search; otherwise localize the differing scoring/validation
+  stage. This is not a proof of a specific BLAS/kernel cause.
+unchanged: No baseline/known-diff/threshold/bound/rate/sparsity/model/population mutation or acceptance
+  of these differences. Preserve all original rows, counters, failures and timings.
+scope: Research diagnostic on reused benchmark states; max E3 proxy assumptions, no physical benefit or
+  new generalization claim.

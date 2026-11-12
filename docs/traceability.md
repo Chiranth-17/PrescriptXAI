@@ -1,5 +1,15 @@
 # Synopsis traceability - Phase 13 closed
 
+## Current Linux verification status (13 November 2026 IST)
+
+The Linux clean-clone demo passes both API assessments and dashboard HTTP
+readiness. Actual Linux `make verify` fails its software/scientific check;
+52 Tier 2 and 14 triage differences appear in the retained 15,525-case subset.
+The [portability diagnosis](linux_portability.md) records every scope, native exit,
+coverage miss and unchanged policy. This does not change the earlier Windows
+results or intervals. Phase 18 is open, and Phase 19 release remains unverified.
+
+
 ## Current solo packaging evidence (12 November 2026 IST)
 
 Windows clean-clone `make verify` passed at `e97fbdb`: 796 tests, all 15,525

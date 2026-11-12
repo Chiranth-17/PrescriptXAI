@@ -1,5 +1,14 @@
 # State of the project - Phase 13 closed
 
+## Linux scientific verification failed (13 November 2026 IST)
+
+Linux two-machine API/demo readiness passes, but its actual verification fails
+software and exact scientific parity. All 15,525 computed observations are
+preserved; 52 Tier 2 and 14 triage changes need investigation. Coverage is below
+the unchanged floor. Windows verification remains passed at its recorded source.
+See [Linux portability](linux_portability.md). Phase 18 is open; no final release.
+
+
 ## Latest solo roadmap position (12 November 2026 IST)
 
 Phases 12, 13, 17 technical and 16 research security-lite are closed. Phase 18

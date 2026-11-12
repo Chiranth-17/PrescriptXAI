@@ -1,5 +1,49 @@
 # PrescriptXAI Progress
 
+## Phase 18 Linux verification failed; retained-output diagnosis (13 November 2026 IST)
+
+The Linux clean-clone two-machine demo at `909986c` passed in 445.506961002 s
+(preparation 418.140390792003 s), with real FD001 and separately synthetic sample
+fits, both API assessments and dashboard HTTP readiness. Its launch-only controller
+then failed while copying the timestamped smoke receipt. The passed demo was not
+refitted. A separate recovery snapshot verified all 109 original/new asset pairs,
+all 28 demo files and identical Linux package versions; the original volume stayed
+read-only. Both segments and every native exit/timing are retained.
+
+The recovery's actual `make verify` failed at `make check` (native 2): 787 tests
+passed, 7 failed, 4 setup errors, one release-only full marker deselected and
+74 warnings in 5,838.86 s. Combined coverage was 85.39239084655343%, below its
+unchanged floor; subsequent coverage-report commands, security/build/wheel/docs
+were not reached. The original container and volume remain stopped and preserved.
+All 15,525 fresh subset records and 15,525 case payloads exist, with integrity OK
+and no uncommitted cases. Comparison stopped on an unlisted configuration hash;
+zero entries were admitted to cache. This is not a passed regression.
+
+Read-only root diagnosis of every saved record separates path-dependent config
+hashes (all 15,525 cases; normalized case/config values identical) from numerical
+and discrete differences. Excluding only the classified config hash, 7,101 cases
+differ exactly and 1,547 exceed the existing absolute 1e-6 envelope. Tier 2 flips
+in 52 cases (35 pass-to-fail, 17 reverse), with 14 joint/triage changes (10
+ESCALATE-to-RECOVERABLE, 4 reverse). None of those Tier 2 flips is within the 1e-6
+borderline band on either side. The largest final-risk delta is
+0.1932961316758587 probability units. These are fixed-subset diagnostic counts,
+not pooled headline estimates, harmless-float-noise findings or an independent
+review. Canonical production/helper hashes, 97 scientific input hashes, design
+and execution policy match; native build fingerprints differ. Causality is not
+yet isolated. No known differences, scientific settings or historical outcomes
+were changed.
+
+See `docs/linux_portability.md`, the pinned recovery preservation receipt and
+`artifacts/phase18/linux-parity-diagnosis-909986c-v1`. The next committed design,
+`configs/experiments/phase18-crossscore-v1.yaml`, revalidates 53 exact saved states
+and both candidate vectors on Windows/Linux without search, propagation or fit.
+Each runtime must first reproduce its own saved control exactly. That diagnostic
+is registered before scoring; no new regression is authorized by it. Windows
+verification retains its earlier passing source. Phase 18 and final release
+remain open. The academic report/ZIP keep their original snapshot; a separate
+status addendum records this later result.
+
+
 ## Phase 18 Linux design-pin repair (12 November 2026 IST)
 
 The second Linux attempt, `linux-clean-edfcc31-v1`, passed its own locked

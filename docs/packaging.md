@@ -1,5 +1,18 @@
 # Packaging and local operation
 
+## Linux verification gap (13 November 2026 IST)
+
+Linux now passes the clean-clone two-machine API/dashboard HTTP demo, with its
+own genuine fits. Its subsequent scientific/software verify fails: 787 passed,
+7 failed, 4 errors and combined coverage 85.39239084655343%, below unchanged
+floors. All 15,525 fresh records are preserved, but parity failed and none were
+admitted to cache. Complete saved-record diagnosis finds non-borderline Tier 2
+and triage changes as well as platform-specific identity hashes. See the
+[measured portability status](linux_portability.md) and `PROGRESS.md` for exact
+scopes and evidence. Windows verification remains passed at its original source;
+Linux complete verification, Phase 18 closure and release are not claimed.
+
+
 ## Phase 18 Linux design-pin repair (12 November 2026 IST)
 
 The second Linux attempt, `linux-clean-edfcc31-v1`, passed its own locked
