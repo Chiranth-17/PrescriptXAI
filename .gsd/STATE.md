@@ -1,9 +1,22 @@
 ---
 phase: 13
 status: complete
-current_activity: user_dashboard_edited_settings
-activity_status: editable_prescription_verified_locally
+current_activity: phase18_native_build_integration
+activity_status: fixed_sgemm_alignment_verified_integration_pending
 ---
+
+## Fixed-operation library alignment passed (13 November 2026 IST)
+
+No job active. SGEMM v2 registered5358076, controller77eb6e8, export own preserved
+Windows clone e97fbdb with exact original90source/97asset guards. No changed MAIN
+package used as original context. Both Linux children/controller native0;
+embeddedMKL2024.2 matches27/27 oldLinux pairs, alignedMKL2026.1 matches27/27
+oldWindows pairs, exact repeats/zero maxdelta. Three cases/nine points,
+zeroTorch imports/fits/solves, all old volumes read-only and v1failure unchanged.
+Evidence sgemm-build-20261113-v2/comparison.json plus raw/library/native receipts.
+Fixed SGEMM lead only, not fullgradient/Torch/search/FD001/regression repair.
+No backend adopted. Next isolated integration must be preregistered beforecalls.
+Phase18 stillpartial; dashboard/evaluation materials preserved; no new tag.
 
 ## User dashboard request takes priority (13 November 2026 IST)
 

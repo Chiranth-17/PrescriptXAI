@@ -1,5 +1,17 @@
 # Packaging and local operation
 
+## Isolated native-build lead (13 November 2026 IST)
+
+The preregistered SGEMM v2 diagnostic completed both native children with exit0:
+the original Linux library reproduces27/27 saved Linux fixed-operation pairs,
+and a separately loaded build matching Windows reproduces27/27 saved Windows
+pairs exactly. All original environments remain read-only; no fits, searches,
+dependency replacement or production adoption occurred. This is a narrow
+fixed-operation lead, not a full Torch/search or Linux verification pass.
+See [the diagnostic scope and receipts](linux_portability.md). Phase18 remains
+open; original Windows verification and the live dashboard retain their own
+source/test scopes.
+
 ## Phase 18 fixed-vector cross-runtime diagnostic completed (13 November 2026 IST)
 
 After preregistration at `10d6390`, both native saved-state controls reproduced

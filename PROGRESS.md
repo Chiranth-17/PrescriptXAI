@@ -1,5 +1,38 @@
 # PrescriptXAI Progress
 
+## Isolated SGEMM build alignment matches the saved Windows operations (13 November 2026 IST)
+
+Registered `phase18-sgemm-build-v2.yaml` at `5358076` completed at controller
+source `77eb6e8`. MAIN's newer dashboard code was not substituted for the
+original science environment: operand export used the preserved Windows v5
+clone at `e97fbdb`, its own interpreter/imports, and exact original 90 helper/
+source and 97 scientific input guards. It exported the same 27 operand pairs
+as v1, with zero forward calls, solves or fits. The original Linux recovery
+volume and the prepared MKL runtime lab were mounted read-only. Every extracted
+runtime/license file was reverified against the pinned wheels before use.
+
+Both fresh Linux children and their controller exited 0. The original embedded
+MKL2024.2 reproduced all 27 original Linux forward/ones-VJP pairs exactly.
+The separate MKL2026.1 build reproduced all 27 original Windows pairs exactly,
+with exact repeats and zero maximum difference. Each arm wrote 27 operations
+from the same three cases/nine fixed points. Each raw verbose log retains 108
+SGEMM lines with one thread. No Torch import occurred in either matrix child.
+Operational matrix times were 1.07675303 s and 1.06065207 s, not latency evidence.
+
+Evidence is `artifacts/phase18/sgemm-build-20261113-v2/`, including original
+library/version/hash receipts, raw outputs, native exits, read-only setup and
+`comparison.json`. The root saved-file verifier independently recomputes every
+comparison and confirms all pinned v1 failure files unchanged; this is not a
+separate-agent audit. The v1 metadata rejection is retained as a failed attempt.
+
+This isolates a build-alignment lead for these fixed SGEMM operations. It does
+not establish full Torch/autograd integration, complete gradients, search,
+FD001 parity or a passing regression/release. No backend or dependency has been
+adopted into production, and no new optimizer query or fit ran. Next work needs
+a separately registered, isolated integration proof with original controls,
+before any complete regression. Windows dashboard and evaluation snapshots are
+unchanged. Phase 18 remains partial; no closure or release tag.
+
 ## Edited-settings dashboard flow verified locally (13 November 2026)
 
 The user requested live prescriptions after editing controllable sliders.

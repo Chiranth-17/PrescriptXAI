@@ -321,7 +321,40 @@ It reuses only the verified runtime/license files from the failed setup, mounted
 read-only and checked again against the pinned wheels; no numerical observation
 is reused. New processes and output paths are required. Each attempted operation
 is persisted before any failed-control rejection. Five ABI/metadata harness
-tests passed in 0.57 seconds. No matrix calls have run under v2 yet.
+tests passed in 0.57 seconds. At that registration checkpoint no matrix calls
+had run under v2.
+
+The registered v2 subsequently completed at controller source `77eb6e8`.
+Since MAIN's dashboard code had changed, the Windows export used the preserved
+v5 clone at `e97fbdb` with its own interpreter and imports. All original 90 source/
+helper and 97 scientific input guards passed before export. It produced the
+same 27 operand pairs as v1 with zero forward calls, fits or solves. Original
+Linux model and runtime-lab volumes were read-only, and every extracted runtime/
+license member was checked again against the pinned wheels.
+
+| Fresh isolated library arm | Exact original Linux forward/VJP pairs | Exact original Windows forward/VJP pairs | Repeats | Native exit |
+| --- | ---: | ---: | --- | ---: |
+| Embedded MKL2024.2, build20240605 | 27/27 | 3/27 | Exact | 0 |
+| Separate MKL2026.1, build20260612 | 3/27 | 27/27 | Exact | 0 |
+
+Each pair includes the forward result and all-ones VJP from unchanged float32
+operands/weights. The aligned-library Windows comparison has maximum delta0
+for both fields. These are three cases/nine fixed points and all three Linear
+layers, not a new population evaluation. Both children avoided importing Torch.
+Actual verbose output retains 108 SGEMM lines per arm with one thread.
+Operational times1.07675303/1.06065207 seconds are not latency certification.
+
+Receipts and raw outputs are in `artifacts/phase18/sgemm-build-20261113-v2/`.
+Its `comparison.json` recomputes all exact comparisons and pins the evidence;
+the saved-file root verifier also confirms the original v1 failure files are
+unchanged. This is a diagnostic arithmetic check, not an independent audit.
+
+Aligning this isolated native build repairs the measured fixed SGEMM contrast.
+It does not yet establish full Torch/autograd integration, complete gradients,
+search outcomes, FD001 parity or a passing packaging/release gate. No production
+environment, model, backend, threshold, tolerance or known difference changed.
+Any integration proof needs a new committed design and isolated original
+controls before calls. No complete regression is authorized by this result.
 
 For the academic Phase 2 evaluation, use the established Windows demonstration
 and the supplied report with its original snapshot. The public benchmark and
