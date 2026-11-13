@@ -1,9 +1,22 @@
 ---
 phase: 18
 status: in_progress
-current_activity: phase18_native_build_integration
-activity_status: broader_fixed_objective_registered
+current_activity: user_dashboard_aesthetic_refresh
+activity_status: aesthetic_refresh_verified_locally
 ---
+
+## Aesthetic refresh locally verified
+
+Userdirectrequeststyleddashboard: persistentthemeanchor/stablekeyedcards,
+brandedheader/whitecards/blueactions/largeactualrisk/styledaction+checkrows,
+responsivepresetpills/lightdark.29focusedtests108.56s/Ruff/mypy92pass.
+Actual1360/390light-v3/dark-v1browserpass themeafteredits/generation/export/
+stale-clearing/nooverflow/errors/external;44pxvisibleactions andtargetedcaption
+contrast5.99/8.69. No science/threshold/check/publicationchange. LiveWindows
+dashboard restartedonlyownverifiedtree andavailable8501. PDFsnapshotsunchanged.
+Broaderobjectivejobc8e091b completednative/aligned/controller0at04:43:18UTC
+beforeUIedits, numericalcomparisonsstillpendingreview; no claimedbroaderpass.
+No activejob. Preserve itsoriginalsource/outputbeforelatercloseout.
 
 ## Broader objective preregistration
 

@@ -37,43 +37,12 @@ from prescriptxai.dashboard.simulator_prescription import (
     prescription_checks,
     render_recommendation,
 )
+from prescriptxai.dashboard.simulator_theme import STYLE
 from prescriptxai.dashboard.state import DashboardSettings
 from prescriptxai.machine_schema import MachineRecourseResult, ReplayFollowUp, SimulatedRisk
 from prescriptxai.machine_spec import MachineSpec
 from prescriptxai.pipeline import ArtifactError
 from prescriptxai.scenarios import Scenario, scenario_presets
-
-STYLE = """
-<style>
-@media (prefers-color-scheme: light) {
-  .stApp { background: #f3f5f8; }
-  [data-testid="stVerticalBlockBorderWrapper"] { background: #fff; border-color: #dde3ea; }
-}
-[data-testid="stHeading"] h1, [data-testid="stHeading"] h2,
-[data-testid="stHeading"] h3 { letter-spacing: -0.02em; }
-[data-testid="stVerticalBlockBorderWrapper"] { border-radius: 12px; }
-.stButton button, .stDownloadButton button,
-.stSelectbox [role="combobox"], .stExpander summary { min-height: 44px; }
-[data-testid="stAppDeployButton"] { display: none; }
-[data-testid="stMetricValue"] { font-family: ui-monospace, Consolas, monospace; }
-[data-testid="stSlider"] { min-height: 64px; }
-.stApp { --psx-focus: #1d4ed8; }
-.stApp :is(button, [role="combobox"], summary):focus-visible,
-.stApp [data-testid="stSlider"]:has(input[type="range"]:focus-visible) {
-  outline: 3px solid var(--psx-focus);
-  outline-offset: 3px;
-}
-@media (prefers-color-scheme: dark) {
-  .stApp { --psx-focus: #9ac0ff; }
-}
-@media (max-width: 600px) {
-  [data-testid="stMainBlockContainer"] { padding-inline: 1rem; }
-  [data-testid="stHeading"] h1 { font-size: 2rem; }
-  [data-testid="stHorizontalBlock"] { flex-direction: column; }
-  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] { width: 100%; min-width: 0; }
-}
-</style>
-"""
 
 
 def _pick(scenario: Scenario) -> None:
@@ -91,9 +60,9 @@ def _location(
         st.session_state[unit_key] = preset.unit
     if unit_key not in st.session_state:
         st.session_state[unit_key] = current if current in units else units[0]
-    unit = st.selectbox(
-        "Recorded unit", units, index=0, key=unit_key
-    )
+    unit_column, time_column = st.columns([1, 3])
+    with unit_column:
+        unit = st.selectbox("Recorded unit", units, index=0, key=unit_key)
     observed = frame.loc[frame["unit_id"].map(str) == unit].sort_values("time_index")
     times = [float(value) for value in observed["time_index"]]
     time_key = f"simulator-time:{machine_id}:{unit}"
@@ -103,16 +72,12 @@ def _location(
     time = next((value for value in times if str(value) == raw_time), times[-1])
     if time_key not in st.session_state:
         st.session_state[time_key] = time
-    picked_time = (
-        st.select_slider(
-            "Recorded time",
-            times,
-            value=None,
-            key=time_key,
+    with time_column:
+        picked_time = (
+            st.select_slider("Recorded time", times, value=None, key=time_key)
+            if len(times) > 1
+            else time
         )
-        if len(times) > 1
-        else time
-    )
     return unit, picked_time, observed.loc[observed["time_index"] <= picked_time]
 
 
@@ -150,6 +115,10 @@ def _risk_panel(preview: SimulatedRisk, elapsed: float) -> None:
     band = "Alert" if score.alert else "Low" if score.risk <= score.tau_safe else "Watch"
     st.metric("Predicted risk now", f"{score.risk:.1%}")
     st.caption(f"{band} · Predicted risk for the selected conditions · {elapsed:.1f} ms")
+    st.html(
+        f'<div class="psx-risk-meter" data-band="{band}" aria-hidden="true">'
+        f'<span style="width:{score.risk:.4%}"></span></div>'
+    )
     if preview.unusual:
         st.warning(
             "This combination of conditions is unusual for real equipment. "
@@ -286,8 +255,11 @@ def _prescription(
 
 
 def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
-    st.caption("Synthetic or sample machine data" if spec.synthetic else "Recorded replay data")
-    st.badge(spec.limits_label, color="orange" if spec.limits_status == "demonstration" else "blue")
+    with st.container(key="psx-identity"):
+        st.caption("Synthetic or sample machine data" if spec.synthetic else "Recorded replay data")
+        st.badge(
+            spec.limits_label, color="orange" if spec.limits_status == "demonstration" else "blue"
+        )
     settings_path = Path(os.environ.get("PRESCRIPTXAI_DASHBOARD_CONFIG", "configs/dashboard.yaml"))
     settings = simulator_settings(settings_path, file_identity(settings_path))
     decision = simulator_decision(registry, spec.machine_id, settings)
@@ -298,9 +270,11 @@ def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
     presets = scenario_presets(
         registry, spec.machine_id, settings.telemetry_population, spec.spec_hash
     )
-    with st.container(horizontal=True, wrap=True):
+    with st.container(horizontal=True, wrap=True, key="psx-scenarios"):
         for preset in presets:
-            st.button(preset.name, on_click=_pick, args=(preset,), help="Example selected by rule")
+            st.button(
+                preset.name, on_click=_pick, args=(preset,), help="Example selected by rule"
+            )
         if st.button("Reset settings"):
             st.session_state["simulator_revision"] = (
                 st.session_state.get("simulator_revision", 0) + 1
@@ -308,13 +282,17 @@ def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
             st.query_params.pop("settings", None)
     preset = st.session_state.pop("simulator_pick", None)
     revision = st.session_state.get("simulator_revision", 0)
-    st.subheader("1. Set the conditions")
-    st.markdown("**Situation (fixed)**")
-    unit, time, window = _location(spec.machine_id, frame, preset)
-    with st.expander("Fixed context"):
-        for feature in spec.measurement_features:
-            if feature.role == "frozen":
-                st.write(f"{feature.label} · {float(window[feature.id].iloc[-1]):g} {feature.unit}")
+    with st.container(border=True, key="psx-context"):
+        st.subheader("1. Set the conditions")
+        st.caption("Choose a recorded state. Fixed context stays unchanged.")
+        st.markdown("**Situation (fixed)**")
+        unit, time, window = _location(spec.machine_id, frame, preset)
+        with st.expander("Fixed context"):
+            for feature in spec.measurement_features:
+                if feature.role == "frozen":
+                    st.write(
+                        f"{feature.label} · {float(window[feature.id].iloc[-1]):g} {feature.unit}"
+                    )
     selection = json.dumps((spec.spec_hash, decision.runtime_identity, unit, time, revision))
     restore = (
         st.query_params.get("settings", "")
@@ -381,8 +359,8 @@ def _render_interactive(
     restore: str,
 ) -> None:
     spec = decision.spec
-    conditions, predictions = st.columns([1, 1])
-    with conditions, st.container(border=True):
+    conditions, predictions = st.columns([1, 1.25], gap="large")
+    with conditions, st.container(border=True, key="psx-controls"):
         st.markdown("**Current adjustable settings**")
         st.caption("Adjust these settings, then generate a prescription for your starting state.")
         controls = _settings(decision, window, selection, restore)
@@ -396,12 +374,12 @@ def _render_interactive(
     with st.expander("Copy replay settings"):
         st.code("?" + urlencode(params), language=None)
     with predictions:
-        with st.container(border=True):
+        with st.container(border=True, key="psx-risk"):
             st.subheader("2. Predicted risk")
             started = perf_counter()
             preview = decision.simulate_risk(window, controls)
             _risk_panel(preview, (perf_counter() - started) * 1000)
-        with st.container(border=True):
+        with st.container(border=True, key="psx-prescription"):
             st.subheader("3. Prescription")
             result = _prescription(
                 decision,
@@ -411,7 +389,7 @@ def _render_interactive(
                 registry,
                 settings,
             )
-    with st.container(border=True):
+    with st.container(border=True, key="psx-followup"):
         st.subheader("4. Was it followed?")
         scope = (
             ReplayFollowUp(
@@ -467,14 +445,18 @@ def main() -> None:
             st.session_state.pop("simulator_reference", None)
             advanced_pages(advanced=True, spec=specs[requested])
             return
-        st.title("PrescriptXAI Operations Dashboard")
-        st.caption("Explore recorded conditions and predicted risk in an advisory simulator.")
-        machine = st.selectbox(
-            "Machine",
-            machines,
-            index=machines.index(requested),
-            format_func=lambda name: specs[name].display_name,
-        )
+        with st.container(key="psx-hero"):
+            with st.container(key="psx-kicker"):
+                st.caption("MAINTENANCE INTELLIGENCE / RESEARCH WORKSPACE")
+            st.title("PrescriptXAI Operations Dashboard")
+            st.caption("Explore recorded conditions and predicted risk in an advisory simulator.")
+        with st.container(key="psx-machine"):
+            machine = st.selectbox(
+                "Machine",
+                machines,
+                index=machines.index(requested),
+                format_func=lambda name: specs[name].display_name,
+            )
         _simulator(specs[machine], registry)
     except (ArtifactError, OSError, ValueError, KeyError, TypeError) as error:
         _report_error(error)

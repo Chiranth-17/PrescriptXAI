@@ -1,5 +1,18 @@
 # Dashboard acceptance status
 
+## Aesthetic refresh (13 November 2026)
+
+The active page now retains its local theme through fragment reruns. Stable
+keyed cards, a branded header, light/dark palettes, larger actual risk figures,
+styled actions/checks and responsive preset pills replace the plain appearance.
+29 focused tests passed108.56s; Ruff/mypy92 pass. Real light-v3/dark-v1 captures
+at1360/390 verify the theme after edits, fresh prescription generation, four
+checks, matching export and stale clearing; no overflow/page errors/network
+requests. Visible actions44px; targeted context-caption contrast5.99:1/8.69:1.
+Evidence: `artifacts/phase17/aesthetic-refresh-20261113-v1/`. This is local visual/
+functional QA, not a full accessibility audit, usability session, scientific
+replay or release gate. Existing limits labels and numerical checks are intact.
+
 ## User-requested edited starting settings (13 November 2026)
 
 An editable prescription path is locally verified at source `bfcd3e1`.

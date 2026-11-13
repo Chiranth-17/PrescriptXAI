@@ -98,18 +98,25 @@ def _render_measured_result(
         feature = features[name]
         before, after = result.original_state[name], result.new_state[name]
         change = f" ({(after - before) / abs(before):+.1%})" if before else ""
-        st.write(f"{feature.label} · {before:.6g} → {after:.6g} {feature.unit}{change}")
-        lower, upper = limits[name]
-        if lower <= after <= upper and lower < upper:
-            st.progress((after - lower) / (upper - lower), text="Position within control bounds")
-        st.caption(reasons[name])
-        if name in changes:
-            st.caption(f"Change in predicted risk at this step: {changes[name] * 100:+.1f} points")
+        with st.container(border=True, key=f"psx-action-{name}"):
+            st.write(f"{feature.label} · {before:.6g} → {after:.6g} {feature.unit}{change}")
+            lower, upper = limits[name]
+            if lower <= after <= upper and lower < upper:
+                st.progress(
+                    (after - lower) / (upper - lower), text="Position within control bounds"
+                )
+            st.caption(reasons[name])
+            if name in changes:
+                st.caption(
+                    f"Change in predicted risk at this step: {changes[name] * 100:+.1f} points"
+                )
     frozen = [feature.label for feature in features.values() if feature.role == "frozen"]
     if frozen:
         st.caption("Not changed: " + ", ".join(frozen))
-    for label, passed in prescription_checks(result):
-        st.write(f"{'Pass' if passed else 'Fail'} · {label}")
+    for index, (label, passed) in enumerate(prescription_checks(result)):
+        status = "pass" if passed else "fail"
+        with st.container(key=f"psx-check-{index}-{status}"):
+            st.write(f"{'Pass' if passed else 'Fail'} · {label}")
     with st.expander("Why this?"):
         if matches:
             chart = waterfall_chart(

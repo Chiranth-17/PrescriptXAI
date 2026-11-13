@@ -1,5 +1,36 @@
 # PrescriptXAI Progress
 
+## User-requested dashboard aesthetic refresh verified (13 November 2026 IST)
+
+The user reported an unstyled page. Before capture showed no active theme style
+in the DOM and a white app background. The theme now includes a persistent
+main-content anchor instead of a style-only event payload, with stable keyed
+containers rather than the obsolete border-wrapper selector. Added a branded
+header, soft blue background, white rounded/shadowed cards, compact recorded
+context, larger model-risk figures, blue actions, action cards and four styled
+check rows. Responsive preset pills and light/dark palettes remain local/offline.
+Values, solver/validation logic, thresholds, limits and publication guards are
+unchanged. The risk strip is derived from the current calibrated score.
+
+29 focused simulator/hardcoded-result tests passed108.56s; Ruff and mypy92 pass.
+Real Chromium light-v3/dark-v1 at1360/390 passed theme persistence through
+slider edit/generation, allfour current checks, matching report export and
+stale clearing after another edit. No horizontal overflow, page errors or
+external requests; visible action buttons44px. Targeted context-caption contrast
+is5.99:1 light/8.69:1 dark, not a comprehensive accessibility audit. Native
+browser labels/results and demonstration limits remain. Actual captures are
+retained under `artifacts/phase17/aesthetic-refresh-20261113-v1/`; the first
+probe's zero-height hidden buttons were a measurement-scope error, retained,
+then corrected to measure rendered visible actions. Original failed logs remain.
+
+Only the verified local dashboard process tree was restarted to load the
+presentation modules. It remains available on127.0.0.1:8501 for the evaluation.
+No scientific replay, latency certification, coverage-gate rerun or phase tag.
+The separately registered broader objective diagnostic ended with both child/
+controller native0 at04:43:18UTC before these edits; its aligned numerical
+comparisons remain pending closeout review, so no broader parity claim here.
+Existing PDF/ZIP snapshots remain unchanged.
+
 ## Broader fixed production-objective proof registered (13 November 2026 IST)
 
 `phase18-objective-build-probe-v1.yaml` registers the next selected diagnostic
