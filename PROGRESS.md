@@ -1,5 +1,18 @@
 # PrescriptXAI Progress
 
+## Recovery path preflight rejected before any new numerical observation
+
+The first tooling recovery at `6db09e5` stopped before Git/setup/native stages:
+its recipe had serialized the failed-attempt path with Windows backslashes,
+which Linux treated as part of a filename. It produced zero numerical rows;
+native/controller1 and all output remain in
+`torch-build-integration-recovery-20261113-v1/failure-preservation.json`.
+`phase18-torch-build-recovery-v2.yaml` now registers POSIX recipe paths and
+preserves this additional failed attempt. The same numerical config/script,
+original data/runtime/library guards and fresh-child plan remain. No numerical
+settings, source or result was changed. The new wrapper also retains a full
+traceback on errors. No v2 recovery observations exist at registration.
+
 ## Torch integration v1 stopped on missing provenance tool; recovery registered
 
 The registered v1 at `50f3d6a` generated all nine native traces, each exactly

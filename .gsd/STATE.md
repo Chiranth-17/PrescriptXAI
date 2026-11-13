@@ -2,8 +2,15 @@
 phase: 13
 status: complete
 current_activity: phase18_native_build_integration
-activity_status: selected_torch_tooling_recovery_registered
+activity_status: selected_torch_path_recovery_registered
 ---
+
+## Recovery recipe path correction registered
+
+Firstrecovery6db09e5 failed beforeGit/setup/native: Windowsbackslash inrecipepath,
+zero numericrows, native/controller1 andalllogs preserved. Newrecovery-v2 config
+usesPOSIX paths; originalnumericconfig/script/source/data/runtime guardsexact.
+Freshoutputs/processes, fulltracebackretention, no numericreuse/adoption. No v2runyet.
 
 ## Tooling failure preserved; explicit recovery registered
 
