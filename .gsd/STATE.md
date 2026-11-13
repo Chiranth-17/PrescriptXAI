@@ -1,9 +1,22 @@
 ---
-phase: 13
-status: complete
+phase: 18
+status: in_progress
 current_activity: phase18_native_build_integration
-activity_status: selected_torch_path_recovery_registered
+activity_status: selected_torch_integration_exact_broader_objective_pending
 ---
+
+## Nine-point Torch bridge completed exactly
+
+No job active. Numericalregistration50f3d6a/recoverysourcec792947/package909986c.
+Both freshchildren/controller0 at13Nov03:26:49UTC. Native9/9originalLinux fulltrace
+controls exact; aligned first27/27SGEMMcontrols afterTorchimport then9/9original
+Windows fullsurrogate traces/inputgradients exact, maxdelta0/exactrepeats/manualchain.
+Actual270forward216backwardbridgecalls. Original90source/97inputs/runtimebuilds
+andreadonlyvolumes preserved. No objective/search/fits/adoption/corpusgate.
+Evidence torch-build-integration-recovery-20261113-v2/comparison.json+rawreceipts.
+Both failedattempts unchanged/disclosed (missingGit9native rows, badrecipe0rows).
+Next separate broader/fullobjective preregistration beforecalls; Phase18partial.
+Windows dashboard healthy; user12pageguide andalloldPDF/ZIPsnapshots unchanged.
 
 ## Recovery recipe path correction registered
 

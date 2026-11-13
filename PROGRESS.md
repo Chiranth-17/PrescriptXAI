@@ -1,5 +1,41 @@
 # PrescriptXAI Progress
 
+## Isolated nine-point Torch/input-gradient integration matches Windows
+
+Registered numerical source `50f3d6a`, explicit recovery source `c792947`,
+package source `909986c`: both fresh native and aligned children plus controller
+exited0 at 03:26:49UTC on 13 November. The original Linux child exactly
+reproduced all nine complete saved native operation traces and repeats. After
+Torch loaded, the aligned child first reproduced all 27 common-operand Windows
+SGEMM controls exactly, then all nine original Windows full-surrogate traces:
+every layer/common-input field, parameter hash, calibrated surrogate value and
+complete input gradient. Maximum surrogate/input-gradient difference is0.
+The actual bridge counters are270 forwards/216 backwards using actual upstream
+gradients. Manual and direct graph outputs/gradients and repeats agree exactly.
+Original runtime dependencies/numerical binary/build fingerprints passed.
+
+This is the same selected three FD002 cases/nine fixed points, with no objective
+evaluation, SciPy iterations, new solver query or fit. The bridge exists only
+inside the aligned diagnostic child; original files, weights, activations and
+calibration are unchanged. Original model/runtime volumes and MAIN evidence
+were read-only. The Windows dashboard remains healthy and was not restarted.
+Operational native/aligned graph times0.850985929/0.915546445 seconds are not
+latency-budget evidence. Phase18 remains partial and no backend is adopted.
+
+Evidence: `artifacts/phase18/torch-build-integration-recovery-20261113-v2/`,
+`comparison.json`, raw traces, runtime/library/native receipts and Docker mount
+inspection. Root saved-file verification recomputes all exact comparisons and
+confirms both failed attempts' pinned files unchanged. The first failed segment
+keeps nine exact native traces/native1 from missing Git; the first recovery
+keeps zero numerical rows/native1 from recipe path serialization. Neither is
+relabeled as a pass. Eleven harness tests4.43s/Ruff/mypy91 passed before calls.
+
+Next proof must be separately registered: the selected broader input-gradient
+and complete production-objective controls before any search. Nine surrogate
+points do not establish53-case/159-point or FD001/search/corpus parity, package
+verification, physical benefit, a performance pass or release. No fixed/full
+regression is launched from this result.
+
 ## Recovery path preflight rejected before any new numerical observation
 
 The first tooling recovery at `6db09e5` stopped before Git/setup/native stages:

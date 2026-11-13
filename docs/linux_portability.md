@@ -388,3 +388,42 @@ cross-platform outcomes. No numerical integration outcome exists at registration
 Even a nine-point success would not establish full production-objective gradients,
 selected search, FD001 parity, performance or release. No new complete regression
 or production adoption follows automatically from this diagnostic.
+
+### Measured nine-point integration and disclosed recovery
+
+At registered numerical source `50f3d6a`, the first attempt reproduced all nine
+original native traces, then exited1 when the minimal image lacked Git for the
+post-compute provenance receipt. No aligned arm ran. The first explicit tooling
+recovery stopped before any numerical stage because its recipe serialized a
+Windows path into Linux. Both failed attempts' original rows, logs, runtime
+fingerprints and native1 receipts remain pinned and unchanged. Neither is a
+passing run.
+
+Recovery registration `phase18-torch-build-recovery-v2.yaml` at `c792947` uses
+portable recipe paths and a new local image snapshot of the already
+Git-provisioned original operator-probe container filesystem. Original container
+and volumes are unchanged. Actual Git2.47.3 preflight passes before fresh
+children; the original numerical config, script, binary/source/data and library
+guards remain. No old numeric observation is reused in this recovery.
+
+Both children and the controller completed with native0. The fresh native
+child reproduced every field of all nine original Linux traces. The aligned
+child first passed all27 original Windows common-operand SGEMM controls after
+loading Torch, then exactly reproduced all9 full Windows traces, including
+calibrated surrogate values and complete input gradients (maximum delta0).
+All stage native/common-input outputs and ones-VJPs and parameter hashes match;
+manual/direct graphs and complete repeats agree. Actual bridge counters record
+270 forwards and216 backwards with real upstream gradients.
+
+These are three selected FD002 cases/nine points, not a generalization estimate.
+Operational graph times0.850985929/0.915546445 seconds are not latency evidence.
+The diagnostic never evaluates the complete production objective, runs a solver
+iteration, fits a model or adopts a backend in production. It does not establish
+broader53-case/159-point gradients, search, FD001 or complete regression parity.
+Next work needs a separate broader/objective registration before calls.
+
+Evidence: `artifacts/phase18/torch-build-integration-recovery-20261113-v2/` with
+raw/library/runtime/native receipts, Docker read-only mount inspection and
+`comparison.json`. The root saved-file verifier recomputes every comparison and
+checks both failed attempts' pins unchanged; it is not a separate-agent final
+audit. Windows demonstration and published result snapshots remain unchanged.
