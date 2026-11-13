@@ -22,3 +22,4 @@ configs/experiments/phase18-backend-policy-v1.yaml -text
 configs/experiments/phase18-sgemm-build-v1.yaml -text
 configs/experiments/phase18-sgemm-build-v2.yaml -text
 configs/experiments/phase17-edited-prescription-v1.yaml -text
+configs/experiments/phase18-torch-build-integration-v1.yaml -text

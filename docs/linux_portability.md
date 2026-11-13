@@ -360,3 +360,31 @@ For the academic Phase 2 evaluation, use the established Windows demonstration
 and the supplied report with its original snapshot. The public benchmark and
 synthetic sample are advisory demonstrations, not evidence of physical efficacy,
 RUL extension, engineer confirmation or certified plant safety.
+
+## Registered isolated Torch integration
+
+`configs/experiments/phase18-torch-build-integration-v1.yaml` registers the same
+three cases/nine fixed points before calls. A fresh original Linux child must
+exactly reproduce the completed full native operation traces, including every
+stage, parameter hash, calibrated surrogate value and input gradient. The next
+fresh child loads the same pinned aligned library after Torch has loaded and
+must first repeat all 27 common-operand Windows SGEMM pairs exactly. A collision
+or control failure stops the study before interpreting integrated results.
+
+Only inside the aligned child, temporary instance methods bridge the existing
+three Linear layers to explicit SGEMM forward and input-backward calls. Backward
+uses the actual upstream derivative, not an all-ones substitute. Fixed weight/
+bias bytes, float32 precision, existing activations, probability sigmoid and
+fitted calibration remain. Parameter gradients are intentionally absent because
+this experiment requests input derivatives only and never trains. The direct
+bundle graph must match the manual operation chain within each arm. The bridge
+is restored on context exit and never changes package files.
+
+All source/input/runtime/library/helper/evidence hashes are checked. Both arms
+repeat every trace exactly and retain attempted failures before rejecting them.
+Original volumes and MAIN evidence are read-only. Eleven synthetic ABI/bridge/
+metadata harness tests passed in 4.43 seconds; they verify the harness, not real
+cross-platform outcomes. No numerical integration outcome exists at registration.
+Even a nine-point success would not establish full production-objective gradients,
+selected search, FD001 parity, performance or release. No new complete regression
+or production adoption follows automatically from this diagnostic.

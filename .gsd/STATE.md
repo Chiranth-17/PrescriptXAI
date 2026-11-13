@@ -2,8 +2,20 @@
 phase: 13
 status: complete
 current_activity: phase18_native_build_integration
-activity_status: fixed_sgemm_alignment_verified_integration_pending
+activity_status: selected_torch_integration_registered
 ---
+
+## Selected Torch integration preregistration (13 November 2026 IST)
+
+No diagnostic launched at this checkpoint. New phase18-torch-build-integration-v1
+uses same3cases/9points, exact native9trace controls then aligned27SGEMM controls
+after Torch import, then only child-local Linear forward/input-gradient bridge.
+Actual upstream gradients/unchanged weights/activations/calibration, no fits,
+objective or optimizer calls/adoption. Exact repeats, failed trace retention,
+runtime/binary/source/input/evidence pins and readonly original environments.
+11harness tests4.43s/Ruff/mypy91 pass; no scientific/coverage gate claimed.
+User's12page simple explanation/demo PDF delivered, allpagesvisualQA/sourcepins
+pass, originalreports unchanged. Windows dashboard preserved for evaluation.
 
 ## Fixed-operation library alignment passed (13 November 2026 IST)
 

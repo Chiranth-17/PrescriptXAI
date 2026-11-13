@@ -1,0 +1,72 @@
+schema_version: 1
+purpose: Isolated selected full-surrogate and input-gradient integration of the verified native build.
+  No production adoption or optimization.
+script_canonical_sha256: 2f8cbcca5fe4cd2daa1b63a8838f31a2b22340e9939446ee1cf35ccd5f8380b3
+case_ids:
+- 15d76dc4cc4cf4cc6f5fcb7c302e44fcf48c501ea6f93ee786086d29381bcf88
+- 3824175d8b2b6eaddd855e718983aff81fdeebd15bb9c99a229d0b8d5d6fa752
+- d4a796924c45e7f66b2c91d1d8d00e4308b9c342eda37d31f592d5da42e20e35
+selection: Same 3 cases and 9 fixed points from the completed operator and SGEMM studies; no new data/state
+  selection.
+expected_rows: 9
+no_search_or_fit: true
+seed: 1729
+helpers:
+  scripts/diagnostics/phase18_operator_probe.py: 27910cc4d27999db7d264de951d97682763c6a55a161c79d9cce55d3a15daca4
+  scripts/diagnostics/phase18_sgemm_build.py: 53edb28e0687549f235cdcea2a37a692abe05c1cb92a25a3255a0b27062667ae
+  scripts/diagnostics/phase18_sgemm_build_v2.py: 991e9c84f2a9e53d3156c154dd2fde910d4eeaf83b6214026a6cbc489928132f
+  scripts/diagnostics/phase18_crossscore.py: 26a7cfadeb5999e3ac3c988fdcb029695e0e814b04f47218ab3c9af6b1a5cfb5
+  scripts/diagnostics/regression_tiers.py: 7f197db9558a452992524ee5960e58d12d233340fe37d17e84b03475058705c7
+evidence_hashes:
+  artifacts/phase18/operator-probe-20261113-v1/windows/trace.jsonl: 05ad2b89b12b495923b06b358fb251a0dac6fed0baadf9deb127d48671923f5f
+  artifacts/phase18/operator-probe-20261113-v1/linux/result/trace.jsonl: 69a013e38f8bf4ee8ad1073698251fa94c4e37fdb83618fdf723f74cfd94427d
+  artifacts/phase18/operator-probe-20261113-v1/linux/result/complete.json: e926882e729a02cf1b71cb8ad27b64f44a96677940ac52b0a5c02a8ab63822b8
+  configs/experiments/phase18-sgemm-build-v2.yaml: 8524d13876fdc89c8937b5336ac009823dfb7893dbfb09c69f9f7963e0cf09e9
+  artifacts/phase18/sgemm-build-20261113-v2/export/operands.json: 8c5e646064a099af1efac43c7bd351ce3c72963540ae25498190a185d8ba3b1e
+  artifacts/phase18/sgemm-build-20261113-v2/export/complete.json: 4e71b8e0d350ef195d567b1899f7a72030bb2fe39884d70fbbdde452c64d802d
+  artifacts/phase18/sgemm-build-20261113-v2/comparison.json: c2e17cef993e8f79cef74a915f3d51e839b08f3c1b21391be14a031f2e19d779
+sgemm_registration: configs/experiments/phase18-sgemm-build-v2.yaml
+operands: artifacts/phase18/sgemm-build-20261113-v2/export/operands.json
+controls:
+  windows: artifacts/phase18/operator-probe-20261113-v1/windows/trace.jsonl
+  linux: artifacts/phase18/operator-probe-20261113-v1/linux/result/trace.jsonl
+native_receipt: artifacts/phase18/operator-probe-20261113-v1/linux/result/complete.json
+environment:
+  MKL_CBWR: null
+  MKL_VERBOSE: '1'
+  MKL_NUM_THREADS: '1'
+  OMP_NUM_THREADS: '1'
+  MKL_THREADING_LAYER: GNU
+  MKL_INTERFACE_LAYER: LP64
+  LD_PRELOAD: null
+arms:
+- native
+- aligned
+native_control: Fresh original Linux Torch trace must exactly reproduce EVERY field of all nine completed
+  original Linux full operation traces; same installed dependency/binary/build fingerprints and 90 original
+  source/97 scientific input pins. Stop before aligned if any native control fails.
+aligned_control: After loading original Torch in a fresh process, explicitly load the pinned MKL2026.1
+  runtime RTLD_LOCAL, no preload or original environment mutation. All 27 fixed common-input SGEMM forward
+  and ones-VJP controls must reproduce Windows exactly including repeats before any integrated trace.
+  Retain failed attempted records and stop if not.
+integration: Only in the aligned child, temporarily replace existing three Linear layer forward methods
+  with an autograd Function using explicit SGEMM. Same original float32 weight/bias/input bytes, forward
+  T/N beta1 bias and backward N/N beta0 with ACTUAL upstream gradient. Existing ReLU/sigmoid/calibrator
+  remain unmodified. Only input gradients are requested; parameter gradients intentionally absent, no
+  training. Restore patched instance methods on exit.
+measurements: Direct ModelBundle.torch_forward and manual original operation chain must match exactly
+  within each arm; repeat entire traces exactly. Compare every layer native/common-Windows operands, parameter
+  SHA, output/ones-VJP and complete surrogate input-gradient with both original native traces. No tolerance
+  or accepted-difference changes. Write each attempt before failure. Nonfinite/repeat failures cannot
+  pass.
+interpretation: Aligned nine-point agreement would validate only this isolated full-surrogate/input-gradient
+  bridge. Does not prove full production objective, 53-case/159-point gradients, search results, FD001
+  parity, performance, packaging or release. Any further proof or adoption requires separate registration
+  and gates.
+isolation: Original Linux recovery/model environment and verified runtime volume read-only; MAIN evidence
+  read-only; new output path/container/fresh interpreters. No fits/optimizer queries; forbid recommend
+  and true predictor scoring in diagnostic. Preserve Windows dashboard and all historical evidence.
+timing: Operational arm time only, not serial latency/generalization/physical evidence.
+expected_aligned_calls:
+  forward: 270
+  backward: 216

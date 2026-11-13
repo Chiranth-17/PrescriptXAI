@@ -1,5 +1,35 @@
 # PrescriptXAI Progress
 
+## Selected Torch integration registered; evaluation guide delivered (13 November 2026 IST)
+
+`phase18-torch-build-integration-v1.yaml` registers the next isolated diagnostic
+before any genuine calls. It reuses the same three cases/nine points and original
+90 source/97 asset guards. A fresh native Linux child must reproduce every field
+of the saved nine full operation traces before the aligned child may start.
+The aligned child first rechecks all 27 fixed SGEMM pairs after importing Torch,
+then temporarily bridges only its existing Linear forwards and input gradients
+to the pinned library. Actual upstream gradients, fixed original float32 weights,
+ReLU/sigmoid/calibration and original package files are preserved. No production
+adoption, parameter training, objective evaluation or optimizer query is authorized.
+Every attempted trace is retained, including failed controls, with exact repeats,
+nonfinite rejection, full runtime/build and helper/evidence pins.
+
+Eleven ABI/bridge/metadata harness tests passed in 4.43 s, including nonuniform
+upstream derivatives, restoration of patched layer methods, immutable parameters
+and malformed-input rejection. An earlier test command named a nonexistent test
+file and ran zero tests; its failed invocation is not a pass. Ruff and mypy91
+pass. Original Linux environment/runtime and MAIN evidence stay read-only, with
+fresh output paths. This is registration only; no nine-point outcome yet.
+
+The separate user-requested simple explanation/demo guide is delivered at
+`output/pdf/PrescriptXAI_Simple_Explanation_and_Demo_Guide.pdf`: 12 pages,
+366455 bytes, SHA256 a435b932f7f6ea795df87dd3b8153af761ee8670ee2e253a7d4aa63fe8ec1d91.
+It includes opening scripts, plain methodology, real desktop captures, the new
+edited-input workflow, partial adherence, a six-minute script, Q&A and checklist.
+All 12 pages rendered and visually checked; sources and original PDF/ZIP hashes
+verified unchanged. Companion editable text/source manifest/QA remain ignored.
+Guide snapshot `26852f9`, not a final audit/release or new measurement.
+
 ## Isolated SGEMM build alignment matches the saved Windows operations (13 November 2026 IST)
 
 Registered `phase18-sgemm-build-v2.yaml` at `5358076` completed at controller
