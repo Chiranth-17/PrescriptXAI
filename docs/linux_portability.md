@@ -212,6 +212,37 @@ unchanged historical results; another complete regression is premature. The
 separate legacy path-identity migration and Linux software failures also remain
 open. Windows demo and original reports stay available; Phase 18 is partial.
 
+## Registered isolated backend-policy check
+
+Read-only ELF inspection retained under
+`artifacts/phase18/native-linkage-20261113-v1` finds MKL/SGEMM symbols defined
+inside the original Linux `libtorch_cpu.so` and no dynamic MKL library dependency.
+This is a linkage observation, not a claim that an arbitrary external library
+can safely replace the embedded implementation. No model was imported or scored
+by that inspection; the original volume was read-only.
+
+`configs/experiments/phase18-backend-policy-v1.yaml` preregisters four fresh
+child processes: native and `MKL_CBWR=COMPATIBLE` on each OS, nine fixed points
+per arm. Both arms log `MKL_VERBOSE=1`; each unchanged native arm must reproduce
+the full previous native operation trace exactly. Compatible-arm changes are
+explicitly retained. All arms require exact repeats and exact traced versus
+public forward/backward paths. No solve, fit or production-policy change occurs.
+
+This AMD host motivates testing the mode documented for non-Intel processors,
+rather than assuming AVX2 CNR selection is supported. Intel documents the
+`COMPATIBLE` policy and fixed-thread conditions in its
+[conditional reproducibility guide](https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2026-0/getting-started-with-conditional-numerical.html).
+[PyTorch's reproducibility note](https://docs.pytorch.org/docs/2.14/notes/randomness.html)
+does not promise identical results across platforms. These sources motivate a
+diagnostic, not proof that a mode change fixes this application.
+
+If the compatible arms agree with each other but change the approved Windows
+native values, they demonstrate only a possible future execution policy. That
+would not preserve the historical baseline or authorize another regression.
+If the arms still differ, reject the mode-only repair and keep the negative
+result. Original builds, package dependencies, baselines and tolerances remain
+unchanged. This registration precedes calls; it is not a reported outcome.
+
 For the academic Phase 2 evaluation, use the established Windows demonstration
 and the supplied report with its original snapshot. The public benchmark and
 synthetic sample are advisory demonstrations, not evidence of physical efficacy,

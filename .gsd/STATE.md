@@ -5,6 +5,15 @@ current_activity: solo_step5_packaging_lite
 activity_status: phase18_linux_search_portability_open
 ---
 
+## Isolated backend-policy study registered (13 November 2026 IST)
+
+No gate is active. New phase18-backend-policy-v1 registers four child arms:
+native/COMPATIBLE on Windows/Linux,9fixedpoints each,no solves/fits. Native
+operation controls must reproduce exactly; all arms require exact repeats.
+Agreement that changes historical Windows values would not be an accepted fix.
+ELF inspection finds MKL symbols inside libtorch_cpu.so, no separate dynamic
+MKL dependency. Original environments unchanged. Phase18 remains open.
+
 ## First surrogate Linear operation differs (13 November 2026 IST)
 
 No gate is running. Operator-probe-v1 at79b28e8 completed3cases/9points/runtime,

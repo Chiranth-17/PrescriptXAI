@@ -1,5 +1,25 @@
 # PrescriptXAI Progress
 
+## Phase 18 isolated backend-policy study registered (13 November 2026 IST)
+
+Read-only Linux ELF inspection finds MKL/SGEMM symbols defined in the existing
+`libtorch_cpu.so`, with no separate dynamic MKL dependency. It imported no model
+and made no scoring/search/fitting calls. Metadata and native logs are retained
+in `artifacts/phase18/native-linkage-20261113-v1`; originals stayed read-only.
+
+The new committed `phase18-backend-policy-v1.yaml` registers native versus
+`MKL_CBWR=COMPATIBLE` in separate child interpreters on Windows and Linux.
+Each arm evaluates the same nine fixed points and common Windows operation
+operands, with verbose native BLAS logging and no solving or fits. Native arms
+must exactly reproduce prior complete operation controls; every arm must repeat
+exactly and preserve the production chain. Compatible changes are not silently
+accepted. Cross-platform agreement that changes historical Windows values would
+not constitute a baseline-preserving repair. Intel/PyTorch primary documentation
+and interpretation limits are linked in `docs/linux_portability.md`.
+
+Five diagnostic harness tests passed in 6.03 s; Ruff passed. This is registration
+before calls, not a backend result, regression pass or Phase 18 closure.
+
 ## Phase 18 surrogate operation difference localized (13 November 2026 IST)
 
 The fixed-operation design committed at `79b28e8` completed on Windows and Linux
