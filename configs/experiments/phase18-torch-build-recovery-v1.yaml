@@ -1,0 +1,26 @@
+schema_version: 1
+purpose: Explicit infrastructure recovery of registered nine-point Torch integration; no numerical/source/policy
+  change.
+original_registration: configs\experiments\phase18-torch-build-integration-v1.yaml
+original_config_sha256: 7ad9cfa63cdce5d72c359c3e7eb4e5f891c4cd3abe8d4a9bd104acee996a8282
+registered_script_canonical_sha256: 2f8cbcca5fe4cd2daa1b63a8838f31a2b22340e9939446ee1cf35ccd5f8380b3
+original_source: 50f3d6afe6b7160fa0079ae132941a4811def873
+failed_attempt: artifacts\phase18\torch-build-integration-20261113-v1
+failure_preservation_sha256: 39c395c08c44eadec64683091eb85ea14353164bc74ad15105cbe4a991b632d3
+failure: All9 original native traces exact/repeated, then Git executable absent when writing provenance
+  receipt. Native/controller1; no complete receipt and aligned arm never launched.
+fix: Use a new image snapshot of the already Git-provisioned stopped original operator-probe container
+  filesystem. Docker commit leaves original container/volumes unchanged. No package installation into
+  original environment or refit. Preflight actual Git before numerical children.
+snapshot_origin_container: psx-phase18-operator-probe-20261113-v1
+snapshot_image_id: sha256:b4b935b9fb27e14cd7af0523062af94be60bb844fb0da06d6a30bc7345af8393
+git_version: 2.47.3
+git_preflight_exit: 0
+fresh_output: artifacts/phase18/torch-build-integration-recovery-20261113-v1/linux
+numeric_observation_reuse: 0
+policy: Run both fresh original native and aligned children under unchanged original design; native9traces
+  must pass exactly before aligned27controls then9integrationtraces. Native runtime/binary/source/data
+  guards unchanged. Keep every failed/native/segment timing record; no fabricated completion for old attempt.
+isolation: Original Linux recovery/model and prepared runtime volumes read-only, evidence/wheels read-only,
+  new receipts writable, rootfsread-only/networknone. Windows dashboard unchanged.
+scope: Infrastructure recovery only; not production adoption, optimizer/search, full regression or release.

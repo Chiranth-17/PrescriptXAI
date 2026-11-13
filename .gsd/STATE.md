@@ -2,8 +2,18 @@
 phase: 13
 status: complete
 current_activity: phase18_native_build_integration
-activity_status: selected_torch_integration_registered
+activity_status: selected_torch_tooling_recovery_registered
 ---
+
+## Tooling failure preserved; explicit recovery registered
+
+V1 source50f3d6a completed9exact/repeated native traces then native1 because
+Git executable missing during provenance receipt. Controller1, alignedNOTrun,
+allraw/runtime/logs pinned, no fake originalcompletion. New recovery config
+phase18-torch-build-recovery-v1 registers snapshotimage of original already
+Git-provisioned stopped operatorcontainer; originalfiles/volumes unchanged.
+Git2.47.3preflight0, same original numerical config/source/data/runtime guards,
+bothfreshchildren/newoutputs/no numericreuse. No recoveryjob active yet.
 
 ## Selected Torch integration preregistration (13 November 2026 IST)
 

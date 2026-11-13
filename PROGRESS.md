@@ -1,5 +1,25 @@
 # PrescriptXAI Progress
 
+## Torch integration v1 stopped on missing provenance tool; recovery registered
+
+The registered v1 at `50f3d6a` generated all nine native traces, each exactly
+matching every original Linux field and its repeat. It then exited1 while
+writing the provenance receipt because the minimal image has no Git executable.
+No native completion receipt exists and the controller correctly withheld the
+aligned arm. All traces/logs/runtime fingerprints/native1 and controller1 remain
+in `torch-build-integration-20261113-v1`, pinned by `failure-preservation.json`.
+No fit, solver query or aligned operation ran. This was a post-compute launcher
+tooling failure, not a new numerical mismatch or a passing gate.
+
+`phase18-torch-build-recovery-v1.yaml` explicitly registers the infrastructure
+fix: a new local image snapshot of the already Git-provisioned original stopped
+operator-probe container filesystem. Original container/volumes are unchanged.
+Git2.47.3 preflight actually passes in the new image; no package is installed
+into an original model environment. Both native and aligned children will run
+fresh under the unchanged committed numerical design/guards with new outputs,
+zero numeric reuse. The original failed segment is not rewritten as native0.
+No new recovery integration observations exist at this registration checkpoint.
+
 ## Selected Torch integration registered; evaluation guide delivered (13 November 2026 IST)
 
 `phase18-torch-build-integration-v1.yaml` registers the next isolated diagnostic
