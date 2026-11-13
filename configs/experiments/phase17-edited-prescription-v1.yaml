@@ -1,0 +1,20 @@
+schema_version: 1
+purpose: User-requested dashboard generation from edited controllable starting settings, not a new benchmark or phase closure.
+machine_id: cmapss_fd001
+profile: configs/experiments/phase7-FD001-xgb-v1.yaml
+recorded_case_selection: Existing first case-study scenario selected by phase17-dashboard-v1; no new outcome-based selection.
+functional_edit:
+  feature: First active fitted control in taxonomy order
+  fraction_of_absolute_slider_range: 0.001
+  direction: Positive if within upper bound, otherwise negative
+tests:
+  - Real risk preview equals the prepared edited starting-state assessment
+  - Original replay and every prior row remain unchanged; frozen measurements stay fixed
+  - Genuine spawned FAST worker uses edited controls and rejects a stale original input hash
+  - Explicit button required after slider edits; slider movement alone does not start a solve
+  - Subsequent edits clear the previous prescription and its export
+  - Four checks, demonstration label, Alerts-only and bounds/quality restrictions remain
+  - Follow-up and waterfall use the edited starting state, not the old recorded baseline
+browser: Real rendered local Windows dashboard, edit an adjustable setting and generate; verify current risk, checked result or honest withholding, export and stale clearing.
+scientific_policy: No threshold, model, bound, rate, sparsity, calibration, optimization algorithm, historical result, known-difference or public result-schema change.
+verification_scope: Targeted integration plus software coverage, lint/types/docs and real browser acceptance. No full-corpus regression or closure tag for this feature task.

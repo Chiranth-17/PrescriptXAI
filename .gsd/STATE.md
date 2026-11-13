@@ -1,9 +1,18 @@
 ---
 phase: 13
 status: complete
-current_activity: solo_step5_packaging_lite
-activity_status: phase18_linux_search_portability_open
+current_activity: user_dashboard_edited_settings
+activity_status: editable_prescription_verification_pending
 ---
+
+## User dashboard request takes priority (13 November 2026 IST)
+
+Edited-controllable-settings prescription generation is implemented, pending
+real worker/AppTest/browser/coverage verification. Explicit Generate button,
+exact-input worker binding, coupled edited baseline, preserved history/frozen
+context, all checks/publication rules unchanged, stale results/exports cleared.
+Registered functional plan phase17-edited-prescription-v1. Ruff/mypy91 pass.
+No full regression or new closure claim. Linux SGEMM v2 still unlaunched.
 
 ## SGEMM v1 stopped before calls; v2 preregistered (13 November 2026 IST)
 

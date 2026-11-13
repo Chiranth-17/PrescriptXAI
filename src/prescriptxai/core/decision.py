@@ -48,6 +48,11 @@ class DecisionRuntime(Protocol):
     ) -> tuple[Assessment, bool]:
         """Score the simulated settings and flag unusual combinations."""
 
+    def simulation_state(
+        self, x_raw: Mapping[str, float], context: InputContext, controls: Mapping[str, float]
+    ) -> dict[str, float]:
+        """Prepare a coupled what-if starting state without changing observed history."""
+
     def validate_controls(
         self,
         x_raw: Mapping[str, float],
@@ -159,6 +164,19 @@ class MachineDecision:
         state, context = self._observed(window)
         self._publishable()
         return self._checked_result(self._runtime.recommend(state, context, mode))
+
+    def simulation_window(
+        self, window: pd.DataFrame, controls: Mapping[str, float]
+    ) -> pd.DataFrame:
+        """Copy the replay and change only its last state to the previewed what-if settings."""
+        state, context = self._observed(window)
+        simulated = window.copy(deep=True)
+        if controls:
+            candidate = self._runtime.simulation_state(state, context, controls)
+            for feature in self.spec.measurement_features:
+                position = list(simulated.columns).index(feature.id)
+                simulated.iat[-1, position] = candidate[feature.id]
+        return simulated
 
     def _checked_result(self, result: RecourseResult) -> MachineRecourseResult:
         if result.alert and not (result.validation_report.joint and result.action_feasible):

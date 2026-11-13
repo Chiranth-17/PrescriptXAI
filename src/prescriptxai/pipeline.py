@@ -720,6 +720,22 @@ class PrescriptXAI:
         return proposed, actions
 
     @_artifact_boundary
+    def simulation_state(
+        self,
+        x_raw: Mapping[str, float],
+        context: InputContext,
+        controls: Mapping[str, float],
+    ) -> dict[str, float]:
+        """Prepare the same coupled what-if state used by the risk preview, without scoring."""
+        state, _ = self._normalize(x_raw, context, complete=True)
+        if not controls:
+            return state
+        proposed, _ = self._control_state(state, controls)
+        if check_bound_violations(proposed, self.engine.taxonomy, features=tuple(controls)):
+            raise InputError("settings exceed the configured slider bounds")
+        return apply_coupling_for_bundle(proposed, self.engine.coupling, reference_state=state)
+
+    @_artifact_boundary
     def simulate_risk(
         self,
         x_raw: Mapping[str, float],

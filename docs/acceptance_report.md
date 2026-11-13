@@ -1,5 +1,17 @@
 # Dashboard acceptance status
 
+## User-requested edited starting settings (13 November 2026)
+
+An editable prescription path is implemented and pending verification at this
+checkpoint. After moving a controllable slider, the user explicitly chooses
+"Generate prescription for current settings". The same bounded, coupled state
+used by the risk preview becomes the solver's starting state. Original replay
+history and frozen context are preserved; proposed changes and follow-up are
+measured from the edited state. A subsequent edit invalidates the old result.
+All publication, four-tier and demonstration-label restrictions remain.
+The functional plan is `phase17-edited-prescription-v1.yaml`; this update does
+not reopen or relabel the historical Phase 17 gate or claim a new release gate.
+
 The Phase 17 technical gate passed. Human usability and full Step 3B
 acceptance remain pending. The registered dashboard machine is the NASA FD001
 simulated archive. It uses demonstration limits, as does the Phase 13 toy test

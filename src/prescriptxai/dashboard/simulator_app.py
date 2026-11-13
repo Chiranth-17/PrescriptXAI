@@ -205,9 +205,7 @@ def _prescription(
 ) -> MachineRecourseResult | None:
     input_hash = preview.input_hash
     job = cast(PrescriptionJob | None, st.session_state.get("simulator_job"))
-    if job is not None and job.input_hash != input_hash and (
-        not controls or not job.future.done()
-    ):
+    if job is not None and job.input_hash != input_hash:
         _cancel_prescription()
         job = None
     if decision.spec.alerts_only:
@@ -215,19 +213,39 @@ def _prescription(
         st.session_state.pop("simulator_reference", None)
         st.info(f"Recommendation withheld: {decision.spec.limits_label}")
         return None
-    if controls:
-        _manual_comparison(decision, window, preview, controls)
-        return None
+    generate = st.button(
+        "Generate prescription for current settings",
+        type="primary",
+        disabled=not preview.assessment.alert,
+        help="Find checked changes starting from the settings currently shown above.",
+    )
     if not preview.assessment.alert:
         _cancel_prescription()
         st.info("No action needed at the current alert threshold.")
         return None
+    if generate:
+        _cancel_prescription()
+        job = None
+    if controls:
+        st.caption("Simulated starting settings · The prescription starts from your edits.")
+        if job is None and not generate:
+            st.info(
+                "Choose Generate prescription for current settings after adjusting the sliders."
+            )
+            return None
     if job is None:
         snapshot = window.copy(deep=True)
+        selected_controls = dict(controls)
 
         def solve(cancelled: Event) -> MachineRecourseResult:
             return solve_prescription(
-                registry, decision.spec.machine_id, settings, snapshot, input_hash, cancelled
+                registry,
+                decision.spec.machine_id,
+                settings,
+                snapshot,
+                input_hash,
+                cancelled,
+                selected_controls,
             )
 
         job = PrescriptionJob.start(computation_pool(), input_hash, solve)
@@ -250,8 +268,13 @@ def _prescription(
     except BrokenProcessPool:
         st.warning("Recommendation withheld: the local prescription worker stopped.")
         return None
-    render_recommendation(decision, window, result, settings.report_directory)
-    st.session_state["simulator_reference"] = (input_hash, result)
+    starting = decision.simulation_window(window, controls) if controls else window
+    render_recommendation(decision, starting, result, settings.report_directory)
+    if not controls:
+        st.session_state["simulator_reference"] = (input_hash, result)
+    elif st.session_state.get("simulator_reference") is not None:
+        with st.expander("Compare with the recorded settings"):
+            _manual_comparison(decision, window, preview, controls)
     return result
 
 
@@ -295,9 +318,7 @@ def _simulator(spec: MachineSpec, registry: MachineRegistry) -> None:
         and st.query_params.get("time") == str(time)
         else ""
     )
-    _interactive(
-        decision, registry, settings, frame, unit, time, window, selection, restore
-    )
+    _interactive(decision, registry, settings, frame, unit, time, window, selection, restore)
     job = cast(PrescriptionJob | None, st.session_state.get("simulator_job"))
     if job is not None and not job.future.done():
         _wait_for_prescription(job)
@@ -356,6 +377,7 @@ def _render_interactive(
     conditions, predictions = st.columns([1, 1])
     with conditions, st.container(border=True):
         st.markdown("**Current adjustable settings**")
+        st.caption("Adjust these settings, then generate a prescription for your starting state.")
         controls = _settings(decision, window, selection, restore)
     params = {
         "machine": spec.machine_id,
@@ -396,7 +418,12 @@ def _render_interactive(
             if result is not None
             else None
         )
-        feedback = render_follow_up(decision, window, frame, result, scope, settings.follow_up)
+        starting = (
+            decision.simulation_window(window, controls)
+            if result is not None and controls
+            else window
+        )
+        feedback = render_follow_up(decision, starting, frame, result, scope, settings.follow_up)
     current = {
         name: controls.get(name, float(window[name].iloc[-1])) for name in decision.control_bounds()
     }
@@ -410,7 +437,6 @@ def _render_interactive(
     # Publish the settings link after the risk and every dependent output.
     if st.query_params.to_dict() != params:
         st.query_params.from_dict(params)
-
 
 
 def main() -> None:

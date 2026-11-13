@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from html import escape
+from math import isclose
 
 from prescriptxai.dashboard.simulator_prescription import prescription_checks
 from prescriptxai.machine_schema import (
@@ -77,7 +78,18 @@ def scenario_report(
     follow_up = "<p>No follow-up is attached to this report.</p>"
     if spec.alerts_only:
         prescription = f"<p>{escape(spec.limits_label)}.</p>"
-    elif result is not None:
+    elif (
+        result is not None
+        and result.machine_id == spec.machine_id
+        and result.spec_hash == spec.spec_hash
+        and result.protocol_version == score.protocol_version
+        and result.synthetic == spec.synthetic
+        and result.config_hash == score.config_hash
+        and result.joint
+        and result.action_feasible
+        and isclose(result.risk_before, score.risk, rel_tol=0, abs_tol=1e-9)
+        and all(result.original_state.get(name) == value for name, value in settings.items())
+    ):
         prescription = _prescription_section(features, result)
         if feedback is not None:
             record, scope = feedback

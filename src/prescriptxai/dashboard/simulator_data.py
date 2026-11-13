@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from concurrent.futures import CancelledError, ProcessPoolExecutor, wait
+from math import isclose
 from multiprocessing import get_context
 from pathlib import Path
 from threading import Event
@@ -98,11 +99,22 @@ def _solve_prescription(
     settings: DashboardSettings,
     window: pd.DataFrame,
     input_hash: str,
+    controls: Mapping[str, float] | None = None,
 ) -> MachineRecourseResult:
     decision = simulator_decision(registry, machine_id, settings, isolated=True)
-    if decision.input_hash(window, {}) != input_hash:
+    current = dict(controls or {})
+    if decision.input_hash(window, current) != input_hash:
         raise RecommendationWithheld("The model or recorded conditions changed")
-    return decision.recommend(window, "fast")
+    starting = decision.simulation_window(window, current) if current else window
+    result = decision.recommend(starting, "fast")
+    if current and not isclose(
+        result.risk_before,
+        decision.simulate_risk(window, current).assessment.risk,
+        rel_tol=0,
+        abs_tol=1e-9,
+    ):
+        raise RecommendationWithheld("The prescription does not match the current risk preview")
+    return result
 
 
 def solve_prescription(
@@ -112,13 +124,19 @@ def solve_prescription(
     window: pd.DataFrame,
     input_hash: str,
     cancelled: Event,
+    controls: Mapping[str, float] | None = None,
 ) -> MachineRecourseResult:
     """Submit the bound snapshot and drop stale work without blocking a new session edit."""
     if cancelled.is_set():
         raise CancelledError()
     future = prescription_pool().submit(
-        _solve_prescription, MachineRegistry(registry.root, registry.workspace),
-        machine_id, settings, window, input_hash,
+        _solve_prescription,
+        MachineRegistry(registry.root, registry.workspace),
+        machine_id,
+        settings,
+        window,
+        input_hash,
+        dict(controls or {}),
     )
     while not cancelled.is_set():
         if wait((future,), timeout=0.05).done:

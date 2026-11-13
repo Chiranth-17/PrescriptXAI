@@ -1,5 +1,24 @@
 # PrescriptXAI Progress
 
+## Edited-settings dashboard flow implemented, verification pending (13 November 2026)
+
+The user requested live prescriptions after editing controllable sliders.
+Previously the dashboard deliberately entered reference-comparison mode and
+returned without starting a new search. The new explicit generation button
+submits the actual edited settings with their input identity. The original
+preview coupling prepares the edited last-row state, with prior replay rows and
+frozen measurements unchanged. Existing FAST search and all four checks then
+run normally. Slider movement alone does not trigger a solve, and subsequent
+edits invalidate even a completed prior job. Waterfall and follow-up use the
+edited baseline; exports require current settings/risk/provenance agreement.
+
+Plan `configs/experiments/phase17-edited-prescription-v1.yaml` is committed before
+the new functional measurements. Ruff and mypy 91 source files pass; genuine
+worker/AppTest/browser and software coverage checks are pending. No threshold,
+model, solver algorithm, public schema, baseline or known-difference change.
+Linux SGEMM v2 remains registered but unlaunched; current user dashboard work
+takes priority, and existing reports/results remain unchanged.
+
 ## Phase 18 SGEMM metadata preflight failure preserved (13 November 2026 IST)
 
 Registered v1 source `2ae3a21` exported all 27 fixed Linear operands/weights

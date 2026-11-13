@@ -184,6 +184,7 @@ def test_simulator_view_and_url_restore(
         break
     else:
         pytest.fail("The recorded observation offers no visible change across its controls")
+
     def unexpected_solve(*_args: object, **_kwargs: object) -> None:
         pytest.fail("A manual slider edit attempted to schedule a prescription")
 
@@ -369,6 +370,157 @@ def test_spawned_prescription_binds_current_inputs(
     cancel.set()
     with pytest.raises(CancelledError):
         solve_prescription(registry, DEFAULT_MACHINE, settings, window, input_hash, cancel)
+
+
+def _small_control_edit(decision: MachineDecision, window: pd.DataFrame) -> dict[str, float]:
+    """Choose a fixed small edit within a real active control's configured bounds."""
+    name, (lower, upper) = next(iter(decision.control_bounds().items()))
+    original = float(window[name].iloc[-1])
+    step = (upper - lower) * 0.001
+    value = original + step if original + step <= upper else original - step
+    assert lower <= value <= upper and value != original
+    return {name: value}
+
+
+def test_edited_starting_state_uses_preview_coupling_and_preserves_history(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    case_evidence: tuple[pd.DataFrame, dict[str, Any]],
+) -> None:
+    """The current starting state matches the real preview without changing replay history."""
+    decision, _, _ = replay
+    window, _ = case_evidence
+    original = window.copy(deep=True)
+    controls = _small_control_edit(decision, window)
+    starting = decision.simulation_window(window, controls)
+    pd.testing.assert_frame_equal(window, original)
+    pd.testing.assert_frame_equal(starting.iloc[:-1], original.iloc[:-1])
+    assert (
+        decision.assess(starting, "fast").risk
+        == decision.simulate_risk(window, controls).assessment.risk
+    )
+    for feature in decision.spec.measurement_features:
+        if feature.role == "frozen":
+            assert starting[feature.id].iloc[-1] == original[feature.id].iloc[-1]
+    name = next(iter(controls))
+    assert starting[name].iloc[-1] == controls[name]
+    with pytest.raises(InputError, match="only configured controllable"):
+        decision.simulation_window(window, {"not_a_control": 1.0})
+    with pytest.raises(InputError, match="slider bounds"):
+        decision.simulation_window(window, {name: decision.control_bounds()[name][1] + 1})
+
+
+def test_spawned_prescription_uses_edited_controls_and_rejects_stale_hash(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    case_evidence: tuple[pd.DataFrame, dict[str, Any]],
+) -> None:
+    """A genuine production worker solves from edited settings, never the old preset."""
+    decision, _, _ = replay
+    window, _ = case_evidence
+    controls = _small_control_edit(decision, window)
+    preview = decision.simulate_risk(window, controls)
+    result = solve_prescription(
+        MachineRegistry(),
+        DEFAULT_MACHINE,
+        load_settings(Path("configs/dashboard.yaml")),
+        window,
+        preview.input_hash,
+        Event(),
+        controls,
+    )
+    assert result.joint and result.action_feasible
+    assert result.risk_before == preview.assessment.risk
+    assert DEMONSTRATION_LIMITS_LABEL in result.warnings
+    for name, value in controls.items():
+        assert result.original_state[name] == value
+    assert result.original_state != decision._observed(window)[0]
+    starting = decision.simulation_window(window, controls)
+    followup = decision.feedback(
+        starting, result, {name: result.new_state[name] for name in result.action_features}
+    )
+    assert followup.applied_risk == pytest.approx(result.risk_after, abs=1e-9, rel=0)
+    with pytest.raises(RecommendationWithheld, match="conditions changed"):
+        _solve_prescription(
+            MachineRegistry(),
+            DEFAULT_MACHINE,
+            load_settings(Path("configs/dashboard.yaml")),
+            window,
+            decision.input_hash(window, {}),
+            controls,
+        )
+
+
+def test_dashboard_generates_from_edits_and_clears_superseded_advice(
+    replay: tuple[MachineDecision, PrescriptXAI, pd.DataFrame],
+    case_evidence: tuple[pd.DataFrame, dict[str, Any]],
+) -> None:
+    """Drive sliders, explicit generation, genuine worker, follow-up and stale exports."""
+    decision, _, _ = replay
+    window, _ = case_evidence
+    controls = _small_control_edit(decision, window)
+    preset = scenario_presets(MachineRegistry(), DEFAULT_MACHINE, "test", decision.spec.spec_hash)[
+        0
+    ]
+    page = _app_test()
+    page.query_params.update(
+        machine=DEFAULT_MACHINE,
+        spec=decision.spec.spec_hash,
+        unit=preset.unit,
+        time=str(preset.time),
+    )
+    page.run()
+    name, value = next(iter(controls.items()))
+    label = next(f.label for f in decision.spec.measurement_features if f.id == name)
+    next(s for s in page.slider if s.label.startswith(label + " (")).set_value(value).run()
+    assert not page.exception and not page.error
+    assert "simulator_job" not in page.session_state
+    assert all(m.label != "Predicted risk with the prescription" for m in page.metric)
+    generate = next(
+        b for b in page.button if b.label == "Generate prescription for current settings"
+    )
+    assert not generate.disabled
+    generate.click().run()
+    assert not page.exception and not page.error
+    job = page.session_state["simulator_job"]
+    result = job.future.result(timeout=90)
+    assert job.input_hash == decision.input_hash(window, controls)
+    assert result.original_state[name] == value
+    page.run()
+    assert not page.exception and not page.error
+    assert any(
+        m.label == "Predicted risk with the prescription" and m.value == f"{result.risk_after:.1%}"
+        for m in page.metric
+    )
+    assert any(s.label.startswith("Applied ") for s in page.slider)
+    current = {
+        key: controls.get(key, float(window[key].iloc[-1])) for key in decision.control_bounds()
+    }
+    report = scenario_report(
+        decision.spec,
+        preset.unit,
+        preset.time,
+        current,
+        decision.simulate_risk(window, controls),
+        result,
+        None,
+    )
+    assert result.run_id in report and DEMONSTRATION_LIMITS_LABEL in report
+    lower, upper = decision.control_bounds()[name]
+    step = (upper - lower) * 0.001
+    newer_value = value + step if value + step <= upper else value - step
+    next(s for s in page.slider if s.label.startswith(label + " (")).set_value(newer_value).run()
+    assert not page.exception and not page.error
+    assert all(m.label != "Predicted risk with the prescription" for m in page.metric)
+    newer_controls = {name: newer_value}
+    stale = scenario_report(
+        decision.spec,
+        preset.unit,
+        preset.time,
+        {**current, **newer_controls},
+        decision.simulate_risk(window, newer_controls),
+        result,
+        None,
+    )
+    assert result.run_id not in stale and "No prescription was published" in stale
 
 
 def test_waterfall_replays_saved_case_with_real_predictor(
