@@ -1,5 +1,28 @@
 # PrescriptXAI Progress
 
+## Academic Phase 2 verification addendum delivered (13 November 2026 IST)
+
+A separate four-page `output/pdf/Verification_Status_Addendum_20261113.pdf`
+records the passed Windows gate, failed Linux gate, scoped diagnostics including
+the rejected mode-only repair, exact local-demo command and remaining technical/
+human tasks. It accompanies the original shared report, gallery and team ZIP;
+all three original file hashes remain unchanged. It is progress evidence, not
+a Phase 19 audit, acceptance sign-off or release.
+
+The addendum is generated from retained JSON receipts and the actual Linux
+software log, with per-input hashes and config bindings in its sources manifest.
+All four pages were rendered and visually inspected; final text geometry and
+source/hash checks passed. No replacement glyphs or clipped text were found.
+The PDF is 52,840 bytes; SHA256 is
+`611885710f317f9130c2cea0d3b95644ebfe4ce1a9488b123bf2c632aeadd406`.
+QA and protected-snapshot proofs accompany the ignored PDF. Original screenshots
+remain in the shared gallery; no new render or participant evidence is invented.
+
+Saved arithmetic verification also reproduces all backend-policy comparisons
+and verifies actual OFF/COMPATIBLE SGEMM logging with one thread in each arm,
+without further model calls. The mode-only fix remains rejected. No job is
+active, production and comparison policy are unchanged, and Phase 18 is open.
+
 ## Phase 18 mode-only backend repair rejected (13 November 2026 IST)
 
 The preregistered backend-policy study at `0079eee` completed four isolated

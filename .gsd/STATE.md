@@ -5,6 +5,15 @@ current_activity: solo_step5_packaging_lite
 activity_status: phase18_linux_search_portability_open
 ---
 
+## Current evaluation addendum prepared (13 November 2026 IST)
+
+New four-page output/pdf/Verification_Status_Addendum_20261113.pdf reflects
+the failed Linux gate and negative mode-only study, with demo path and remaining
+work. Generated from receipts; four rendered pages and source/hash checks pass.
+Original report/gallery/ZIP unchanged. No job active; Windowsdemo preserved;
+Phase18 stillopen. Further build/version alignment needs isolated registration
+and fixed-operation proof before new searches. Human sessions remain pending.
+
 ## Compatible mode alone does not repair parity (13 November 2026 IST)
 
 No job is active. Backend-policy-v1 at0079eee completed4arms/9points perarm,
