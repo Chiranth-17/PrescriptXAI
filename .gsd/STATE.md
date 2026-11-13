@@ -1,9 +1,21 @@
 ---
 phase: 18
 status: in_progress
-current_activity: user_dashboard_aesthetic_refresh
-activity_status: aesthetic_refresh_verified_locally
+current_activity: evaluation_demo_preserved
+activity_status: broader_objective_reviewed_no_active_run
 ---
+
+## Broader objective review complete; keep evaluation demo stable
+
+No job active. Saved-file review ofsourcec8e091b/nativepackage909986c verifies
+159/159nativeLinuxrows exact. Aligned159directsurrogate/inputgrad/riskcomponents
+EXACTWindows; completeobjectiveonly21rows exact/138smalldifferences/0outside1e-6.
+Maxobjective2.255546860396862e-8/fullgrad3.7834979593753815e-10; residualsretained,
+not accepted or guaranteedtrajectoryparity.53FD002cases/159points/53intercepted
+setups perarm,0SciPyiterations/completedqueries/fits. Bothchildren/controller0;
+allteacher/repeat/27SGEMMcontrols pass. Rootreviewnotindependentaudit/release.
+Next narrowselected-search mustbe separatelypreregistered; none launched.
+Preserve11amISTWindowsdemo; no newnumericjob duringpresentation. Phase18partial.
 
 ## Aesthetic refresh locally verified
 

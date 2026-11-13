@@ -1,5 +1,39 @@
 # PrescriptXAI Progress
 
+## Broader first-objective raw review complete; residuals retained
+
+Registered diagnostic `c8e091b` completed both fresh children/controller with
+native0 at04:43:18UTC, before the aesthetic edits. Root saved-file verification
+now recomputes all159 rows per arm, native/complete/config/trace hashes and exact
+comparison lists without importing a model or making a numerical call. Native
+matches all159 original Linux rows exactly. The aligned arm matches original
+Windows direct surrogate values, complete input gradients and dense risk
+components exactly at all159 selected points (maximum difference0).
+
+The complete dense first-objective is not bit-exact:21 full rows exact,
+138 rows retain differences, none outside the unchanged abs1e-6 envelope.
+Maximum lifted-feature delta2.1496693314304594e-14, objective delta
+2.255546860396862e-8, full objective-gradient delta3.7834979593753815e-10,
+and feasibility-component delta2.2560016077477485e-9. These residuals are not
+accepted known differences and do not prove identical optimization trajectories.
+All original rows, solver options and comparison policies remain unchanged.
+
+Scope remains53 selected FD002 cases/159 fixed points and53 intercepted setup
+callbacks per arm, zero SciPy iterations/completed new solver queries/fits.
+Both original teacher/full-validation and repeat-objective controls passed;
+aligned27 common-input SGEMM controls passed after Torch import. Operational
+native/aligned times83.060199421/78.822130630 seconds are not latency evidence.
+Evidence: `artifacts/phase18/objective-build-probe-20261113-v1/`, including
+`comparison-verification.json`, all field differences/raw records, native
+receipts and read-only Docker mount inspection. This is root arithmetic review,
+not an independent final audit, full regression or packaging/release pass.
+
+A separately preregistered narrow selected-search proof may test whether the
+remaining small objective differences change trajectories; no such run has
+started and no full replay/adoption is authorized. The Windows evaluation
+dashboard and all delivered PDF snapshots are preserved; no new model job is
+started during the scheduled demonstration. Phase18 remains partial.
+
 ## User-requested dashboard aesthetic refresh verified (13 November 2026 IST)
 
 The user reported an unstyled page. Before capture showed no active theme style

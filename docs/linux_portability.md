@@ -453,3 +453,42 @@ read-only environments remain. Twelve harness tests passed17.83s; this is
 registration, not a broader result. Even success would not establish other
 supports/restarts, nonlinear search trajectories, FD001 or complete corpus
 parity and would not authorize a new full regression or production adoption.
+
+### Measured broader first-objective result
+
+The registered run at `c8e091b` completed both fresh children/controller with
+native0. Root saved-file verification now recomputes all159 rows per arm and
+their exact difference lists without model imports/calls. Native reproduces
+every original Linux row. With the aligned bridge, all159 direct surrogate
+values, full surrogate-input gradients and dense risk components match Windows
+exactly. All original teacher/full-validation and objective-repeat controls pass.
+
+| Selected fixed-point field | Exact Windows rows /159 | Maximum absolute delta |
+| --- | ---: | ---: |
+| Direct surrogate value |159|0|
+| Complete surrogate-input gradient |159|0|
+| Dense risk component |159|0|
+| Lifted scaled features |52|2.1496693314304594e-14|
+| Complete first-objective value |46|2.255546860396862e-8|
+| Complete first-objective gradient |82|3.7834979593753815e-10|
+| Feasibility component |43|2.2560016077477485e-9|
+
+These diagnostic field comparisons use the same53 selected FD002 cases and
+three fixed points per case, not pooled population performance. Across entire
+rows,21 match exactly and138 retain some differences. None lies outside the
+unchanged absolute1e-6 envelope; that classification does not accept residuals,
+change known differences or establish identical nonlinear search trajectories.
+
+There are53 intercepted first-dense setup callbacks per arm, zero SciPy
+iterations, completed solver queries or fits. Operational native/aligned times
+83.060199421/78.822130630 seconds are not latency measurements. The original
+volumes remain read-only and no backend has been adopted. All negative/residual
+records remain. A narrow selected-search proof, if pursued, needs a separate
+committed design before calls. No complete replay is authorized by these values.
+
+Evidence: `artifacts/phase18/objective-build-probe-20261113-v1/`, including raw
+gradient rows, per-field comparisons, native/controller receipts and
+`comparison-verification.json`. This root arithmetic review is not a separate
+independent final audit. The Windows dashboard, evaluation PDFs, original
+scientific results, phase gates and current packaging limitations retain their
+own scopes. No new model job is started during the scheduled evaluation.
