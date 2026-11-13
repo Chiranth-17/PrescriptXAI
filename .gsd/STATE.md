@@ -5,6 +5,16 @@ current_activity: solo_step5_packaging_lite
 activity_status: phase18_linux_search_portability_open
 ---
 
+## Direct-SGEMM build diagnostic registered (13 November 2026 IST)
+
+No gate is running. New phase18-sgemm-build-v1 registers27fixedLinearoperations
+from the same3cases/9points. Export original weights with forward calls forbidden;
+original Linux ctypes SGEMM must exactly reproduce prior common-input output/VJP
+before an aligned MKL2026.1 arm can run. Separate processes, no Torch import in
+matrix arms, no fitting/search/production change. Wheels/license hash-verified
+outsideGit; metadata selection assertion preserved. Three ABI harness tests pass.
+This is registration, not a fix or regression pass. Phase18 remains open.
+
 ## Current evaluation addendum prepared (13 November 2026 IST)
 
 New four-page output/pdf/Verification_Status_Addendum_20261113.pdf reflects

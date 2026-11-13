@@ -1,5 +1,23 @@
 # PrescriptXAI Progress
 
+## Phase 18 direct-SGEMM build diagnostic registered (13 November 2026 IST)
+
+The mode-only study did not restore parity. A new preregistered design,
+`phase18-sgemm-build-v1.yaml`, isolates the native matrix library using original
+fitted weights and the same nine fixed points. Guarded Windows export performs
+no forward scoring; all parameter hashes must match both prior native traces.
+There are 27 layer operations. Original Linux SGEMM forward/bias and ones-VJP
+must first reproduce all saved controls exactly; otherwise stop. Only then test
+the separately pinned MKL 2026.1.0 Linux runtime in another child process, with
+the original environment read-only and no Torch import, fitting or search.
+
+The trusted runtime/license wheels are hash-verified outside Git. An initial
+metadata-only license selection assertion (two platform wheels, not one) and
+the corrected exact Linux selection remain disclosed. No numerical calls had
+started. Three ABI/dtype/dimension harness tests passed in 0.41 s and Ruff passed.
+This registration does not establish a build fix, alter production dependencies,
+or authorize a complete regression. Windows demo and shared PDFs remain intact.
+
 ## Academic Phase 2 verification addendum delivered (13 November 2026 IST)
 
 A separate four-page `output/pdf/Verification_Status_Addendum_20261113.pdf`

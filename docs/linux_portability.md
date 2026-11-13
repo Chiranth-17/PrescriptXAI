@@ -269,6 +269,37 @@ Backend build/version alignment remains a candidate investigation, not a tested
 fix. It must use a separate environment and fixed-operation controls before
 any new search, without weakening historical comparison. Phase 18 remains open.
 
+## Registered direct-SGEMM build comparison
+
+`configs/experiments/phase18-sgemm-build-v1.yaml` registers a narrower library
+comparison before any calls. The original fitted parameters and nine fixed
+points are exported without scoring, guarded against bundle/network forward
+calls. Each parameter hash must match both completed native operation traces.
+All three Linear layers yield 27 fixed matrix operations. Raw operands remain
+ignored outside version control and are bound to this registration by receipt.
+
+The first arm loads the exact original Linux library in a fresh process without
+importing Torch. Its explicit forward/bias and all-ones VJP SGEMM calls must
+reproduce every saved Linux common-input operation exactly. If this control
+fails, stop before interpreting or running the aligned-library arm. The second
+arm uses the separately hash-pinned MKL 2026.1.0 Linux runtime. Both use unchanged
+float32 operand bytes, one thread, GNU/LP64 mode, no `LD_PRELOAD` and no package
+installation or changes to either original environment. Actual versions, hashes,
+verbose dispatch, outputs and exact repeat controls are retained.
+
+The runtime wheel and matching Linux license wheel were obtained from published
+PyPI release metadata, verified against the registered raw SHA256 values and
+kept outside the repository. A metadata-only first attempt incorrectly expected
+one license wheel globally; the registry has Windows and Linux wheels. Its
+assertion is preserved, and exact Linux-wheel selection was corrected before
+any library or model call. See `mkl-release-metadata-20261113-v1` for provenance.
+
+Even exact Windows agreement here would establish only a fixed native-operation
+lead. It would not validate Torch integration, full gradients, complete search,
+FD001 parity or a release, and would not authorize changing historical results
+or launching a complete regression. A mismatch is retained as a negative result.
+This is preregistration, not an observed outcome or adopted backend change.
+
 For the academic Phase 2 evaluation, use the established Windows demonstration
 and the supplied report with its original snapshot. The public benchmark and
 synthetic sample are advisory demonstrations, not evidence of physical efficacy,

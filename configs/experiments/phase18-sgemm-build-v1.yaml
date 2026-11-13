@@ -1,0 +1,61 @@
+schema_version: 1
+purpose: Fixed SGEMM build-alignment diagnostic only; no full model/pipeline adoption or regression approval.
+script_canonical_sha256: 53edb28e0687549f235cdcea2a37a692abe05c1cb92a25a3255a0b27062667ae
+case_ids:
+- 15d76dc4cc4cf4cc6f5fcb7c302e44fcf48c501ea6f93ee786086d29381bcf88
+- 3824175d8b2b6eaddd855e718983aff81fdeebd15bb9c99a229d0b8d5d6fa752
+- d4a796924c45e7f66b2c91d1d8d00e4308b9c342eda37d31f592d5da42e20e35
+selection: 'Same three cases and nine fixed points selected by prior completed gradient-probe maxima.
+  Export all three existing Linear layers for every point: 27 fixed operations per native library; no
+  new state selection.'
+expected_operations: 27
+no_solves_or_fits: true
+baseline_metadata_sha256: 3b7be8df5acd30169dc1c0149d7ec3a29664fcb79423032508458c25fa1f108c
+original_manifest: artifacts/phase18/linux-verify-recovery-909986c-v1/preserved-tier/manifest.json
+original_manifest_sha256: a02057358e987a623021807f3bf396db05b6aa3a48cc0c4c1aac5f6d81b8939c
+controls:
+  windows:
+    path: artifacts/phase18/operator-probe-20261113-v1/windows/trace.jsonl
+    sha256: 05ad2b89b12b495923b06b358fb251a0dac6fed0baadf9deb127d48671923f5f
+  linux:
+    path: artifacts/phase18/operator-probe-20261113-v1/linux/result/trace.jsonl
+    sha256: 69a013e38f8bf4ee8ad1073698251fa94c4e37fdb83618fdf723f74cfd94427d
+operand_export: artifacts/phase18/sgemm-build-20261113-v1/export
+export_policy: Load original fitted XGBoost surrogate weights on Windows; export unchanged float32 parameter/input
+  bytes and completed native expected output/VJP only. Guard bundle risk/torch paths and Module forward
+  calls to forbid scoring. Verify each parameter SHA against both original traces. Payload bound to this
+  config and export receipt SHA. Keep weights/operands outside Git.
+libraries:
+  embedded:
+    path_suffix: .venv/lib/python3.13/site-packages/torch/lib/libtorch_cpu.so
+    sha256: 2356f52965774fb30e8bc958f0fb6bb8f62c8edbb0d372a16d3940e23347c473
+  aligned:
+    wheel_filename: mkl-2026.1.0-py2.py3-none-manylinux_2_28_x86_64.whl
+    wheel_url: https://files.pythonhosted.org/packages/61/da/4921e17b1f455f7fed30d5cc0964f3289eee6a6cb03cdf7d5e20c14bd025/mkl-2026.1.0-py2.py3-none-manylinux_2_28_x86_64.whl
+    wheel_sha256: 4d5a26449818a8aebd4b2aaf6b291831e691f9cf74b152df49b99cf48bbd5360
+    wheel_bytes: 224034262
+    library_member: mkl-2026.1.0.data/data/lib/libmkl_rt.so.3
+    sha256: b2ff0e31d7cd18c91813d8f6500f37665597d89de22649d90687aa6bf7bd2c0f
+    license_wheel_filename: onemkl_license-2026.1.0-py2.py3-none-manylinux_2_28_x86_64.whl
+    license_wheel_sha256: 39fd829648af92c9e03c22ba228f07174d829aaa2fe3c5f6cd7073b8eb8a9805
+preparation: Verified PyPI MKL2026.1.0 runtime and matching Linux license wheels outside repo; inspect/extract
+  into a new isolated writable Docker volume. Original Linux/Windows environments and volumes remain read-only.
+  Do not pip-install/replace a package or use LD_PRELOAD. Preserve initial metadata selection assertion
+  (two license platform wheels) and corrected exact Linux-wheel choice before any scoring.
+isolation: Each library runs in a separate Linux child interpreter, no torch import. ctypes opens the
+  registered library explicitly RTLD_LOCAL. Native GNU/LP64 mode, MKL/OMP threads1, MKL_VERBOSE1, MKL_CBWR
+  unset, LD_PRELOAD unset. Log actual library version/hash, environment and SGEMM diagnostics.
+arithmetic: 'Use the production-observed SGEMM ABI: forward transpose T/N, m=out,n=1,k=in, lda=in,ldb=in,ldc=out,
+  alpha1,beta1 with C initialized to existing bias; ones-VJP N/N,m=in,n=1,k=out,lda=in,ldb=out,ldc=in,alpha1,beta0.
+  Same original float32 operands and weights. Record raw outputs and repeats, no precision/activation/gradient
+  or model changes.'
+control: Embedded library arm must reproduce EVERY completed original Linux common-input Linear output
+  AND ones-VJP exactly, including all three layers, or stop study and do not run/interpret aligned arm.
+  Every same-library repeat must be exact. Aligned outputs are compared to both original Linux and original
+  Windows, never accepted by changing tolerances.
+interpretation: Alignment matching Windows fixed SGEMM outputs would isolate a native-kernel compatibility
+  lead but would NOT prove full torch/autograd/search or FD001 parity and would not authorize adoption
+  or a new complete regression. Failure to match rejects this particular build-alignment hypothesis. Historical
+  Windows/scientific results remain immutable; no change to accepted differences or settings.
+scope: Diagnostic on reused benchmark-derived fixed operands; no generalization, physical efficacy, latency
+  or release claim.
