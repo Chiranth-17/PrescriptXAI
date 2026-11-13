@@ -1,5 +1,33 @@
 # PrescriptXAI Progress
 
+## Broader fixed production-objective proof registered (13 November 2026 IST)
+
+`phase18-objective-build-probe-v1.yaml` registers the next selected diagnostic
+before calls: the original53 FD002 cases/159 fixed points from the completed
+gradient study, not a newly selected population. The unchanged old gradient
+helper is invoked verbatim. A fresh native child must exactly reproduce all159
+full original Linux rows before the aligned child starts. The latter repeats
+27 Windows SGEMM controls after Torch import, then uses the already tested
+child-local Linear bridge during captured solver setup and objective evaluation.
+Native teacher/full-validation checks run before each case's bridge, restored
+before the next case and at exit. All original weights, fixed inputs, risk and
+feasibility graph separation, coupling and objective terms remain.
+
+The diagnostic captures53 first-dense setup callbacks but intercepts minimize
+before SciPy: zero optimizer iterations or completed new solver queries, zero
+fits. Direct surrogate and complete input gradients plus original first-dense
+objective/gradient/components are compared against both old native files.
+Every field difference and the unchanged envelope classification is retained,
+not accepted. Exceptions retain available attempted numerical locals and raw
+tracebacks. Original source/input/binary/runtime/helper/evidence guards remain;
+both original volumes and MAIN evidence read-only, new outputs/children only.
+
+Twelve bridge-boundary/interception/comparison harness tests passed17.83s;
+Ruff and mypy91 pass. These test the diagnostic harness, not the broader result.
+No broader observations exist at registration; no production adoption, FD001/
+search/corpus parity, latency or release claim. The Windows dashboard and
+evaluation PDF snapshots stay unchanged.
+
 ## Isolated nine-point Torch/input-gradient integration matches Windows
 
 Registered numerical source `50f3d6a`, explicit recovery source `c792947`,

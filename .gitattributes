@@ -25,3 +25,4 @@ configs/experiments/phase17-edited-prescription-v1.yaml -text
 configs/experiments/phase18-torch-build-integration-v1.yaml -text
 configs/experiments/phase18-torch-build-recovery-v1.yaml -text
 configs/experiments/phase18-torch-build-recovery-v2.yaml -text
+configs/experiments/phase18-objective-build-probe-v1.yaml -text

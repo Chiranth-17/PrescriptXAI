@@ -2,8 +2,20 @@
 phase: 18
 status: in_progress
 current_activity: phase18_native_build_integration
-activity_status: selected_torch_integration_exact_broader_objective_pending
+activity_status: broader_fixed_objective_registered
 ---
+
+## Broader objective preregistration
+
+No job active at registration. New phase18-objective-build-probe-v1 uses the
+same53FD002cases/159fixedpoints, unchanged gradient helper and complete native
+159row controls before aligned. Native teacherchecks before eachcase bridge;
+bridge restored before nextcase/exit,27SGEMMcontrols afterTorchimport. Capture53
+firstdense setups/minimizeintercepted/0SciPyiterations/completedqueries/fits.
+Exact directsurrogate/inputgrad and fullfirstobjective/terms/gradients comparison,
+keep alldiffs/failurelocals. Original90source/97assets/runtimebinary/evidencepins
+andreadonlyenvironments.12harnesstests17.83s/Ruff/mypy91pass, notbroaderoutcome.
+No adoption/fullregression. Windowsdemo/evaluationfiles preserved.
 
 ## Nine-point Torch bridge completed exactly
 

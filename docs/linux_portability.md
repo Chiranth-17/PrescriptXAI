@@ -427,3 +427,29 @@ raw/library/runtime/native receipts, Docker read-only mount inspection and
 `comparison.json`. The root saved-file verifier recomputes every comparison and
 checks both failed attempts' pins unchanged; it is not a separate-agent final
 audit. Windows demonstration and published result snapshots remain unchanged.
+
+## Registered broader first-objective diagnostic
+
+`phase18-objective-build-probe-v1.yaml` extends the isolated proof to the same
+53 selected FD002 cases/159 original and saved candidate points. A new wrapper
+invokes the unchanged earlier gradient helper; its own entrypoint and the helper
+have separate exact source pins. All159 native Linux rows must reproduce exactly
+before an aligned child may advance. The aligned child also repeats27 Windows
+common-input SGEMM controls after importing Torch.
+
+Each case first runs its original teacher-risk/full-validation controls with
+native methods. Temporary Linear methods are applied only at solver construction,
+then restored before the next case's checks and at exit. The original helper
+captures the first full-dense callback and intercepts minimize before SciPy.
+There are53 intercepted setup calls and zero optimizer iterations or completed
+solver queries; these are distinct counts. No fitting or new candidate search.
+
+The registered measurements are direct surrogate/input gradients and complete
+first-objective values, terms and gradients, preserving separate original risk
+and feasibility graphs. Exact differences and existing envelope classifications
+remain diagnostic only. A helper failure preserves its traceback and available
+attempted numerical locals. Original data/source/runtime/library guards and
+read-only environments remain. Twelve harness tests passed17.83s; this is
+registration, not a broader result. Even success would not establish other
+supports/restarts, nonlinear search trajectories, FD001 or complete corpus
+parity and would not authorize a new full regression or production adoption.

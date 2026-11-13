@@ -1,0 +1,101 @@
+schema_version: 1
+purpose: Selected 53-case/159-point fixed-input and complete first-production-objective build bridge proof;
+  no SciPy iterations, new completed solver query, fit, production adoption or regression.
+origin_source: 909986c0556a9888e6e43cbbd4f363b9eaf3a5ac
+script_canonical_sha256: 5a869ae5df806e247108a19fe1c5079bfa56eae3a654414c17833df69da68aab
+crossscore_config: configs/experiments/phase18-crossscore-v1.yaml
+crossscore_config_sha256: 9b5da29742630b884c1367c996d53ec25d14ba44f7973bcf90d4da841262ab5e
+controls:
+  windows:
+    path: artifacts/phase18/crossscore-20261113-v1/windows/scores.jsonl
+    sha256: 5c3cd551b33e0689ffa84a9d130ab2d1333bf61a54536cb8fd6944d53bb3e511
+  linux:
+    path: artifacts/phase18/crossscore-20261113-v1/linux/result/scores.jsonl
+    sha256: 17b297c37ed834e44074b30bb0b00520960ed207a7c3ad3c125f951820d3be5e
+selection: 'Same registered 53 FD002/XGBoost cases: every Tier2/triage flip and maximum final-risk-delta
+  case. Original and both saved candidate vectors; no new population selection.'
+expected_cases: 53
+expected_rows_per_runtime: 159
+seed: 1729
+cpu_threads: 1
+no_optimizer_iterations: true
+no_refits: true
+capture: Temporarily intercept the first production minimize callback and immediately raise a private
+  sentinel before calling SciPy. Retain the original dense objective, bounds and first start. Restore
+  callback unconditionally; require full control support.
+points: At each original and both exact saved vectors score the unchanged scaled input and its surrogate
+  gradient. At dense first start and the two saved control deltas clipped to unchanged production bounds,
+  evaluate the captured original objective/gradient/components and separate risk/feasibility derivatives.
+  Candidate-derived dense lifts are diagnostics, never replacement advice or new saved candidates.
+controls_policy: First reproduce all previous native original risks and full candidate validation reports
+  exactly; fail causal interpretation on any difference. Repeat each full objective value/gradient with
+  a fresh graph and require exact equality. Zero SciPy calls/iterations or new solver queries.
+comparison: Compare all fields exactly, also list numeric maxima and values outside existing abs1e-6.
+  Do not accept discrepancies or alter regression policy. Direct surrogate native equality is separately
+  reported; distinguish fixed raw vectors from propagated dense lifts.
+unchanged: All original 90 production/helper code hashes, 97 science assets, fixture and design pinned.
+  No science/config/model/tolerance/baseline/known-diff mutation. Original volumes read-only. New output
+  location, preserve all errors/partials.
+scope: Selected fixed-state diagnostic, not generalization, release approval or latency evidence; at most
+  E3 proxy assumptions.
+entrypoint_canonical_sha256: c792009b41630df1ed44915fad335554a871e6656f79975d90f7a2c7875a2533
+helper_hashes:
+  scripts/diagnostics/phase18_gradient_probe.py: 5a869ae5df806e247108a19fe1c5079bfa56eae3a654414c17833df69da68aab
+  scripts/diagnostics/phase18_torch_build_integration.py: 2f8cbcca5fe4cd2daa1b63a8838f31a2b22340e9939446ee1cf35ccd5f8380b3
+  scripts/diagnostics/phase18_sgemm_build.py: 53edb28e0687549f235cdcea2a37a692abe05c1cb92a25a3255a0b27062667ae
+  scripts/diagnostics/phase18_sgemm_build_v2.py: 991e9c84f2a9e53d3156c154dd2fde910d4eeaf83b6214026a6cbc489928132f
+  scripts/diagnostics/phase18_crossscore.py: 26a7cfadeb5999e3ac3c988fdcb029695e0e814b04f47218ab3c9af6b1a5cfb5
+  scripts/diagnostics/regression_tiers.py: 7f197db9558a452992524ee5960e58d12d233340fe37d17e84b03475058705c7
+evidence_hashes:
+  configs/experiments/phase18-gradient-probe-v1.yaml: 4273237d1049d33cb6314582aab76fe2c564e6817a8b2c123fe47c03dada657c
+  configs/experiments/phase18-crossscore-v1.yaml: 9b5da29742630b884c1367c996d53ec25d14ba44f7973bcf90d4da841262ab5e
+  configs/experiments/phase18-sgemm-build-v2.yaml: 8524d13876fdc89c8937b5336ac009823dfb7893dbfb09c69f9f7963e0cf09e9
+  artifacts/phase18/gradient-probe-20261113-v1/windows/gradients.jsonl: 85d895d79e59f3fd4cee60d06f24c5244cac6044b3699aa655db59b6f119760e
+  artifacts/phase18/gradient-probe-20261113-v1/linux/result/gradients.jsonl: 86936a388150dfba2cee1a153bf2704f7609d0d55c826e9c28cfbd22bdddccfc
+  artifacts/phase18/gradient-probe-20261113-v1/linux/result/complete.json: f26e14ed832c231c62f045fb38bf11cb868faf5657bb0d0a129f5932aab4da14
+  artifacts/phase18/torch-build-integration-recovery-20261113-v2/comparison.json: 24ec403fe740d5fd8a070277fb78098f9cdff8e8f562335ccec252df27286566
+  artifacts/phase18/sgemm-build-20261113-v2/export/operands.json: 8c5e646064a099af1efac43c7bd351ce3c72963540ae25498190a185d8ba3b1e
+sgemm_registration: configs/experiments/phase18-sgemm-build-v2.yaml
+operands: artifacts/phase18/sgemm-build-20261113-v2/export/operands.json
+environment:
+  MKL_CBWR: null
+  MKL_VERBOSE: '1'
+  MKL_NUM_THREADS: '1'
+  OMP_NUM_THREADS: '1'
+  MKL_THREADING_LAYER: GNU
+  MKL_INTERFACE_LAYER: LP64
+  LD_PRELOAD: null
+gradient_controls:
+  windows: artifacts/phase18/gradient-probe-20261113-v1/windows/gradients.jsonl
+  linux: artifacts/phase18/gradient-probe-20261113-v1/linux/result/gradients.jsonl
+native_receipt: artifacts/phase18/gradient-probe-20261113-v1/linux/result/complete.json
+container_image: sha256:b4b935b9fb27e14cd7af0523062af94be60bb844fb0da06d6a30bc7345af8393
+arms:
+- native
+- aligned
+entrypoint_policy: Entry script hash pins the new wrapper. script_canonical_sha256 deliberately pins unchanged
+  gradient-probe helper invoked verbatim. Its true-risk/full-validation native guards, fixed case IDs/candidates/data/source,
+  objective interception and every original computation remain. No original v1 file edited.
+native_admission: Fresh native arm must match EVERY field in all159 original Linux gradient/objective
+  rows exactly and repeat objective graphs exactly; stop before aligned if not. Wrapper receipt names
+  complete comparison independently of original helper native-control fields.
+aligned_admission: Same original Linux binary/runtime guard; after Torch imports, 27 fixed Windows SGEMM
+  pairs/repeats exact before integration. Temporarily bridge only existing three Linear methods after
+  each case native teacher/full-validation checks, at RecourseOptimizer construction. Restore before next
+  from_config teacher checks and at exit. Actual upstream derivatives; original weights/ReLU/sigmoid/calibration
+  unchanged.
+computations: At all53 original +bothsavedcandidate points (159rows), use unchanged gradient-probe direct
+  surrogate/full-input gradient and captured FIRST full-dense production objective including risk/feasibility/coupling/regularization
+  gradients and components. Minimize intercepted before SciPy. Record53 intercepted setup callbacks separately
+  from0 optimizeriterations/0 completedsolverqueries. Clipped dense lifts remain diagnostics, not candidate
+  recommendations.
+failure_retention: Every original raw row retained. Full exception traceback and available numerical locals
+  captured if unchanged helper rejects a control; failed attempts never admitted as success. Exact field
+  differences AND unchanged abs1e-6 envelope classifications saved, no new accepted differences.
+interpretation: Agreement would establish selected broader first-objective numerical alignment only, not
+  full nonlinear optimizer path or other supports/restarts, FD001, all15525/32116cases, physical efficacy,
+  latency, packaging or release. Any selected-search proof requires separate registration after this result;
+  no production adoption/fullgate authorization.
+isolation: Original Linux recovery and runtime volumes read-only, evidence and original wheels read-only,
+  Git-provisioned snapshot already validated; new output/container/freshchildren/rootfsreadonly/networknone.
+  Preserve Windows dashboard and all evaluation PDF snapshots.
