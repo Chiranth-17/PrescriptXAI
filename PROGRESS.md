@@ -1,5 +1,24 @@
 # PrescriptXAI Progress
 
+## Phase 18 mode-only backend repair rejected (13 November 2026 IST)
+
+The preregistered backend-policy study at `0079eee` completed four isolated
+native/COMPATIBLE child arms, all native 0, nine fixed points per arm. Both
+native controls reproduce their earlier complete operation traces exactly;
+all arms repeat exactly. Verbose MKL logs confirm CNR OFF/COMPATIBLE and one
+MKL thread, so the policy was applied. Compatible mode leaves Windows output
+unchanged but does not restore Linux parity: surrogate values differ in 6/9
+cross-platform points and gradients in 9/9 (max 4.76837158203125e-7 and
+6.67572021484375e-6). First Linear common-input forward/VJP still differ 9/9.
+
+This negative result rejects the mode-only fix; no production environment,
+dependency, numerical math, scientific setting or comparison policy changed.
+There were zero solves or fits. All four arm outputs, native logs, receipts and
+comparison are retained in `artifacts/phase18/backend-policy-20261113-v1`.
+Arm operational times are disclosed in `docs/linux_portability.md`, not treated
+as latency evidence. Backend build alignment and legacy identity/software fixes
+remain open. Phase 18 and final release are not closed; Windows demo is intact.
+
 ## Phase 18 isolated backend-policy study registered (13 November 2026 IST)
 
 Read-only Linux ELF inspection finds MKL/SGEMM symbols defined in the existing

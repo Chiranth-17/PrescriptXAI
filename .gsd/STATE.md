@@ -5,14 +5,16 @@ current_activity: solo_step5_packaging_lite
 activity_status: phase18_linux_search_portability_open
 ---
 
-## Isolated backend-policy study registered (13 November 2026 IST)
+## Compatible mode alone does not repair parity (13 November 2026 IST)
 
-No gate is active. New phase18-backend-policy-v1 registers four child arms:
-native/COMPATIBLE on Windows/Linux,9fixedpoints each,no solves/fits. Native
-operation controls must reproduce exactly; all arms require exact repeats.
-Agreement that changes historical Windows values would not be an accepted fix.
-ELF inspection finds MKL symbols inside libtorch_cpu.so, no separate dynamic
-MKL dependency. Original environments unchanged. Phase18 remains open.
+No job is active. Backend-policy-v1 at0079eee completed4arms/9points perarm,
+native0/exact old native traces/exact repeats. Actual MKL logs confirmCNR
+OFF/COMPATIBLE and1thread. Compatible cross-OS surrogate values differ6/9 and
+gradients9/9; firstLinear output/VJP differ9/9. Mode-only fix rejected, not
+adopted. No production/math/dependency/policy changes or solves/fits. Original
+environments and Windowsdemo preserved. Next isolated build/version alignment
+and separate legacy identity fixes; no new regression without concrete repair.
+Phase18 remainsopen. Latest evidence backend-policy-20261113-v1.
 
 ## First surrogate Linear operation differs (13 November 2026 IST)
 

@@ -243,6 +243,32 @@ If the arms still differ, reject the mode-only repair and keep the negative
 result. Original builds, package dependencies, baselines and tolerances remain
 unchanged. This registration precedes calls; it is not a reported outcome.
 
+The study subsequently ran at preregistered source `0079eee`. All four fresh
+child arms exited 0, wrote nine points and repeated exactly. Each native arm
+exactly reproduced all nine original complete operation controls. Native BLAS
+logs confirm `CNR:OFF` versus `CNR:COMPATIBLE`, with one MKL thread in each arm;
+the mode was actually applied, not merely echoed from an environment setting.
+
+| Fixed-point contrast | Different surrogate values / 9 | Different gradients / 9 | Maximum surrogate delta | Maximum gradient delta |
+| --- | ---: | ---: | ---: | ---: |
+| Windows/Linux native | 9 | 9 | 5.364418029785156e-7 | 9.059906005859375e-6 |
+| Windows/Linux compatible | 6 | 9 | 4.76837158203125e-7 | 6.67572021484375e-6 |
+| Windows native/compatible | 0 | 0 | 0 | 0 |
+| Linux native/compatible | 6 | 6 | 8.344650268554688e-7 | 8.821487426757812e-6 |
+
+Both compatible arms still differ at the first Linear forward and all-ones VJP
+for all nine common-input points. A `COMPATIBLE` mode setting alone is therefore
+not a repair of this discrepancy. No setting was adopted into production, no
+new dependency was installed into either original environment, and no search or
+fit was executed. The negative result, all four raw arms, native logs and exact
+comparison are preserved in `artifacts/phase18/backend-policy-20261113-v1`.
+Operational arm times were 6.17/5.80 s on Windows and 6.14/2.42 s on Linux;
+these are not latency-budget measurements.
+
+Backend build/version alignment remains a candidate investigation, not a tested
+fix. It must use a separate environment and fixed-operation controls before
+any new search, without weakening historical comparison. Phase 18 remains open.
+
 For the academic Phase 2 evaluation, use the established Windows demonstration
 and the supplied report with its original snapshot. The public benchmark and
 synthetic sample are advisory demonstrations, not evidence of physical efficacy,
