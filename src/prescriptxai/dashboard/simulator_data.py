@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from concurrent.futures import CancelledError, ProcessPoolExecutor, wait
+from hashlib import sha256
+from inspect import getfile
 from math import isclose
 from multiprocessing import get_context
 from pathlib import Path
@@ -86,8 +88,9 @@ def simulator_decision(
 
 
 @st.cache_resource(show_spinner=False)
-def prescription_pool() -> ProcessPoolExecutor:
+def prescription_pool(code_identity: str) -> ProcessPoolExecutor:
     """Keep native FAST search and its numerical thread pool outside Streamlit."""
+    del code_identity  # Reloading application code must not reuse an older worker interpreter.
     return ProcessPoolExecutor(
         max_workers=1, mp_context=get_context("spawn"), initializer=_worker_threads, initargs=(1,)
     )
@@ -129,7 +132,17 @@ def solve_prescription(
     """Submit the bound snapshot and drop stale work without blocking a new session edit."""
     if cancelled.is_set():
         raise CancelledError()
-    future = prescription_pool().submit(
+    code_identity = sha256(
+        b"".join(
+            path.read_bytes()
+            for path in (
+                Path(__file__),
+                Path(getfile(MachineDecision)),
+                Path(getfile(PrescriptXAI)),
+            )
+        )
+    ).hexdigest()
+    future = prescription_pool(code_identity).submit(
         _solve_prescription,
         MachineRegistry(registry.root, registry.workspace),
         machine_id,

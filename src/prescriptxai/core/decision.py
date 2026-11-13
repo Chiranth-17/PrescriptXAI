@@ -174,8 +174,10 @@ class MachineDecision:
         if controls:
             candidate = self._runtime.simulation_state(state, context, controls)
             for feature in self.spec.measurement_features:
-                position = list(simulated.columns).index(feature.id)
-                simulated.iat[-1, position] = candidate[feature.id]
+                if candidate[feature.id] != float(simulated[feature.id].iloc[-1]):
+                    simulated[feature.id] = simulated[feature.id].astype(float)
+                    position = list(simulated.columns).index(feature.id)
+                    simulated.iat[-1, position] = candidate[feature.id]
         return simulated
 
     def _checked_result(self, result: RecourseResult) -> MachineRecourseResult:

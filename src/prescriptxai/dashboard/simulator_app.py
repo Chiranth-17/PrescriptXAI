@@ -89,8 +89,10 @@ def _location(
     current = st.query_params.get("unit", units[0])
     if preset is not None and preset.unit in units:
         st.session_state[unit_key] = preset.unit
+    if unit_key not in st.session_state:
+        st.session_state[unit_key] = current if current in units else units[0]
     unit = st.selectbox(
-        "Recorded unit", units, index=units.index(current) if current in units else 0, key=unit_key
+        "Recorded unit", units, index=0, key=unit_key
     )
     observed = frame.loc[frame["unit_id"].map(str) == unit].sort_values("time_index")
     times = [float(value) for value in observed["time_index"]]
@@ -99,11 +101,13 @@ def _location(
         st.session_state[time_key] = preset.time
     raw_time = st.query_params.get("time", "")
     time = next((value for value in times if str(value) == raw_time), times[-1])
+    if time_key not in st.session_state:
+        st.session_state[time_key] = time
     picked_time = (
         st.select_slider(
             "Recorded time",
             times,
-            value=None if time_key in st.session_state else time,
+            value=None,
             key=time_key,
         )
         if len(times) > 1
@@ -125,12 +129,15 @@ def _settings(
         if not lower <= original <= upper and name not in incoming:
             st.caption(f"{feature.label}: recorded value is outside the slider range.")
             continue
+        setting_key = f"simulator-setting:{selection}:{name}"
+        if setting_key not in st.session_state:
+            st.session_state[setting_key] = incoming.get(name, original)
         value = st.slider(
             f"{feature.label} ({feature.unit})",
             min_value=lower,
             max_value=upper,
-            value=incoming.get(name, original),
-            key=f"simulator-setting:{selection}:{name}",
+            value=None,
+            key=setting_key,
             help=feature.why,
         )
         if value != original:

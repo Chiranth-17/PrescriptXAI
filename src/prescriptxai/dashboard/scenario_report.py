@@ -113,6 +113,7 @@ def scenario_report(
         f"<p>{escape(spec.limits_label)}</p>"
         f"<p>Data source: {escape(spec.data_source)}</p>"
         "<p>Advisory replay and model-based checks. Physical outcomes were not measured.</p>"
+        "<p>Slider edits are simulated starting conditions, not measured equipment changes.</p>"
         "<h2>Current settings and predicted risk</h2>"
         f"<ul>{setting_rows}</ul><p>Predicted risk now: {score.risk:.1%}.</p>"
         f"<h2>Prescription</h2>{prescription}<h2>Follow-up</h2>{follow_up}"
