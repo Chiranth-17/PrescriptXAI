@@ -1,5 +1,18 @@
 # Synopsis traceability - Phase 13 closed
 
+## Edited starting-settings dashboard request (13 November 2026 IST)
+
+Source `bfcd3e1`, registered plan `phase17-edited-prescription-v1.yaml`, adds
+explicit generation from the same bounded/coupled state as the current risk
+preview. Existing search and four checks remain; history/frozen context,
+demonstration labels and stale-result/export guards are preserved. The genuine
+worker/AppTest suite passed28tests/50.61s. Actual browser v5 at1360/390px
+verified edited risk88.5% to prescription17.1%, all four checks and stale clearing.
+Software-only810tests/299.91s and both unchanged coverage gates passed
+(scoped91.34062673836455%, package91.4057478652098%, combined88.22338568935427%).
+Evidence: `artifacts/phase17/edited-settings-20261113-v1/`. No fixed/full replay,
+new phase closure, physical benefit or population estimate is claimed.
+
 ## Current Linux verification status (13 November 2026 IST)
 
 The Linux clean-clone demo passes both API assessments and dashboard HTTP

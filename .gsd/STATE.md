@@ -2,17 +2,24 @@
 phase: 13
 status: complete
 current_activity: user_dashboard_edited_settings
-activity_status: editable_prescription_verification_pending
+activity_status: editable_prescription_verified_locally
 ---
 
 ## User dashboard request takes priority (13 November 2026 IST)
 
-Edited-controllable-settings prescription generation is implemented, pending
-real worker/AppTest/browser/coverage verification. Explicit Generate button,
+Edited-controllable-settings prescription generation is locally verified at
+bfcd3e1: 28 focused tests/50.61s; 810 software tests/299.91s; both coverage
+gates and native wrapper0. Coverage91.34062673836455 scoped,
+91.4057478652098 package,88.22338568935427 combined; floors unchanged.
+Desktop1360/phone390 browser v5 passes: edited risk88.5%, fresh result17.1%,
+four checks, follow-up/export and stale clearing. Original risk87.7%.
+Actual demo measurements only, not population or physical benefit. Explicit Generate button,
 exact-input worker binding, coupled edited baseline, preserved history/frozen
 context, all checks/publication rules unchanged, stale results/exports cleared.
 Registered functional plan phase17-edited-prescription-v1. Ruff/mypy91 pass.
-No full regression or new closure claim. Linux SGEMM v2 still unlaunched.
+Local dashboard restarted and available on127.0.0.1:8501. No fixed/full
+regression or new closure claim. Linux SGEMM v2 still unlaunched; its original
+source context must be preserved when resuming, since package source changed.
 
 ## SGEMM v1 stopped before calls; v2 preregistered (13 November 2026 IST)
 

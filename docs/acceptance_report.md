@@ -2,8 +2,8 @@
 
 ## User-requested edited starting settings (13 November 2026)
 
-An editable prescription path is implemented and pending verification at this
-checkpoint. After moving a controllable slider, the user explicitly chooses
+An editable prescription path is locally verified at source `bfcd3e1`.
+After moving a controllable slider, the user explicitly chooses
 "Generate prescription for current settings". The same bounded, coupled state
 used by the risk preview becomes the solver's starting state. Original replay
 history and frozen context are preserved; proposed changes and follow-up are
@@ -11,6 +11,18 @@ measured from the edited state. A subsequent edit invalidates the old result.
 All publication, four-tier and demonstration-label restrictions remain.
 The functional plan is `phase17-edited-prescription-v1.yaml`; this update does
 not reopen or relabel the historical Phase 17 gate or claim a new release gate.
+
+The genuine worker/AppTest suite passed 28 tests in 50.61 s. The software-only
+suite passed 810 tests in 299.91 s, one full marker deselected, 68 warnings,
+with both coverage gates passing: scoped91.34062673836455%, package91.4057478652098%,
+combined88.22338568935427%. Floors and exclusions are unchanged. Ruff and mypy91
+pass. The fixed scientific subset is explicitly excluded from this diagnostic.
+Browser v5 passed at1360/390px: original87.7%, edited88.5%, current prescription17.1%,
+all four checks, matching HTML, follow-up and stale clearing after another edit.
+No overflow, page exceptions or external requests were observed. These are
+model-based demonstration observations, not new benchmark estimates. Receipts
+and authentic screenshots are in `artifacts/phase17/edited-settings-20261113-v1/`;
+all earlier browser attempts, including failed probes, are retained.
 
 The Phase 17 technical gate passed. Human usability and full Step 3B
 acceptance remain pending. The registered dashboard machine is the NASA FD001
@@ -28,7 +40,7 @@ fixture. Both have empty engineer confirmation blocks.
 | Sparsity, risk-drop badges and waterfall | Labeled badges and sequential calibrated scores | A replay test recomputes archived endpoints and verifies the changes add to the total. The demo renders current input-bound results. | Verified locally for demonstration |
 | Timing and performance | Actual keyboard-to-risk and server scoring timings for all four FD001 presets at both widths | The repeated browser benchmark met 250 ms in one of eight groups. See [deviations](deviations.md). | Browser target missed |
 | Applied outcome, trend and feedback | Live model recheck, configured adherence labels, same-unit trend and scoped SQLite log with seeded demo records | Tests cover adherence boundaries, deterministic interpolation, real FD001 trend re-scoring and backward-compatible log reads. The demonstration path is available for local checks. | Partial |
-| Edited-settings comparison | A separately labeled recorded-settings reference for the exact same base input | Both risk values use independent checks. Edits clear current prescriptions. | Verified locally for demonstration |
+| Edited-settings prescription and comparison | Explicit generation starts from the exact edited, coupled state; recorded settings remain a separately labeled reference | Real worker, AppTest and desktop/phone acceptance verify current values, four checks, follow-up, export and stale clearing | Verified locally for demonstration |
 | Scenario export | Standalone HTML with current settings, predicted risk and provenance | The HTML carries the active limits label and withholds stale results | Verified locally |
 | Synopsis scorecard | Machine-scoped Advanced page with saved FAST alert and first-alert results | AppTest compares each displayed metric and serial latency interval with its saved source | Passed locally for archived results |
 | Design and usability | Local desktop and phone captures, keyboard preset activation, slider editing and visible focus | Checked both widths and compared the supplied references. Full accessibility review and two participant sessions remain pending. | Partial |
@@ -70,11 +82,15 @@ The simulator cancels delayed or queued requests when their input hash changes.
 If the numerical call has already started, it may finish on the isolated worker.
 Its result is discarded. The simulator publishes only an exact current result.
 A nearby cached candidate could describe different settings, so the view does
-not use one as advice. Slider edits still receive the risk preview. On a classified machine, a
+not use one as advice. Slider edits receive the risk preview and clear old advice.
+On a classified machine, explicit generation solves from those edited conditions,
+then publishes only if the existing checks permit it. On a classified machine, a
 comparison can show the previous prescription's risk and check count as a
 reference only when its recorded-input hash matches the selected window. It
-offers no current actions or follow-up for an edited input. The recorded-input
-prescription and its report carry the active limits label.
+is labeled as a reference, not as the new prescription. Current actions and
+follow-up require a fresh input-bound result. Both recorded-input and edited-input
+prescriptions and their reports carry the active limits label. Slider edits
+are simulated starting conditions, not measured equipment changes.
 
 An offline component test rechecks the registered FD001 candidate using the
 fitted model, then renders the measured risk waterfall and applied-setting

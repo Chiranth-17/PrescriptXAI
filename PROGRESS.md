@@ -1,6 +1,6 @@
 # PrescriptXAI Progress
 
-## Edited-settings dashboard flow implemented, verification pending (13 November 2026)
+## Edited-settings dashboard flow verified locally (13 November 2026)
 
 The user requested live prescriptions after editing controllable sliders.
 Previously the dashboard deliberately entered reference-comparison mode and
@@ -12,12 +12,37 @@ run normally. Slider movement alone does not trigger a solve, and subsequent
 edits invalidate even a completed prior job. Waterfall and follow-up use the
 edited baseline; exports require current settings/risk/provenance agreement.
 
-Plan `configs/experiments/phase17-edited-prescription-v1.yaml` is committed before
-the new functional measurements. Ruff and mypy 91 source files pass; genuine
-worker/AppTest/browser and software coverage checks are pending. No threshold,
-model, solver algorithm, public schema, baseline or known-difference change.
+Plan `configs/experiments/phase17-edited-prescription-v1.yaml` was committed before
+the new functional measurements. Verified source is
+`bfcd3e13f126a110702e602837633b328db895cd` (implementation checkpoints `af8022b`
+and `bfcd3e1`). The genuine worker/AppTest suite passed 28 tests in 50.61 s.
+Browser v5 passed at 1360 and 390 px with no overflow, page exceptions or
+external requests: the control edit changed displayed model risk from 87.7%
+to 88.5%, then a fresh prescription reached 17.1% with all four checks passing.
+Follow-up and matching HTML were available; another edit cleared the advice
+and its export. These are functional observations on the registered FD001
+demonstration case, not population performance or physical efficacy evidence.
+
+The software-only diagnostic passed 810 tests, one full marker deselected,
+68 warnings, in 299.91 s. Input preflight, pytest, both coverage gates and
+wrapper exited 0. Actual coverage is 91.34062673836455% scoped lines,
+91.4057478652098% package lines and 88.22338568935427% combined. All retained
+floors are unchanged. Ruff and mypy (91 source files) passed. Evidence is
+`artifacts/phase17/edited-settings-20261113-v1/`, including software receipts,
+browser v1-v5 originals, real screenshots and downloaded reports. Earlier
+browser harness failures and the stale live-module error remain preserved.
+The local dashboard was restarted with the committed implementation; widget
+values now persist through asynchronous reruns and the worker cache is bound
+to the implementation source. No threshold, model, solver algorithm, public
+schema, baseline or known-difference change.
+
+This diagnostic explicitly excludes the fixed subset and full scientific tier.
+It is not `make check`, a release gate, fresh generalization, a latency pass or
+a new phase closure. Historical verification retains its original source.
 Linux SGEMM v2 remains registered but unlaunched; current user dashboard work
-takes priority, and existing reports/results remain unchanged.
+takes priority, and existing reports/results remain unchanged. Current package
+source has changed for this feature; any later diagnostic must verify its
+registered execution context rather than reuse old source claims.
 
 ## Phase 18 SGEMM metadata preflight failure preserved (13 November 2026 IST)
 
