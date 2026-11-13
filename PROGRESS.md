@@ -1,5 +1,25 @@
 # PrescriptXAI Progress
 
+## Phase 18 SGEMM metadata preflight failure preserved (13 November 2026 IST)
+
+Registered v1 source `2ae3a21` exported all 27 fixed Linear operands/weights
+with zero forward calls, fits or search and exact original parameter hashes.
+The separate Linux runtime setup succeeded, but the first matrix arm exited 1
+at raw baseline-metadata preflight before any library load or SGEMM call.
+The registration had required the Windows CRLF JSON bytes on Linux. Read-only
+comparison proves the complete parsed metadata is identical; original raw files
+are 18,180/17,976 bytes. Both originals and the entire failed attempt remain
+pinned under `sgemm-build-20261113-v1`; the aligned arm never ran.
+
+Schema-2 `phase18-sgemm-build-v2.yaml` now explicitly binds each native original
+raw hash and the complete canonical metadata value hash, while retaining all
+original scientific/source pins. It changes no input file or science policy.
+Only prepared runtime assets may be reused from the failed lab, reverified
+against the pinned wheels and mounted read-only, with new processes/outputs.
+Every attempted matrix observation is saved before a failed control rejects it.
+Five ABI/metadata tests passed in 0.57 s and Ruff passes. No v2 matrix call has
+run at this registration point. Phase 18 and full numerical repair remain open.
+
 ## Phase 18 direct-SGEMM build diagnostic registered (13 November 2026 IST)
 
 The mode-only study did not restore parity. A new preregistered design,

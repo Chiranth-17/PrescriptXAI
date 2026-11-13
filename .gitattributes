@@ -20,3 +20,4 @@ configs/experiments/phase18-gradient-probe-v1.yaml -text
 configs/experiments/phase18-operator-probe-v1.yaml -text
 configs/experiments/phase18-backend-policy-v1.yaml -text
 configs/experiments/phase18-sgemm-build-v1.yaml -text
+configs/experiments/phase18-sgemm-build-v2.yaml -text

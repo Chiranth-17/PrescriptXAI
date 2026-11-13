@@ -5,6 +5,16 @@ current_activity: solo_step5_packaging_lite
 activity_status: phase18_linux_search_portability_open
 ---
 
+## SGEMM v1 stopped before calls; v2 preregistered (13 November 2026 IST)
+
+No gate is active. V1 export passed27operations/zero forward calls; Linux setup
+passed but raw metadata pin rejected nativeLF vsWindowsCRLF before any numerical
+library load/SGEMM. Entire v1 preserved, no aligned call. Parsed JSON exactlyequal.
+V2 schema2 registers native raw hashes +full canonical metadata hash, unchanged
+science/sourcepins; no originalfile edits. Reuse only verified runtimeassets
+read-only, freshoutputs/processes, persist failed observations. Five ABI/metadata
+tests pass0.57s/Ruffclean. No v2 matrix result yet; Phase18 stillopen.
+
 ## Direct-SGEMM build diagnostic registered (13 November 2026 IST)
 
 No gate is running. New phase18-sgemm-build-v1 registers27fixedLinearoperations

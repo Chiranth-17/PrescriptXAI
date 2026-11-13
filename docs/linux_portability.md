@@ -300,6 +300,29 @@ FD001 parity or a release, and would not authorize changing historical results
 or launching a complete regression. A mismatch is retained as a negative result.
 This is preregistration, not an observed outcome or adopted backend change.
 
+The v1 guarded Windows operand export passed with zero forward calls, 27
+operations and both original parameter-hash controls. Linux preparation verified
+and extracted the runtime/license into a separate lab, but the embedded arm
+stopped at metadata preflight before loading the numerical library or calling
+SGEMM. The v1 registration had incorrectly pinned the Windows metadata JSON's
+raw bytes on Linux. The original Windows file is 18,180 bytes with 204 CRLF
+sequences; Linux is 17,976 bytes with LF. Their complete parsed JSON is exactly
+equal. No original metadata or scientific input file has been changed.
+All v1 receipts, original export, metadata copy, logs and failure remain pinned
+in `sgemm-build-20261113-v1/failure-preservation.json`. Neither matrix arm has
+produced a numerical result, and the aligned arm was not launched.
+
+`phase18-sgemm-build-v2.yaml` preregisters the correction: exact original raw
+metadata pins per native OS, plus an exact canonical binding of the complete
+parsed JSON. Arbitrary whitespace or value changes still fail. Original asset,
+fixture, design and production/helper guards remain. This is an explicit
+diagnostic schema-2 registration, not a weakened scientific comparison.
+It reuses only the verified runtime/license files from the failed setup, mounted
+read-only and checked again against the pinned wheels; no numerical observation
+is reused. New processes and output paths are required. Each attempted operation
+is persisted before any failed-control rejection. Five ABI/metadata harness
+tests passed in 0.57 seconds. No matrix calls have run under v2 yet.
+
 For the academic Phase 2 evaluation, use the established Windows demonstration
 and the supplied report with its original snapshot. The public benchmark and
 synthetic sample are advisory demonstrations, not evidence of physical efficacy,
