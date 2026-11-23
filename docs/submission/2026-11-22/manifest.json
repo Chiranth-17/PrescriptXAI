@@ -1,0 +1,30 @@
+{
+  "PrescriptXAI_EL_Project_Report.pdf": {
+    "sha256": "984ba02e071c3cec4bd04313d8eb878a6ecadc4c9ec65e08f967c4615a9ef462",
+    "bytes": 1013635
+  },
+  "PrescriptXAI_EL_Project_Report.docx": {
+    "sha256": "40a55771414bc750e6ba40793feddcfa01c811dcdbe1c2edaf2d871d0b77e13d",
+    "bytes": 1200555
+  },
+  "PrescriptXAI_IEEE_Access_PPT_Title.pdf": {
+    "sha256": "109bc65d21e730fcc8ec821ed47c2dea4038a211001c9d391b501c51f642f254",
+    "bytes": 505700
+  },
+  "PrescriptXAI_IEEE_Access_PPT_Title.docx": {
+    "sha256": "08f8fe415434f27ff10e68fc44f16354ba9449503b1a81dad5c6aaf0dab4a9db",
+    "bytes": 463180
+  },
+  "PrescriptXAI_Journal_PPT_Title.pdf": {
+    "sha256": "399cf36ffdfd58e6232b50a7c3c236c90a5ef1f70b43885da4ba9761c2e1dad4",
+    "bytes": 444102
+  },
+  "PrescriptXAI_Journal_PPT_Title.docx": {
+    "sha256": "acd9ef0eb5e636ffa18268d08709104761897e82227e110c4251cf1aa1e8ecac",
+    "bytes": 429207
+  },
+  "PrescriptXAI_Phase2_Concise.pptx": {
+    "sha256": "5192fb7932810812913822ba7a6ca3957aa9e58a147470638b4e29402c2ad7e4",
+    "bytes": 1286951
+  }
+}
